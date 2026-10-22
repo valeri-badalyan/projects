@@ -380,6 +380,32 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .chat-form input:focus { outline: none; border-color: var(--amber); }
 .chat-form .btn { padding: 10px 14px; }
 
+/* ---------- Character chats ---------- */
+.chat-list { display: flex; flex-direction: column; gap: 8px; }
+.chat-row {
+  display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 12px;
+  width: 100%; text-align: left; padding: 10px 12px; cursor: pointer;
+  background: var(--panel); border: 2px solid var(--line); border-radius: 14px;
+}
+.chat-row:hover { border-color: var(--amber); }
+.chat-row .av { width: 52px; height: 52px; border-radius: 50%; }
+.chat-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.chat-row-main b { font-size: 15px; }
+.chat-row-main small { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-row.banned .av svg { filter: grayscale(1) brightness(.55); }
+.ban-pill { font-family: var(--mono); font-size: 12px; font-weight: 700; color: var(--coral); }
+.group-av { position: relative; width: 52px; height: 52px; }
+.group-av .av { position: absolute; width: 32px; height: 32px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel); }
+.group-av .av:nth-child(1) { left: 0; top: 0; }
+.group-av .av:nth-child(2) { right: 0; top: 4px; }
+.group-av .av:nth-child(3) { left: 10px; bottom: 0; }
+.chat-av.round { box-shadow: 0 0 0 2px var(--amber); }
+.msg-row { display: flex; align-items: flex-end; gap: 8px; align-self: flex-start; max-width: 88%; }
+.msg-row .av { width: 30px; height: 30px; border-radius: 50%; }
+.msg.from-hero { background: var(--panel-2); color: var(--fg); border-bottom-left-radius: 4px; max-width: none; }
+.msg.from-hero b { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.msg.sys { align-self: center; background: transparent; color: var(--muted); font-size: 12px; padding: 2px 8px; }
+
 /* ---------- Donate shop ---------- */
 .btn.donate {
   background: linear-gradient(100deg, var(--amber), var(--coral));
@@ -499,6 +525,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubTtt">0</span></span>
       </button>
     </div>
+    <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
     <button class="btn donate wide" type="button" data-shop><span class="coin">+1K</span>Донат в игру</button>
     <footer class="foot">На телефоне управляй свайпами, на компьютере стрелками или WASD. Рекорды сохраняются в этом браузере.</footer>
   </section>
@@ -609,7 +636,17 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     <p class="shop-note">Хьюкинг и Родригуес бесплатные. Остальных покупай за монеты: монеты дают игры и донат.</p>
     <div class="roster" id="roster"></div>
     <button class="btn ghost wide" type="button" data-go="gear">Магазин аксессуаров</button>
+    <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
     <button class="btn donate wide" type="button" data-shop="coins"><span class="coin">+1K</span>Донат в игру</button>
+  </section>
+
+  <!-- ===== Chats ===== -->
+  <section id="chats" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Чаты</div>
+    </div>
+    <div class="chat-list" id="chatList"></div>
   </section>
 
   <!-- ===== Accessories ===== -->
@@ -634,6 +671,31 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     <button class="btn donate wide" type="button" data-shop="coins"><span class="coin">+1K</span>Донат в игру</button>
   </section>
 
+</div>
+
+<!-- ===== Character chat ===== -->
+<div class="shop" id="heroChat" hidden role="dialog" aria-modal="true" aria-labelledby="hcTitle">
+  <div class="shop-card chat-card">
+    <div class="shop-head">
+      <div class="chat-who">
+        <div id="hcAv"></div>
+        <div><h2 id="hcTitle">Чат</h2><small id="hcStatus">в сети</small></div>
+      </div>
+      <button class="shop-x" type="button" id="hcClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="chat-log" id="hcLog" aria-live="polite"></div>
+    <div class="chat-quick" id="hcQuick">
+      <button type="button">Привет!</button>
+      <button type="button">Как дела?</button>
+      <button type="button">Кто лучший игрок?</button>
+      <button type="button">Дай совет</button>
+      <button type="button">Что думаешь о полиции?</button>
+    </div>
+    <form class="chat-form" id="hcForm">
+      <input id="hcInput" type="text" autocomplete="off" maxlength="300" placeholder="Сообщение…" aria-label="Сообщение">
+      <button class="btn" type="submit">Отправить</button>
+    </form>
+  </div>
 </div>
 
 <!-- ===== Police ===== -->
@@ -1054,6 +1116,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     refresh();
     return {
       ban, names: () => CHARS.map((c) => c.name),
+      isBanned, banClock: (id) => clock(banLeft(id)), activeId: act,
       img, say, earn, refresh, roster, gearShop,
       name: () => get().name, coins: () => coins,
       accent: () => get().accent,
@@ -1442,7 +1505,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "chars", "gear"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -1458,6 +1521,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     if (GAMES[name]) GAMES[name].enter();
     if (name === "chars") Hero.roster();
     if (name === "gear") Hero.gearShop();
+    if (name === "chats") HeroChat.list();
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
     window.scrollTo(0, 0);
@@ -1748,9 +1812,247 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     box.addEventListener("click", (e) => { if (e.target === box) close(); });
     return { open, close, isOpen: () => !box.hidden };
   })();
+
+  /* ================= Character chats ================= */
+  const HeroChat = (() => {
+    const PERSONA = {
+      hyuking:   { p: "спокойный умник-стратег, всё считает и прикидывает вероятности", lines: ["По моим расчётам, шансы на победу 87%.", "Сначала думаем, потом ходим.", "Интересная мысль. Записал.", "Главное — не спешить.", "Логика никогда не подводит."] },
+      rodriguez: { p: "весёлый и шумный, часто кричит «Вамос!», очень эмоциональный", lines: ["Вамос! Погнали играть!", "Ха-ха, это огонь!", "Эй, ты лучший, амиго!", "Вамос-вамос!", "Давай ещё катку!"] },
+      nuno:      { p: "стильный пижон с бородой, всё время говорит о стиле и красоте", lines: ["Главное — выглядеть красиво.", "Стиль решает всё, запомни.", "Даже проигрывать надо стильно.", "Видел мою бороду? Шедевр.", "Это было элегантно."] },
+      eichye:    { p: "гиперактивный и очень быстрый, пишет короткими рублеными фразами", lines: ["Быстрее! Быстрее!", "Я уже тут! Где все?", "Молния! Вжух!", "Не тормози!", "Го! Го! Го!"] },
+      neuer:     { p: "надёжный вратарь, говорит про защиту и что ничего не пропустит", lines: ["Ни одного пропущенного.", "Защита — лучшее нападение.", "Спокойно, я на воротах.", "Мимо меня не пройдёт.", "Держим оборону!"] },
+      alexander: { p: "вежливый тактик-интеллектуал в очках, любит план и порядок", lines: ["Позволь предложить тактику.", "Всё идёт по плану.", "Тактика важнее силы.", "Интересный ход. Обдумаю.", "Сначала план, потом действие."] },
+      maremed:   { p: "спокойный и чёткий, говорит мало и по делу", lines: ["Работаем чётко.", "Принял.", "Без лишних слов.", "Сделаем.", "Чётко и спокойно."] },
+      khabich:   { p: "пафосный король поля (ультра-персонаж), иногда говорит о себе в третьем лице", lines: ["Король поля на месте.", "Хабич не проигрывает. Хабич побеждает.", "Склонись перед короной.", "Это было по-королевски.", "Лучший? Очевидно, Хабич."] },
+      emir:      { p: "огненный и очень энергичный ультра-персонаж, всё «горит» и «на максимум»", lines: ["Горю на максимум!", "Это было огненно!", "Включаю режим пламени!", "Жара пошла!", "Огонь, огонь, огонь!"] },
+    };
+    const TIPS = ["В 2048 держи самую большую плитку в углу.", "В Змейке не прижимайся к стенам.", "В крестиках-ноликах первым ходом занимай центр.", "Монеты копятся быстрее в 2048 — каждое слияние приносит монеты."];
+    const box = $("#heroChat"), log = $("#hcLog"), input = $("#hcInput"), statusEl = $("#hcStatus");
+    const samplePromise = (window.claude && typeof window.claude.use === "function")
+      ? Promise.resolve(window.claude.use("sample")).catch(() => null)
+      : Promise.resolve(null);
+    const OFF = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
+    let aiOff = false, busy = false, ctl = null, chatId = null, turns = [], lastFocus = null;
+    const pick = (a) => a[(Math.random() * a.length) | 0];
+    const chars = () => CHARS;
+    const byId = (id) => CHARS.find((c) => c.id === id);
+    const loadTurns = (id) => { const t = store.get("chat:" + id, []); return Array.isArray(t) ? t : []; };
+
+    function scripted(c, text) {
+      const q = text.toLowerCase();
+      const P = PERSONA[c.id];
+      if (/привет|здрав|хай|салам|хелло/.test(q)) return `Привет! ${c.motto}`;
+      if (/как дела|как ты|как жизнь/.test(q)) return pick(["Отлично! " + pick(P.lines), "Нормально. " + pick(P.lines)]);
+      if (/лучш/.test(q)) return c.id === "khabich" ? "Лучший — Хабич. Это очевидно." : c.id === "emir" ? "Лучший тот, кто горит на максимум. То есть я!" : `Лучший тот, кто играет за ${c.name}!`;
+      if (/полиц|читер|мигалк|сержант/.test(q)) return pick(["Мигалкин опять кричит «Читер!!»? Не обращай внимания.", "Тише, сержант услышит!", "Я с полицией не спорю. " + pick(P.lines)]);
+      if (/совет|подскаж|2048|змей|крестик|нолик/.test(q)) return pick(TIPS) + " " + pick(P.lines);
+      if (/бан/.test(q)) return "Только не бан! Минута без игры — это вечность.";
+      return pick(P.lines);
+    }
+    function persona(c) {
+      return `${c.name} (${TIER_NAME[c.tier].toLowerCase()} персонаж): ${PERSONA[c.id].p}. Любимая фраза: «${c.motto}».`;
+    }
+    function soloRules(c) {
+      return [
+        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
+        "Ты переписываешься с игроком. Отвечай по-русски, 1–2 коротких предложения, строго в своём характере, с юмором.",
+        "В игре есть полицейский сержант Мигалкин, который всем кричит «Читер!!», и другие персонажи: " + CHARS.filter((x) => x.id !== c.id).map((x) => x.name).join(", ") + ".",
+        "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
+      ].join("\n");
+    }
+    function online() { return CHARS.filter((c) => !Hero.isBanned(c.id)); }
+
+    function avHTML(c, cls) { return `<div class="av ${cls || ""} tier-${c.tier}">${avatarSVG(c)}</div>`; }
+    function addMine(text) {
+      const el = document.createElement("div");
+      el.className = "msg me"; el.textContent = text;
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+    }
+    function addSys(text) {
+      const el = document.createElement("div");
+      el.className = "msg sys"; el.textContent = text;
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+    }
+    function addHero(c, text) {
+      const row = document.createElement("div");
+      row.className = "msg-row";
+      row.innerHTML = avHTML(c) + `<div class="msg from-hero"><b style="color:${c.accent}"></b><span></span></div>`;
+      row.querySelector("b").textContent = c.name;
+      const span = row.querySelector("span");
+      span.textContent = text;
+      log.appendChild(row); log.scrollTop = log.scrollHeight;
+      return span;
+    }
+    function render() {
+      log.innerHTML = "";
+      if (chatId === "group") addSys("Общий чат V3: здесь все персонажи");
+      turns.forEach((t) => {
+        if (t.who === "me") addMine(t.text);
+        else { const c = byId(t.who); if (c) addHero(c, t.text); }
+      });
+      if (!turns.length) {
+        if (chatId === "group") { const c = online()[0]; if (c) addHero(c, "Всем привет! Кто сегодня играет?"); }
+        else { const c = byId(chatId); if (Hero.isBanned(c.id)) addSys(`${c.name} в бане. Ответит через ${Hero.banClock(c.id)}.`); else addHero(c, `Привет! ${c.motto}`); }
+      }
+    }
+    function header() {
+      const av = $("#hcAv");
+      if (chatId === "group") {
+        av.className = "group-av";
+        av.innerHTML = CHARS.slice(0, 3).map((c) => avHTML(c)).join("");
+        $("#hcTitle").textContent = "Общий чат V3";
+        statusEl.textContent = `в сети: ${online().length} из ${CHARS.length}`;
+      } else {
+        const c = byId(chatId);
+        av.className = "";
+        av.innerHTML = `<div class="chat-av round av tier-${c.tier}">${avatarSVG(c)}</div>`;
+        $("#hcTitle").textContent = c.name;
+        statusEl.textContent = Hero.isBanned(c.id) ? `в бане · ${Hero.banClock(c.id)}` : `${TIER_NAME[c.tier].toLowerCase()} · в сети`;
+      }
+    }
+    function save() { turns = turns.slice(-30); store.set("chat:" + chatId, turns); }
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    async function sendSolo(c, text) {
+      if (Hero.isBanned(c.id)) { addSys(`${c.name} в бане и не может ответить ещё ${Hero.banClock(c.id)}.`); return; }
+      statusEl.textContent = "печатает…";
+      const span = addHero(c, "печатает…");
+      let reply = "";
+      const sample = aiOff ? null : await samplePromise;
+      if (sample) {
+        ctl = new AbortController();
+        const hist = turns.slice(-12).map((t) => ({ role: t.who === "me" ? "user" : "assistant", content: t.text }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        try {
+          const res = await sample([{ role: "user", content: soloRules(c) }, ...hist], {
+            modelTier: "quick", cache: false, signal: ctl.signal,
+            onText: ({ text: t }) => { span.textContent = t; log.scrollTop = log.scrollHeight; },
+          });
+          reply = res.text.trim();
+        } catch (e) {
+          if (OFF.includes(e && e.code)) aiOff = true;
+          reply = (e && e.code !== "refused" && e.text) ? e.text.trim() : "";
+        }
+      }
+      if (!reply) { await wait(400); reply = scripted(c, text); }
+      span.textContent = reply;
+      turns.push({ who: c.id, text: reply });
+      save();
+    }
+    async function sendGroup(text) {
+      const on = online();
+      if (!on.length) { addSys("Все в бане. Попробуй позже."); return; }
+      statusEl.textContent = "кто-то печатает…";
+      let replies = null;
+      const sample = aiOff ? null : await samplePromise;
+      if (sample && sample.json) {
+        ctl = new AbortController();
+        const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
+        const prompt = [
+          "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Игрок пишет сообщение, персонажи отвечают.",
+          "Персонажи онлайн:", ...on.map(persona),
+          "Персонажи в бане сейчас молчат: " + (CHARS.filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
+          "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
+          "Ответь от лица 1–3 подходящих персонажей онлайн: каждая реплика по-русски, 1 короткое предложение, строго в характере; персонажи могут подшучивать друг над другом.",
+          "Никаких грубостей и взрослых тем: игру могут открывать дети.",
+          'Верни только JSON-массив вида [{"who": "Имя", "text": "реплика"}].',
+          "", "Переписка:", hist,
+        ].join("\n");
+        try {
+          const data = await sample.json(prompt, { modelTier: "quick", cache: false, signal: ctl.signal });
+          if (Array.isArray(data)) {
+            replies = data.map((r) => {
+              const c = r && on.find((x) => x.name.toLowerCase() === String(r.who || "").trim().toLowerCase());
+              return c && r.text ? { c, text: String(r.text).slice(0, 300) } : null;
+            }).filter(Boolean).slice(0, 3);
+          }
+        } catch (e) {
+          if (OFF.includes(e && e.code)) aiOff = true;
+        }
+      }
+      if (!replies || !replies.length) {
+        const pool = on.slice().sort(() => Math.random() - .5).slice(0, Math.min(2, on.length));
+        replies = pool.map((c) => ({ c, text: scripted(c, text) }));
+      }
+      for (const r of replies) {
+        if (box.hidden) break;
+        await wait(450);
+        addHero(r.c, r.text);
+        turns.push({ who: r.c.id, text: r.text });
+      }
+      save();
+    }
+    async function send(text) {
+      text = (text || "").trim();
+      if (!text || busy || !chatId) return;
+      busy = true;
+      addMine(text);
+      turns.push({ who: "me", text });
+      save();
+      try {
+        if (chatId === "group") await sendGroup(text);
+        else await sendSolo(byId(chatId), text);
+      } finally {
+        busy = false;
+        if (!box.hidden) header();
+      }
+    }
+    function open(id) {
+      chatId = id;
+      turns = loadTurns(id);
+      lastFocus = document.activeElement;
+      header(); render();
+      $("#cop").hidden = true;
+      box.hidden = false;
+      input.focus();
+    }
+    function close() {
+      if (ctl) ctl.abort();
+      box.hidden = true;
+      $("#cop").hidden = false;
+      list();
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    function list() {
+      const el = $("#chatList");
+      el.innerHTML = "";
+      const last = (id) => { const t = loadTurns(id); const m = t[t.length - 1]; if (!m) return ""; return (m.who === "me" ? "Вы: " : ((byId(m.who) || {}).name || "") + ": ") + m.text; };
+      const row = (id, avatar, name, sub, side, banned) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "chat-row" + (banned ? " banned" : ""); b.dataset.chat = id;
+        b.innerHTML = `${avatar}<span class="chat-row-main"><b></b><small></small></span>${side}`;
+        b.querySelector("b").textContent = name;
+        b.querySelector("small").textContent = sub;
+        el.appendChild(b);
+      };
+      row("group", `<span class="group-av">${CHARS.slice(0, 3).map((c) => avHTML(c)).join("")}</span>`, "Общий чат V3",
+        last("group") || "Все персонажи в одном чате", `<span class="tier-badge">${online().length}/${CHARS.length}</span>`);
+      CHARS.forEach((c) => {
+        const banned = Hero.isBanned(c.id);
+        row(c.id, avHTML(c), c.name, last(c.id) || `«${c.motto}»`,
+          banned ? `<span class="ban-pill">бан ${Hero.banClock(c.id)}</span>` : `<span class="tier-badge ${c.tier}">${TIER_NAME[c.tier]}</span>`, banned);
+      });
+      row("police", `<div class="av" style="border-radius:50%">${Police.svg}</div>`, "Полиция V3", "Сержант Мигалкин · «Читер!!»", `<span class="tier-badge">110</span>`);
+    }
+    $("#chatList").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-chat]");
+      if (!b) return;
+      if (b.dataset.chat === "police") CopChat.open(); else open(b.dataset.chat);
+    });
+    $("#hcForm").addEventListener("submit", (e) => { e.preventDefault(); const v = input.value; input.value = ""; send(v); });
+    $("#hcQuick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) send(b.textContent); });
+    $("#hcClose").addEventListener("click", close);
+    box.addEventListener("click", (e) => { if (e.target === box) close(); });
+    setInterval(() => {
+      if (!box.hidden && !busy) header();
+      else if (box.hidden && !$("#chats").hidden) list();
+    }, 1000);
+    return { open, close, list, isOpen: () => !box.hidden };
+  })();
   shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
 
   document.addEventListener("keydown", (e) => {
+    if (HeroChat.isOpen()) { if (e.key === "Escape") HeroChat.close(); return; }
     if (CopChat.isOpen()) { if (e.key === "Escape") CopChat.close(); return; }
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
