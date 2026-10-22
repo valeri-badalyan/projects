@@ -406,6 +406,30 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .msg.from-hero b { display: block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
 .msg.sys { align-self: center; background: transparent; color: var(--muted); font-size: 12px; padding: 2px 8px; }
 
+/* ---------- Pairs: long press, teamwork ---------- */
+[data-lp] { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+[data-lp].picked { box-shadow: 0 0 0 3px var(--lime) !important; border-color: var(--lime) !important; }
+.pair-bar {
+  position: fixed; z-index: 58;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: calc(96px + env(safe-area-inset-right, 0px));
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  max-width: 420px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 14px;
+  background: var(--panel-2); border: 2px solid var(--lime);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .45);
+  font-size: 14px; line-height: 1.3;
+}
+.pair-bar span { flex: 1; min-width: 0; }
+.pair-pics { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.pair-pics .av { width: 96px; height: 96px; }
+.pair-pics .plus { font-family: var(--display); font-size: 28px; color: var(--lime); }
+.pair-names { text-align: center; font-family: var(--display); font-size: 17px; margin: 0; }
+.buddy-pics { position: relative; width: 52px; height: 52px; }
+.buddy-mate { position: absolute; right: -10px; bottom: -8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 0 0 2px var(--lime); }
+.team-line { font-size: 12px; font-weight: 800; color: var(--lime); }
+
 /* ---------- Donate shop ---------- */
 .btn.donate {
   background: linear-gradient(100deg, var(--amber), var(--coral));
@@ -485,6 +509,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         <span class="stat-label">Твой персонаж</span>
         <span class="player-name" data-hero-name></span>
         <span class="tier-badge" data-hero-tier></span>
+        <span class="team-line" data-team hidden></span>
       </div>
       <div class="player-side">
         <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
@@ -541,7 +566,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       </div>
     </div>
     <div class="buddy">
-      <div class="av buddy-av" data-hero-av></div>
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
       <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
@@ -576,7 +601,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       </div>
     </div>
     <div class="buddy">
-      <div class="av buddy-av" data-hero-av></div>
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
       <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
@@ -603,7 +628,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="gtitle">Крестики-нолики</div>
     </div>
     <div class="buddy">
-      <div class="av buddy-av" data-hero-av></div>
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
       <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
@@ -634,6 +659,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="chip hi"><span>Монеты</span><b data-coins>0</b></div>
     </div>
     <p class="shop-note">Хьюкинг и Родригуес бесплатные. Остальных покупай за монеты: монеты дают игры и донат.</p>
+    <p class="hint">Задержи палец на двух персонажах — откроется тимворк и совместный чат.</p>
     <div class="roster" id="roster"></div>
     <button class="btn ghost wide" type="button" data-go="gear">Магазин аксессуаров</button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -646,6 +672,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button class="back" type="button" data-go="hub">← Меню</button>
       <div class="gtitle">Чаты</div>
     </div>
+    <p class="hint">Задержи палец на двух персонажах — откроется тимворк и совместный чат.</p>
     <div class="chat-list" id="chatList"></div>
   </section>
 
@@ -695,6 +722,26 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <input id="hcInput" type="text" autocomplete="off" maxlength="300" placeholder="Сообщение…" aria-label="Сообщение">
       <button class="btn" type="submit">Отправить</button>
     </form>
+  </div>
+</div>
+
+<!-- ===== Pair picker ===== -->
+<div class="pair-bar" id="pairBar" hidden>
+  <span id="pairBarText"></span>
+  <button class="btn ghost small" type="button" id="pairBarCancel">Отмена</button>
+</div>
+<div class="shop" id="pairSheet" hidden role="dialog" aria-modal="true" aria-labelledby="pairTitle">
+  <div class="shop-card">
+    <div class="shop-head">
+      <h2 id="pairTitle">Дуэт</h2>
+      <button class="shop-x" type="button" id="pairClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="pair-pics" id="pairPics"></div>
+    <p class="pair-names" id="pairNames"></p>
+    <p class="shop-note" id="pairNote"></p>
+    <button class="btn donate wide" type="button" id="pairTeam">Тимворк</button>
+    <button class="btn wide" type="button" id="pairChat">Совместный чат</button>
+    <p class="shop-toast" id="pairToast" aria-live="polite"></p>
   </div>
 </div>
 
@@ -944,6 +991,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     let gearSlot = "head";
     const imgs = {}, listeners = [];
     // Police bans: {characterId: timestamp when the ban ends}
+    const byIdC = (id) => CHARS.find((c) => c.id === id);
     let bans = store.get("bans", {});
     if (!bans || typeof bans !== "object") bans = {};
     const BAN_MS = 60000;
@@ -956,6 +1004,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     const key = () => act() + "|" + Object.keys(SLOTS).map((k) => gear[k] || "").join(",");
     const get = (id) => CHARS.find((c) => c.id === (id || act()));
+    let team = store.get("team", null);
+    if (!team || !byIdC(team.a) || !byIdC(team.b) || team.a === team.b) team = null;
+    // Partner of the playing character, when it is in an active team.
+    function mateId() {
+      if (!team) return null;
+      const cur = act();
+      const other = cur === team.a ? team.b : cur === team.b ? team.a : null;
+      return other && !isBanned(other) ? other : null;
+    }
+    const MATE_LINES = ["Тимворк!", "Вместе сильнее!", "Я прикрою!", "Отличная связка!", "Монеты ×2, работаем!"];
     const clock = (ms) => { const t = Math.ceil(ms / 1000); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
     const pick = (a) => a[(Math.random() * a.length) | 0];
 
@@ -973,6 +1031,13 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       const c = get();
       $$("[data-coins]").forEach((el) => { el.textContent = coins; });
       $$("[data-hero-name]").forEach((el) => { el.textContent = c.name; el.style.color = c.accent; });
+      const m = mateId() && byIdC(mateId());
+      $$(".bubble [data-hero-name]").forEach((el) => { el.textContent = m ? `${c.name} + ${m.name}` : c.name; });
+      $$("[data-mate-av]").forEach((el) => {
+        el.hidden = !m;
+        if (m && el.dataset.mateId !== m.id) { el.innerHTML = avatarSVG(m); el.dataset.mateId = m.id; }
+      });
+      $$("[data-team]").forEach((el) => { el.hidden = !m; if (m) el.textContent = `Тимворк с ${m.name} · монеты ×2`; });
       $$("[data-hero-tier]").forEach((el) => { el.textContent = TIER_NAME[c.tier]; el.className = "tier-badge " + c.tier; });
       $$("[data-hero-av]").forEach((el) => {
         const k = key();
@@ -1031,10 +1096,28 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       const el = document.querySelector(`#${game} .buddy-say`);
       if (!el) return;
       const c = get();
+      const mate = mateId() && byIdC(mateId());
+      if (!text && mate && Math.random() < .35) text = `${mate.name}: ${pick(MATE_LINES)}`;
       el.textContent = text || (kind === "start" && Math.random() < .5 ? c.motto : pick(LINES[kind] || LINES.start));
       el.classList.remove("talk"); void el.offsetWidth; el.classList.add("talk");
     }
-    function earn(n) { if (n > 0) { coins += n; store.set("coins", coins); refresh(); } }
+    function earn(n) { if (n > 0) { coins += n * (mateId() ? 2 : 1); store.set("coins", coins); refresh(); } }
+    // Teamwork: returns {ok, reason, leader, mate}
+    function makeTeam(a, b) {
+      if (!a) { team = null; store.set("team", null); refresh(); listeners.forEach((f) => f()); return { ok: true }; }
+      if (isBanned(a) || isBanned(b)) return { ok: false, reason: "banned", who: byIdC(isBanned(a) ? a : b) };
+      const cur = act();
+      let leader = cur === a || cur === b ? cur : [a, b].find((id) => owned.includes(id));
+      if (!leader) return { ok: false, reason: "notOwned" };
+      const mate = leader === a ? b : a;
+      team = { a: leader, b: mate };
+      store.set("team", team);
+      if (sel !== leader) { sel = leader; store.set("hero", sel); }
+      refresh(); listeners.forEach((f) => f());
+      ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
+      return { ok: true, leader: byIdC(leader), mate: byIdC(mate) };
+    }
+    const inTeam = (a, b) => !!team && ((team.a === a && team.b === b) || (team.a === b && team.b === a));
     function select(id) {
       if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
@@ -1055,6 +1138,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         const card = document.createElement("div");
         const banned = isBanned(c.id);
         card.className = `hero-card tier-${c.tier}` + (c.id === act() ? " selected" : "") + (banned ? " banned" : "");
+        card.dataset.lp = c.id;
         const have = owned.includes(c.id), price = PRICE[c.tier];
         let btn;
         if (banned) btn = `<button class="btn banned-btn" type="button" disabled>Бан · ${clock(banLeft(c.id))}</button>`;
@@ -1066,6 +1150,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <div class="hero-meta"><span class="tier-badge ${c.tier}">${TIER_NAME[c.tier]}</span><b style="color:${c.accent}">${c.name}</b><small>«${c.motto}»</small></div>${btn}`;
         box.appendChild(card);
       });
+      if (window.Pair) window.Pair.mark();
     }
     $("#roster").addEventListener("click", (e) => {
       const t = e.target.closest("button");
@@ -1117,6 +1202,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     return {
       ban, names: () => CHARS.map((c) => c.name),
       isBanned, banClock: (id) => clock(banLeft(id)), activeId: act,
+      makeTeam, inTeam, mateId,
       img, say, earn, refresh, roster, gearShop,
       name: () => get().name, coins: () => coins,
       accent: () => get().accent,
@@ -1516,6 +1602,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
     if (GAMES[current] && current !== name) GAMES[current].leave();
+    if (window.Pair) window.Pair.cancel();
     SCREENS.forEach((s) => { $("#" + s).hidden = s !== name; });
     current = name;
     if (GAMES[name]) GAMES[name].enter();
@@ -1860,7 +1947,13 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
       ].join("\n");
     }
-    function online() { return CHARS.filter((c) => !Hero.isBanned(c.id)); }
+    const isMulti = () => chatId === "group" || String(chatId).startsWith("duo:");
+    function members() {
+      if (chatId === "group") return CHARS;
+      if (String(chatId).startsWith("duo:")) return chatId.slice(4).split(":").map(byId).filter(Boolean);
+      return [byId(chatId)];
+    }
+    function online() { return members().filter((c) => !Hero.isBanned(c.id)); }
 
     function avHTML(c, cls) { return `<div class="av ${cls || ""} tier-${c.tier}">${avatarSVG(c)}</div>`; }
     function addMine(text) {
@@ -1886,22 +1979,24 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     function render() {
       log.innerHTML = "";
       if (chatId === "group") addSys("Общий чат V3: здесь все персонажи");
+      else if (isMulti()) addSys("Совместный чат: " + members().map((c) => c.name).join(" и "));
       turns.forEach((t) => {
         if (t.who === "me") addMine(t.text);
         else { const c = byId(t.who); if (c) addHero(c, t.text); }
       });
       if (!turns.length) {
         if (chatId === "group") { const c = online()[0]; if (c) addHero(c, "Всем привет! Кто сегодня играет?"); }
+        else if (isMulti()) { const c = online()[0]; if (c) addHero(c, "Привет! Мы тут вдвоём на связи."); else addSys("Оба в бане. Попробуй позже."); }
         else { const c = byId(chatId); if (Hero.isBanned(c.id)) addSys(`${c.name} в бане. Ответит через ${Hero.banClock(c.id)}.`); else addHero(c, `Привет! ${c.motto}`); }
       }
     }
     function header() {
       const av = $("#hcAv");
-      if (chatId === "group") {
+      if (isMulti()) {
         av.className = "group-av";
-        av.innerHTML = CHARS.slice(0, 3).map((c) => avHTML(c)).join("");
-        $("#hcTitle").textContent = "Общий чат V3";
-        statusEl.textContent = `в сети: ${online().length} из ${CHARS.length}`;
+        av.innerHTML = members().slice(0, 3).map((c) => avHTML(c)).join("");
+        $("#hcTitle").textContent = chatId === "group" ? "Общий чат V3" : members().map((c) => c.name).join(" + ");
+        statusEl.textContent = `в сети: ${online().length} из ${members().length}`;
       } else {
         const c = byId(chatId);
         av.className = "";
@@ -1949,11 +2044,13 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         ctl = new AbortController();
         const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
         const prompt = [
-          "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Игрок пишет сообщение, персонажи отвечают.",
+          chatId === "group"
+            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Игрок пишет сообщение, персонажи отвечают."
+            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики) с игроком. Персонажи — напарники и отвечают вместе.",
           "Персонажи онлайн:", ...on.map(persona),
-          "Персонажи в бане сейчас молчат: " + (CHARS.filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
+          "Персонажи в бане сейчас молчат: " + (members().filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
           "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
-          "Ответь от лица 1–3 подходящих персонажей онлайн: каждая реплика по-русски, 1 короткое предложение, строго в характере; персонажи могут подшучивать друг над другом.",
+          `Ответь от лица 1–${Math.min(3, on.length)} подходящих персонажей онлайн: каждая реплика по-русски, 1 короткое предложение, строго в характере; персонажи могут подшучивать друг над другом.`,
           "Никаких грубостей и взрослых тем: игру могут открывать дети.",
           'Верни только JSON-массив вида [{"who": "Имя", "text": "реплика"}].',
           "", "Переписка:", hist,
@@ -1990,7 +2087,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       turns.push({ who: "me", text });
       save();
       try {
-        if (chatId === "group") await sendGroup(text);
+        if (isMulti()) await sendGroup(text);
         else await sendSolo(byId(chatId), text);
       } finally {
         busy = false;
@@ -1998,6 +2095,12 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       }
     }
     function open(id) {
+      if (String(id).startsWith("duo:")) {
+        const ids = id.slice(4).split(":").sort();
+        id = "duo:" + ids.join(":");
+        const duos = store.get("duos", []);
+        if (Array.isArray(duos) && !duos.includes(id)) { duos.unshift(id); store.set("duos", duos.slice(0, 20)); }
+      }
       chatId = id;
       turns = loadTurns(id);
       lastFocus = document.activeElement;
@@ -2020,19 +2123,28 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       const row = (id, avatar, name, sub, side, banned) => {
         const b = document.createElement("button");
         b.type = "button"; b.className = "chat-row" + (banned ? " banned" : ""); b.dataset.chat = id;
+        if (byId(id)) b.dataset.lp = id;
         b.innerHTML = `${avatar}<span class="chat-row-main"><b></b><small></small></span>${side}`;
         b.querySelector("b").textContent = name;
         b.querySelector("small").textContent = sub;
         el.appendChild(b);
       };
       row("group", `<span class="group-av">${CHARS.slice(0, 3).map((c) => avHTML(c)).join("")}</span>`, "Общий чат V3",
-        last("group") || "Все персонажи в одном чате", `<span class="tier-badge">${online().length}/${CHARS.length}</span>`);
+        last("group") || "Все персонажи в одном чате", `<span class="tier-badge">${CHARS.filter((c) => !Hero.isBanned(c.id)).length}/${CHARS.length}</span>`);
+      const duos = store.get("duos", []);
+      (Array.isArray(duos) ? duos : []).forEach((id) => {
+        const ms = id.slice(4).split(":").map(byId).filter(Boolean);
+        if (ms.length !== 2) return;
+        row(id, `<span class="group-av">${ms.map((c) => avHTML(c)).join("")}</span>`, ms.map((c) => c.name).join(" + "),
+          last(id) || "Совместный чат", `<span class="tier-badge">дуэт</span>`);
+      });
       CHARS.forEach((c) => {
         const banned = Hero.isBanned(c.id);
         row(c.id, avHTML(c), c.name, last(c.id) || `«${c.motto}»`,
           banned ? `<span class="ban-pill">бан ${Hero.banClock(c.id)}</span>` : `<span class="tier-badge ${c.tier}">${TIER_NAME[c.tier]}</span>`, banned);
       });
       row("police", `<div class="av" style="border-radius:50%">${Police.svg}</div>`, "Полиция V3", "Сержант Мигалкин · «Читер!!»", `<span class="tier-badge">110</span>`);
+      if (window.Pair) window.Pair.mark();
     }
     $("#chatList").addEventListener("click", (e) => {
       const b = e.target.closest("[data-chat]");
@@ -2049,9 +2161,87 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }, 1000);
     return { open, close, list, isOpen: () => !box.hidden };
   })();
+
+  /* ================= Pair picker (long press on two characters) ================= */
+  const Pair = (() => {
+    const bar = $("#pairBar"), sheet = $("#pairSheet");
+    const byId = (id) => CHARS.find((c) => c.id === id);
+    let first = null, suppress = false, pair = null;
+    function mark() { $$("[data-lp]").forEach((el) => el.classList.toggle("picked", el.dataset.lp === first)); }
+    function cancel() { first = null; bar.hidden = true; mark(); }
+    function buzz() { try { if (navigator.vibrate) navigator.vibrate(30); } catch (e) {} }
+    function hold(id) {
+      buzz();
+      if (!first) {
+        first = id;
+        $("#pairBarText").textContent = `Выбран ${byId(id).name}. Задержи палец на втором персонаже.`;
+        bar.hidden = false; mark();
+        return;
+      }
+      if (id === first) { cancel(); return; }
+      const a = first;
+      cancel();
+      openSheet(a, id);
+    }
+    function openSheet(a, b) {
+      pair = [a, b];
+      const A = byId(a), B = byId(b);
+      $("#pairPics").innerHTML = `<div class="av tier-${A.tier}">${avatarSVG(A)}</div><span class="plus">+</span><div class="av tier-${B.tier}">${avatarSVG(B)}</div>`;
+      $("#pairNames").textContent = `${A.name} и ${B.name}`;
+      const together = Hero.inTeam(a, b);
+      $("#pairTeam").innerHTML = together ? "Распустить команду" : '<span class="coin">×2</span>Тимворк';
+      $("#pairNote").textContent = together
+        ? "Эти двое уже в команде: напарник виден в играх, монеты идут ×2."
+        : "Тимворк: напарник появится в играх рядом с твоим героем, а монеты пойдут ×2. Нужен хотя бы один купленный персонаж из пары.";
+      $("#pairToast").textContent = "";
+      $("#cop").hidden = true;
+      sheet.hidden = false;
+      $("#pairTeam").focus();
+    }
+    function closeSheet() { sheet.hidden = true; $("#cop").hidden = false; }
+    $("#pairTeam").addEventListener("click", () => {
+      const [a, b] = pair;
+      if (Hero.inTeam(a, b)) { Hero.makeTeam(null); closeSheet(); return; }
+      const r = Hero.makeTeam(a, b);
+      if (r.ok) { closeSheet(); return; }
+      $("#pairToast").textContent = r.reason === "banned"
+        ? `${r.who.name} в бане — команду собрать нельзя.`
+        : "Сначала купи хотя бы одного из них в «Персонажах».";
+    });
+    $("#pairChat").addEventListener("click", () => { const [a, b] = pair; closeSheet(); HeroChat.open(`duo:${a}:${b}`); });
+    $("#pairClose").addEventListener("click", closeSheet);
+    $("#pairBarCancel").addEventListener("click", cancel);
+    sheet.addEventListener("click", (e) => { if (e.target === sheet) closeSheet(); });
+
+    function attach(container) {
+      let t = 0, sx = 0, sy = 0;
+      const clear = () => clearTimeout(t);
+      container.addEventListener("pointerdown", (e) => {
+        const el = e.target.closest("[data-lp]");
+        if (!el) return;
+        sx = e.clientX; sy = e.clientY;
+        const id = el.dataset.lp;
+        clear();
+        t = setTimeout(() => { suppress = true; hold(id); }, 500);
+      });
+      container.addEventListener("pointermove", (e) => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 10) clear(); });
+      ["pointerup", "pointercancel", "pointerleave"].forEach((ev) => container.addEventListener(ev, clear));
+      container.addEventListener("click", (e) => {
+        const el = e.target.closest("[data-lp]");
+        if (suppress) { suppress = false; e.preventDefault(); e.stopImmediatePropagation(); return; }
+        if (first && el) { e.preventDefault(); e.stopImmediatePropagation(); hold(el.dataset.lp); }
+      }, true);
+      container.addEventListener("contextmenu", (e) => { if (e.target.closest("[data-lp]")) e.preventDefault(); });
+    }
+    attach($("#roster"));
+    attach($("#chatList"));
+    return { mark, cancel, isOpen: () => !sheet.hidden, close: closeSheet };
+  })();
+  window.Pair = Pair;
   shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
 
   document.addEventListener("keydown", (e) => {
+    if (Pair.isOpen()) { if (e.key === "Escape") Pair.close(); return; }
     if (HeroChat.isOpen()) { if (e.key === "Escape") HeroChat.close(); return; }
     if (CopChat.isOpen()) { if (e.key === "Escape") CopChat.close(); return; }
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
