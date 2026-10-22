@@ -271,6 +271,15 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 }
 @keyframes spin { to { --ang: 360deg; } }
 .hero-card.selected { box-shadow: 0 0 0 3px var(--cyan); }
+.hero-card .av { position: relative; }
+.hero-card.banned .av svg { filter: grayscale(1) brightness(.55); }
+.ban-stamp {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) rotate(-14deg);
+  padding: 2px 10px; border: 3px solid var(--coral); border-radius: 6px;
+  color: var(--coral); background: rgba(18, 19, 42, .7);
+  font-family: var(--display); font-size: 18px; letter-spacing: 2px;
+}
+.btn.banned-btn { background: rgba(255, 107, 122, .14); color: var(--coral); font-family: var(--mono); }
 .hero-meta { display: flex; flex-direction: column; gap: 4px; }
 .hero-meta b { font-family: var(--display); font-size: 15px; line-height: 1.2; }
 .hero-meta small { color: var(--muted); font-size: 12px; line-height: 1.35; }
@@ -872,8 +881,20 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     Object.keys(gear).forEach((k) => { if (!SLOTS[k] || !gearOwned.includes(gear[k])) delete gear[k]; });
     let gearSlot = "head";
     const imgs = {}, listeners = [];
-    const key = () => sel + "|" + Object.keys(SLOTS).map((k) => gear[k] || "").join(",");
-    const get = (id) => CHARS.find((c) => c.id === (id || sel));
+    // Police bans: {characterId: timestamp when the ban ends}
+    let bans = store.get("bans", {});
+    if (!bans || typeof bans !== "object") bans = {};
+    const BAN_MS = 60000;
+    const banLeft = (id) => Math.max(0, (bans[id] || 0) - Date.now());
+    const isBanned = (id) => banLeft(id) > 0;
+    // The character actually playing: the chosen one, or a stand-in while it is banned.
+    function act() {
+      if (!isBanned(sel)) return sel;
+      return owned.find((id) => !isBanned(id)) || sel;
+    }
+    const key = () => act() + "|" + Object.keys(SLOTS).map((k) => gear[k] || "").join(",");
+    const get = (id) => CHARS.find((c) => c.id === (id || act()));
+    const clock = (ms) => { const t = Math.ceil(ms / 1000); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0"); };
     const pick = (a) => a[(Math.random() * a.length) | 0];
 
     function img() {
@@ -944,16 +965,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       else if (t.hasAttribute("data-need")) openShop("coins");
     });
     $$("#gearTabs button").forEach((b) => b.addEventListener("click", () => { gearSlot = b.dataset.slot; gearShop(); }));
-    function say(game, kind) {
+    function say(game, kind, text) {
       const el = document.querySelector(`#${game} .buddy-say`);
       if (!el) return;
       const c = get();
-      el.textContent = kind === "start" && Math.random() < .5 ? c.motto : pick(LINES[kind] || LINES.start);
+      el.textContent = text || (kind === "start" && Math.random() < .5 ? c.motto : pick(LINES[kind] || LINES.start));
       el.classList.remove("talk"); void el.offsetWidth; el.classList.add("talk");
     }
     function earn(n) { if (n > 0) { coins += n; store.set("coins", coins); refresh(); } }
     function select(id) {
-      if (!owned.includes(id)) return;
+      if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
       refresh(); listeners.forEach((f) => f());
       ["snake", "g2048", "ttt"].forEach((g) => say(g, "start"));
@@ -970,14 +991,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       box.innerHTML = "";
       CHARS.forEach((c) => {
         const card = document.createElement("div");
-        card.className = `hero-card tier-${c.tier}` + (c.id === sel ? " selected" : "");
+        const banned = isBanned(c.id);
+        card.className = `hero-card tier-${c.tier}` + (c.id === act() ? " selected" : "") + (banned ? " banned" : "");
         const have = owned.includes(c.id), price = PRICE[c.tier];
         let btn;
-        if (c.id === sel) btn = `<button class="btn ghost" type="button" disabled>Выбран</button>`;
+        if (banned) btn = `<button class="btn banned-btn" type="button" disabled>Бан · ${clock(banLeft(c.id))}</button>`;
+        else if (c.id === act()) btn = `<button class="btn ghost" type="button" disabled>Выбран</button>`;
         else if (have) btn = `<button class="btn" type="button" data-pick="${c.id}">Выбрать</button>`;
         else if (coins >= price) btn = `<button class="btn donate" type="button" data-buyhero="${c.id}">Купить · ◎ ${price}</button>`;
         else btn = `<button class="btn locked" type="button" data-need>Нужно ◎ ${price}</button>`;
-        card.innerHTML = `<div class="av tier-${c.tier}">${avatarSVG(c)}</div>
+        card.innerHTML = `<div class="av tier-${c.tier}">${avatarSVG(c)}${banned ? '<span class="ban-stamp">БАН</span>' : ""}</div>
           <div class="hero-meta"><span class="tier-badge ${c.tier}">${TIER_NAME[c.tier]}</span><b style="color:${c.accent}">${c.name}</b><small>«${c.motto}»</small></div>${btn}`;
         box.appendChild(card);
       });
@@ -989,8 +1012,48 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       else if (t.dataset.buyhero) buy(t.dataset.buyhero);
       else if (t.hasAttribute("data-need")) openShop("coins");
     });
+    function find(word) {
+      const w = word.toLowerCase().replace(/ё/g, "е").replace(/[^а-яa-z]/g, "");
+      if (w.length < 3) return null;
+      const alias = { "родригес": "rodriguez" };
+      for (const a in alias) if (w.startsWith(a.slice(0, -1))) return get(alias[a]);
+      return CHARS.find((c) => {
+        const n = c.name.toLowerCase().replace(/ё/g, "е");
+        const stem = n.length > 4 ? n.slice(0, -1) : n.slice(0, 3);
+        return w.startsWith(stem);
+      }) || null;
+    }
+    // Returns {ok, c, reason, left}
+    function ban(word) {
+      const c = find(word);
+      if (!c) return { ok: false, reason: "unknown" };
+      if (isBanned(c.id)) return { ok: false, reason: "already", c, left: clock(banLeft(c.id)) };
+      if (owned.every((id) => id === c.id || isBanned(id))) return { ok: false, reason: "last", c };
+      const before = act();
+      bans[c.id] = Date.now() + BAN_MS;
+      store.set("bans", bans);
+      refresh(); listeners.forEach((f) => f());
+      if (before !== act()) {
+        const now = get();
+        ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
+      }
+      return { ok: true, c };
+    }
+    setInterval(() => {
+      const ids = Object.keys(bans);
+      if (!ids.length) return;
+      const before = act();
+      let changed = false;
+      ids.forEach((id) => { if (!isBanned(id)) { delete bans[id]; changed = true; } });
+      if (changed) {
+        store.set("bans", bans);
+        refresh(); listeners.forEach((f) => f());
+        if (before !== act()) ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
+      } else if (!$("#chars").hidden) roster();
+    }, 1000);
     refresh();
     return {
+      ban, names: () => CHARS.map((c) => c.name),
       img, say, earn, refresh, roster, gearShop,
       name: () => get().name, coins: () => coins,
       accent: () => get().accent,
@@ -1596,6 +1659,22 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     async function send(text) {
       text = (text || "").trim();
       if (!text || busy) return;
+      const banCmd = text.match(/^бан(?:[\s:,!.-]+(.*))?$/i);
+      if (banCmd) {
+        const boss = Police.isBoss();
+        const who = (banCmd[1] || "").trim();
+        const r = who ? Hero.ban(who.split(/\s+/)[0]) : { ok: false, reason: "unknown" };
+        let reply;
+        if (r.ok) reply = boss ? `Есть! ${r.c.name} заблокирован на 1 минуту, товарищ начальник.` : `${r.c.name} заблокирован на 1 минуту! Читер!!`;
+        else if (r.reason === "already") reply = `${r.c.name} и так в бане, осталось ${r.left}.` + (boss ? "" : " Читер!!");
+        else if (r.reason === "last") reply = `${r.c.name} — последний свободный персонаж, его в бан нельзя: играть будет некем.` + (boss ? " Виноват, начальник." : " Читер!!");
+        else reply = "Кого банить? Напиши, например: «Бан Нуно». Персонажи: " + Hero.names().join(", ") + ".";
+        add("me", text);
+        turns.push({ role: "user", content: text }, { role: "assistant", content: reply });
+        save();
+        add("from-cop", reply);
+        return;
+      }
       const code = text.toUpperCase().replace(/[\s.!-]+/g, "").replace(/C/g, "С");
       const demote = Police.isBoss() && /я не начальник|разжаловать/i.test(text);
       if (code === "ССДЖ3" || demote) {
