@@ -336,6 +336,41 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 }
 .app { padding-bottom: 104px; }
 
+/* ---------- Police chat ---------- */
+.cop-tag {
+  position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
+  background: #fff; color: #12132a; border-radius: 999px; padding: 1px 7px;
+  font-size: 10px; font-weight: 800; letter-spacing: .1em; pointer-events: none;
+}
+.cop-wrap { position: relative; pointer-events: auto; }
+.cop-say { pointer-events: auto; cursor: pointer; }
+.chat-card { height: min(640px, 100%); overflow: hidden; }
+.chat-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.chat-av { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex: none; box-shadow: 0 0 0 2px #3b7bff; }
+.chat-av svg { display: block; width: 100%; height: 100%; }
+.chat-who small { display: block; color: var(--muted); font-size: 12px; }
+.chat-log {
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 10px; background: var(--bg); border-radius: 12px;
+}
+.msg { max-width: 82%; padding: 8px 12px; border-radius: 14px; line-height: 1.4; font-size: 14px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg.from-cop { align-self: flex-start; background: #fff; color: #12132a; border-bottom-left-radius: 4px; }
+.msg.me { align-self: flex-end; background: var(--amber); color: var(--bg); border-bottom-right-radius: 4px; font-weight: 600; }
+.msg.typing { color: #5a5f86; font-style: italic; }
+.chat-quick { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.chat-quick button {
+  flex: none; border: 2px solid var(--line); background: var(--bg); border-radius: 999px;
+  padding: 6px 12px; font-size: 13px; cursor: pointer; color: var(--fg);
+}
+.chat-form { display: flex; gap: 8px; }
+.chat-form input {
+  flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px;
+  border: 2px solid var(--line); background: var(--bg); color: var(--fg); font: inherit; font-size: 16px;
+}
+.chat-form input:focus { outline: none; border-color: var(--amber); }
+.chat-form .btn { padding: 10px 14px; }
+
 /* ---------- Donate shop ---------- */
 .btn.donate {
   background: linear-gradient(100deg, var(--amber), var(--coral));
@@ -595,9 +630,37 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 <!-- ===== Police ===== -->
 <div class="cop" id="cop">
   <div class="cop-say" id="copSay" aria-live="polite" hidden></div>
-  <button class="cop-btn" type="button" id="copBtn" aria-label="Полиция"></button>
+  <div class="cop-wrap">
+    <button class="cop-btn" type="button" id="copBtn" aria-label="Открыть чат с полицией"></button>
+    <span class="cop-tag">ЧАТ</span>
+  </div>
 </div>
 <div class="siren" id="siren" hidden></div>
+
+<!-- ===== Police chat ===== -->
+<div class="shop" id="copChat" hidden role="dialog" aria-modal="true" aria-labelledby="copChatTitle">
+  <div class="shop-card chat-card">
+    <div class="shop-head">
+      <div class="chat-who">
+        <div class="chat-av" id="copChatAv"></div>
+        <div><h2 id="copChatTitle">Полиция V3</h2><small id="copChatStatus">Сержант Мигалкин · на связи</small></div>
+      </div>
+      <button class="shop-x" type="button" id="copChatClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="chat-log" id="copLog" aria-live="polite"></div>
+    <div class="chat-quick" id="copQuick">
+      <button type="button">Я не читер!</button>
+      <button type="button">За что?</button>
+      <button type="button">Сколько у меня нарушений?</button>
+      <button type="button">Можно заплатить штраф?</button>
+      <button type="button">Дай совет по 2048</button>
+    </div>
+    <form class="chat-form" id="copForm">
+      <input id="copInput" type="text" autocomplete="off" maxlength="300" placeholder="Напиши полиции…" aria-label="Сообщение полиции">
+      <button class="btn" type="submit">Отправить</button>
+    </form>
+  </div>
+</div>
 
 <!-- ===== Donate shop ===== -->
 <div class="shop" id="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shopTitle">
@@ -935,6 +998,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     refresh();
     return {
       img, say, earn, refresh, roster, gearShop,
+      name: () => get().name, coins: () => coins,
       accent: () => get().accent,
       tierColor: () => ({ free: "#eef0ff", paid: "#ffb547", ultra: "#ffe08a" })[get().tier],
       onChange: (f) => listeners.push(f),
@@ -1397,7 +1461,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <path d="M38 61 C42 58 47 59 50 61 C53 59 58 58 62 61 C58 65 53 63 50 62 C47 63 42 65 38 61Z" fill="#4a2b1a"/>
       <path d="M45 66 h10" stroke="#7a2a2a" stroke-width="2.4" stroke-linecap="round"/>
     </svg>`;
-    const LINES = ["Читер!!", "Читер!! Стоять!", "Читер!! Я всё вижу!", "Читер!! Документы!", "ЧИТЕР!!", "Читер!! Протокол составлен!"];
+    const LINES = ["Читер!!", "Читер!! Стоять!", "Читер!! Я всё вижу!", "Читер!! Документы!", "ЧИТЕР!!", "Читер!! Протокол составлен!", "Читер!! Жми на меня — поговорим."];
     const btn = $("#copBtn"), say = $("#copSay"), siren = $("#siren");
     btn.innerHTML = svg;
     let hideT = 0, loopT = 0;
@@ -1418,16 +1482,139 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function loop() {
       clearTimeout(loopT);
-      loopT = setTimeout(() => { if (!document.hidden) shout(); loop(); }, 6000 + Math.random() * 3000);
+      loopT = setTimeout(() => { if (!document.hidden && $("#copChat").hidden) shout(); loop(); }, 6000 + Math.random() * 3000);
     }
-    btn.addEventListener("click", () => shout());
+    btn.addEventListener("click", () => CopChat.open());
+    say.addEventListener("click", () => CopChat.open());
     setTimeout(() => shout(), 1200);
     loop();
-    return { bust, shout };
+    return { bust, shout, svg };
+  })();
+
+  /* ================= Police chat ================= */
+  const CopChat = (() => {
+    const box = $("#copChat"), log = $("#copLog"), input = $("#copInput"), statusEl = $("#copChatStatus");
+    $("#copChatAv").innerHTML = Police.svg;
+    // AI replies work only inside the Claude viewer; elsewhere the cop uses ready-made lines.
+    const samplePromise = (window.claude && typeof window.claude.use === "function")
+      ? Promise.resolve(window.claude.use("sample")).catch(() => null)
+      : Promise.resolve(null);
+    const OFF = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
+    let aiOff = false, busy = false, ctl = null, lastFocus = null;
+    let turns = store.get("copChat", []);
+    if (!Array.isArray(turns)) turns = [];
+
+    const pick = (a) => a[(Math.random() * a.length) | 0];
+    function viol(n) {
+      const m10 = n % 10, m100 = n % 100;
+      const w = m10 === 1 && m100 !== 11 ? "нарушение" : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? "нарушения" : "нарушений";
+      return n + " " + w;
+    }
+    function scripted(t) {
+      const n = donated.count;
+      const q = t.toLowerCase();
+      const R = [
+        [/не читер|не я|невинов|не виноват/, [`Все так говорят. На тебе ${viol(n)}. Читер!!`, "Невиновные не донатят по +1000. Читер!!"]],
+        [/штраф|заплат|откуп|взятк/, ["Штраф — честная игра до конца раунда. Но пока ты читер!!", "Взяток не беру, монеты оставь себе. Читер!!"]],
+        [/привет|здравств|добр/, ["Здравия желаю. Сержант Мигалкин, полиция V3. Документы, читер!!"]],
+        [/донат/, ["Донат и есть чит! Читер!!", "+1000 из воздуха? Подозрительно. Читер!!"]],
+        [/сколько|нарушен|протокол/, [n ? `В протоколе ${viol(n)}. Читер!!` : "Пока чисто… но я слежу. Читер!!"]],
+        [/прост|извин|прощ/, ["Прощаю… на пять секунд. Читер!!", "Извинения приняты, протокол — нет. Читер!!"]],
+        [/кто ты|ты кто|как тебя/, ["Сержант Мигалкин. Ловлю читеров в V3 Games. Читер!!"]],
+        [/за что|почему/, [n ? `За ${n} донат(а). Читер!!` : "За подозрительно хорошую игру. Читер!!"]],
+        [/2048/, ["Собирай большие плитки в одном углу и не тяни их оттуда. И не читери!!"]],
+        [/змей/, ["В Змейке держись подальше от стен и не разворачивайся резко. Читер!!"]],
+        [/крестик|нолик/, ["Займи центр первым ходом. Но против сложного бота максимум ничья. Читер!!"]],
+      ];
+      for (const [re, lines] of R) if (re.test(q)) return pick(lines);
+      return pick(["Подозрительно… Читер!!", "Записываю в протокол. Читер!!", "Я всё вижу. Читер!!", "Пройдёмте. Читер!!", "Так-так-так. Читер!!"]);
+    }
+    function rules() {
+      return [
+        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики).",
+        "Ты всегда подозреваешь игрока в читерстве, потому что в игре есть кнопка «Донат в игру», которая бесплатно даёт +1000.",
+        "Отвечай по-русски, 1–2 коротких предложения, с юмором, и обязательно вставляй «Читер!!».",
+        "Никаких реальных угроз, грубости и взрослых тем: игру могут открывать дети. Можно давать короткие советы по этим играм.",
+        `Данные игрока: персонаж ${Hero.name()}, монет ${Hero.coins()}, донатов (нарушений) ${donated.count}, рекорд в Змейке ${Snake.best()}, рекорд в 2048 ${G.best()}, побед в крестиках-ноликах ${T.wins()}.`,
+        "Пиши только реплику полицейского, без пояснений и кавычек.",
+      ].join("\n");
+    }
+    function add(who, text) {
+      const el = document.createElement("div");
+      el.className = "msg " + who;
+      el.textContent = text;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+      return el;
+    }
+    function save() { turns = turns.slice(-30); store.set("copChat", turns); }
+    function renderLog() {
+      log.innerHTML = "";
+      add("from-cop", donated.count
+        ? `Сержант Мигалкин на связи. На тебе ${viol(donated.count)}. Читер!!`
+        : "Сержант Мигалкин на связи. Пока чисто, но я слежу. Читер!!");
+      turns.forEach((t) => add(t.role === "user" ? "me" : "from-cop", t.content));
+    }
+    async function send(text) {
+      text = (text || "").trim();
+      if (!text || busy) return;
+      busy = true;
+      add("me", text);
+      turns.push({ role: "user", content: text });
+      save();
+      const el = add("from-cop", "Сержант печатает…");
+      el.classList.add("typing");
+      statusEl.textContent = "Сержант Мигалкин · печатает…";
+      let reply = "";
+      const sample = aiOff ? null : await samplePromise;
+      if (sample) {
+        ctl = new AbortController();
+        try {
+          const res = await sample([{ role: "user", content: rules() }, ...turns.slice(-12)], {
+            modelTier: "quick", cache: false, signal: ctl.signal,
+            onText: ({ text: t }) => { el.classList.remove("typing"); el.textContent = t; log.scrollTop = log.scrollHeight; },
+          });
+          reply = res.text.trim();
+        } catch (e) {
+          if (OFF.includes(e && e.code)) aiOff = true;
+          reply = (e && e.code !== "refused" && e.text) ? e.text.trim() : "";
+        }
+      }
+      if (!reply) reply = scripted(text);
+      el.classList.remove("typing");
+      el.textContent = reply;
+      log.scrollTop = log.scrollHeight;
+      turns.push({ role: "assistant", content: reply });
+      save();
+      statusEl.textContent = "Сержант Мигалкин · на связи";
+      busy = false;
+    }
+    function open() {
+      if (current === "snake") Snake.leave();
+      if (!shop.hidden) closeShop();
+      lastFocus = document.activeElement;
+      $("#copSay").hidden = true;
+      renderLog();
+      $("#cop").hidden = true;
+      box.hidden = false;
+      input.focus();
+    }
+    function close() {
+      if (ctl) ctl.abort();
+      box.hidden = true;
+      $("#cop").hidden = false;
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    $("#copForm").addEventListener("submit", (e) => { e.preventDefault(); const v = input.value; input.value = ""; send(v); });
+    $$("#copQuick button").forEach((b) => b.addEventListener("click", () => send(b.textContent)));
+    $("#copChatClose").addEventListener("click", close);
+    box.addEventListener("click", (e) => { if (e.target === box) close(); });
+    return { open, close, isOpen: () => !box.hidden };
   })();
   shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
 
   document.addEventListener("keydown", (e) => {
+    if (CopChat.isOpen()) { if (e.key === "Escape") CopChat.close(); return; }
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
