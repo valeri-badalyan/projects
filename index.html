@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>V3 Games</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#12132a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one narrow console column; hub of three "cartridges", each game a full screen with a top bar */
+:root {
+  --bg: #12132a;
+  --panel: #1c1e3d;
+  --panel-2: #24274d;
+  --line: #34386a;
+  --fg: #eef0ff;
+  --muted: #9a9ec8;
+  --amber: #ffb547;
+  --cyan: #5ce1e6;
+  --coral: #ff6b7a;
+  --lime: #9be15d;
+  --display: "Rubik Mono One", "Arial Black", Impact, sans-serif;
+  --body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 32px;
+}
+.screen { display: flex; flex-direction: column; gap: 18px; }
+
+/* ---------- Hub ---------- */
+.brand { display: flex; align-items: flex-end; gap: 14px; padding-top: 8px; }
+.logo {
+  font-family: var(--display);
+  font-size: 72px;
+  line-height: .85;
+  color: var(--amber);
+  text-shadow: 4px 4px 0 var(--coral), 8px 8px 0 var(--cyan);
+  letter-spacing: -2px;
+}
+.brand-sub { display: flex; flex-direction: column; gap: 4px; padding-bottom: 4px; }
+.word { font-family: var(--display); font-size: 26px; line-height: 1; letter-spacing: 4px; }
+.tag { color: var(--muted); font-size: 13px; }
+.lead { margin: 6px 0 0; color: var(--muted); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; }
+.carts { display: flex; flex-direction: column; gap: 12px; }
+.cart {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 14px 14px 6px 6px;
+  cursor: pointer;
+  position: relative;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.cart::before { /* cartridge grip ridges */
+  content: "";
+  position: absolute;
+  top: -2px; left: 50%;
+  width: 56px; height: 6px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 8px);
+  border-radius: 0 0 4px 4px;
+}
+.cart:hover { transform: translateY(-2px); border-color: var(--amber); }
+.cart:active { transform: translateY(1px); }
+.cart-art { width: 64px; height: 64px; border-radius: 10px; background: var(--bg); display: block; }
+.cart-art svg { display: block; width: 100%; height: 100%; }
+.cart-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cart-name { font-family: var(--display); font-size: 17px; line-height: 1.2; }
+.cart-desc { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.cart-stat { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.stat-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.stat-val { font-family: var(--mono); font-weight: 700; font-size: 18px; color: var(--amber); font-variant-numeric: tabular-nums; }
+.foot { color: var(--muted); font-size: 13px; line-height: 1.5; border-top: 1px dashed var(--line); padding-top: 14px; }
+
+/* ---------- Game chrome ---------- */
+.topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.back {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+.back:hover { border-color: var(--amber); }
+.gtitle { font-family: var(--display); font-size: 18px; flex: 1; min-width: 0; }
+.chips { display: flex; gap: 8px; }
+.chip {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 64px;
+  padding: 4px 10px;
+  background: var(--panel);
+  border-radius: 8px;
+}
+.chip b { font-family: var(--mono); font-size: 17px; font-variant-numeric: tabular-nums; color: var(--fg); }
+.chip span { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 800; }
+.chip.hi b { color: var(--amber); }
+.stage { position: relative; width: 100%; max-width: 440px; margin: 0 auto; }
+.hint { color: var(--muted); font-size: 13px; text-align: center; margin: 0; }
+.btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--amber);
+  color: var(--bg);
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 15px;
+}
+.btn.ghost { background: var(--panel); color: var(--fg); border: 2px solid var(--line); }
+.overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: rgba(18, 19, 42, .82);
+  border-radius: 12px;
+  text-align: center;
+  padding: 16px;
+}
+.overlay h2 { margin: 0; font-family: var(--display); font-size: 24px; color: var(--amber); }
+.overlay p { margin: 0; color: var(--fg); }
+
+/* ---------- Snake ---------- */
+#snakeCanvas { display: block; border-radius: 12px; touch-action: none; width: 100%; aspect-ratio: 1; max-width: 100%; }
+.dpad { display: grid; grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(2, 50px); gap: 8px; justify-content: center; }
+.dpad button {
+  border: 2px solid var(--line); background: var(--panel); border-radius: 10px; cursor: pointer;
+  font-size: 20px; color: var(--cyan); touch-action: manipulation;
+}
+.dpad button:active { background: var(--panel-2); }
+.dpad .up { grid-column: 2; grid-row: 1; }
+.dpad .left { grid-column: 1; grid-row: 2; }
+.dpad .down { grid-column: 2; grid-row: 2; }
+.dpad .right { grid-column: 3; grid-row: 2; }
+
+/* ---------- 2048 ---------- */
+.board {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  padding: 8px; background: var(--panel); border-radius: 12px;
+  aspect-ratio: 1; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.tile {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  background: var(--bg);
+  font-family: var(--mono); font-weight: 700;
+  font-size: clamp(20px, 8vw, 34px);
+  font-variant-numeric: tabular-nums;
+  color: #12132a;
+}
+.tile[data-v="2"]    { background: #3a3f78; color: #eef0ff; }
+.tile[data-v="4"]    { background: #4a52a0; color: #eef0ff; }
+.tile[data-v="8"]    { background: #5ce1e6; }
+.tile[data-v="16"]   { background: #3fc8d8; }
+.tile[data-v="32"]   { background: #9be15d; }
+.tile[data-v="64"]   { background: #7fcc3c; }
+.tile[data-v="128"]  { background: #ffd27a; font-size: clamp(18px, 7vw, 30px); }
+.tile[data-v="256"]  { background: #ffc35c; font-size: clamp(18px, 7vw, 30px); }
+.tile[data-v="512"]  { background: #ffb547; font-size: clamp(18px, 7vw, 30px); }
+.tile.big            { background: #ff6b7a; font-size: clamp(15px, 5.6vw, 24px); box-shadow: 0 0 18px rgba(255, 107, 122, .55); }
+.tile.pop   { animation: pop .16s ease-out; }
+.tile.merge { animation: merge .18s ease-out; }
+@keyframes pop   { from { transform: scale(.4); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+@keyframes merge { 50% { transform: scale(1.14); } }
+.row-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* ---------- Tic-tac-toe ---------- */
+.modes { display: flex; gap: 6px; background: var(--panel); padding: 4px; border-radius: 12px; }
+.modes button {
+  flex: 1; padding: 8px 6px; border: 0; background: transparent; border-radius: 9px; cursor: pointer;
+  font-weight: 600; font-size: 13px; color: var(--muted);
+}
+.modes button[aria-pressed="true"] { background: var(--panel-2); color: var(--fg); box-shadow: inset 0 0 0 2px var(--amber); }
+.ttt-board { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; aspect-ratio: 1; max-width: 360px; margin: 0 auto; width: 100%; }
+.cell {
+  border: 2px solid var(--line); background: var(--panel); border-radius: 12px; cursor: pointer;
+  font-family: var(--display); font-size: clamp(40px, 16vw, 64px); line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.cell:disabled { cursor: default; }
+.cell.x { color: var(--cyan); }
+.cell.o { color: var(--coral); }
+.cell.win { background: var(--panel-2); border-color: var(--amber); }
+.status { text-align: center; font-weight: 800; font-size: 17px; min-height: 26px; margin: 0; }
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tally .chip { min-width: 0; }
+.tally .x b { color: var(--cyan); }
+.tally .o b { color: var(--coral); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cart, .tile.pop, .tile.merge { transition: none; animation: none; }
+}
+@media (max-width: 380px) {
+  .logo { font-size: 58px; }
+  .cart { grid-template-columns: 52px 1fr auto; gap: 10px; padding: 12px; }
+  .cart-art { width: 52px; height: 52px; }
+  .chip { min-width: 54px; padding: 4px 8px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Hub ===== -->
+  <section id="hub" class="screen">
+    <header class="brand">
+      <div class="logo" aria-label="V3">V3</div>
+      <div class="brand-sub">
+        <span class="word">GAMES</span>
+        <span class="tag">Три игры в одном кармане</span>
+      </div>
+    </header>
+    <p class="lead">Выбери картридж</p>
+    <div class="carts">
+      <button class="cart" data-go="snake" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#12132a"/><g fill="#5ce1e6"><rect x="10" y="38" width="10" height="10" rx="2"/><rect x="21" y="38" width="10" height="10" rx="2"/><rect x="32" y="38" width="10" height="10" rx="2"/><rect x="32" y="27" width="10" height="10" rx="2"/></g><rect x="32" y="16" width="10" height="10" rx="2" fill="#9ff3f5"/><circle cx="50" cy="21" r="4.5" fill="#ffb547"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Змейка</span>
+          <span class="cart-desc">Собирай еду и не врезайся в стены и в свой хвост.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubSnake">0</span></span>
+      </button>
+      <button class="cart" data-go="g2048" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#12132a"/><rect x="6" y="6" width="24" height="24" rx="4" fill="#3a3f78"/><rect x="34" y="6" width="24" height="24" rx="4" fill="#5ce1e6"/><rect x="6" y="34" width="24" height="24" rx="4" fill="#9be15d"/><rect x="34" y="34" width="24" height="24" rx="4" fill="#ff6b7a"/><g font-family="monospace" font-weight="700" font-size="12" text-anchor="middle"><text x="18" y="22" fill="#eef0ff">2</text><text x="46" y="22" fill="#12132a">8</text><text x="18" y="50" fill="#12132a">32</text><text x="46" y="50" fill="#12132a" font-size="9">2048</text></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">2048</span>
+          <span class="cart-desc">Сдвигай плитки, складывай пары и дойди до 2048.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hub2048">0</span></span>
+      </button>
+      <button class="cart" data-go="ttt" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#12132a"/><g stroke="#34386a" stroke-width="3" stroke-linecap="round"><path d="M24 8v48M40 8v48M8 24h48M8 40h48"/></g><g stroke="#5ce1e6" stroke-width="3.5" stroke-linecap="round"><path d="M10 10l10 10M20 10L10 20M44 44l10 10M54 44L44 54"/></g><circle cx="32" cy="32" r="5.5" fill="none" stroke="#ff6b7a" stroke-width="3.5"/><circle cx="48" cy="16" r="5.5" fill="none" stroke="#ff6b7a" stroke-width="3.5"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Крестики-нолики</span>
+          <span class="cart-desc">Против бота двух уровней или вдвоём на одном экране.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubTtt">0</span></span>
+      </button>
+    </div>
+    <footer class="foot">На телефоне управляй свайпами, на компьютере стрелками или WASD. Рекорды сохраняются в этом браузере.</footer>
+  </section>
+
+  <!-- ===== Snake ===== -->
+  <section id="snake" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Змейка</div>
+      <div class="chips">
+        <div class="chip"><span>Счёт</span><b id="snakeScore">0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="snakeBest">0</b></div>
+      </div>
+    </div>
+    <div class="stage" id="snakeStage">
+      <canvas id="snakeCanvas" width="440" height="440" aria-label="Поле змейки"></canvas>
+      <div class="overlay" id="snakeOverlay">
+        <h2 id="snakeOvTitle">Змейка</h2>
+        <p id="snakeOvText">Свайпни или нажми стрелку, чтобы начать</p>
+        <button class="btn" type="button" id="snakeOvBtn">Играть</button>
+      </div>
+    </div>
+    <div class="dpad" aria-label="Управление">
+      <button class="up" type="button" data-dir="up" aria-label="Вверх">▲</button>
+      <button class="left" type="button" data-dir="left" aria-label="Влево">◀</button>
+      <button class="down" type="button" data-dir="down" aria-label="Вниз">▼</button>
+      <button class="right" type="button" data-dir="right" aria-label="Вправо">▶</button>
+    </div>
+    <p class="hint">Пробел — пауза. Скорость растёт с каждой едой.</p>
+  </section>
+
+  <!-- ===== 2048 ===== -->
+  <section id="g2048" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">2048</div>
+      <div class="chips">
+        <div class="chip"><span>Счёт</span><b id="g2048Score">0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="g2048Best">0</b></div>
+      </div>
+    </div>
+    <div class="stage">
+      <div class="board" id="board2048" aria-label="Поле 2048"></div>
+      <div class="overlay" id="g2048Overlay" hidden>
+        <h2 id="g2048OvTitle">Ходов нет</h2>
+        <p id="g2048OvText"></p>
+        <button class="btn" type="button" id="g2048OvBtn">Новая игра</button>
+      </div>
+    </div>
+    <div class="row-actions">
+      <button class="btn ghost" type="button" id="g2048Undo">Отменить ход</button>
+      <button class="btn" type="button" id="g2048New">Новая игра</button>
+    </div>
+    <p class="hint">Свайпай по полю. Две одинаковые плитки сливаются в одну.</p>
+  </section>
+
+  <!-- ===== Tic-tac-toe ===== -->
+  <section id="ttt" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Крестики-нолики</div>
+    </div>
+    <div class="modes" role="group" aria-label="Режим">
+      <button type="button" data-mode="easy">Бот · лёгкий</button>
+      <button type="button" data-mode="hard">Бот · сложный</button>
+      <button type="button" data-mode="duo">Вдвоём</button>
+    </div>
+    <div class="tally">
+      <div class="chip x"><span id="tLabelX">Вы · X</span><b id="tX">0</b></div>
+      <div class="chip"><span>Ничьи</span><b id="tD">0</b></div>
+      <div class="chip o"><span id="tLabelO">Бот · O</span><b id="tO">0</b></div>
+    </div>
+    <p class="status" id="tttStatus" aria-live="polite">Ваш ход</p>
+    <div class="ttt-board" id="tttBoard"></div>
+    <div class="row-actions">
+      <button class="btn" type="button" id="tttNext">Новый раунд</button>
+      <button class="btn ghost" type="button" id="tttReset">Сбросить счёт</button>
+    </div>
+  </section>
+
+</div>
+<script>
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+  // Storage that never throws (private mode, blocked site data).
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("v3:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("v3:" + k, JSON.stringify(v)); } catch (e) {} },
+  };
+
+  // Swipe detection on an element.
+  function onSwipe(el, cb) {
+    let sx = 0, sy = 0, on = false;
+    el.addEventListener("touchstart", (e) => { const p = e.changedTouches[0]; sx = p.clientX; sy = p.clientY; on = true; }, { passive: true });
+    el.addEventListener("touchmove", (e) => { if (on) e.preventDefault(); }, { passive: false });
+    el.addEventListener("touchend", (e) => {
+      if (!on) return; on = false;
+      const p = e.changedTouches[0], dx = p.clientX - sx, dy = p.clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      cb(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+    }, { passive: true });
+  }
+
+  const KEYS = {
+    ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+    w: "up", s: "down", a: "left", d: "right", W: "up", S: "down", A: "left", D: "right",
+    "ц": "up", "ы": "down", "ф": "left", "в": "right",
+  };
+
+  /* ================= Snake ================= */
+  const Snake = (() => {
+    const N = 17;
+    const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+    const cv = $("#snakeCanvas"), ctx = cv.getContext("2d");
+    const ov = $("#snakeOverlay");
+    let size = 440, cell = size / N;
+    let body, dir, queue, food, score, speed, state = "idle", raf = 0, last = 0, acc = 0;
+    let best = store.get("snakeBest", 0);
+
+    function reset() {
+      const m = Math.floor(N / 2);
+      body = [{ x: m, y: m }, { x: m - 1, y: m }, { x: m - 2, y: m }];
+      dir = "right"; queue = []; score = 0; speed = 150;
+      placeFood(); hud();
+    }
+    function placeFood() {
+      const free = [];
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++)
+        if (!body.some((p) => p.x === x && p.y === y)) free.push({ x, y });
+      food = free[(Math.random() * free.length) | 0] || null;
+    }
+    function hud() {
+      $("#snakeScore").textContent = score;
+      $("#snakeBest").textContent = best;
+    }
+    function overlay(title, text, btn) {
+      if (!title) { ov.hidden = true; return; }
+      $("#snakeOvTitle").textContent = title;
+      $("#snakeOvText").textContent = text;
+      $("#snakeOvBtn").textContent = btn;
+      ov.hidden = false;
+    }
+    function turn(d) {
+      if (state === "idle" || state === "over") start();
+      else if (state === "paused") resume();
+      const ref = queue.length ? queue[queue.length - 1] : dir;
+      const [a, b] = DIRS[d], [c, e] = DIRS[ref];
+      if (d === ref || (a === -c && b === -e)) return;
+      if (queue.length < 3) queue.push(d);
+    }
+    function step() {
+      if (queue.length) dir = queue.shift();
+      const [dx, dy] = DIRS[dir];
+      const h = { x: body[0].x + dx, y: body[0].y + dy };
+      const eat = food && h.x === food.x && h.y === food.y;
+      const solid = eat ? body : body.slice(0, -1);
+      if (h.x < 0 || h.y < 0 || h.x >= N || h.y >= N || solid.some((p) => p.x === h.x && p.y === h.y)) return over();
+      body.unshift(h);
+      if (eat) {
+        score++; speed = Math.max(70, speed - 4);
+        placeFood();
+        if (!food) return over(true);
+        hud();
+      } else body.pop();
+    }
+    function loop(t) {
+      if (state !== "run") return;
+      if (!last) last = t;
+      acc += t - last; last = t;
+      while (acc >= speed && state === "run") { acc -= speed; step(); }
+      draw();
+      if (state === "run") raf = requestAnimationFrame(loop);
+    }
+    function start() {
+      reset(); state = "run"; overlay(null);
+      last = 0; acc = 0; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+    }
+    function pause() {
+      if (state !== "run") return;
+      state = "paused"; cancelAnimationFrame(raf);
+      overlay("Пауза", `Счёт: ${score}`, "Продолжить");
+    }
+    function resume() {
+      state = "run"; overlay(null); last = 0; acc = 0;
+      raf = requestAnimationFrame(loop);
+    }
+    function over(won) {
+      state = "over"; cancelAnimationFrame(raf);
+      if (score > best) { best = score; store.set("snakeBest", best); }
+      hud(); draw(); updateHub();
+      overlay(won ? "Поле заполнено!" : "Игра окончена", `Счёт: ${score} · Рекорд: ${best}`, "Ещё раз");
+    }
+    function rr(x, y, w, h, r) {
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+      ctx.fill();
+    }
+    function draw() {
+      ctx.fillStyle = "#171936"; ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = "#1c1e3d";
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if ((x + y) % 2) ctx.fillRect(x * cell, y * cell, cell, cell);
+      if (food) {
+        ctx.fillStyle = "#ffb547";
+        ctx.beginPath(); ctx.arc((food.x + .5) * cell, (food.y + .5) * cell, cell * .32, 0, Math.PI * 2); ctx.fill();
+      }
+      const pad = cell * .08;
+      body.forEach((p, i) => {
+        ctx.fillStyle = i === 0 ? "#9ff3f5" : "#5ce1e6";
+        rr(p.x * cell + pad, p.y * cell + pad, cell - pad * 2, cell - pad * 2, cell * .22);
+      });
+      // eyes
+      const h = body[0], [dx, dy] = DIRS[dir];
+      ctx.fillStyle = "#12132a";
+      const cx = (h.x + .5) * cell, cy = (h.y + .5) * cell, off = cell * .18;
+      for (const s of [-1, 1]) {
+        ctx.beginPath();
+        ctx.arc(cx + dx * off + dy * off * s, cy + dy * off + dx * off * s, cell * .08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    function fit() {
+      const w = Math.floor(Math.min($("#snakeStage").clientWidth || 440, 440));
+      if (!w) return;
+      const dpr = window.devicePixelRatio || 1;
+      size = w; cell = w / N;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(w * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    reset();
+    $("#snakeOvBtn").addEventListener("click", () => (state === "paused" ? resume() : start()));
+    $$(".dpad button").forEach((b) => b.addEventListener("click", () => turn(b.dataset.dir)));
+    onSwipe($("#snakeStage"), turn);
+    window.addEventListener("resize", () => { if (!$("#snake").hidden) fit(); });
+
+    return {
+      enter() { fit(); hud(); },
+      leave() { pause(); },
+      key(e) {
+        if (e.key === " ") { e.preventDefault(); state === "run" ? pause() : state === "paused" ? resume() : start(); return; }
+        const d = KEYS[e.key]; if (d) { e.preventDefault(); turn(d); }
+      },
+      best: () => best,
+    };
+  })();
+
+  /* ================= 2048 ================= */
+  const G = (() => {
+    const boardEl = $("#board2048"), ov = $("#g2048Overlay");
+    const cells = [];
+    for (let i = 0; i < 16; i++) { const c = document.createElement("div"); c.className = "tile"; boardEl.appendChild(c); cells.push(c); }
+    let g, score, won, keepGoing, prev = null;
+    let best = store.get("best2048", 0);
+
+    function empty() { const e = []; g.forEach((v, i) => { if (!v) e.push(i); }); return e; }
+    function add() { const e = empty(); if (!e.length) return -1; const i = e[(Math.random() * e.length) | 0]; g[i] = Math.random() < .9 ? 2 : 4; return i; }
+    function canMove() {
+      for (let i = 0; i < 16; i++) {
+        if (!g[i]) return true;
+        const r = i >> 2, c = i & 3;
+        if (c < 3 && g[i] === g[i + 1]) return true;
+        if (r < 3 && g[i] === g[i + 4]) return true;
+      }
+      return false;
+    }
+    function save() { store.set("g2048", { g, score, won, keepGoing }); }
+    function newGame() {
+      g = Array(16).fill(0); score = 0; won = false; keepGoing = false; prev = null;
+      const a = add(), b = add();
+      msg(null); render([a, b], []); save();
+    }
+    function msg(title, text, btn, action) {
+      if (!title) { ov.hidden = true; ov.dataset.action = ""; return; }
+      $("#g2048OvTitle").textContent = title;
+      $("#g2048OvText").textContent = text;
+      $("#g2048OvBtn").textContent = btn;
+      ov.dataset.action = action;
+      ov.hidden = false;
+    }
+    function render(popped, merged) {
+      g.forEach((v, i) => {
+        const c = cells[i];
+        c.textContent = v || "";
+        c.dataset.v = v;
+        c.classList.toggle("big", v >= 1024);
+        c.classList.remove("pop", "merge");
+      });
+      void boardEl.offsetWidth; // restart animations
+      popped.forEach((i) => i >= 0 && cells[i].classList.add("pop"));
+      merged.forEach((i) => cells[i].classList.add("merge"));
+      $("#g2048Score").textContent = score;
+      $("#g2048Best").textContent = best;
+      $("#g2048Undo").disabled = !prev;
+    }
+    function move(d) {
+      if (!ov.hidden) return;
+      const before = { g: g.slice(), score };
+      let moved = false; const merged = [];
+      for (let k = 0; k < 4; k++) {
+        const L = [];
+        for (let j = 0; j < 4; j++) {
+          let r, c;
+          if (d === "left") { r = k; c = j; }
+          else if (d === "right") { r = k; c = 3 - j; }
+          else if (d === "up") { r = j; c = k; }
+          else { r = 3 - j; c = k; }
+          L.push(r * 4 + c);
+        }
+        const vals = L.map((i) => g[i]).filter(Boolean), out = [], mpos = [];
+        for (let i = 0; i < vals.length; i++) {
+          if (i + 1 < vals.length && vals[i] === vals[i + 1]) {
+            out.push(vals[i] * 2); score += vals[i] * 2; mpos.push(out.length - 1); i++;
+          } else out.push(vals[i]);
+        }
+        while (out.length < 4) out.push(0);
+        L.forEach((idx, j) => { if (g[idx] !== out[j]) moved = true; g[idx] = out[j]; });
+        mpos.forEach((p) => merged.push(L[p]));
+      }
+      if (!moved) return;
+      prev = before;
+      const n = add();
+      if (score > best) { best = score; store.set("best2048", best); updateHub(); }
+      render([n], merged);
+      if (!won && !keepGoing && g.includes(2048)) {
+        won = true;
+        msg("2048!", `Победа со счётом ${score}. Можно играть дальше.`, "Продолжить", "continue");
+      } else if (!canMove()) {
+        msg("Ходов нет", `Счёт: ${score} · Рекорд: ${best}`, "Новая игра", "new");
+      }
+      save();
+    }
+    function undo() {
+      if (!prev || !ov.hidden && ov.dataset.action === "continue") return;
+      g = prev.g; score = prev.score; prev = null;
+      msg(null); render([], []); save();
+    }
+
+    const saved = store.get("g2048", null);
+    if (saved && Array.isArray(saved.g) && saved.g.length === 16 && saved.g.some(Boolean)) {
+      g = saved.g; score = saved.score | 0; won = !!saved.won; keepGoing = !!saved.keepGoing;
+      render([], []);
+      if (!canMove()) msg("Ходов нет", `Счёт: ${score} · Рекорд: ${best}`, "Новая игра", "new");
+    } else newGame();
+
+    $("#g2048OvBtn").addEventListener("click", () => {
+      if (ov.dataset.action === "continue") { keepGoing = true; msg(null); save(); } else newGame();
+    });
+    $("#g2048New").addEventListener("click", newGame);
+    $("#g2048Undo").addEventListener("click", undo);
+    onSwipe(boardEl, move);
+
+    return {
+      enter() { render([], []); },
+      leave() {},
+      key(e) { const d = KEYS[e.key]; if (d) { e.preventDefault(); move(d); } },
+      best: () => best,
+    };
+  })();
+
+  /* ================= Tic-tac-toe ================= */
+  const T = (() => {
+    const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    const boardEl = $("#tttBoard"), statusEl = $("#tttStatus");
+    const cells = [];
+    for (let i = 0; i < 9; i++) {
+      const c = document.createElement("button");
+      c.type = "button"; c.className = "cell"; c.setAttribute("aria-label", `Клетка ${i + 1}`);
+      c.addEventListener("click", () => human(i));
+      boardEl.appendChild(c); cells.push(c);
+    }
+    let mode = store.get("tttMode", "hard");
+    let tally = store.get("tttTally", { x: 0, o: 0, d: 0 });
+    let b, turn, starter = "X", done = false, timer = 0;
+
+    function winner(bd) {
+      for (const l of LINES) { const [p, q, r] = l; if (bd[p] && bd[p] === bd[q] && bd[p] === bd[r]) return { p: bd[p], l }; }
+      return bd.every(Boolean) ? { p: "D" } : null;
+    }
+    function mm(bd, p, depth) {
+      const w = winner(bd);
+      if (w) return w.p === "O" ? 10 - depth : w.p === "X" ? depth - 10 : 0;
+      let best = p === "O" ? -99 : 99;
+      for (let i = 0; i < 9; i++) if (!bd[i]) {
+        bd[i] = p;
+        const s = mm(bd, p === "O" ? "X" : "O", depth + 1);
+        bd[i] = "";
+        best = p === "O" ? Math.max(best, s) : Math.min(best, s);
+      }
+      return best;
+    }
+    function botPick() {
+      const free = []; b.forEach((v, i) => { if (!v) free.push(i); });
+      if (mode === "easy" && Math.random() < .55) return free[(Math.random() * free.length) | 0];
+      let top = -99, picks = [];
+      for (const i of free) {
+        b[i] = "O"; const s = mm(b, "X", 1); b[i] = "";
+        if (s > top) { top = s; picks = [i]; } else if (s === top) picks.push(i);
+      }
+      return picks[(Math.random() * picks.length) | 0];
+    }
+    const vsBot = () => mode !== "duo";
+    function labels() {
+      $("#tLabelX").textContent = vsBot() ? "Вы · X" : "Игрок X";
+      $("#tLabelO").textContent = vsBot() ? "Бот · O" : "Игрок O";
+      $$(".modes button").forEach((m) => m.setAttribute("aria-pressed", String(m.dataset.mode === mode)));
+    }
+    function renderTally() {
+      $("#tX").textContent = tally.x; $("#tO").textContent = tally.o; $("#tD").textContent = tally.d;
+    }
+    function render(win) {
+      b.forEach((v, i) => {
+        const c = cells[i];
+        c.textContent = v; c.className = "cell" + (v ? " " + v.toLowerCase() : "");
+        c.disabled = !!v || done || (vsBot() && turn === "O");
+        if (win && win.l && win.l.includes(i)) c.classList.add("win");
+      });
+    }
+    function status() {
+      if (done) return;
+      statusEl.textContent = vsBot() ? (turn === "X" ? "Ваш ход" : "Бот думает…") : `Ходит ${turn}`;
+    }
+    function play(i) {
+      b[i] = turn;
+      const w = winner(b);
+      if (w) {
+        done = true;
+        if (w.p === "D") { tally.d++; statusEl.textContent = "Ничья"; }
+        else if (w.p === "X") { tally.x++; statusEl.textContent = vsBot() ? "Вы победили!" : "Победил X!"; }
+        else { tally.o++; statusEl.textContent = vsBot() ? "Бот победил" : "Победил O!"; }
+        store.set("tttTally", tally); renderTally(); render(w); updateHub();
+        return;
+      }
+      turn = turn === "X" ? "O" : "X";
+      render(); status();
+      if (vsBot() && turn === "O") timer = setTimeout(() => play(botPick()), 380);
+    }
+    function human(i) {
+      if (done || b[i] || (vsBot() && turn === "O")) return;
+      play(i);
+    }
+    function round() {
+      clearTimeout(timer);
+      b = Array(9).fill(""); turn = starter; done = false;
+      starter = starter === "X" ? "O" : "X";
+      render(); status();
+      if (vsBot() && turn === "O") timer = setTimeout(() => play(botPick()), 450);
+    }
+    $$(".modes button").forEach((m) => m.addEventListener("click", () => {
+      if (m.dataset.mode === mode) return;
+      mode = m.dataset.mode; store.set("tttMode", mode);
+      tally = { x: 0, o: 0, d: 0 }; store.set("tttTally", tally);
+      starter = "X"; labels(); renderTally(); round(); updateHub();
+    }));
+    $("#tttNext").addEventListener("click", round);
+    $("#tttReset").addEventListener("click", () => { tally = { x: 0, o: 0, d: 0 }; store.set("tttTally", tally); renderTally(); updateHub(); });
+
+    labels(); renderTally(); round();
+    return {
+      enter() {}, leave() {},
+      key(e) { const n = Number(e.key); if (n >= 1 && n <= 9) human(n - 1); },
+      wins: () => tally.x,
+    };
+  })();
+
+  /* ================= Navigation ================= */
+  const GAMES = { snake: Snake, g2048: G, ttt: T };
+  const SCREENS = ["hub", "snake", "g2048", "ttt"];
+  let current = "hub";
+
+  function updateHub() {
+    $("#hubSnake").textContent = Snake.best();
+    $("#hub2048").textContent = G.best();
+    $("#hubTtt").textContent = T.wins();
+  }
+  function show(name) {
+    if (!SCREENS.includes(name)) name = "hub";
+    if (GAMES[current] && current !== name) GAMES[current].leave();
+    SCREENS.forEach((s) => { $("#" + s).hidden = s !== name; });
+    current = name;
+    if (GAMES[name]) GAMES[name].enter();
+    updateHub();
+    try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
+    window.scrollTo(0, 0);
+  }
+  $$("[data-go]").forEach((el) => el.addEventListener("click", () => show(el.dataset.go)));
+  document.addEventListener("keydown", (e) => {
+    if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
+    if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
+    if (GAMES[current]) GAMES[current].key(e);
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && current === "snake") Snake.leave(); });
+
+  show((location.hash || "").slice(1));
+})();
+</script>
+</body>
+</html>
