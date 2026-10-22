@@ -287,6 +287,55 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .price.free { color: var(--lime); }
 .hero-card.worn { box-shadow: 0 0 0 3px var(--lime); }
 
+/* ---------- Police ---------- */
+.cop {
+  position: fixed; z-index: 60;
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: flex-end; gap: 8px;
+  pointer-events: none;
+}
+.cop-btn {
+  pointer-events: auto;
+  width: 68px; height: 68px; padding: 0; border: 0; cursor: pointer;
+  border-radius: 50%; overflow: hidden;
+  background: #1b2a5c;
+  box-shadow: 0 0 0 3px #e9eefc, 0 6px 18px rgba(0, 0, 0, .45);
+  animation: copglow 1s steps(1) infinite;
+}
+.cop-btn svg { display: block; width: 100%; height: 100%; }
+@keyframes copglow {
+  0% { box-shadow: 0 0 0 3px #ff3b4f, 0 0 22px rgba(255, 59, 79, .8); }
+  50% { box-shadow: 0 0 0 3px #3b7bff, 0 0 22px rgba(59, 123, 255, .8); }
+}
+.cop-say {
+  position: relative; max-width: 210px;
+  background: #fff; color: #12132a;
+  border-radius: 14px 14px 4px 14px;
+  padding: 8px 12px; margin-bottom: 30px;
+  font-weight: 800; font-size: 15px; line-height: 1.25;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .4);
+  transform-origin: 100% 100%;
+}
+.cop-say small { display: block; font-weight: 600; font-size: 11px; color: #5a5f86; margin-top: 2px; }
+.cop-say.shout { animation: shout .5s ease-out; }
+@keyframes shout {
+  0% { transform: scale(.4); opacity: 0; }
+  40% { transform: scale(1.12) rotate(-3deg); opacity: 1; }
+  60% { transform: scale(1) rotate(3deg); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: none; }
+}
+.siren {
+  position: fixed; inset: 0; z-index: 55; pointer-events: none;
+  animation: siren .3s steps(1) 6;
+}
+@keyframes siren {
+  0% { box-shadow: inset 0 0 0 10px rgba(255, 59, 79, .85), inset 0 0 60px rgba(255, 59, 79, .5); }
+  50% { box-shadow: inset 0 0 0 10px rgba(59, 123, 255, .85), inset 0 0 60px rgba(59, 123, 255, .5); }
+}
+.app { padding-bottom: 104px; }
+
 /* ---------- Donate shop ---------- */
 .btn.donate {
   background: linear-gradient(100deg, var(--amber), var(--coral));
@@ -336,6 +385,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .shop-toast { color: var(--lime); font-weight: 800; min-height: 20px; }
 
 @media (prefers-reduced-motion: reduce) {
+  .cop-btn, .cop-say.shout, .siren { animation: none; }
   .shop-card, .av.tier-ultra, .hero-card.tier-ultra, .buddy-say.talk { animation: none; }
   .cart, .tile.pop, .tile.merge { transition: none; animation: none; }
 }
@@ -541,6 +591,13 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
   </section>
 
 </div>
+
+<!-- ===== Police ===== -->
+<div class="cop" id="cop">
+  <div class="cop-say" id="copSay" aria-live="polite" hidden></div>
+  <button class="cop-btn" type="button" id="copBtn" aria-label="Полиция"></button>
+</div>
+<div class="siren" id="siren" hidden></div>
 
 <!-- ===== Donate shop ===== -->
 <div class="shop" id="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shopTitle">
@@ -1310,12 +1367,64 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     const g = el.dataset.buy;
     if (g === "coins") Hero.earn(1000); else GAMES[g].bonus(1000);
     donated.count++; donated.total += 1000; store.set("donated", donated);
+    Police.bust();
     shopStats(); updateHub();
     clearTimeout(toastTimer);
     $("#shopToast").textContent = `Начислено +1000 · ${NAMES[g]}`;
     toastTimer = setTimeout(() => { $("#shopToast").textContent = ""; }, 2200);
   }));
   $("#shopClose").addEventListener("click", closeShop);
+
+  /* ================= Police ================= */
+  const Police = (() => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#1b2a5c"/>
+      <path d="M14 100 C14 78 32 70 50 70 C68 70 86 78 86 100Z" fill="#203a8f"/>
+      <path d="M42 71 L50 82 L58 71" fill="#e9eefc"/><path d="M48 76 h4 v24 h-4z" fill="#12132a"/>
+      <path d="M66 82 l3 -5 l3 5 l5 1 l-4 4 l1 5 l-5 -2 l-5 2 l1 -5 l-4 -4z" fill="#ffd36b"/>
+      <rect x="44" y="58" width="12" height="14" rx="4" fill="#e8b48f"/>
+      <circle cx="28" cy="49" r="5" fill="#e8b48f"/><circle cx="72" cy="49" r="5" fill="#e8b48f"/>
+      <circle cx="50" cy="47" r="21" fill="#e8b48f"/>
+      <path d="M27 38 C27 19 73 19 73 38Z" fill="#1d2f73"/>
+      <rect x="24" y="35" width="52" height="7" rx="3" fill="#12132a"/>
+      <path d="M30 42 H70 Q68 47 50 47 Q32 47 30 42Z" fill="#0d0b12"/>
+      <path d="M45 26 l5 -4 l5 4 v6 l-5 3 l-5 -3z" fill="#ffd36b"/>
+      <rect x="40" y="10" width="10" height="9" rx="3" fill="#ff3b4f"><animate attributeName="opacity" values="1;.25;1" dur=".5s" repeatCount="indefinite"/></rect>
+      <rect x="50" y="10" width="10" height="9" rx="3" fill="#3b7bff"><animate attributeName="opacity" values=".25;1;.25" dur=".5s" repeatCount="indefinite"/></rect>
+      <rect x="38" y="18" width="24" height="4" rx="2" fill="#c7cde6"/>
+      <path d="M34 49 h13 v4 q-1 5 -6.5 5 q-5.5 0 -6.5 -5z M53 49 h13 v4 q-1 5 -6.5 5 q-5.5 0 -6.5 -5z" fill="#0d0b12"/>
+      <path d="M47 51 h6" stroke="#0d0b12" stroke-width="2"/>
+      <path d="M38 61 C42 58 47 59 50 61 C53 59 58 58 62 61 C58 65 53 63 50 62 C47 63 42 65 38 61Z" fill="#4a2b1a"/>
+      <path d="M45 66 h10" stroke="#7a2a2a" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>`;
+    const LINES = ["Читер!!", "Читер!! Стоять!", "Читер!! Я всё вижу!", "Читер!! Документы!", "ЧИТЕР!!", "Читер!! Протокол составлен!"];
+    const btn = $("#copBtn"), say = $("#copSay"), siren = $("#siren");
+    btn.innerHTML = svg;
+    let hideT = 0, loopT = 0;
+    function shout(text) {
+      const n = donated.count;
+      say.innerHTML = "";
+      say.append(text || LINES[(Math.random() * LINES.length) | 0]);
+      if (n) { const sm = document.createElement("small"); sm.textContent = `Нарушений: ${n}`; say.appendChild(sm); }
+      say.hidden = false;
+      say.classList.remove("shout"); void say.offsetWidth; say.classList.add("shout");
+      clearTimeout(hideT);
+      hideT = setTimeout(() => { say.hidden = true; }, 2600);
+    }
+    function bust() {
+      siren.hidden = true; void siren.offsetWidth; siren.hidden = false;
+      setTimeout(() => { siren.hidden = true; }, 1900);
+      shout("ЧИТЕР!! Донат засечён!");
+    }
+    function loop() {
+      clearTimeout(loopT);
+      loopT = setTimeout(() => { if (!document.hidden) shout(); loop(); }, 6000 + Math.random() * 3000);
+    }
+    btn.addEventListener("click", () => shout());
+    setTimeout(() => shout(), 1200);
+    loop();
+    return { bust, shout };
+  })();
   shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
 
   document.addEventListener("keydown", (e) => {
