@@ -217,7 +217,55 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .tally .x b { color: var(--cyan); }
 .tally .o b { color: var(--coral); }
 
+/* ---------- Donate shop ---------- */
+.btn.donate {
+  background: linear-gradient(100deg, var(--amber), var(--coral));
+  color: var(--bg);
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.donate.wide { width: 100%; padding: 14px 18px; font-size: 16px; }
+.coin {
+  display: inline-grid; place-items: center;
+  height: 22px; padding: 0 7px; border-radius: 999px;
+  background: var(--bg); color: var(--amber);
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+}
+.shop {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(8, 9, 22, .72);
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.shop-card {
+  width: 100%; max-width: 448px;
+  max-height: 100%; overflow-y: auto;
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 12px;
+  animation: rise .2s ease-out;
+}
+@keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.shop-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.shop-head h2 { margin: 0; font-family: var(--display); font-size: 20px; color: var(--amber); }
+.shop-x { border: 2px solid var(--line); background: var(--bg); border-radius: 10px; width: 38px; height: 38px; cursor: pointer; font-size: 16px; }
+.shop-note { margin: 0; color: var(--muted); font-size: 13px; }
+.shop-list { display: flex; flex-direction: column; gap: 10px; }
+.shop-item {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+  padding: 12px; background: var(--bg); border: 2px solid var(--line); border-radius: 12px;
+}
+.shop-item.current { border-color: var(--amber); }
+.shop-item b { display: block; font-size: 15px; }
+.shop-item small { display: block; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.shop-item .btn { padding: 9px 12px; font-size: 14px; white-space: nowrap; }
+.shop-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.shop-foot b { font-family: var(--mono); color: var(--fg); }
+.shop-toast { color: var(--lime); font-weight: 800; min-height: 20px; }
+
 @media (prefers-reduced-motion: reduce) {
+  .shop-card { animation: none; }
   .cart, .tile.pop, .tile.merge { transition: none; animation: none; }
 }
 @media (max-width: 380px) {
@@ -273,6 +321,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubTtt">0</span></span>
       </button>
     </div>
+    <button class="btn donate wide" type="button" data-shop><span class="coin">+1K</span>Донат в игру</button>
     <footer class="foot">На телефоне управляй свайпами, на компьютере стрелками или WASD. Рекорды сохраняются в этом браузере.</footer>
   </section>
 
@@ -300,6 +349,9 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button class="down" type="button" data-dir="down" aria-label="Вниз">▼</button>
       <button class="right" type="button" data-dir="right" aria-label="Вправо">▶</button>
     </div>
+    <div class="row-actions">
+      <button class="btn donate" type="button" data-shop="snake"><span class="coin">+1K</span>Донат в игру</button>
+    </div>
     <p class="hint">Пробел — пауза. Скорость растёт с каждой едой.</p>
   </section>
 
@@ -324,6 +376,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     <div class="row-actions">
       <button class="btn ghost" type="button" id="g2048Undo">Отменить ход</button>
       <button class="btn" type="button" id="g2048New">Новая игра</button>
+      <button class="btn donate" type="button" data-shop="g2048"><span class="coin">+1K</span>Донат в игру</button>
     </div>
     <p class="hint">Свайпай по полю. Две одинаковые плитки сливаются в одну.</p>
   </section>
@@ -349,9 +402,37 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     <div class="row-actions">
       <button class="btn" type="button" id="tttNext">Новый раунд</button>
       <button class="btn ghost" type="button" id="tttReset">Сбросить счёт</button>
+      <button class="btn donate" type="button" data-shop="ttt"><span class="coin">+1K</span>Донат в игру</button>
     </div>
   </section>
 
+</div>
+
+<!-- ===== Donate shop ===== -->
+<div class="shop" id="shop" hidden role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+  <div class="shop-card">
+    <div class="shop-head">
+      <h2 id="shopTitle">Донат в игру</h2>
+      <button class="shop-x" type="button" id="shopClose" aria-label="Закрыть">✕</button>
+    </div>
+    <p class="shop-note">Выбери любое улучшение — каждое даёт +1000. Донат игровой: деньги не списываются.</p>
+    <div class="shop-list">
+      <div class="shop-item" data-item="snake">
+        <div><b>Змейка · +1000 очков</b><small>Прибавится к текущему счёту и попадёт в рекорд.</small></div>
+        <button class="btn donate" type="button" data-buy="snake">Купить +1000</button>
+      </div>
+      <div class="shop-item" data-item="g2048">
+        <div><b>2048 · +1000 очков</b><small>Прибавится к счёту текущей партии.</small></div>
+        <button class="btn donate" type="button" data-buy="g2048">Купить +1000</button>
+      </div>
+      <div class="shop-item" data-item="ttt">
+        <div><b>Крестики-нолики · +1000 побед</b><small>Добавится к твоим победам за X.</small></div>
+        <button class="btn donate" type="button" data-buy="ttt">Купить +1000</button>
+      </div>
+    </div>
+    <p class="shop-toast" id="shopToast" aria-live="polite"></p>
+    <div class="shop-foot"><span>Куплено улучшений: <b id="shopCount">0</b></span><span>Всего бонусов: <b id="shopTotal">0</b></span></div>
+  </div>
 </div>
 <script>
 (() => {
@@ -514,6 +595,13 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     return {
       enter() { fit(); hud(); },
       leave() { pause(); },
+      bonus(n) {
+        score += n;
+        if (score > best) { best = score; store.set("snakeBest", best); }
+        hud();
+        if (state === "paused") $("#snakeOvText").textContent = `Счёт: ${score}`;
+        if (state === "over") $("#snakeOvText").textContent = `Счёт: ${score} · Рекорд: ${best}`;
+      },
       key(e) {
         if (e.key === " ") { e.preventDefault(); state === "run" ? pause() : state === "paused" ? resume() : start(); return; }
         const d = KEYS[e.key]; if (d) { e.preventDefault(); turn(d); }
@@ -630,6 +718,11 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     return {
       enter() { render([], []); },
       leave() {},
+      bonus(n) {
+        score += n;
+        if (score > best) { best = score; store.set("best2048", best); }
+        render([], []); save();
+      },
       key(e) { const d = KEYS[e.key]; if (d) { e.preventDefault(); move(d); } },
       best: () => best,
     };
@@ -735,6 +828,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     labels(); renderTally(); round();
     return {
       enter() {}, leave() {},
+      bonus(n) { tally.x += n; store.set("tttTally", tally); renderTally(); },
       key(e) { const n = Number(e.key); if (n >= 1 && n <= 9) human(n - 1); },
       wins: () => tally.x,
     };
@@ -761,7 +855,41 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     window.scrollTo(0, 0);
   }
   $$("[data-go]").forEach((el) => el.addEventListener("click", () => show(el.dataset.go)));
+
+  /* ================= Donate shop ================= */
+  const shop = $("#shop");
+  const NAMES = { snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики" };
+  let donated = store.get("donated", { count: 0, total: 0 });
+  let lastFocus = null, toastTimer = 0;
+  function shopStats() { $("#shopCount").textContent = donated.count; $("#shopTotal").textContent = "+" + donated.total; }
+  function openShop(game) {
+    if (current === "snake") Snake.leave();
+    lastFocus = document.activeElement;
+    $$(".shop-item").forEach((it) => it.classList.toggle("current", it.dataset.item === game));
+    $("#shopToast").textContent = "";
+    shopStats();
+    shop.hidden = false;
+    (shop.querySelector(`[data-buy="${game}"]`) || $("#shopClose")).focus();
+  }
+  function closeShop() {
+    shop.hidden = true;
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  $$("[data-shop]").forEach((el) => el.addEventListener("click", () => openShop(el.dataset.shop)));
+  $$("[data-buy]").forEach((el) => el.addEventListener("click", () => {
+    const g = el.dataset.buy;
+    GAMES[g].bonus(1000);
+    donated.count++; donated.total += 1000; store.set("donated", donated);
+    shopStats(); updateHub();
+    clearTimeout(toastTimer);
+    $("#shopToast").textContent = `Начислено +1000 · ${NAMES[g]}`;
+    toastTimer = setTimeout(() => { $("#shopToast").textContent = ""; }, 2200);
+  }));
+  $("#shopClose").addEventListener("click", closeShop);
+  shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
+
   document.addEventListener("keydown", (e) => {
+    if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
     if (GAMES[current]) GAMES[current].key(e);
