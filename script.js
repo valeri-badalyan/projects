@@ -55,16 +55,7 @@ document.getElementById("contactForm").addEventListener("submit", e => {
   document.getElementById("formOk").hidden = false;
 });
 
-// ===== Появление секций и счётчики =====
-const io = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    entry.target.classList.add("visible");
-    io.unobserve(entry.target);
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll(".section").forEach(s => { s.classList.add("reveal"); io.observe(s); });
-
+// ===== Счётчики =====
 document.querySelectorAll("[data-count]").forEach(el => {
   const target = parseFloat(el.dataset.count);
   const decimals = parseInt(el.dataset.decimals || "0", 10);
