@@ -636,6 +636,36 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .buddy-mate { position: absolute; right: -10px; bottom: -8px; width: 30px; height: 30px; border-radius: 50%; box-shadow: 0 0 0 2px var(--lime); }
 .team-line { font-size: 12px; font-weight: 800; color: var(--lime); }
 
+/* ---------- Ideas ---------- */
+.idea-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.idea-btn { background: linear-gradient(110deg, var(--lime), var(--cyan)); color: var(--bg); }
+.inbox-btn { position: relative; }
+.inbox-btn .badge { position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--coral); color: #fff; font: 800 12px/22px var(--mono); box-shadow: 0 0 0 3px var(--bg); }
+.idea-form { display: flex; flex-direction: column; gap: 10px; }
+.idea-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.idea-form textarea, .idea-form input, .idea-form select {
+  font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%;
+}
+.idea-form textarea { min-height: 110px; resize: vertical; }
+.idea-form textarea:focus, .idea-form input:focus, .idea-form select:focus { outline: none; border-color: var(--lime); }
+.idea-count { align-self: flex-end; font: 600 12px var(--mono); color: var(--muted); margin-top: -6px; }
+.idea-status { min-height: 20px; font-size: 14px; font-weight: 700; }
+.idea-status.ok { color: var(--lime); }
+.idea-status.err { color: var(--amber); font-weight: 600; }
+.idea-list { display: flex; flex-direction: column; gap: 10px; }
+.idea-card { padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 14px; display: flex; flex-direction: column; gap: 6px; }
+.idea-card.new { border-color: var(--lime); }
+.idea-meta { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.idea-meta b { color: var(--cyan); }
+.idea-card p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }
+.idea-tag { display: inline-block; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; color: var(--amber); }
+.toast {
+  position: fixed; z-index: 70; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  max-width: min(420px, calc(100vw - 32px)); padding: 12px 16px; border-radius: 14px; background: var(--panel-2); border: 2px solid var(--lime);
+  box-shadow: 0 10px 30px rgba(0,0,0,.45); font-weight: 700; cursor: pointer; animation: toastin .25s ease-out;
+}
+@keyframes toastin { from { transform: translate(-50%, -20px); opacity: 0; } }
+
 /* ---------- Body type picker ---------- */
 .build-box { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; }
 .build-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -741,6 +771,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <span class="ev-count" id="eventsCount">0 сейчас</span>
       <span class="ev-dot" id="eventsDot" hidden></span>
     </button>
+    <div class="idea-row">
+      <button class="btn wide idea-btn" type="button" id="ideaOpen">Дать идею</button>
+      <button class="btn ghost inbox-btn" type="button" id="inboxBtn" data-go="ideas" hidden>Ящик идей<span class="badge" id="inboxBadge" hidden>0</span></button>
+    </div>
     <a class="btn wide fdm1-btn" id="fdm1Btn" href="https://claude.ai/artifact/UwofzseJzdYCgJQCFyFpqM" target="_blank" rel="noopener">FDM1 <span aria-hidden="true">↗</span></a>
     <p class="lead">Выбери картридж</p>
     <div class="carts">
@@ -1162,6 +1196,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <p class="hint">Пробел, ↑ или нажатие — прыжок. Жёлтый батут подбрасывает сам, жёлтое кольцо — нажми, пока касаешься. В розовом портале кубик становится кораблём: держи, чтобы лететь вверх.</p>
   </section>
 
+  <!-- ===== Ideas inbox (owner only) ===== -->
+  <section id="ideas" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Ящик идей</div>
+      <div class="chip hi"><span>Всего</span><b id="ideasTotal">0</b></div>
+    </div>
+    <p class="shop-note" id="ideasNote">Идеи игроков видишь только ты. Новые подсвечены зелёным.</p>
+    <div class="idea-list" id="ideaList"></div>
+  </section>
+
   <!-- ===== Fix the monitor ===== -->
   <section id="fix" class="screen" hidden>
     <div class="topbar">
@@ -1333,6 +1378,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 </div>
 
 <canvas id="blastFx" hidden></canvas>
+
+<!-- ===== Give an idea ===== -->
+<div class="shop" id="ideaModal" hidden role="dialog" aria-modal="true" aria-labelledby="ideaTitle">
+  <div class="shop-card">
+    <div class="shop-head">
+      <h2 id="ideaTitle">Дать идею</h2>
+      <button class="shop-x" type="button" id="ideaClose" aria-label="Закрыть">✕</button>
+    </div>
+    <form class="idea-form" id="ideaForm">
+      <label for="ideaText">Твоя идея для игры
+        <textarea id="ideaText" maxlength="500" placeholder="Например: добавить игру, где кубик убегает от лавы" required></textarea>
+      </label>
+      <span class="idea-count" id="ideaCount">0/500</span>
+      <label for="ideaKind">О чём идея
+        <select id="ideaKind">
+          <option value="Новая игра">Новая игра</option>
+          <option value="Улучшить игру">Улучшить существующую игру</option>
+          <option value="Персонажи">Персонажи и аксессуары</option>
+          <option value="Другое">Другое</option>
+        </select>
+      </label>
+      <label for="ideaNick">Твой ник (по желанию)
+        <input id="ideaNick" type="text" maxlength="30" autocomplete="nickname" placeholder="Например: Валера">
+      </label>
+      <p class="idea-status" id="ideaStatus" aria-live="polite"></p>
+      <div class="row-actions">
+        <button class="btn" type="submit" id="ideaSend">Отправить</button>
+        <button class="btn ghost" type="button" id="ideaCopy" hidden>Скопировать идею</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ===== Police ===== -->
 <div class="cop" id="cop">
@@ -4312,6 +4389,122 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Ideas: players send, only the owner reads ================= */
+  // Stored in the artifact database: each player writes ideas/<their id>; only the owner can read them all.
+  const Ideas = (() => {
+    const modal = $("#ideaModal"), text = $("#ideaText"), status = $("#ideaStatus");
+    let db = null, user = null, uid = null, owner = false, all = [], firstLoad = true, lastFocus = null;
+    let seen = store.get("ideasSeen", 0);
+    const hasRuntime = !!(window.claude && typeof window.claude.use === "function");
+    const fmtDate = (t) => { const d = new Date(t); return d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) + ", " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); };
+
+    const ready = (async () => {
+      if (!hasRuntime) return;
+      try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch (e) { db = null; user = null; }
+      if (user) {
+        try { owner = await user.isOwner(); } catch (e) { owner = false; }
+        try { uid = await user.id(); } catch (e) { uid = null; }
+      }
+      if (owner && db) watch();
+    })();
+
+    function watch() {
+      $("#inboxBtn").hidden = false;
+      db.collection("ideas").onSnapshot((snap) => {
+        const list = [];
+        snap.docs.forEach((d) => { const body = d.data() || {}; (Array.isArray(body.items) ? body.items : []).forEach((it) => list.push(it)); });
+        list.sort((a, b) => (b.t || 0) - (a.t || 0));
+        const fresh = list.filter((it) => (it.t || 0) > seen);
+        if (!firstLoad && list.length > all.length && list[0]) toast(`Новая идея от ${list[0].nick || "игрока"}: «${String(list[0].text).slice(0, 60)}»`);
+        firstLoad = false;
+        all = list;
+        $("#inboxBadge").hidden = !fresh.length;
+        $("#inboxBadge").textContent = fresh.length;
+        if (!$("#ideas").hidden) renderInbox();
+      }, () => { $("#ideasNote").textContent = "Не удалось загрузить идеи. Открой страницу заново."; });
+    }
+    function toast(msg) {
+      const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); t.textContent = msg;
+      t.addEventListener("click", () => { t.remove(); show("ideas"); });
+      document.body.appendChild(t); setTimeout(() => t.remove(), 6000);
+    }
+    function renderInbox() {
+      const box = $("#ideaList");
+      $("#ideasTotal").textContent = all.length;
+      box.innerHTML = "";
+      if (!all.length) { box.innerHTML = `<p class="ev-empty">Пока идей нет. Когда игрок нажмёт «Дать идею», она появится здесь.</p>`; return; }
+      all.forEach((it) => {
+        const c = document.createElement("article");
+        c.className = "idea-card" + ((it.t || 0) > seen ? " new" : "");
+        c.innerHTML = `<div class="idea-meta"><span><span class="idea-tag"></span></span><span class="when"></span></div><p></p><div class="idea-meta"><span>от <b></b></span></div>`;
+        c.querySelector(".idea-tag").textContent = it.kind || "Идея";
+        c.querySelector(".when").textContent = it.t ? fmtDate(it.t) : "";
+        c.querySelector("p").textContent = it.text || "";
+        c.querySelector("b").textContent = it.nick || "игрок без ника";
+        box.appendChild(c);
+      });
+    }
+    function openInbox() {
+      renderInbox();
+      // everything shown now counts as read; the badge clears
+      const newest = all.reduce((m, it) => Math.max(m, it.t || 0), seen);
+      setTimeout(() => { seen = newest; store.set("ideasSeen", seen); $("#inboxBadge").hidden = true; }, 1500);
+    }
+    function open() {
+      lastFocus = document.activeElement;
+      status.textContent = ""; status.className = "idea-status";
+      $("#ideaCopy").hidden = true; $("#ideaSend").disabled = false;
+      $("#ideaNick").value = $("#ideaNick").value || store.get("ideaNick", "");
+      $("#cop").hidden = true;
+      modal.hidden = false; text.focus();
+    }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function cannot(msg) {
+      status.className = "idea-status err"; status.textContent = msg;
+      $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
+    }
+    async function send(e) {
+      e.preventDefault();
+      const idea = text.value.trim();
+      if (idea.length < 3) { status.className = "idea-status err"; status.textContent = "Напиши идею хотя бы в пару слов."; return; }
+      const nick = $("#ideaNick").value.trim().slice(0, 30);
+      store.set("ideaNick", nick);
+      $("#ideaSend").disabled = true; status.className = "idea-status"; status.textContent = "Отправляю…";
+      await ready;
+      if (!db || !uid) {
+        cannot(hasRuntime
+          ? "Отсюда идею отправить нельзя: автор принимает идеи от тех, кому дал доступ «Участник». Скопируй её и передай автору."
+          : "Отправка работает на опубликованной странице V3 Games. Скопируй идею и передай автору.");
+        return;
+      }
+      try {
+        const ref = db.doc("ideas/" + uid);
+        const snap = await ref.get();
+        const items = snap.exists && Array.isArray((snap.data() || {}).items) ? snap.data().items.slice(-19) : [];
+        items.push({ text: idea.slice(0, 500), kind: $("#ideaKind").value, nick, hero: Hero.name(), t: Date.now() });
+        await ref.set({ items, updatedAt: Date.now() });
+        status.className = "idea-status ok"; status.textContent = "Идея отправлена автору! Спасибо.";
+        text.value = ""; $("#ideaCount").textContent = "0/500";
+        setTimeout(() => { if (!modal.hidden) close(); }, 1600);
+      } catch (err) {
+        const code = err && err.code;
+        if (code === "quota_exceeded") cannot("Ящик идей переполнен. Скопируй идею и передай автору.");
+        else cannot("Отправить не получилось: у тебя нет права записи на этой странице. Скопируй идею и передай автору.");
+      } finally { $("#ideaSend").disabled = false; }
+    }
+    $("#ideaOpen").addEventListener("click", open);
+    $("#ideaClose").addEventListener("click", close);
+    modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+    $("#ideaForm").addEventListener("submit", send);
+    text.addEventListener("input", () => { $("#ideaCount").textContent = `${text.value.length}/500`; });
+    $("#ideaCopy").addEventListener("click", async () => {
+      const msg = `Идея для V3 Games (${$("#ideaKind").value}): ${text.value.trim()}`;
+      try { await navigator.clipboard.writeText(msg); status.className = "idea-status ok"; status.textContent = "Скопировано!"; }
+      catch (e) { text.focus(); text.select(); status.textContent = "Выдели текст и скопируй вручную."; }
+    });
+    return { openInbox, isOpen: () => !modal.hidden, close };
+  })();
+
   /* ================= Fix the monitor ================= */
   const Fix = (() => {
     const board = $("#fixBoard"), wrap = $("#fixWrap"), ov = $("#fixOverlay");
@@ -4901,7 +5094,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "events", "chars", "gear", "chats"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -4927,6 +5120,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "chars") { Hero.roster(); Hero.refresh(); }
     if (name === "gear") Hero.gearShop();
     if (name === "chats") HeroChat.list();
+    if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     // the police button would cover the workbench in "Fix the monitor"
     $("#cop").hidden = name === "fix";
@@ -5563,6 +5757,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   shop.addEventListener("click", (e) => { if (e.target === shop) closeShop(); });
 
   document.addEventListener("keydown", (e) => {
+    if (Ideas.isOpen()) { if (e.key === "Escape") Ideas.close(); return; }
     if (Pair.isOpen()) { if (e.key === "Escape") Pair.close(); return; }
     if (HeroChat.isOpen()) { if (e.key === "Escape") HeroChat.close(); return; }
     if (CopChat.isOpen()) { if (e.key === "Escape") CopChat.close(); return; }
