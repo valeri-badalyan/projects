@@ -234,6 +234,23 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .slot.dim { opacity: .35; }
 .slot.dragging canvas { opacity: 0; }
 #zombieCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; cursor: crosshair; background: #0b0f0e; }
+#vr .gtitle { font-size: 15px; }
+.vr-stage { position: relative; width: 100%; max-width: 440px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #8fd3ff; }
+.vr-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.vr-stage:fullscreen { max-width: none; border-radius: 0; }
+.vr-hud {
+  position: absolute; left: 10px; right: 10px; top: 10px; display: flex; justify-content: space-between; gap: 8px;
+  pointer-events: none; font-family: var(--mono); font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); font-size: 14px;
+}
+.vr-hud b { font-size: 22px; display: block; line-height: 1; }
+.vr-stage.stereo .vr-hud { display: none; }
+.vr-stage.stereo::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #000; transform: translateX(-1px);
+}
+.vr-note { margin: 0; text-align: center; font-size: 13px; color: var(--muted); min-height: 18px; }
+.vr-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.vr-bar .btn { padding: 9px 14px; font-size: 14px; }
+.btn[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--lime); }
 #zombie .gtitle { font-size: 12px; line-height: 1.25; }
 .zombie-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #blastFx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; }
@@ -521,7 +538,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Пять игр в одном кармане</span>
+        <span class="tag">Шесть игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -589,6 +606,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <span class="cart-desc">Заброшенная больница. Жми туда, куда стрелять. Каждый зомби +5.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubZombie">0</span></span>
+      </button>
+      <button class="cart" data-go="vr" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="vrsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5aa9ff"/><stop offset="1" stop-color="#bfe6ff"/></linearGradient></defs><rect width="64" height="64" fill="url(#vrsky)"/><path d="M0 50 L14 36 L26 46 L40 30 L64 50 V64 H0Z" fill="#6aa35a"/><path d="M2 54 C12 54 14 14 24 14 C34 14 34 44 44 44 C52 44 54 30 62 30" fill="none" stroke="#c43c4f" stroke-width="3"/><path d="M2 58 C12 58 14 18 24 18 C34 18 34 48 44 48 C52 48 54 34 62 34" fill="none" stroke="#c43c4f" stroke-width="1.5"/><g stroke="#e9eefc" stroke-width="1.2"><path d="M24 18 V64 M44 48 V64 M14 40 V64"/></g><rect x="18" y="8" width="14" height="7" rx="2" fill="#ffb547"/><rect x="9" y="22" width="30" height="13" rx="6" fill="#1d2130"/><circle cx="17" cy="28.5" r="4" fill="#5ce1e6"/><circle cx="31" cy="28.5" r="4" fill="#5ce1e6"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">VR Аттракцион</span>
+          <span class="cart-desc">Американские горки в 3D. Куда направишь телефон — туда смотрит персонаж.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Кругов</span><span class="stat-val" id="hubVr">0</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -755,6 +782,39 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button class="btn donate" type="button" data-shop="zombie"><span class="coin">+1K</span>Донат в игру</button>
     </div>
     <p class="hint">Попадание в зомби — +5 очков. В обойме 12 патронов, R — перезарядка. Зомби дошёл до тебя — минус жизнь.</p>
+  </section>
+
+  <!-- ===== VR roller coaster ===== -->
+  <section id="vr" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">VR Аттракцион</div>
+      <div class="chips">
+        <div class="chip"><span>Кругов</span><b id="vrLaps">0</b></div>
+        <div class="chip hi"><span>Макс км/ч</span><b id="vrTop">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="vr-stage" id="vrStage">
+      <div class="vr-hud"><span>СКОРОСТЬ<b id="vrSpeed">0</b>км/ч</span><span style="text-align:right">ВЫСОТА<b id="vrHeight">0</b>м</span></div>
+      <div class="overlay" id="vrOverlay">
+        <h2 id="vrOvTitle">VR Аттракцион</h2>
+        <p id="vrOvText">Садись в вагончик. Смотри по сторонам, поворачивая телефон или водя пальцем.</p>
+        <button class="btn" type="button" id="vrStart">Поехали!</button>
+      </div>
+    </div>
+    <p class="vr-note" id="vrNote" aria-live="polite"></p>
+    <div class="vr-bar">
+      <button class="btn ghost" type="button" id="vrMotion" aria-pressed="false">Смотреть телефоном</button>
+      <button class="btn ghost" type="button" id="vrCenter">Смотреть вперёд</button>
+      <button class="btn ghost" type="button" id="vrStereo" aria-pressed="false">VR-очки</button>
+      <button class="btn ghost" type="button" id="vrFull">На весь экран</button>
+    </div>
+    <p class="hint">Каждый полный круг — +5 очков и +5 монет. Для VR-очков включи «VR-очки» и поверни телефон горизонтально.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -1230,7 +1290,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       store.set("team", team);
       if (sel !== leader) { sel = leader; store.set("hero", sel); }
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
+      ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
       return { ok: true, leader: byIdC(leader), mate: byIdC(mate) };
     }
     const inTeam = (a, b) => !!team && ((team.a === a && team.b === b) || (team.a === b && team.b === a));
@@ -1238,7 +1298,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start"));
+      ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start"));
     }
     function buy(id) {
       const c = get(id);
@@ -1298,7 +1358,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       refresh(); listeners.forEach((f) => f());
       if (before !== act()) {
         const now = get();
-        ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
+        ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
       }
       return { ok: true, c };
     }
@@ -1311,7 +1371,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (changed) {
         store.set("bans", bans);
         refresh(); listeners.forEach((f) => f());
-        if (before !== act()) ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
+        if (before !== act()) ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
       } else if (!$("#chars").hidden) roster();
     }, 1000);
     refresh();
@@ -2529,9 +2589,373 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     };
   })();
 
+  /* ================= VR roller coaster ================= */
+  const VR = (() => {
+    const THREE_URL = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+    const stageEl = $("#vrStage"), ov = $("#vrOverlay"), note = $("#vrNote");
+    let T3 = null, loading = null, built = false, visible = false, raf = 0, lastT = 0;
+    let renderer, scene, camera, camL, camR, rig, curve, L = 1, liftEnd = .2;
+    let s = 0, v = 0, riding = false, lapStart = 0, maxH = 0, stereo = false;
+    let yaw = 0, pitch = 0, motionOn = false, motionSeen = false, devQ = null, calYaw = null, screenAng = 0;
+    let saidDrop = false, saidBack = 0;
+    let laps = store.get("vrLaps", 0), topKmh = store.get("vrTop", 0);
+
+    function hud() { $("#vrLaps").textContent = laps; $("#vrTop").textContent = topKmh; }
+    function load() {
+      if (window.THREE) return Promise.resolve(window.THREE);
+      if (loading) return loading;
+      loading = new Promise((res, rej) => {
+        const sc = document.createElement("script");
+        sc.src = THREE_URL; sc.async = true;
+        sc.onload = () => (window.THREE ? res(window.THREE) : rej(new Error("no THREE")));
+        sc.onerror = () => rej(new Error("load failed"));
+        document.head.appendChild(sc);
+      });
+      loading.catch(() => { loading = null; });
+      return loading;
+    }
+
+    // ---------- world ----------
+    function build() {
+      const THREE = T3;
+      const w = stageEl.clientWidth || 360, h = Math.round(w * 1.25);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, h);
+      stageEl.style.height = h + "px";
+      stageEl.insertBefore(renderer.domElement, stageEl.firstChild);
+      scene = new THREE.Scene();
+      const sky = new THREE.Color("#9fd8ff");
+      scene.background = sky;
+      scene.fog = new THREE.Fog(sky, 120, 520);
+      scene.add(new THREE.HemisphereLight(0xdff3ff, 0x55703a, .85));
+      const sun = new THREE.DirectionalLight(0xfff1d6, .75); sun.position.set(80, 150, 60); scene.add(sun);
+
+      // ground, lake, mountains, trees, clouds
+      const ground = new THREE.Mesh(new THREE.PlaneGeometry(1400, 1400), new THREE.MeshLambertMaterial({ color: 0x6aa35a }));
+      ground.rotation.x = -Math.PI / 2; scene.add(ground);
+      const lake = new THREE.Mesh(new THREE.CircleGeometry(38, 40), new THREE.MeshLambertMaterial({ color: 0x3f8fd8 }));
+      lake.rotation.x = -Math.PI / 2; lake.position.set(-70, .05, 120); scene.add(lake);
+      const mMat = new THREE.MeshLambertMaterial({ color: 0x7d8a99, flatShading: true });
+      const snow = new THREE.MeshLambertMaterial({ color: 0xf4f7ff, flatShading: true });
+      for (let i = 0; i < 16; i++) {
+        const a = i / 16 * Math.PI * 2 + Math.random() * .2, r = 380 + Math.random() * 90, hh = 70 + Math.random() * 110;
+        const m = new THREE.Mesh(new THREE.ConeGeometry(55 + Math.random() * 45, hh, 6), mMat);
+        m.position.set(Math.cos(a) * r, hh / 2, Math.sin(a) * r); scene.add(m);
+        const cap = new THREE.Mesh(new THREE.ConeGeometry(18, hh * .25, 6), snow);
+        cap.position.set(m.position.x, hh * .88, m.position.z); scene.add(cap);
+      }
+
+      // track: a closed loop with lift hill, big drop, turns and camelback hills
+      const P = [
+        [0, 3, -30], [0, 3, 0], [0, 3, 30], [0, 16, 70], [0, 34, 110], [0, 46, 140], [0, 47, 152],
+        [0, 30, 175], [0, 6, 205], [6, 4, 232], [28, 10, 258], [60, 22, 266], [88, 18, 250],
+        [104, 10, 222], [108, 8, 188], [104, 28, 160], [96, 8, 132], [90, 22, 104], [84, 6, 76],
+        [74, 9, 46], [56, 16, 18], [44, 10, -10], [26, 5, -34], [10, 3, -44],
+      ].map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+      curve = new THREE.CatmullRomCurve3(P, true, "centripetal", .5);
+      L = curve.getLength();
+      // lift hill: from the station to the top of the first hill
+      let best = 0, bestU = .2;
+      for (let u = 0; u < .4; u += .002) { const y = curve.getPointAt(u).y; if (y > best) { best = y; bestU = u; } }
+      liftEnd = bestU; maxH = best;
+
+      const N = 1400, up = new THREE.Vector3(0, 1, 0);
+      const left = [], right = [];
+      const frames = [];
+      for (let i = 0; i < N; i++) {
+        const u = i / N, p = curve.getPointAt(u), t = curve.getTangentAt(u);
+        const side = new THREE.Vector3().crossVectors(t, up).normalize();
+        frames.push({ p, t, side });
+        left.push(p.clone().addScaledVector(side, -.75));
+        right.push(p.clone().addScaledVector(side, .75));
+      }
+      const railMat = new THREE.MeshLambertMaterial({ color: 0xc43c4f });
+      [left, right].forEach((pts) => {
+        const c = new THREE.CatmullRomCurve3(pts, true);
+        scene.add(new THREE.Mesh(new THREE.TubeGeometry(c, N, .14, 6, true), railMat));
+      });
+      const spine = new THREE.Mesh(new THREE.TubeGeometry(curve, N, .28, 8, true), new THREE.MeshLambertMaterial({ color: 0x8a1f30 }));
+      spine.position.y = -.35; scene.add(spine);
+      // sleepers and supports as instanced meshes
+      const sleeperGeo = new THREE.BoxGeometry(1.9, .12, .3);
+      const sleepers = new THREE.InstancedMesh(sleeperGeo, new THREE.MeshLambertMaterial({ color: 0x5b4636 }), Math.ceil(N / 4));
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc1 = new THREE.Vector3(1, 1, 1);
+      let k = 0;
+      for (let i = 0; i < N; i += 4) {
+        const f = frames[i];
+        const z = f.t.clone().negate(), x = f.side.clone(), y = new THREE.Vector3().crossVectors(z, x).normalize();
+        m4.makeBasis(x, y, z); q.setFromRotationMatrix(m4);
+        m4.compose(f.p.clone().addScaledVector(y, -.15), q, sc1);
+        sleepers.setMatrixAt(k++, m4);
+      }
+      sleepers.count = k; scene.add(sleepers);
+      const supMat = new THREE.MeshLambertMaterial({ color: 0xe9eefc });
+      const sup = new THREE.InstancedMesh(new THREE.CylinderGeometry(.22, .3, 1, 8), supMat, Math.ceil(N / 22));
+      k = 0;
+      for (let i = 0; i < N; i += 22) {
+        const f = frames[i];
+        if (f.p.y < 2) continue;
+        m4.compose(new THREE.Vector3(f.p.x, (f.p.y - .5) / 2, f.p.z), new THREE.Quaternion(), new THREE.Vector3(1, f.p.y - .5, 1));
+        sup.setMatrixAt(k++, m4);
+      }
+      sup.count = k; scene.add(sup);
+
+      // trees, kept away from the track
+      const trunkG = new THREE.CylinderGeometry(.35, .5, 3, 6), leafG = new THREE.ConeGeometry(2.6, 7, 7);
+      const TN = 260;
+      const trunks = new THREE.InstancedMesh(trunkG, new THREE.MeshLambertMaterial({ color: 0x6b4a2b }), TN);
+      const leaves = new THREE.InstancedMesh(leafG, new THREE.MeshLambertMaterial({ color: 0x2f7a3f, flatShading: true }), TN);
+      k = 0;
+      for (let tries = 0; k < TN && tries < 3000; tries++) {
+        const x = (Math.random() - .5) * 600, z = (Math.random() - .5) * 600 + 100;
+        if (Math.hypot(x + 70, z - 120) < 42) continue;
+        let near = false;
+        for (let i = 0; i < N; i += 10) { const f = frames[i]; if (Math.hypot(f.p.x - x, f.p.z - z) < 9) { near = true; break; } }
+        if (near) continue;
+        const sz = .7 + Math.random() * .8;
+        m4.compose(new THREE.Vector3(x, 1.5 * sz, z), new THREE.Quaternion(), new THREE.Vector3(sz, sz, sz)); trunks.setMatrixAt(k, m4);
+        m4.compose(new THREE.Vector3(x, 6 * sz, z), new THREE.Quaternion(), new THREE.Vector3(sz, sz, sz)); leaves.setMatrixAt(k, m4);
+        k++;
+      }
+      trunks.count = k; leaves.count = k; scene.add(trunks, leaves);
+      const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      for (let i = 0; i < 14; i++) {
+        const g = new THREE.Group();
+        for (let j = 0; j < 4; j++) { const b = new THREE.Mesh(new THREE.SphereGeometry(6 + Math.random() * 5, 10, 8), cloudMat); b.position.set(j * 7 - 10, Math.random() * 3, Math.random() * 5); g.add(b); }
+        g.position.set((Math.random() - .5) * 700, 90 + Math.random() * 50, (Math.random() - .5) * 700 + 100); scene.add(g);
+      }
+      // station with a roof
+      const station = new THREE.Group();
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(9, .5, 34), new THREE.MeshLambertMaterial({ color: 0xffb547 }));
+      roof.position.set(0, 9, 0); station.add(roof);
+      const plat = new THREE.Mesh(new THREE.BoxGeometry(4, 2.4, 34), new THREE.MeshLambertMaterial({ color: 0x9aa3b5 }));
+      plat.position.set(4, 1.2, 0); station.add(plat);
+      [[-4, -16], [4, -16], [-4, 16], [4, 16]].forEach(([x, z]) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(.3, .3, 9, 8), supMat); c.position.set(x, 4.5, z); station.add(c); });
+      scene.add(station);
+
+      // the cart and the rider's view
+      rig = new THREE.Object3D(); scene.add(rig);
+      camera = new THREE.PerspectiveCamera(75, w / h, .1, 1500);
+      camera.position.set(0, 1.45, 0);
+      rig.add(camera);
+      camL = new THREE.PerspectiveCamera(80, (w / 2) / h, .1, 1500); camL.position.x = -.032; camera.add(camL);
+      camR = new THREE.PerspectiveCamera(80, (w / 2) / h, .1, 1500); camR.position.x = .032; camera.add(camR);
+      const cart = new THREE.Group();
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.7, .5, 2.2), new THREE.MeshLambertMaterial({ color: 0x4a6cf7 }));
+      body.position.set(0, .25, -1.2); cart.add(body);
+      const nose = new THREE.Mesh(new THREE.BoxGeometry(1.7, .5, .8), new THREE.MeshLambertMaterial({ color: 0xffb547 }));
+      nose.position.set(0, .3, -2.6); cart.add(nose);
+      rig.add(cart);
+
+      // drag to look
+      let drag = null;
+      const cvs = renderer.domElement;
+      cvs.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, yaw, pitch }; try { cvs.setPointerCapture(e.pointerId); } catch (err) {} });
+      cvs.addEventListener("pointermove", (e) => {
+        if (!drag) return;
+        // drag the world: moving the finger right turns the view left
+        yaw = drag.yaw - (e.clientX - drag.x) * .006;
+        pitch = Math.max(-1.3, Math.min(1.3, drag.pitch - (e.clientY - drag.y) * .006));
+        if (motionOn) calYaw = null; // dragging while using the phone re-centres the view
+      });
+      ["pointerup", "pointercancel"].forEach((ev) => cvs.addEventListener(ev, () => { drag = null; }));
+      built = true;
+      place(0);
+    }
+    function resize() {
+      if (!built) return;
+      const full = document.fullscreenElement === stageEl;
+      const w = full ? innerWidth : (stageEl.clientWidth || 360);
+      const h = full ? innerHeight : Math.round(w * 1.25);
+      if (!full) stageEl.style.height = h + "px";
+      renderer.setSize(w, h);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      camL.aspect = camR.aspect = (w / 2) / h; camL.updateProjectionMatrix(); camR.updateProjectionMatrix();
+    }
+
+    // ---------- ride physics ----------
+    const tmpUp = () => new T3.Vector3(0, 1, 0);
+    function place(dt) {
+      const u = ((s % L) + L) % L / L;
+      const p = curve.getPointAt(u), t = curve.getTangentAt(u);
+      rig.position.copy(p);
+      const ahead = p.clone().add(t);
+      rig.up.copy(tmpUp());
+      rig.lookAt(ahead);
+      rig.rotateY(Math.PI); // Object3D.lookAt points +z; cameras look down -z
+      // bank into turns: compare heading now and a little ahead
+      const t2 = curve.getTangentAt((u + .004) % 1);
+      const turn = Math.atan2(t.x * t2.z - t.z * t2.x, t.x * t2.x + t.z * t2.z);
+      const roll = Math.max(-.6, Math.min(.6, -turn * v * .9));
+      rig.rotateZ(roll);
+      return { u, p, t };
+    }
+    function step(dt) {
+      if (!riding) return;
+      const u = ((s % L) + L) % L / L;
+      const y = curve.getPointAt(u).y;
+      const g = 9.8, sec = dt / 1000;
+      let target;
+      if (u < liftEnd) target = u < .03 ? 5 : 9; // station and chain lift
+      else target = Math.max(5, Math.sqrt(Math.max(0, 2 * g * (maxH + 1.5 - y))) * .96);
+      if (u > .96) target = Math.min(target, 7); // brakes before the station
+      v += (target - v) * Math.min(1, sec * (u < liftEnd ? 2 : 6));
+      const before = s;
+      s += v * sec;
+      if (Math.floor(s / L) > Math.floor(before / L)) lap();
+      const kmh = Math.round(v * 3.6);
+      $("#vrSpeed").textContent = kmh;
+      $("#vrHeight").textContent = Math.round(y);
+      if (kmh > topKmh) { topKmh = kmh; store.set("vrTop", topKmh); hud(); }
+      // the rider reacts
+      if (u > liftEnd && u < liftEnd + .02 && !saidDrop) { saidDrop = true; Hero.say("vr", "good", "Аааааа!!! Летим вниз!"); }
+      if (u > liftEnd + .1) saidDrop = false;
+      if (u > liftEnd - .04 && u < liftEnd - .03) Hero.say("vr", "start", "Ох, как высоко… Сейчас будет спуск!");
+      const lookBack = Math.abs(Math.atan2(Math.sin(yaw), Math.cos(yaw))) > 2.2;
+      if (lookBack && performance.now() - saidBack > 6000) { saidBack = performance.now(); Hero.say("vr", "start", "Не смотри назад, смотри вперёд!"); }
+    }
+    function lap() {
+      laps++; store.set("vrLaps", laps); hud(); updateHub();
+      Hero.earn(5);
+      Hero.say("vr", "win", `Круг ${laps}! +5`);
+    }
+
+    // ---------- looking around ----------
+    const zee = () => new T3.Vector3(0, 0, 1);
+    function deviceQuat(e) {
+      const THREE = T3;
+      const euler = new THREE.Euler(), q = new THREE.Quaternion();
+      const q1 = new THREE.Quaternion(-Math.sqrt(.5), 0, 0, Math.sqrt(.5));
+      const rad = Math.PI / 180;
+      euler.set((e.beta || 0) * rad, (e.alpha || 0) * rad, -(e.gamma || 0) * rad, "YXZ");
+      q.setFromEuler(euler); q.multiply(q1);
+      q.multiply(new THREE.Quaternion().setFromAxisAngle(zee(), -screenAng * rad));
+      return q;
+    }
+    function onOrient(e) {
+      if (e.alpha == null && e.beta == null) return;
+      motionSeen = true;
+      if (T3) devQ = deviceQuat(e);
+    }
+    function applyLook() {
+      const THREE = T3;
+      if (motionOn && devQ) {
+        const e = new THREE.Euler().setFromQuaternion(devQ, "YXZ");
+        if (calYaw === null) calYaw = e.y - yaw;
+        const qc = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -calYaw);
+        camera.quaternion.copy(qc.multiply(devQ));
+      } else {
+        camera.quaternion.setFromEuler(new THREE.Euler(-pitch, -yaw, 0, "YXZ"));
+      }
+    }
+    async function toggleMotion() {
+      const btn = $("#vrMotion");
+      if (motionOn) {
+        motionOn = false; btn.setAttribute("aria-pressed", "false");
+        window.removeEventListener("deviceorientation", onOrient);
+        note.textContent = "Обзор пальцем.";
+        return;
+      }
+      try {
+        if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function") {
+          const r = await DeviceOrientationEvent.requestPermission();
+          if (r !== "granted") { note.textContent = "Доступ к датчикам не дан — смотри пальцем."; return; }
+        }
+      } catch (err) { note.textContent = "Датчики телефона недоступны на этой странице — смотри пальцем."; return; }
+      motionSeen = false; calYaw = null; devQ = null; yaw = 0; pitch = 0;
+      window.addEventListener("deviceorientation", onOrient);
+      motionOn = true; btn.setAttribute("aria-pressed", "true");
+      note.textContent = "Поворачивай телефон — персонаж смотрит туда же.";
+      setTimeout(() => {
+        if (motionOn && !motionSeen) {
+          motionOn = false; btn.setAttribute("aria-pressed", "false");
+          window.removeEventListener("deviceorientation", onOrient);
+          note.textContent = "Телефон не передаёт повороты на этой странице — смотри пальцем. В файле index.html на телефоне датчики работают.";
+        }
+      }, 1500);
+    }
+
+    // ---------- loop ----------
+    function render() {
+      applyLook();
+      if (stereo) {
+        const size = renderer.getSize(new T3.Vector2());
+        renderer.setScissorTest(true);
+        renderer.setViewport(0, 0, size.x / 2, size.y); renderer.setScissor(0, 0, size.x / 2, size.y); renderer.render(scene, camL);
+        renderer.setViewport(size.x / 2, 0, size.x / 2, size.y); renderer.setScissor(size.x / 2, 0, size.x / 2, size.y); renderer.render(scene, camR);
+        renderer.setScissorTest(false);
+      } else {
+        const size = renderer.getSize(new T3.Vector2());
+        renderer.setViewport(0, 0, size.x, size.y);
+        renderer.render(scene, camera);
+      }
+    }
+    function frame(t) {
+      raf = 0;
+      if (!visible || !built) return;
+      const dt = lastT ? Math.min(50, t - lastT) : 16; lastT = t;
+      step(dt); place(dt); render();
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible && built) { lastT = 0; raf = requestAnimationFrame(frame); } }
+
+    async function enter() {
+      visible = true; hud();
+      if (!built) {
+        note.textContent = "Загружаю 3D…";
+        try { T3 = await load(); } catch (err) { note.textContent = "Не удалось загрузить 3D. Проверь интернет и зайди ещё раз."; return; }
+        if (!visible) return;
+        try { build(); } catch (err) { note.textContent = "Этот браузер не умеет показывать 3D (WebGL)."; return; }
+        note.textContent = "Смотри по сторонам пальцем или включи «Смотреть телефоном».";
+      }
+      resize(); loop();
+    }
+    $("#vrStart").addEventListener("click", () => {
+      if (!built) return;
+      riding = true; ov.hidden = true;
+      if (v < 1) v = 2;
+      Hero.say("vr", "start", "Пристегнулись? Поехали!");
+    });
+    $("#vrMotion").addEventListener("click", toggleMotion);
+    $("#vrCenter").addEventListener("click", () => { yaw = 0; pitch = 0; calYaw = null; });
+    $("#vrStereo").addEventListener("click", () => {
+      stereo = !stereo;
+      $("#vrStereo").setAttribute("aria-pressed", String(stereo));
+      stageEl.classList.toggle("stereo", stereo);
+      note.textContent = stereo ? "Режим VR-очков: поверни телефон горизонтально и вставь в очки." : "";
+    });
+    $("#vrFull").addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await stageEl.requestFullscreen();
+      } catch (err) { note.textContent = "Полный экран здесь недоступен."; }
+    });
+    document.addEventListener("fullscreenchange", () => setTimeout(resize, 50));
+    window.addEventListener("resize", () => { if (visible) resize(); });
+    const readAngle = () => { screenAng = (screen.orientation && screen.orientation.angle) || window.orientation || 0; };
+    readAngle();
+    window.addEventListener("orientationchange", () => { readAngle(); calYaw = null; setTimeout(resize, 200); });
+
+    return {
+      enter,
+      leave() {
+        visible = false;
+        if (riding) { riding = false; ov.hidden = false; $("#vrOvTitle").textContent = "Пауза"; $("#vrOvText").textContent = "Вагончик ждёт тебя."; $("#vrStart").textContent = "Продолжить"; }
+      },
+      key(e) {
+        const d = { ArrowLeft: -.12, ArrowRight: .12 }[e.key];
+        if (d) { e.preventDefault(); yaw += d; }
+        if (e.key === "ArrowUp") { e.preventDefault(); pitch = Math.max(-1.3, pitch - .1); }
+        if (e.key === "ArrowDown") { e.preventDefault(); pitch = Math.min(1.3, pitch + .1); }
+      },
+      best: () => laps,
+    };
+  })();
+
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -2540,6 +2964,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     $("#hubTtt").textContent = T.wins();
     $("#hubBlast").textContent = Blast.best();
     $("#hubZombie").textContent = Zombie.best();
+    $("#hubVr").textContent = VR.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -2703,7 +3128,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function rules() {
       if (Police.isBoss()) return [
-        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis).",
+        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион).",
         "Собеседник — твой начальник. Ты его узнал, поэтому говоришь почтительно, по-военному («Так точно», «Есть», «товарищ начальник»), с юмором.",
         "Начальника ты НИКОГДА не называешь читером и не обвиняешь — даже если раньше в переписке называл. Его донаты ты одобряешь.",
         "Отвечай по-русски, 1–2 коротких предложения. Никаких грубостей и взрослых тем: игру могут открывать дети. Можно докладывать обстановку и давать советы по играм.",
@@ -2711,7 +3136,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         "Пиши только реплику полицейского, без пояснений и кавычек.",
       ].join("\n");
       return [
-        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis).",
+        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион).",
         "Ты всегда подозреваешь игрока в читерстве, потому что в игре есть кнопка «Донат в игру», которая бесплатно даёт +1000.",
         "Отвечай по-русски, 1–2 коротких предложения, с юмором, и обязательно вставляй «Читер!!».",
         "Никаких реальных угроз, грубости и взрослых тем: игру могут открывать дети. Можно давать короткие советы по этим играм.",
@@ -2883,7 +3308,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function soloRules(c) {
       return [
-        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
+        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
         "Ты переписываешься с игроком. Отвечай по-русски, 1–2 коротких предложения, строго в своём характере, с юмором.",
         "В игре есть полицейский сержант Мигалкин, который всем кричит «Читер!!», и другие персонажи: " + CHARS.filter((x) => x.id !== c.id).map((x) => x.name).join(", ") + ".",
         "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
@@ -2987,8 +3412,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
         const prompt = [
           chatId === "group"
-            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis). Игрок пишет сообщение, персонажи отвечают."
-            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis) с игроком. Персонажи — напарники и отвечают вместе.",
+            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион). Игрок пишет сообщение, персонажи отвечают."
+            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион) с игроком. Персонажи — напарники и отвечают вместе.",
           "Персонажи онлайн:", ...on.map(persona),
           "Персонажи в бане сейчас молчат: " + (members().filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
           "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
@@ -3195,6 +3620,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     if (document.hidden && current === "snake") Snake.leave();
     if (document.hidden && current === "zombie") Zombie.leave();
     if (!document.hidden && current === "zombie") Zombie.enter();
+    if (document.hidden && current === "vr") VR.leave();
+    if (!document.hidden && current === "vr") VR.enter();
   });
 
   show((location.hash || "").slice(1));
