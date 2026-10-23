@@ -217,6 +217,24 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .tally .x b { color: var(--cyan); }
 .tally .o b { color: var(--coral); }
 
+/* ---------- Block Blast ---------- */
+#blastCanvas { display: block; width: 100%; aspect-ratio: 1; max-width: 100%; border-radius: 12px; touch-action: none; }
+.stage.shake { animation: shake .28s ease-out; }
+@keyframes shake {
+  20% { transform: translate(-4px, 2px); } 40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, 1px); } 80% { transform: translate(2px, -1px); }
+}
+.tray { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.slot {
+  height: 104px; border-radius: 12px; background: var(--panel);
+  display: flex; align-items: center; justify-content: center;
+  touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.slot canvas { display: block; pointer-events: none; }
+.slot.dim { opacity: .35; }
+.slot.dragging canvas { opacity: 0; }
+#blastFx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; }
+
 /* ---------- Characters ---------- */
 @property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .av { border-radius: 14px; overflow: hidden; background: var(--bg); flex: none; }
@@ -479,7 +497,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .shop-toast { color: var(--lime); font-weight: 800; min-height: 20px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cop-btn, .cop-say.shout, .siren { animation: none; }
+  .cop-btn, .cop-say.shout, .siren, .stage.shake { animation: none; }
   .shop-card, .av.tier-ultra, .hero-card.tier-ultra, .buddy-say.talk { animation: none; }
   .cart, .tile.pop, .tile.merge { transition: none; animation: none; }
 }
@@ -500,7 +518,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Три игры в одном кармане</span>
+        <span class="tag">Четыре игры в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -548,6 +566,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <span class="cart-desc">Против бота двух уровней или вдвоём на одном экране.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubTtt">0</span></span>
+      </button>
+      <button class="cart" data-go="blast" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#12132a"/><g fill="#24274d"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="46" y="6" width="12" height="12" rx="2"/><rect x="6" y="46" width="12" height="12" rx="2"/></g><g fill="#ffb547"><rect x="19" y="6" width="12" height="12" rx="2"/><rect x="32" y="6" width="12" height="12" rx="2"/><rect x="32" y="19" width="12" height="12" rx="2"/></g><g fill="#5ce1e6"><rect x="6" y="19" width="12" height="12" rx="2"/><rect x="6" y="32" width="12" height="12" rx="2"/><rect x="19" y="32" width="12" height="12" rx="2"/></g><g fill="#ff6b7a"><rect x="46" y="32" width="12" height="12" rx="2"/><rect x="46" y="46" width="12" height="12" rx="2"/><rect x="33" y="46" width="12" height="12" rx="2"/></g><g fill="#fff"><path d="M50 22l3-5 1 6 5-2-4 5z"/><path d="M24 50l-4 3 5 1-2 5 5-4z" opacity=".7"/></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Block Blast</span>
+          <span class="cart-desc">Ставь фигуры из кубиков. Полная линия разлетается и даёт +5.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubBlast">0</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -651,6 +679,41 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     </div>
   </section>
 
+  <!-- ===== Block Blast ===== -->
+  <section id="blast" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Block Blast</div>
+      <div class="chips">
+        <div class="chip"><span>Счёт</span><b id="blastScore">0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="blastBest">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="blastStage">
+      <canvas id="blastCanvas" width="440" height="440" aria-label="Поле Block Blast"></canvas>
+      <div class="overlay" id="blastOverlay" hidden>
+        <h2>Нет места</h2>
+        <p id="blastOvText"></p>
+        <button class="btn" type="button" id="blastOvBtn">Ещё раз</button>
+      </div>
+    </div>
+    <div class="tray" id="blastTray" aria-label="Фигуры">
+      <div class="slot" data-slot="0"><canvas></canvas></div>
+      <div class="slot" data-slot="1"><canvas></canvas></div>
+      <div class="slot" data-slot="2"><canvas></canvas></div>
+    </div>
+    <div class="row-actions">
+      <button class="btn ghost" type="button" id="blastNew">Новая игра</button>
+      <button class="btn donate" type="button" data-shop="blast"><span class="coin">+1K</span>Донат в игру</button>
+    </div>
+    <p class="hint">Перетащи фигуру на поле. Заполненная строка или столбец ломается и даёт +5 очков.</p>
+  </section>
+
   <!-- ===== Characters ===== -->
   <section id="chars" class="screen" hidden>
     <div class="topbar">
@@ -745,6 +808,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
   </div>
 </div>
 
+<canvas id="blastFx" hidden></canvas>
+
 <!-- ===== Police ===== -->
 <div class="cop" id="cop">
   <div class="cop-say" id="copSay" aria-live="polite" hidden></div>
@@ -786,6 +851,10 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="shop-item" data-item="coins">
         <div><b>+1000 монет</b><small>На покупку платных и ультра-персонажей.</small></div>
         <button class="btn donate" type="button" data-buy="coins">Купить +1000</button>
+      </div>
+      <div class="shop-item" data-item="blast">
+        <div><b>Block Blast · +1000 очков</b><small>Прибавится к счёту текущей партии.</small></div>
+        <button class="btn donate" type="button" data-buy="blast">Купить +1000</button>
       </div>
       <div class="shop-item" data-item="snake">
         <div><b>Змейка · +1000 очков</b><small>Прибавится к текущему счёту и попадёт в рекорд.</small></div>
@@ -1114,7 +1183,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       store.set("team", team);
       if (sel !== leader) { sel = leader; store.set("hero", sel); }
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
+      ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
       return { ok: true, leader: byIdC(leader), mate: byIdC(mate) };
     }
     const inTeam = (a, b) => !!team && ((team.a === a && team.b === b) || (team.a === b && team.b === a));
@@ -1122,7 +1191,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt"].forEach((g) => say(g, "start"));
+      ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start"));
     }
     function buy(id) {
       const c = get(id);
@@ -1182,7 +1251,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       refresh(); listeners.forEach((f) => f());
       if (before !== act()) {
         const now = get();
-        ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
+        ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
       }
       return { ok: true, c };
     }
@@ -1195,7 +1264,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (changed) {
         store.set("bans", bans);
         refresh(); listeners.forEach((f) => f());
-        if (before !== act()) ["snake", "g2048", "ttt"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
+        if (before !== act()) ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
       } else if (!$("#chars").hidden) roster();
     }, 1000);
     refresh();
@@ -1589,15 +1658,350 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     };
   })();
 
+  /* ================= Block Blast ================= */
+  const Blast = (() => {
+    const N = 8;
+    const COLORS = ["#ffb547", "#5ce1e6", "#ff6b7a", "#9be15d", "#a98bff", "#4a8cff", "#ff5ad1"];
+    // Cells are [x, y]
+    const SHAPES = [
+      [[0,0]],
+      [[0,0],[1,0]], [[0,0],[0,1]],
+      [[0,0],[1,0],[2,0]], [[0,0],[0,1],[0,2]],
+      [[0,0],[1,0],[2,0],[3,0]], [[0,0],[0,1],[0,2],[0,3]],
+      [[0,0],[1,0],[2,0],[3,0],[4,0]], [[0,0],[0,1],[0,2],[0,3],[0,4]],
+      [[0,0],[1,0],[0,1],[1,1]],
+      [[0,0],[1,0],[2,0],[0,1],[1,1],[2,1],[0,2],[1,2],[2,2]],
+      [[0,0],[1,0],[0,1]], [[0,0],[1,0],[1,1]], [[0,0],[0,1],[1,1]], [[1,0],[0,1],[1,1]],
+      [[0,0],[0,1],[0,2],[1,2]], [[0,0],[1,0],[2,0],[0,1]], [[0,0],[1,0],[1,1],[1,2]], [[2,0],[0,1],[1,1],[2,1]],
+      [[0,0],[1,0],[2,0],[1,1]], [[1,0],[0,1],[1,1],[2,1]], [[0,0],[0,1],[1,1],[0,2]], [[1,0],[0,1],[1,1],[1,2]],
+      [[0,0],[1,0],[1,1],[2,1]], [[1,0],[2,0],[0,1],[1,1]],
+      [[0,0],[0,1],[0,2],[1,2],[2,2]], [[0,0],[1,0],[2,0],[2,1],[2,2]],
+    ];
+    const cv = $("#blastCanvas"), ctx = cv.getContext("2d");
+    const fx = $("#blastFx"), fctx = fx.getContext("2d");
+    const stage = $("#blastStage"), ov = $("#blastOverlay");
+    const slots = $$("#blastTray .slot");
+    let grid, pieces, score, over = false;
+    let best = store.get("blastBest", 0);
+    let size = 440, cell = size / N, preview = null, drag = null;
+    let parts = [], floaters = [], raf = 0, lastT = 0;
+
+    // ---------- colors ----------
+    const shadeCache = new Map();
+    function shade(hex, amt) {
+      const k = hex + amt;
+      if (shadeCache.has(k)) return shadeCache.get(k);
+      const n = parseInt(hex.slice(1), 16);
+      let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+      const t = amt < 0 ? 0 : 255, p = Math.abs(amt);
+      r = Math.round((t - r) * p + r); g = Math.round((t - g) * p + g); b = Math.round((t - b) * p + b);
+      const out = `rgb(${r},${g},${b})`;
+      shadeCache.set(k, out);
+      return out;
+    }
+    function rr(c, x, y, w, h, r) {
+      c.beginPath();
+      if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h);
+      c.fill();
+    }
+    // A bevelled cube: dark base, face, top highlight.
+    function cube(c, x, y, s, col) {
+      const p = s * .05, w = s - p * 2, r = s * .16;
+      c.fillStyle = shade(col, -.38); rr(c, x + p, y + p, w, w, r);
+      c.fillStyle = col; rr(c, x + p, y + p, w, w - s * .1, r);
+      c.fillStyle = shade(col, .4); rr(c, x + p + s * .13, y + p + s * .1, s * .42, s * .11, s * .055);
+    }
+
+    // ---------- game state ----------
+    const idx = (x, y) => y * N + x;
+    function fits(pc, gx, gy, g) {
+      g = g || grid;
+      return pc.cells.every(([x, y]) => {
+        const X = gx + x, Y = gy + y;
+        return X >= 0 && Y >= 0 && X < N && Y < N && !g[idx(X, Y)];
+      });
+    }
+    function canFit(pc) {
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (fits(pc, x, y)) return true;
+      return false;
+    }
+    function fullLines(g) {
+      const rows = [], cols = [];
+      for (let y = 0; y < N; y++) { let f = true; for (let x = 0; x < N; x++) if (!g[idx(x, y)]) { f = false; break; } if (f) rows.push(y); }
+      for (let x = 0; x < N; x++) { let f = true; for (let y = 0; y < N; y++) if (!g[idx(x, y)]) { f = false; break; } if (f) cols.push(x); }
+      const set = new Set();
+      rows.forEach((y) => { for (let x = 0; x < N; x++) set.add(idx(x, y)); });
+      cols.forEach((x) => { for (let y = 0; y < N; y++) set.add(idx(x, y)); });
+      return { rows, cols, set };
+    }
+    const dims = (pc) => ({ w: Math.max(...pc.cells.map((c) => c[0])) + 1, h: Math.max(...pc.cells.map((c) => c[1])) + 1 });
+    function randPiece() {
+      return { cells: SHAPES[(Math.random() * SHAPES.length) | 0], color: COLORS[(Math.random() * COLORS.length) | 0] };
+    }
+    function refill() {
+      let set;
+      for (let tries = 0; tries < 30; tries++) {
+        set = [randPiece(), randPiece(), randPiece()];
+        if (set.some(canFit)) break;
+      }
+      pieces = set;
+    }
+    function save() { store.set("blast", { grid, pieces, score, over }); }
+    function hud() {
+      $("#blastScore").textContent = score;
+      $("#blastBest").textContent = best;
+    }
+    function newGame() {
+      grid = Array(N * N).fill(null); score = 0; over = false;
+      refill(); ov.hidden = true;
+      hud(); draw(); drawTray(); save();
+      Hero.say("blast", "start");
+    }
+    function checkOver() {
+      const left = pieces.filter(Boolean);
+      if (left.length && !left.some(canFit)) {
+        over = true;
+        if (score > best) { best = score; store.set("blastBest", best); }
+        hud(); updateHub();
+        $("#blastOvText").textContent = `Счёт: ${score} · Рекорд: ${best}`;
+        ov.hidden = false;
+        Hero.say("blast", "bad");
+      }
+    }
+
+    // ---------- drawing ----------
+    function draw() {
+      ctx.clearRect(0, 0, size, size);
+      ctx.fillStyle = "#171936"; rr(ctx, 0, 0, size, size, 12);
+      const ghost = preview && preview.valid ? preview : null;
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const v = grid[idx(x, y)], X = x * cell, Y = y * cell;
+        if (!v) { ctx.fillStyle = "#20234a"; rr(ctx, X + cell * .06, Y + cell * .06, cell * .88, cell * .88, cell * .14); continue; }
+        // a cube that the preview would clear takes the new piece's colour
+        cube(ctx, X, Y, cell, ghost && ghost.clear.has(idx(x, y)) ? ghost.piece.color : v);
+      }
+      if (ghost) {
+        ctx.globalAlpha = .45;
+        ghost.piece.cells.forEach(([x, y]) => cube(ctx, (ghost.gx + x) * cell, (ghost.gy + y) * cell, cell, ghost.piece.color));
+        ctx.globalAlpha = 1;
+        if (ghost.clear.size) {
+          ctx.fillStyle = "rgba(255,255,255,.18)";
+          ghost.clear.forEach((i) => rr(ctx, (i % N) * cell + cell * .05, Math.floor(i / N) * cell + cell * .05, cell * .9, cell * .9, cell * .16));
+        }
+      }
+    }
+    function drawTray() {
+      slots.forEach((slot, i) => {
+        const c = slot.querySelector("canvas"), pc = pieces[i];
+        const dpr = window.devicePixelRatio || 1;
+        const W = slot.clientWidth || 100, H = slot.clientHeight || 104;
+        const s = pc ? Math.min(20, (W - 16) / dims(pc).w, (H - 16) / dims(pc).h) : 0;
+        const d = pc ? dims(pc) : { w: 0, h: 0 };
+        c.width = Math.max(1, Math.round(d.w * s * dpr)); c.height = Math.max(1, Math.round(d.h * s * dpr));
+        c.style.width = d.w * s + "px"; c.style.height = d.h * s + "px";
+        const t = c.getContext("2d");
+        t.setTransform(dpr, 0, 0, dpr, 0, 0);
+        t.clearRect(0, 0, d.w * s, d.h * s);
+        if (pc) pc.cells.forEach(([x, y]) => cube(t, x * s, y * s, s, pc.color));
+        slot.classList.toggle("dim", !!pc && !canFit(pc));
+        slot.setAttribute("aria-label", pc ? "Фигура" : "Пусто");
+      });
+    }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      const dpr = window.devicePixelRatio || 1;
+      size = w; cell = w / N;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(w * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      fx.width = Math.round(innerWidth * dpr); fx.height = Math.round(innerHeight * dpr);
+      fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw(); drawTray();
+    }
+
+    // ---------- effects: shards, dust, floating score ----------
+    function shatter(x, y, s, col, delay, ox, oy) {
+      const ix = x + s * (.3 + Math.random() * .4), iy = y + s * (.3 + Math.random() * .4);
+      const r = Math.random;
+      const ring = [[x, y], [x + s * (.25 + r() * .5), y], [x + s, y], [x + s, y + s * (.25 + r() * .5)],
+                    [x + s, y + s], [x + s * (.25 + r() * .5), y + s], [x, y + s], [x, y + s * (.25 + r() * .5)]];
+      for (let i = 0; i < ring.length; i++) {
+        const a = ring[i], b = ring[(i + 1) % ring.length];
+        const cx = (a[0] + b[0] + ix) / 3, cy = (a[1] + b[1] + iy) / 3;
+        let dx = cx - ix, dy = cy - iy; const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+        const away = Math.sign(cx - ox) * .04;
+        const sp = .05 + r() * .16;
+        parts.push({
+          kind: "shard", x: cx, y: cy,
+          pts: [[a[0] - cx, a[1] - cy], [b[0] - cx, b[1] - cy], [ix - cx, iy - cy]],
+          vx: dx * sp + away + (r() - .5) * .05, vy: dy * sp - .22 - r() * .2,
+          rot: 0, vr: (r() - .5) * .022,
+          col: shade(col, Math.round((r() - .5) * 9) / 20), edge: shade(col, .5),
+          t: -delay, life: 1000 + r() * 500,
+        });
+      }
+      for (let k = 0; k < 4; k++) {
+        parts.push({
+          kind: "dust", x: x + s * r(), y: y + s * r(), size: s * (.05 + r() * .06),
+          vx: (r() - .5) * .35, vy: -.15 - r() * .3, col: shade(col, .3), t: -delay, life: 550 + r() * 300,
+        });
+      }
+    }
+    function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+    function frame(t) {
+      raf = 0;
+      const dt = lastT ? Math.min(40, t - lastT) : 16; lastT = t;
+      fctx.clearRect(0, 0, innerWidth, innerHeight);
+      const G2 = .0021;
+      parts = parts.filter((p) => {
+        p.t += dt;
+        if (p.t > p.life) return false;
+        if (p.t > 0) { p.vy += G2 * dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.vr) p.rot += p.vr * dt; }
+        const a = p.t < 0 ? 1 : Math.max(0, Math.min(1, (p.life - p.t) / 350));
+        fctx.globalAlpha = a;
+        if (p.kind === "shard") {
+          fctx.save(); fctx.translate(p.x, p.y); fctx.rotate(p.rot);
+          fctx.beginPath(); fctx.moveTo(p.pts[0][0], p.pts[0][1]); fctx.lineTo(p.pts[1][0], p.pts[1][1]); fctx.lineTo(p.pts[2][0], p.pts[2][1]); fctx.closePath();
+          fctx.fillStyle = p.col; fctx.fill();
+          fctx.strokeStyle = p.edge; fctx.lineWidth = .8; fctx.stroke();
+          fctx.restore();
+        } else {
+          fctx.fillStyle = p.col; fctx.fillRect(p.x, p.y, p.size, p.size);
+        }
+        return true;
+      });
+      floaters = floaters.filter((f) => {
+        f.t += dt;
+        if (f.t > f.life) return false;
+        const k = f.t / f.life;
+        fctx.globalAlpha = Math.min(1, (1 - k) * 2);
+        fctx.font = `${f.big ? 30 : 24}px "Rubik Mono One", "Arial Black", sans-serif`;
+        fctx.textAlign = "center"; fctx.textBaseline = "middle";
+        fctx.lineWidth = 5; fctx.strokeStyle = "#12132a"; fctx.strokeText(f.text, f.x, f.y - k * 46);
+        fctx.fillStyle = f.color; fctx.fillText(f.text, f.x, f.y - k * 46);
+        return true;
+      });
+      fctx.globalAlpha = 1;
+      if (drag && drag.moved) {
+        const s = cell;
+        drag.piece.cells.forEach(([x, y]) => cube(fctx, drag.tlx + x * s, drag.tly + y * s, s, drag.piece.color));
+      }
+      if (parts.length || floaters.length || drag) raf = requestAnimationFrame(frame);
+      else { lastT = 0; fctx.clearRect(0, 0, innerWidth, innerHeight); }
+    }
+
+    // ---------- placing ----------
+    function place(i, gx, gy) {
+      const pc = pieces[i];
+      pc.cells.forEach(([x, y]) => { grid[idx(gx + x, gy + y)] = pc.color; });
+      pieces[i] = null;
+      const { rows, cols, set } = fullLines(grid);
+      const lines = rows.length + cols.length;
+      if (lines) {
+        const rect = cv.getBoundingClientRect(), k = rect.width / size;
+        const d = dims(pc), ox = gx + d.w / 2, oy = gy + d.h / 2;
+        set.forEach((id) => {
+          const x = id % N, y = Math.floor(id / N);
+          const dist = Math.hypot(x + .5 - ox, y + .5 - oy);
+          shatter(rect.left + x * cell * k, rect.top + y * cell * k, cell * k, grid[id], 60 + dist * 35, rect.left + ox * cell * k, rect.top + oy * cell * k);
+        });
+        set.forEach((id) => { grid[id] = null; });
+        const gained = lines * 5;
+        score += gained;
+        rows.forEach((y) => floaters.push({ text: "+5", x: rect.left + rect.width / 2, y: rect.top + (y + .5) * cell * k, t: -120, life: 1000, color: "#ffb547" }));
+        cols.forEach((x) => floaters.push({ text: "+5", x: rect.left + (x + .5) * cell * k, y: rect.top + rect.height / 2, t: -120, life: 1000, color: "#5ce1e6" }));
+        if (lines > 1) floaters.push({ text: `КОМБО ×${lines}`, x: rect.left + rect.width / 2, y: rect.top + rect.height * .42, t: -60, life: 1200, color: "#ff6b7a", big: true });
+        Hero.earn(lines * 3);
+        if (lines > 1) Hero.say("blast", "good", `Комбо ×${lines}! +${gained}`); else Hero.say("blast", "good");
+        stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake");
+        fx.hidden = false; kick();
+        if (score > best) { best = score; store.set("blastBest", best); updateHub(); }
+      }
+      if (pieces.every((p) => !p)) refill();
+      hud(); draw(); drawTray(); checkOver(); save();
+    }
+
+    // ---------- drag and drop ----------
+    function target(px, py) {
+      const rect = cv.getBoundingClientRect(), k = rect.width / size, s = cell * k;
+      const d = dims(drag.piece);
+      const lift = drag.mouse ? d.h * s / 2 : 44 + d.h * s;
+      drag.tlx = px - d.w * s / 2; drag.tly = py - lift;
+      const gx = Math.round((drag.tlx - rect.left) / s), gy = Math.round((drag.tly - rect.top) / s);
+      const valid = fits(drag.piece, gx, gy);
+      let clear = new Set();
+      if (valid) {
+        const g = grid.slice();
+        drag.piece.cells.forEach(([x, y]) => { g[idx(gx + x, gy + y)] = drag.piece.color; });
+        clear = fullLines(g).set;
+      }
+      return { piece: drag.piece, gx, gy, valid, clear };
+    }
+    slots.forEach((slot, i) => {
+      slot.addEventListener("pointerdown", (e) => {
+        if (over || !pieces[i] || drag) return;
+        e.preventDefault();
+        try { slot.setPointerCapture(e.pointerId); } catch (err) {}
+        drag = { i, piece: pieces[i], id: e.pointerId, mouse: e.pointerType === "mouse", moved: true };
+        slot.classList.add("dragging");
+        fx.hidden = false;
+        preview = target(e.clientX, e.clientY); draw(); kick();
+      });
+      slot.addEventListener("pointermove", (e) => {
+        if (!drag || drag.id !== e.pointerId) return;
+        const p = target(e.clientX, e.clientY);
+        if (!preview || p.gx !== preview.gx || p.gy !== preview.gy || p.valid !== preview.valid) { preview = p; draw(); }
+        kick();
+      });
+      const end = (e) => {
+        if (!drag || drag.id !== e.pointerId) return;
+        const p = target(e.clientX, e.clientY);
+        const di = drag.i;
+        drag = null; preview = null;
+        slot.classList.remove("dragging");
+        if (p.valid && e.type === "pointerup") place(di, p.gx, p.gy); else draw();
+        kick();
+      };
+      slot.addEventListener("pointerup", end);
+      slot.addEventListener("pointercancel", end);
+    });
+
+    // ---------- start ----------
+    const saved = store.get("blast", null);
+    if (saved && Array.isArray(saved.grid) && saved.grid.length === N * N && Array.isArray(saved.pieces) && saved.pieces.length === 3 && !saved.over) {
+      grid = saved.grid; score = saved.score | 0;
+      pieces = saved.pieces.map((p) => (p && Array.isArray(p.cells) && p.color ? p : null));
+      if (pieces.every((p) => !p)) refill();
+    } else {
+      grid = Array(N * N).fill(null); score = 0; refill();
+    }
+    $("#blastOvBtn").addEventListener("click", newGame);
+    $("#blastNew").addEventListener("click", newGame);
+    window.addEventListener("resize", () => { if (!$("#blast").hidden) fit(); });
+
+    return {
+      enter() { fit(); hud(); checkOver(); },
+      leave() { drag = null; preview = null; parts = []; floaters = []; slots.forEach((sl) => sl.classList.remove("dragging")); fx.hidden = true; },
+      key(e) { if (e.key === "n" || e.key === "т") newGame(); },
+      best: () => best,
+      bonus(n) {
+        score += n;
+        if (score > best) { best = score; store.set("blastBest", best); }
+        hud(); save();
+      },
+    };
+  })();
+
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
     $("#hubSnake").textContent = Snake.best();
     $("#hub2048").textContent = G.best();
     $("#hubTtt").textContent = T.wins();
+    $("#hubBlast").textContent = Blast.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -1617,7 +2021,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
   /* ================= Donate shop ================= */
   const shop = $("#shop");
-  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики" };
+  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast" };
   let donated = store.get("donated", { count: 0, total: 0 });
   let lastFocus = null, toastTimer = 0;
   function shopStats() { $("#shopCount").textContent = donated.count; $("#shopTotal").textContent = "+" + donated.total; }
@@ -1761,7 +2165,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function rules() {
       if (Police.isBoss()) return [
-        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики).",
+        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast).",
         "Собеседник — твой начальник. Ты его узнал, поэтому говоришь почтительно, по-военному («Так точно», «Есть», «товарищ начальник»), с юмором.",
         "Начальника ты НИКОГДА не называешь читером и не обвиняешь — даже если раньше в переписке называл. Его донаты ты одобряешь.",
         "Отвечай по-русски, 1–2 коротких предложения. Никаких грубостей и взрослых тем: игру могут открывать дети. Можно докладывать обстановку и давать советы по играм.",
@@ -1769,7 +2173,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         "Пиши только реплику полицейского, без пояснений и кавычек.",
       ].join("\n");
       return [
-        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики).",
+        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast).",
         "Ты всегда подозреваешь игрока в читерстве, потому что в игре есть кнопка «Донат в игру», которая бесплатно даёт +1000.",
         "Отвечай по-русски, 1–2 коротких предложения, с юмором, и обязательно вставляй «Читер!!».",
         "Никаких реальных угроз, грубости и взрослых тем: игру могут открывать дети. Можно давать короткие советы по этим играм.",
@@ -1941,7 +2345,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function soloRules(c) {
       return [
-        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
+        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
         "Ты переписываешься с игроком. Отвечай по-русски, 1–2 коротких предложения, строго в своём характере, с юмором.",
         "В игре есть полицейский сержант Мигалкин, который всем кричит «Читер!!», и другие персонажи: " + CHARS.filter((x) => x.id !== c.id).map((x) => x.name).join(", ") + ".",
         "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
@@ -2045,8 +2449,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
         const prompt = [
           chatId === "group"
-            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики). Игрок пишет сообщение, персонажи отвечают."
-            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики) с игроком. Персонажи — напарники и отвечают вместе.",
+            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast). Игрок пишет сообщение, персонажи отвечают."
+            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast) с игроком. Персонажи — напарники и отвечают вместе.",
           "Персонажи онлайн:", ...on.map(persona),
           "Персонажи в бане сейчас молчат: " + (members().filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
           "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
