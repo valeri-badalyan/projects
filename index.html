@@ -249,6 +249,47 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ghost-wrap:not(.full) .ghost-close { display: none; }
 .ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+/* ---------- Fix the monitor: a workbench ---------- */
+.fix-wrap { position: relative; width: 100%; max-width: 440px; margin: 0 auto; border-radius: 14px; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
+.fix-board { position: absolute; left: 0; top: 0; width: 360px; height: 600px; transform-origin: 0 0;
+  background: linear-gradient(#2b2f45 0 330px, #8a5a34 330px), #8a5a34; }
+.fix-board::before { /* wood grain on the desk */
+  content: ""; position: absolute; left: 0; right: 0; top: 330px; bottom: 0;
+  background: repeating-linear-gradient(176deg, rgba(0,0,0,.08) 0 3px, transparent 3px 19px), repeating-linear-gradient(90deg, rgba(255,255,255,.04) 0 2px, transparent 2px 60px);
+}
+.fix-board::after { content: ""; position: absolute; left: 0; right: 0; top: 326px; height: 8px; background: linear-gradient(#5e3a1f, #a06a3e); }
+.fix-case { position: absolute; left: 22px; top: 18px; width: 316px; height: 250px; border-radius: 18px; background: #1d2030; border: 6px solid #3a3f58; box-shadow: inset 0 0 30px rgba(0,0,0,.6); }
+.fix-case .grid { position: absolute; inset: 10px; border-radius: 10px; background: repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 1px, transparent 1px 14px), repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 14px); }
+.fix-stand { position: absolute; left: 150px; top: 274px; width: 60px; height: 34px; background: linear-gradient(#3a3f58, #23263a); clip-path: polygon(25% 0, 75% 0, 100% 100%, 0 100%); }
+.fix-label { position: absolute; left: 0; right: 0; top: 296px; text-align: center; font: 700 11px var(--mono); color: var(--muted); letter-spacing: .1em; }
+.fix-slot { position: absolute; border: 2px dashed var(--lime); border-radius: 6px; background: rgba(155,225,93,.12); box-shadow: 0 0 14px rgba(155,225,93,.6); animation: slotpulse 1s ease-in-out infinite; pointer-events: none; z-index: 2; }
+@keyframes slotpulse { 50% { background: rgba(155,225,93,.28); box-shadow: 0 0 24px rgba(155,225,93,.9); } }
+.fix-part { position: absolute; z-index: 3; cursor: grab; transition: left .25s ease, top .25s ease, width .2s ease, height .2s ease, transform .2s ease; touch-action: none; }
+.fix-part svg { display: block; width: 100%; height: 100%; pointer-events: none; }
+.fix-part.glow { filter: drop-shadow(0 0 6px #5ce1e6) drop-shadow(0 0 12px #5ce1e6); animation: partbob 1s ease-in-out infinite; z-index: 4; }
+@keyframes partbob { 50% { transform: translateY(-4px); } }
+.fix-part.held { transition: width .15s ease, height .15s ease; z-index: 9; cursor: grabbing; filter: drop-shadow(0 10px 10px rgba(0,0,0,.5)) drop-shadow(0 0 8px #5ce1e6); animation: none; }
+.fix-part.placed { cursor: default; z-index: 2; }
+.fix-part.decor { cursor: default; z-index: 1; }
+.fix-part.nope { animation: nope .3s ease; }
+@keyframes nope { 25% { transform: translateX(-6px) rotate(-4deg); } 75% { transform: translateX(6px) rotate(4deg); } }
+.fix-spark { position: absolute; z-index: 10; width: 6px; height: 6px; border-radius: 50%; background: #ffd84d; pointer-events: none; animation: spark .5s ease-out forwards; }
+@keyframes spark { to { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+.fix-screen {
+  position: absolute; left: 22px; top: 18px; width: 316px; height: 250px; z-index: 11; border-radius: 18px; border: 10px solid #3a3f58;
+  background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #fff; overflow: hidden;
+}
+.fix-screen .logo { font-family: var(--display); font-size: 44px; color: var(--amber); text-shadow: 3px 3px 0 var(--coral), 6px 6px 0 var(--cyan); opacity: 0; animation: bootlogo .6s ease-out .5s forwards; }
+.fix-screen .bar { width: 60%; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+.fix-screen .bar i { display: block; height: 100%; width: 0; background: var(--cyan); animation: bootbar 1.6s ease-in-out .7s forwards; }
+.fix-screen .flash { position: absolute; inset: 0; background: #fff; animation: bootflash .5s ease-out forwards; }
+@keyframes bootlogo { to { opacity: 1; } }
+@keyframes bootbar { to { width: 100%; } }
+@keyframes bootflash { from { opacity: .9; } to { opacity: 0; } }
+.fix-step { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--panel); border-radius: 12px; font-size: 14px; }
+.fix-step b { font-family: var(--mono); color: var(--cyan); white-space: nowrap; }
+.fix-wrap .overlay { z-index: 12; }
+
 /* ---------- Link race: a computer with a browser ---------- */
 .pc { display: flex; flex-direction: column; align-items: center; }
 .pc-screen {
@@ -665,7 +706,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Десять игр в одном кармане</span>
+        <span class="tag">Одиннадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -789,6 +830,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Гонка курсоров: кто первым нажмёт все ссылки на странице, тот выиграл.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubLinks">—</span></span>
+      </button>
+      <button class="cart" data-go="fix" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#8a5a34"/><rect width="64" height="34" fill="#2b2f45"/><rect x="8" y="5" width="48" height="30" rx="4" fill="#1d2030" stroke="#3a3f58" stroke-width="2"/><rect x="14" y="10" width="30" height="20" rx="2" fill="#1f7a4a"/><rect x="18" y="14" width="8" height="8" fill="#9aa3b5" stroke="#9be15d" stroke-dasharray="2 1"/><path d="M30 16h10M30 20h8M30 24h10" stroke="#ffd84d" stroke-width="1"/><rect x="10" y="42" width="16" height="10" rx="2" fill="#2a8a4a"/><rect x="34" y="44" width="10" height="10" fill="#9aa3b5" stroke="#5ce1e6" stroke-width="2"/><path d="M48 40 l8 14" stroke="#e3263a" stroke-width="3" stroke-linecap="round"/><path d="M47 39 l2 3" stroke="#d9dee8" stroke-width="2"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Почини Монитор</span>
+          <span class="cart-desc">Собери монитор из деталей на столе: нужная деталь и её место подсвечиваются.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubFix">—</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1096,6 +1147,37 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <a class="btn ghost" href="https://geometrylitepc.net/" target="_blank" rel="noopener">Открыть сайт</a>
     </div>
     <p class="hint">Пробел, ↑ или нажатие — прыжок. Жёлтый батут подбрасывает сам, жёлтое кольцо — нажми, пока касаешься. В розовом портале кубик становится кораблём: держи, чтобы лететь вверх.</p>
+  </section>
+
+  <!-- ===== Fix the monitor ===== -->
+  <section id="fix" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Почини Монитор</div>
+      <div class="chips">
+        <div class="chip"><span>Время</span><b id="fixTime">0.0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="fixBest">—</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="fix-step" id="fixStep" aria-live="polite"><b>0/10</b><span>Нажми «Начать ремонт»</span></div>
+    <div class="fix-wrap" id="fixWrap">
+      <div class="fix-board" id="fixBoard">
+        <div class="fix-case"><div class="grid"></div></div>
+        <div class="fix-stand"></div>
+        <div class="fix-label">МОНИТОР V3 · ВИД СЗАДИ</div>
+      </div>
+      <div class="overlay" id="fixOverlay">
+        <h2 id="fixOvTitle">Почини Монитор</h2>
+        <p id="fixOvText">Монитор разобран. Бери светящуюся деталь со стола и вставляй в подсвеченное место.</p>
+        <button class="btn" type="button" id="fixStart">Начать ремонт</button>
+      </div>
+    </div>
+    <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
   </section>
 
   <!-- ===== Link race ===== -->
@@ -4165,6 +4247,197 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Fix the monitor ================= */
+  const Fix = (() => {
+    const board = $("#fixBoard"), wrap = $("#fixWrap"), ov = $("#fixOverlay");
+    const BW = 360, BH = 600;
+    // Part drawings, each fills its own box (viewBox = target size)
+    const svg = (w, h, body) => `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+    const ART = {
+      board: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="6" fill="#1f7a4a"/><rect x="3" y="3" width="${w - 6}" height="${h - 6}" rx="5" fill="none" stroke="#2fa868" stroke-width="2"/>
+        ${[...Array(9)].map((_, i) => `<path d="M${10 + i * 25} ${h - 8} V${60 + (i % 3) * 18} H${20 + i * 22}" fill="none" stroke="#ffd84d" stroke-opacity=".6" stroke-width="1.4"/>`).join("")}
+        <rect x="46" y="31" width="48" height="48" fill="#155a35" stroke="#0d3d24" stroke-width="2"/><rect x="106" y="23" width="74" height="20" fill="#155a35"/><rect x="116" y="61" width="44" height="34" fill="#155a35"/><rect x="56" y="91" width="34" height="28" fill="#155a35"/><rect x="186" y="11" width="38" height="16" fill="#155a35"/>
+        ${[[8, 8], [w - 12, 8], [8, h - 12], [w - 12, h - 12]].map(([x, y]) => `<circle cx="${x + 2}" cy="${y + 2}" r="4" fill="#d9dee8" stroke="#8a8f9e"/>`).join("")}
+        <text x="${w - 70}" y="${h - 14}" font-family="monospace" font-size="10" fill="#9be15d">V3-MB rev2</text>`),
+      cpu: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="3" fill="#2f8a52"/>${[...Array(8)].map((_, i) => `<rect x="${3 + i * 5}" y="0" width="2" height="4" fill="#ffd84d"/><rect x="${3 + i * 5}" y="${h - 4}" width="2" height="4" fill="#ffd84d"/>`).join("")}<rect x="7" y="7" width="${w - 14}" height="${h - 14}" rx="3" fill="#c7cbd8" stroke="#8a8f9e"/><text x="${w / 2}" y="${h / 2 + 4}" text-anchor="middle" font-family="monospace" font-size="9" font-weight="700" fill="#33384d">V3</text>`),
+      cooler: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="6" fill="#3a3f58"/>${[...Array(7)].map((_, i) => `<rect x="${4 + i * 7}" y="2" width="3" height="${h - 4}" fill="#9aa3b5"/>`).join("")}<circle cx="${w / 2}" cy="${h / 2}" r="${w / 2 - 5}" fill="#1d2030" stroke="#5ce1e6" stroke-width="2"/>${[0, 72, 144, 216, 288].map((a) => `<path d="M${w / 2} ${h / 2} q8 -6 4 -18" fill="none" stroke="#9aa3b5" stroke-width="5" stroke-linecap="round" transform="rotate(${a} ${w / 2} ${h / 2})"/>`).join("")}<circle cx="${w / 2}" cy="${h / 2}" r="5" fill="#e3263a"/>`),
+      ram: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="2" fill="#1f6a3a"/>${[...Array(5)].map((_, i) => `<rect x="${5 + i * 13}" y="3" width="10" height="${h - 9}" fill="#12132a"/>`).join("")}${[...Array(16)].map((_, i) => `<rect x="${2 + i * 4.2}" y="${h - 4}" width="3" height="4" fill="#ffd84d"/>`).join("")}`),
+      gpu: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="3" fill="#12132a"/><rect x="5" y="5" width="${w - 10}" height="${h - 10}" rx="2" fill="#b8bdcc"/><text x="${w / 2}" y="${h / 2 + 3}" text-anchor="middle" font-family="monospace" font-size="8" font-weight="700" fill="#12132a">GPU</text>${[...Array(6)].map((_, i) => `<rect x="${4 + i * 6}" y="${h - 3}" width="3" height="3" fill="#ffd84d"/>`).join("")}`),
+      caps: (w, h) => svg(w, h, [[2, "#2f6fd6"], [12, "#12132a"], [22, "#2f6fd6"]].map(([x, c]) => `<rect x="${x}" y="2" width="8" height="${h - 4}" rx="3" fill="${c}"/><ellipse cx="${x + 4}" cy="4" rx="4" ry="2" fill="#d9dee8"/><path d="M${x + 3} 3 l2 2 M${x + 5} 3 l-2 2" stroke="#8a8f9e" stroke-width=".8"/>`).join("")),
+      ribbon: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="2" fill="#ff8a3d"/>${[...Array(6)].map((_, i) => `<path d="M2 ${2 + i * 2} H${w - 2}" stroke="#c45a14" stroke-width=".6"/>`).join("")}<rect x="${w - 10}" y="0" width="10" height="${h}" fill="#e9eefc"/>`),
+      psu: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="4" fill="#9aa3b5" stroke="#5b6378" stroke-width="2"/><circle cx="${h / 2 + 4}" cy="${h / 2}" r="${h / 2 - 5}" fill="#3a3f58"/>${[...Array(4)].map((_, i) => `<path d="M${h / 2 + 4 - (h / 2 - 7)} ${h / 2 - 9 + i * 6} H${h / 2 + 4 + (h / 2 - 7)}" stroke="#9aa3b5" stroke-width="1.5"/>`).join("")}<rect x="${w - 30}" y="8" width="22" height="10" fill="#ffd84d"/><text x="${w - 30}" y="${h - 8}" font-family="monospace" font-size="8" fill="#33384d">12V</text>`),
+      cable: (w, h) => svg(w, h, `<path d="M2 ${h / 2 - 3} C${w / 3} 0 ${w * 2 / 3} ${h} ${w - 12} ${h / 2 - 3}" fill="none" stroke="#e3263a" stroke-width="3"/><path d="M2 ${h / 2 + 2} C${w / 3} ${h * .3} ${w * 2 / 3} ${h * 1.1} ${w - 12} ${h / 2 + 2}" fill="none" stroke="#12132a" stroke-width="3"/><rect x="${w - 14}" y="1" width="14" height="${h - 2}" rx="2" fill="#e9eefc"/><rect x="0" y="2" width="8" height="${h - 4}" rx="2" fill="#e9eefc"/>`),
+      cover: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="16" fill="#2b2f45" stroke="#5b6378" stroke-width="3"/>${[...Array(12)].map((_, i) => `<rect x="${w / 2 - 70}" y="${30 + i * 8}" width="140" height="3" rx="1.5" fill="#1d2030"/>`).join("")}<text x="${w / 2}" y="${h - 50}" text-anchor="middle" font-family="Arial Black, Arial" font-size="34" fill="#ffb547">V3</text>${[[16, 16], [w - 22, 16], [16, h - 22], [w - 22, h - 22]].map(([x, y]) => `<circle cx="${x + 3}" cy="${y + 3}" r="5" fill="#9aa3b5"/>`).join("")}`),
+      screwdriver: (w, h) => svg(w, h, `<rect x="0" y="${h / 2 - 6}" width="${w * .45}" height="12" rx="6" fill="#e3263a"/><rect x="${w * .45}" y="${h / 2 - 2}" width="${w * .5}" height="4" fill="#d9dee8"/><path d="M${w * .95} ${h / 2 - 3} L${w} ${h / 2} L${w * .95} ${h / 2 + 3}Z" fill="#9aa3b5"/>`),
+      screw: (w, h) => svg(w, h, `<circle cx="${w / 2}" cy="${h / 2}" r="${w / 2 - 1}" fill="#c7cbd8" stroke="#8a8f9e"/><path d="M${w * .3} ${h / 2} H${w * .7} M${w / 2} ${h * .3} V${h * .7}" stroke="#5b6378" stroke-width="1.5"/>`),
+      wire: (w, h) => svg(w, h, `<path d="M2 ${h - 4} C${w * .3} 0 ${w * .6} ${h} ${w - 2} 4" fill="none" stroke="#2f6fd6" stroke-width="3" stroke-linecap="round"/>`),
+    };
+    // Steps in order: part, where it goes (board coords), size on the table
+    const STEPS = [
+      { id: "board", name: "Материнская плата", to: "корпус монитора", x: 52, y: 40, w: 250, h: 150, ts: .36 },
+      { id: "cpu", name: "Процессор", to: "сокет на плате", x: 98, y: 71, w: 48, h: 48, ts: .9 },
+      { id: "cooler", name: "Кулер", to: "поверх процессора", x: 94, y: 67, w: 56, h: 56, ts: .75 },
+      { id: "ram", name: "Оперативная память", to: "слот рядом с процессором", x: 158, y: 63, w: 74, h: 20, ts: .8 },
+      { id: "gpu", name: "Видеочип", to: "площадку на плате", x: 168, y: 101, w: 44, h: 34, ts: .95 },
+      { id: "caps", name: "Конденсаторы", to: "место у видеочипа", x: 108, y: 131, w: 34, h: 28, ts: 1 },
+      { id: "ribbon", name: "Шлейф матрицы", to: "разъём сверху справа", x: 238, y: 51, w: 50, h: 16, ts: 1 },
+      { id: "psu", name: "Блок питания", to: "отсек внизу корпуса", x: 54, y: 200, w: 110, h: 44, ts: .6 },
+      { id: "cable", name: "Провод питания", to: "от блока питания к плате", x: 170, y: 206, w: 120, h: 22, ts: .6 },
+      { id: "cover", name: "Задняя крышка", to: "весь корпус", x: 22, y: 18, w: 316, h: 250, ts: .22 },
+    ];
+    const DECOR = [["screwdriver", 80, 24], ["screw", 14, 14], ["screw", 14, 14], ["wire", 50, 22]];
+    let parts = [], step = 0, state = "ready", t0 = 0, mistakes = 0, drag = null, timer = 0, scale = 1;
+    let best = store.get("fixBest", null);
+    const fmt = (x) => x.toFixed(1);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    function fit() {
+      const w = Math.min(wrap.clientWidth || 360, 440);
+      scale = w / BW;
+      board.style.transform = `scale(${scale})`;
+      wrap.style.height = Math.round(BH * scale) + "px";
+    }
+    function setBox(el, x, y, w, h) { el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = w + "px"; el.style.height = h + "px"; }
+    function layoutTable() {
+      // scatter parts over the desk without overlaps (desk: y 345..590)
+      const placed = [];
+      const items = [...parts.filter((p) => !p.done), ...board.querySelectorAll(".fix-part.decor")].map((x) => x.el ? x : { el: x, tw: +x.dataset.w, th: +x.dataset.h, decor: true });
+      items.forEach((it) => {
+        const tw = it.decor ? it.tw : it.s.w * it.s.ts, th = it.decor ? it.th : it.s.h * it.s.ts;
+        let x, y, ok = false;
+        for (let k = 0; k < 200 && !ok; k++) {
+          x = rnd(8, BW - tw - 8); y = rnd(345, BH - th - 10);
+          ok = placed.every((r) => x + tw + 6 < r.x || r.x + r.w + 6 < x || y + th + 6 < r.y || r.y + r.h + 6 < y);
+        }
+        placed.push({ x, y, w: tw, h: th });
+        if (it.decor) { setBox(it.el, x, y, tw, th); it.el.style.transform = `rotate(${rnd(-25, 25)}deg)`; }
+        else { it.home = { x, y, w: tw, h: th }; setBox(it.el, x, y, tw, th); }
+      });
+    }
+    function build() {
+      board.querySelectorAll(".fix-part, .fix-slot, .fix-screen").forEach((e) => e.remove());
+      parts = STEPS.map((s) => {
+        const el = document.createElement("div");
+        el.className = "fix-part"; el.innerHTML = ART[s.id](s.w, s.h); el.setAttribute("aria-label", s.name);
+        board.appendChild(el);
+        const p = { s, el, done: false, home: null };
+        el.addEventListener("pointerdown", (e) => grab(e, p));
+        return p;
+      });
+      DECOR.forEach(([id, w, h]) => {
+        const el = document.createElement("div");
+        el.className = "fix-part decor"; el.dataset.w = w; el.dataset.h = h; el.innerHTML = ART[id](w, h);
+        el.addEventListener("pointerdown", () => { el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); });
+        board.appendChild(el);
+      });
+      layoutTable();
+    }
+    function highlight() {
+      board.querySelectorAll(".fix-slot").forEach((e) => e.remove());
+      parts.forEach((p) => p.el.classList.toggle("glow", state === "run" && p === parts[step]));
+      if (state !== "run" || step >= STEPS.length) return;
+      const s = STEPS[step], slot = document.createElement("div");
+      slot.className = "fix-slot"; setBox(slot, s.x - 3, s.y - 3, s.w + 6, s.h + 6);
+      board.appendChild(slot);
+      $("#fixStep").innerHTML = `<b>${step + 1}/${STEPS.length}</b><span></span>`;
+      $("#fixStep span").textContent = `${s.name} → ${s.to}`;
+    }
+    const toBoard = (e) => { const r = board.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; };
+    function grab(e, p) {
+      if (state !== "run" || p.done) return;
+      e.preventDefault();
+      if (p !== parts[step]) {
+        p.el.classList.remove("nope"); void p.el.offsetWidth; p.el.classList.add("nope");
+        Hero.say("fix", "bad", `Не та деталь: сейчас нужна «${STEPS[step].name}».`);
+        return;
+      }
+      try { p.el.setPointerCapture(e.pointerId); } catch (err) {}
+      const pt = toBoard(e);
+      // pick it up at full size, centred under the finger
+      drag = { p, id: e.pointerId };
+      p.el.classList.add("held");
+      setBox(p.el, pt.x - p.s.w / 2, pt.y - p.s.h / 2 - 20, p.s.w, p.s.h);
+    }
+    board.addEventListener("pointermove", (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const pt = toBoard(e), s = drag.p.s;
+      drag.p.el.style.left = (pt.x - s.w / 2) + "px"; drag.p.el.style.top = (pt.y - s.h / 2 - 20) + "px";
+    });
+    const drop = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const p = drag.p, s = p.s; drag = null;
+      p.el.classList.remove("held");
+      const x = parseFloat(p.el.style.left), y = parseFloat(p.el.style.top);
+      const dist = Math.hypot(x + s.w / 2 - (s.x + s.w / 2), y + s.h / 2 - (s.y + s.h / 2));
+      const tol = Math.max(26, Math.min(s.w, s.h) * .45);
+      if (dist < tol) place(p);
+      else {
+        mistakes++;
+        setBox(p.el, p.home.x, p.home.y, p.home.w, p.home.h);
+        if (mistakes % 3 === 1) Hero.say("fix", "bad", "Мимо! Неси деталь прямо в зелёную рамку.");
+      }
+    };
+    board.addEventListener("pointerup", drop);
+    board.addEventListener("pointercancel", drop);
+    function sparks(x, y) {
+      for (let i = 0; i < 10; i++) {
+        const sp = document.createElement("div"); sp.className = "fix-spark";
+        sp.style.left = x + "px"; sp.style.top = y + "px";
+        sp.style.setProperty("--dx", rnd(-40, 40) + "px"); sp.style.setProperty("--dy", rnd(-40, 20) + "px");
+        board.appendChild(sp); setTimeout(() => sp.remove(), 550);
+      }
+    }
+    function place(p) {
+      const s = p.s;
+      p.done = true; p.el.classList.add("placed"); p.el.classList.remove("glow");
+      setBox(p.el, s.x, s.y, s.w, s.h);
+      sparks(s.x + s.w / 2, s.y + s.h / 2);
+      step++;
+      if (step === 5) Hero.say("fix", "good", "Половина готова! Руки мастера.");
+      if (step >= STEPS.length) { win(); return; }
+      highlight();
+    }
+    function win() {
+      state = "over"; clearInterval(timer);
+      board.querySelectorAll(".fix-slot").forEach((e) => e.remove());
+      const sec = (performance.now() - t0) / 1000;
+      const reward = Math.max(40, 150 - Math.round(sec) - mistakes * 5);
+      const record = best === null || sec < best;
+      if (record) { best = sec; store.set("fixBest", best); }
+      Hero.earn(reward); updateHub();
+      $("#fixBest").textContent = fmt(best);
+      $("#fixStep").innerHTML = `<b>10/10</b><span>Монитор собран! Включаем…</span>`;
+      const scr = document.createElement("div"); scr.className = "fix-screen";
+      scr.innerHTML = `<div class="flash"></div><div class="logo">V3</div><div class="bar"><i></i></div>`;
+      board.appendChild(scr);
+      Hero.say("fix", "win", `Монитор работает! +${reward} монет`);
+      setTimeout(() => {
+        $("#fixOvTitle").textContent = "Монитор работает!";
+        $("#fixOvText").textContent = `Время ${fmt(sec)} с · ошибок ${mistakes} · +${reward} монет${record ? " · новый рекорд!" : ""}`;
+        $("#fixStart").textContent = "Разобрать и собрать снова";
+        ov.hidden = false;
+      }, 2600);
+    }
+    function start() {
+      fit(); build();
+      step = 0; mistakes = 0; state = "run"; t0 = performance.now(); ov.hidden = true;
+      clearInterval(timer);
+      timer = setInterval(() => { if (state === "run") $("#fixTime").textContent = fmt((performance.now() - t0) / 1000); }, 100);
+      highlight();
+      Hero.say("fix", "start", "Отвёртка в руке. Начинаем с материнской платы!");
+    }
+    $("#fixStart").addEventListener("click", start);
+    window.addEventListener("resize", () => { if (!$("#fix").hidden) fit(); });
+    build();
+
+    return {
+      enter() { fit(); $("#fixBest").textContent = best === null ? "—" : fmt(best); if (state === "ready") { layoutTable(); } },
+      leave() { drag = null; },
+      key() {},
+      best: () => (best === null ? "—" : fmt(best) + " с"),
+    };
+  })();
+
   /* ================= Link race ================= */
   const Links = (() => {
     const N = 10;
@@ -4562,8 +4835,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -4577,6 +4850,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubGhost").textContent = Ghost.best();
     $("#hubGeo").textContent = Geo.best();
     $("#hubLinks").textContent = Links.best();
+    $("#hubFix").textContent = Fix.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -4589,6 +4863,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "gear") Hero.gearShop();
     if (name === "chats") HeroChat.list();
     if (name === "events") Events.render();
+    // the police button would cover the workbench in "Fix the monitor"
+    $("#cop").hidden = name === "fix";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
