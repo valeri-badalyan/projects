@@ -235,6 +235,20 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .slot.dragging canvas { opacity: 0; }
 #zombieCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; cursor: crosshair; background: #0b0f0e; }
 #vr .gtitle { font-size: 15px; }
+#sonicCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #5aa9ff; }
+.pad4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.pad4 button {
+  min-height: 64px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel);
+  font-weight: 800; font-size: 14px; line-height: 1.15; cursor: pointer; touch-action: none;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.pad4 button span { font-size: 18px; line-height: 1; }
+.pad4 button.on { background: var(--panel-2); border-color: var(--amber); transform: translateY(1px); }
+.pad4 [data-act="run"] span { color: var(--cyan); }
+.pad4 [data-act="jump"] span { color: var(--lime); }
+.pad4 [data-act="crouch"] span { color: var(--amber); }
+.pad4 [data-act="punch"] span { color: var(--coral); }
 .vr-stage { position: relative; width: 100%; max-width: 440px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #8fd3ff; }
 .vr-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 .vr-stage:fullscreen { max-width: none; border-radius: 0; }
@@ -538,7 +552,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Шесть игр в одном кармане</span>
+        <span class="tag">Семь игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -616,6 +630,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <span class="cart-desc">Американские горки в 3D. Куда направишь телефон — туда смотрит персонаж.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Кругов</span><span class="stat-val" id="hubVr">0</span></span>
+      </button>
+      <button class="cart" data-go="sonic" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#5aa9ff"/><path d="M0 46 H64 V64 H0Z" fill="#b8642c"/><path d="M0 46 H64 V50 H0Z" fill="#3fbf4f"/><g fill="#8a4a20"><rect x="0" y="52" width="6" height="6"/><rect x="12" y="52" width="6" height="6"/><rect x="24" y="52" width="6" height="6"/><rect x="36" y="52" width="6" height="6"/><rect x="48" y="52" width="6" height="6"/><rect x="60" y="52" width="6" height="6"/></g><path d="M30 22 L14 18 L26 26 L12 30 L26 32 L16 40 L32 36Z" fill="#1f5fe0"/><circle cx="36" cy="28" r="9" fill="#1f5fe0"/><ellipse cx="40" cy="27" rx="4" ry="5" fill="#fff"/><circle cx="41.5" cy="27.5" r="1.6" fill="#111"/><ellipse cx="42" cy="33" rx="4" ry="2.6" fill="#f2c79a"/><ellipse cx="36" cy="44" rx="5" ry="2.6" fill="#e3263a"/><circle cx="12" cy="40" r="5" fill="#d8283a"/><path d="M8 37 l-5 4 M8 40 l-5 3" stroke="#d8283a" stroke-width="2.5" stroke-linecap="round"/><circle cx="17" cy="41" r="2.4" fill="#fff"/><g fill="none" stroke="#ffd84d" stroke-width="2"><circle cx="50" cy="20" r="3"/><circle cx="57" cy="24" r="3"/></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Соник Даш</span>
+          <span class="cart-desc">Соник убегает от Наклза и иногда с ним дерётся.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubSonic">0</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -817,6 +841,41 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     <p class="hint">Каждый полный круг — +5 очков и +5 монет. Для VR-очков включи «VR-очки» и поверни телефон горизонтально.</p>
   </section>
 
+  <!-- ===== Sonic Dash ===== -->
+  <section id="sonic" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Соник Даш</div>
+      <div class="chips">
+        <div class="chip"><span>Счёт</span><b id="sonicScore">0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="sonicBest">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="sonicStage">
+      <canvas id="sonicCanvas" width="440" height="330" aria-label="Соник убегает от Наклза"></canvas>
+      <div class="overlay" id="sonicOverlay">
+        <h2 id="sonicOvTitle">Соник Даш</h2>
+        <p id="sonicOvText">Беги от Наклза! Держи «Бегать», чтобы оторваться. Догонит — дерись: пригнись от удара сверху, прыгни от подсечки и бей, когда он открылся.</p>
+        <button class="btn" type="button" id="sonicOvBtn">Старт</button>
+      </div>
+    </div>
+    <div class="pad4" id="sonicPad">
+      <button type="button" data-act="run"><span>»</span>Бегать</button>
+      <button type="button" data-act="jump"><span>▲</span>Прыгать</button>
+      <button type="button" data-act="crouch"><span>▼</span>Присесть</button>
+      <button type="button" data-act="punch"><span>●</span>Удар</button>
+    </div>
+    <div class="row-actions">
+      <button class="btn donate" type="button" data-shop="sonic"><span class="coin">+1K</span>Донат в игру</button>
+    </div>
+    <p class="hint">Клавиатура: → или Shift — бег, пробел или ↑ — прыжок, ↓ — присесть, F — удар. Кольца защищают: при ударе они разлетаются, а без колец теряешь жизнь.</p>
+  </section>
+
   <!-- ===== Characters ===== -->
   <section id="chars" class="screen" hidden>
     <div class="topbar">
@@ -954,6 +1013,10 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="shop-item" data-item="coins">
         <div><b>+1000 монет</b><small>На покупку платных и ультра-персонажей.</small></div>
         <button class="btn donate" type="button" data-buy="coins">Купить +1000</button>
+      </div>
+      <div class="shop-item" data-item="sonic">
+        <div><b>Соник Даш · +1000 очков</b><small>Прибавится к счёту текущего забега.</small></div>
+        <button class="btn donate" type="button" data-buy="sonic">Купить +1000</button>
       </div>
       <div class="shop-item" data-item="zombie">
         <div><b>Zombie Apokalipsis · +1000 очков</b><small>Прибавится к счёту текущей игры.</small></div>
@@ -1290,7 +1353,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       store.set("team", team);
       if (sel !== leader) { sel = leader; store.set("hero", sel); }
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
+      ["snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
       return { ok: true, leader: byIdC(leader), mate: byIdC(mate) };
     }
     const inTeam = (a, b) => !!team && ((team.a === a && team.b === b) || (team.a === b && team.b === a));
@@ -1298,7 +1361,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start"));
+      ["snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic"].forEach((g) => say(g, "start"));
     }
     function buy(id) {
       const c = get(id);
@@ -1358,7 +1421,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       refresh(); listeners.forEach((f) => f());
       if (before !== act()) {
         const now = get();
-        ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
+        ["snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
       }
       return { ok: true, c };
     }
@@ -1371,7 +1434,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (changed) {
         store.set("bans", bans);
         refresh(); listeners.forEach((f) => f());
-        if (before !== act()) ["snake", "g2048", "ttt", "blast", "zombie", "vr"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
+        if (before !== act()) ["snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
       } else if (!$("#chars").hidden) roster();
     }, 1000);
     refresh();
@@ -2953,9 +3016,516 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     };
   })();
 
+  /* ================= Sonic Dash ================= */
+  const Sonic = (() => {
+    const cv = $("#sonicCanvas"), ctx = cv.getContext("2d");
+    const stage = $("#sonicStage"), ov = $("#sonicOverlay");
+    let W = 440, H = 330, S = 1.1, dpr = 1, GY = 264;
+    let state = "ready", mode = "run", visible = false, raf = 0, lastT = 0;
+    let best = store.get("sonicBest", 0);
+    const keys = { run: false, crouch: false };
+    // Sonic
+    let sx = 0, sy = 0, vy = 0, onGround = true, punchT = 0, punchCd = 0, hurtT = 0, inv = 0, runPhase = 0, facing = 1;
+    // world
+    let dist = 0, speed = 0, objs = [], parts = [], texts = [], nextSpawn = 0, rings = 0, hits = 0, broken = 0, score = 0, lives = 3;
+    // Knuckles
+    let kDodge = false;
+    let gap = 100, kx = -100, ky = 0, kState = "chase", kT = 0, kHp = 3, kAtk = "high", kPhase = 0, fightTimer = 0, kVy = 0, kRot = 0, kFace = 1;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    function scoreNow() { return rings + hits * 5 + broken * 2 + Math.floor(dist / (60 * S)); }
+    function hud() {
+      score = scoreNow() + bonusPts;
+      $("#sonicScore").textContent = score;
+      if (score > best) { best = score; store.set("sonicBest", best); }
+      $("#sonicBest").textContent = best;
+    }
+    let bonusPts = 0;
+
+    // ---------- drawing helpers ----------
+    function circle(x, y, r, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+    function ell(x, y, rx, ry, col, rot) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2); ctx.fill(); }
+    function line(x1, y1, x2, y2, w, col) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    function poly(pts, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]); ctx.closePath(); ctx.fill(); }
+
+    function drawBg() {
+      const g = ctx.createLinearGradient(0, 0, 0, GY);
+      g.addColorStop(0, "#2f7fe8"); g.addColorStop(1, "#bfe6ff");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // clouds
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      for (let i = 0; i < 5; i++) {
+        const x = ((i * 170 - dist * .05) % (W + 200) + W + 200) % (W + 200) - 100, y = 30 * S + (i % 3) * 18 * S;
+        ell(x, y, 34 * S, 10 * S, "rgba(255,255,255,.85)"); ell(x + 18 * S, y - 6 * S, 20 * S, 9 * S, "rgba(255,255,255,.85)");
+      }
+      // far mountains
+      ctx.fillStyle = "#6c9ad8";
+      for (let i = -1; i < 6; i++) {
+        const x = i * 120 * S - (dist * .12) % (120 * S);
+        poly([x, GY - 40 * S, x + 60 * S, GY - 120 * S, x + 120 * S, GY - 40 * S], "#6c9ad8");
+      }
+      // checkered hills
+      for (let i = -1; i < 5; i++) {
+        const x = i * 160 * S - (dist * .3) % (160 * S), r = 70 * S;
+        ctx.save();
+        ctx.beginPath(); ctx.arc(x + 80 * S, GY - 10 * S, r, Math.PI, 0); ctx.closePath(); ctx.clip();
+        ctx.fillStyle = "#3fae4a"; ctx.fillRect(x, GY - 10 * S - r, 160 * S, r);
+        ctx.fillStyle = "#349a3f";
+        for (let yy = 0; yy < 6; yy++) for (let xx = 0; xx < 12; xx++) if ((xx + yy) % 2) ctx.fillRect(x + xx * 14 * S, GY - 10 * S - r + yy * 14 * S, 14 * S, 14 * S);
+        ctx.restore();
+      }
+      // palm trees
+      for (let i = -1; i < 4; i++) {
+        const x = i * 210 * S - (dist * .6) % (210 * S) + 60 * S;
+        line(x, GY, x + 8 * S, GY - 70 * S, 6 * S, "#9a5a2a");
+        ctx.save(); ctx.translate(x + 8 * S, GY - 70 * S);
+        for (let k = 0; k < 5; k++) { ctx.rotate(Math.PI * 2 / 5); ell(16 * S, 0, 18 * S, 5 * S, "#2f9a3c"); }
+        ctx.restore();
+        circle(x + 6 * S, GY - 66 * S, 3.5 * S, "#7a3a1a");
+      }
+      // ground: grass strip and checkered earth
+      ctx.fillStyle = "#b8642c"; ctx.fillRect(0, GY, W, H - GY);
+      const sq = 18 * S, off = dist % (sq * 2);
+      ctx.fillStyle = "#8a4a20";
+      for (let yy = 0; yy * sq < H - GY; yy++) for (let xx = -2; xx * sq < W + sq; xx++) if ((xx + yy) % 2 === 0) ctx.fillRect(xx * sq - off, GY + 10 * S + yy * sq, sq, sq);
+      ctx.fillStyle = "#3fbf4f"; ctx.fillRect(0, GY, W, 10 * S);
+      ctx.fillStyle = "#2e9a3c";
+      for (let x = -((dist) % (12 * S)); x < W; x += 12 * S) poly([x, GY + 10 * S, x + 6 * S, GY + 16 * S, x + 12 * S, GY + 10 * S], "#2e9a3c");
+    }
+
+    // Sonic, feet at (x, y)
+    function drawSonic(x, y, t) {
+      const blue = "#1f5fe0", peach = "#f2c79a";
+      ctx.save();
+      if (inv > 0 && Math.floor(inv / 80) % 2) ctx.globalAlpha = .35;
+      ctx.translate(x, y); ctx.scale(facing * S, S);
+      if (!onGround && mode === "run" || (!onGround && mode === "fight")) {
+        // spin ball
+        ctx.save(); ctx.translate(0, -18); ctx.rotate(t * .025);
+        circle(0, 0, 16, blue);
+        for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); poly([4, -14, 14, -8, 6, -4], "#1849b8"); }
+        ctx.restore();
+        ctx.globalAlpha = .25; circle(-14, -18, 14, blue); ctx.globalAlpha = 1;
+        ctx.restore(); return;
+      }
+      const crouch = keys.crouch && onGround;
+      const sq = crouch ? 18 : 0;
+      // quills
+      poly([-6, -40 + sq, -28, -44 + sq, -12, -34 + sq, -30, -30 + sq, -12, -27 + sq, -26, -18 + sq, -6, -22 + sq], blue);
+      // legs
+      if (!crouch) {
+        if (speed > .42 * S && mode === "run") {
+          ctx.strokeStyle = "#e3263a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.ellipse(2, -6, 9, 5, 0, 0, Math.PI * 2); ctx.stroke();
+          ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(2, -6, 9, 5, runPhase, 0, Math.PI); ctx.stroke();
+        } else {
+          const a = mode === "run" ? Math.sin(runPhase) * 8 : 0;
+          line(0, -14, a, -3, 3.5, blue); line(0, -14, -a, -3, 3.5, blue);
+          ell(a + 4, -2, 7, 3.5, "#e3263a"); ell(-a + 4, -2, 7, 3.5, "#e3263a");
+          line(a + 1, -3, a + 3, -1, 1.5, "#fff"); line(-a + 1, -3, -a + 3, -1, 1.5, "#fff");
+        }
+      } else { ell(4, -2, 9, 4, "#e3263a"); ell(-4, -2, 9, 4, "#c81f31"); }
+      // body
+      circle(0, -18 + sq * .6, 9, blue); ell(3, -17 + sq * .6, 5, 6, peach);
+      // arm / punch
+      if (punchT > 0) {
+        line(3, -20 + sq * .6, 22, -22 + sq * .6, 3.5, peach); circle(25, -22 + sq * .6, 5.5, "#fff");
+        ctx.globalAlpha = .6; line(30, -26 + sq, 40, -26 + sq, 2, "#fff"); line(30, -18 + sq, 38, -16 + sq, 2, "#fff"); ctx.globalAlpha = 1;
+      } else {
+        const sw = mode === "run" ? Math.sin(runPhase) * 5 : 0;
+        line(2, -21 + sq * .6, 8 + sw, -13 + sq * .6, 3, peach); circle(9 + sw, -12 + sq * .6, 3.5, "#fff");
+      }
+      // head
+      circle(0, -32 + sq, 13, blue);
+      poly([-2, -44 + sq, 3, -52 + sq, 7, -42 + sq], blue);
+      ell(9, -26 + sq, 6, 4, peach);
+      circle(14, -28 + sq, 1.8, "#111");
+      ell(6, -34 + sq, 5, 6, "#fff"); circle(8, -33 + sq, 2.1, "#2a8a3a"); circle(8.4, -33 + sq, 1, "#111");
+      if (hurtT > 0) { line(2, -38 + sq, 10, -36 + sq, 1.5, "#111"); }
+      else line(5, -40 + sq, 11, -38 + sq, 1.5, "#0c2c80");
+      line(6, -23 + sq, 11, -22 + sq, 1.3, "#7a2a2a");
+      ctx.restore();
+    }
+
+    // Knuckles, feet at (x, y)
+    function drawKnux(x, y, t) {
+      const red = "#d8283a", tan = "#e8b48f";
+      ctx.save();
+      ctx.translate(x, y); ctx.scale(kFace * S, S);
+      if (kState === "ko") { ctx.translate(0, -20); ctx.rotate(kRot); ctx.translate(0, 20); }
+      if (kState === "hit") ctx.rotate(-.25);
+      const glide = kState === "glide";
+      if (glide) ctx.rotate(.9);
+      const crouchAtk = kState === "attack" && kAtk === "low";
+      const off = crouchAtk ? 10 : 0;
+      // dreadlocks hang behind
+      for (let i = 0; i < 4; i++) {
+        const sway = Math.sin(t * .01 + i) * 2;
+        line(-6, -36 + off + i * 3, -20 + sway, -26 + off + i * 5, 5, red);
+      }
+      // legs and shoes
+      const a = kState === "chase" || kState === "approach" ? Math.sin(kPhase) * 8 : 0;
+      if (crouchAtk) {
+        line(0, -12 + off, 22, -4, 4, red); ell(24, -3, 8, 4, "#2fa84a"); ell(-4, -2, 8, 4, "#2fa84a");
+      } else {
+        line(0, -14, a, -3, 4, red); line(0, -14, -a, -3, 4, red);
+        ell(a + 4, -2, 8, 4, "#2fa84a"); ell(-a + 4, -2, 8, 4, "#2fa84a");
+        line(a, -3, a + 7, -3, 1.6, "#ffd84d"); line(-a, -3, -a + 7, -3, 1.6, "#ffd84d");
+      }
+      // body with white crescent
+      circle(0, -20 + off, 10, red);
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(2, -22 + off, 6, .2, Math.PI - .2); ctx.arc(2, -25 + off, 5, Math.PI - .3, .3, true); ctx.fill();
+      // fists
+      const fist = (fx, fy, big) => {
+        circle(fx, fy, big ? 7.5 : 6, "#fff");
+        poly([fx + 3, fy - 6, fx + 9, fy - 8, fx + 6, fy - 2], "#fff"); poly([fx + 3, fy, fx + 9, fy - 1, fx + 6, fy + 4], "#fff");
+        ctx.strokeStyle = "#999"; ctx.lineWidth = .8; ctx.beginPath(); ctx.arc(fx, fy, big ? 7.5 : 6, 0, Math.PI * 2); ctx.stroke();
+      };
+      if (kState === "wind") {
+        const shake = Math.sin(t * .08) * 1.5;
+        line(-2, -24, -16, -30 + shake, 4, red); fist(-18, -32 + shake, true);
+        fist(10, -20, false);
+      } else if (kState === "attack" && kAtk === "high") {
+        line(2, -26, 30, -32, 4.5, red); fist(34, -32, true); fist(6, -18, false);
+        ctx.globalAlpha = .5; line(14, -38, 28, -38, 2, "#fff"); line(14, -26, 26, -25, 2, "#fff"); ctx.globalAlpha = 1;
+      } else if (glide) {
+        line(4, -26, 26, -34, 4, red); fist(28, -35, false); line(4, -22, 24, -26, 4, red); fist(26, -27, false);
+      } else {
+        const sw = Math.sin(kPhase) * 5;
+        line(2, -24 + off, 10 + sw, -16 + off, 4, red); fist(12 + sw, -15 + off, false);
+      }
+      // head
+      circle(0, -34 + off, 12, red);
+      ell(9, -28 + off, 6, 4, tan);
+      circle(14, -30 + off, 1.8, "#111");
+      ell(6, -36 + off, 4.5, 5, "#fff"); circle(7.5, -35 + off, 2, "#7a3cff"); circle(7.8, -35 + off, 1, "#111");
+      line(2, -41 + off, 11, -38 + off, 2, "#7a1220");
+      if (kState === "recover") {
+        for (let i = 0; i < 3; i++) { const an = t * .006 + i * 2.1; poly([Math.cos(an) * 12, -52 + Math.sin(an) * 3 - 3, Math.cos(an) * 12 + 2, -52 + Math.sin(an) * 3, Math.cos(an) * 12 - 2, -52 + Math.sin(an) * 3], "#ffd84d"); }
+      }
+      ctx.restore();
+    }
+    function drawRing(x, y, r, a) {
+      ctx.save(); ctx.globalAlpha = a == null ? 1 : a;
+      ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 2.6 * S;
+      ctx.beginPath(); ctx.ellipse(x, y, r * Math.abs(Math.cos(performance.now() * .004 + x * .01)) + r * .25, r, 0, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = "#fff6b0"; ctx.lineWidth = 1 * S; ctx.stroke();
+      ctx.restore();
+    }
+    function drawObj(o) {
+      const x = o.x - dist;
+      if (o.type === "ring") drawRing(x, o.y, 7 * S);
+      if (o.type === "spikes") {
+        ctx.fillStyle = "#9aa3b5"; ctx.fillRect(x - 16 * S, GY - 5 * S, 32 * S, 5 * S);
+        for (let i = 0; i < 4; i++) poly([x - 16 * S + i * 8 * S, GY - 5 * S, x - 12 * S + i * 8 * S, GY - 20 * S, x - 8 * S + i * 8 * S, GY - 5 * S], "#d9dee8");
+      }
+      if (o.type === "rock") {
+        poly([x - 18 * S, GY, x - 14 * S, GY - 24 * S, x, GY - 32 * S, x + 15 * S, GY - 22 * S, x + 18 * S, GY], "#7d6a5a");
+        line(x - 6 * S, GY - 22 * S, x + 2 * S, GY - 10 * S, 1.5 * S, "#5a4a3e");
+      }
+      if (o.type === "bee") {
+        const y = o.y + Math.sin(performance.now() * .008 + o.x) * 3 * S;
+        ell(x, y, 13 * S, 8 * S, "#ffd84d"); ctx.fillStyle = "#111"; ctx.fillRect(x - 4 * S, y - 8 * S, 3 * S, 16 * S); ctx.fillRect(x + 3 * S, y - 8 * S, 3 * S, 16 * S);
+        ell(x - 2 * S, y - 11 * S, 7 * S, 4 * S, "rgba(220,240,255,.8)");
+        circle(x - 10 * S, y - 2 * S, 3 * S, "#e3263a");
+        poly([x + 12 * S, y, x + 20 * S, y + 4 * S, x + 12 * S, y + 4 * S], "#9aa3b5");
+      }
+    }
+
+    // ---------- game logic ----------
+    function spawn() {
+      const x = dist + W + 60 * S, r = Math.random();
+      if (r < .3) objs.push({ type: "spikes", x });
+      else if (r < .5) objs.push({ type: "rock", x });
+      else if (r < .7) objs.push({ type: "bee", x, y: GY - 36 * S });
+      if (Math.random() < .75) {
+        const n = 3 + ((Math.random() * 4) | 0), high = Math.random() < .4;
+        for (let i = 0; i < n; i++) {
+          const rx = x + (r < .7 ? 60 : 0) * S + i * 22 * S;
+          const ry = high ? GY - (40 + Math.sin(i / (n - 1 || 1) * Math.PI) * 50) * S : GY - 22 * S;
+          objs.push({ type: "ring", x: rx, y: ry });
+        }
+      }
+      nextSpawn = dist + rnd(170, 290) * S;
+    }
+    function box() {
+      const crouch = keys.crouch && onGround;
+      const top = sy - (onGround ? (crouch ? 26 : 50) : 36) * S;
+      return { l: sx - 11 * S, r: sx + 11 * S, t: top, b: sy };
+    }
+    function hurt(fromX) {
+      if (inv > 0) return;
+      hurtT = 300; inv = 1300;
+      if (rings > 0) {
+        const n = Math.min(rings, 14);
+        for (let i = 0; i < n; i++) {
+          const a = -Math.PI / 2 + (i / n - .5) * 2.6;
+          parts.push({ type: "ring", x: sx, y: sy - 24 * S, vx: Math.cos(a) * .25 * S, vy: Math.sin(a) * .35 * S - .1 * S, t: 0, life: 1400 });
+        }
+        rings = 0;
+        Hero.say("sonic", "bad", "Ой, кольца разлетелись!");
+      } else {
+        lives--;
+        Hero.say("sonic", "bad", lives > 0 ? `Осталось жизней: ${lives}` : "Наклз победил…");
+        if (lives <= 0) { gameOver(); return; }
+      }
+      if (mode === "run") { gap = Math.max(0, gap - 22); speed *= .4; }
+      stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake");
+      hud();
+    }
+    function text(x, y, s1, col) { texts.push({ x, y, s: s1, col, t: 0, life: 800 }); }
+    function burst(x, y, col, n) { for (let i = 0; i < n; i++) parts.push({ type: "bit", x, y, vx: rnd(-.3, .3) * S, vy: rnd(-.45, -.1) * S, t: 0, life: 700, col }); }
+
+    function jump() { if (state !== "run") return; if (onGround) { vy = -.78 * S; onGround = false; } }
+    function punch() {
+      if (state !== "run" || punchCd > 0) return;
+      punchT = 230; punchCd = 330;
+      if (mode === "run") {
+        objs.forEach((o) => {
+          if (o.dead || (o.type !== "rock" && o.type !== "bee")) return;
+          const x = o.x - dist;
+          if (x > sx && x - sx < 46 * S) {
+            o.dead = true; broken++;
+            burst(x, o.type === "bee" ? o.y : GY - 16 * S, o.type === "bee" ? "#ffd84d" : "#7d6a5a", 12);
+            text(x, GY - 50 * S, "+2", "#9be15d"); hud();
+          }
+        });
+      } else {
+        // in a fight: only hits when Knuckles is open after his attack
+        const close = Math.abs(kx - sx) < 100 * S;
+        if (!close) return;
+        if (kState === "recover") {
+          kHp--; hits++; kState = "hit"; kT = 0;
+          burst((kx + sx) / 2, GY - 30 * S, "#fff", 10);
+          text(kx, GY - 70 * S, "+5", "#ffb547");
+          Hero.earn(3);
+          hud();
+          if (kHp <= 0) { kState = "ko"; kT = 0; kVy = -.6 * S; Hero.say("sonic", "win", "Нокаут! Наклз улетел!"); }
+          else Hero.say("sonic", "good", "Есть попадание!");
+        } else if (kState === "idle" || kState === "wind") {
+          text(kx, GY - 70 * S, "БЛОК", "#9aa3b5");
+        }
+      }
+    }
+    function startFight() {
+      mode = "fight"; kState = "glide"; kT = 0; kHp = 3; ky = GY - 80 * S; kx = -30 * S; kFace = 1;
+      text(W / 2, H * .3, "БОЙ!", "#ff6b7a");
+      Hero.say("sonic", "start", "Наклз догнал! Дерёмся!");
+    }
+    function endFight() {
+      mode = "run"; gap = 100; fightTimer = rnd(32000, 45000); facing = 1;
+    }
+    function step(dt) {
+      if (state !== "run") return;
+      // timers
+      punchT = Math.max(0, punchT - dt); punchCd = Math.max(0, punchCd - dt);
+      hurtT = Math.max(0, hurtT - dt); inv = Math.max(0, inv - dt);
+      // Sonic vertical motion
+      vy += .0026 * S * dt; sy += vy * dt;
+      if (sy >= GY) { sy = GY; vy = 0; onGround = true; }
+      if (mode === "run") {
+        const base = (.32 + Math.min(.12, dist / (60000 * S))) * S, boost = .52 * S;
+        const target = keys.run ? boost : base;
+        speed += (target - speed) * Math.min(1, dt * .004);
+        dist += speed * dt;
+        sx += (W * .32 - sx) * Math.min(1, dt * .004);
+        runPhase += speed * dt * .06 / S;
+        // Knuckles closes in unless Sonic boosts
+        const kSpeed = .4 * S;
+        gap = Math.max(0, Math.min(100, gap + (speed - kSpeed) / S * .06 * dt));
+        kx = sx - (26 + gap * 2.4) * S; ky = GY; kPhase += dt * .03; kFace = 1; kState = "chase";
+        fightTimer -= dt;
+        if (gap <= 0 || fightTimer <= 0) { startFight(); return; }
+        if (dist >= nextSpawn) spawn();
+        const b = box();
+        objs.forEach((o) => {
+          if (o.dead) return;
+          const x = o.x - dist;
+          if (o.type === "ring") {
+            if (Math.abs(x - sx) < 16 * S && o.y > b.t - 8 * S && o.y < b.b + 4 * S) {
+              o.dead = true; rings++; if (rings % 5 === 0) Hero.earn(1); hud();
+            }
+            return;
+          }
+          let l, r, t2, bt;
+          if (o.type === "spikes") { l = x - 14 * S; r = x + 14 * S; t2 = GY - 16 * S; bt = GY; }
+          if (o.type === "rock") { l = x - 16 * S; r = x + 16 * S; t2 = GY - 28 * S; bt = GY; }
+          if (o.type === "bee") { l = x - 12 * S; r = x + 12 * S; t2 = o.y - 8 * S; bt = o.y + 8 * S; }
+          if (b.r > l && b.l < r && b.b > t2 && b.t < bt) {
+            if (o.type === "bee" && !onGround && vy > 0) { o.dead = true; broken++; vy = -.5 * S; burst(x, o.y, "#ffd84d", 10); text(x, o.y - 20 * S, "+2", "#9be15d"); hud(); return; }
+            hurt(x); o.dead = o.type !== "spikes";
+          }
+        });
+        objs = objs.filter((o) => !o.dead && o.x - dist > -60 * S);
+        if (Math.random() < .0004 * dt) Hero.say("sonic", "start", pickLine());
+      } else {
+        // fight mode
+        speed = 0; runPhase += dt * .01;
+        sx += (W * .6 - sx) * Math.min(1, dt * .006); facing = -1;
+        kT += dt; kPhase += dt * .02;
+        if (kState === "glide") {
+          kx += .35 * S * dt; ky += (GY - ky) * Math.min(1, dt * .004);
+          if (kx >= W * .4) { kx = W * .4; ky = GY; kState = "idle"; kT = 0; }
+        } else if (kState === "idle" || kState === "wind") {
+          kx += (W * .4 - kx) * Math.min(1, dt * .004); // step back in after being knocked away
+          if (kState === "idle" && kT > rnd(450, 900)) { kState = "wind"; kT = 0; kAtk = Math.random() < .5 ? "high" : "low"; }
+          else if (kState === "wind" && kT > 700) { kState = "attack"; kT = 0; kDodge = false; }
+        } else if (kState === "attack") {
+          // dodged if Sonic ducks (high punch) or is in the air (low sweep) at any moment of the swing
+          if (kAtk === "high" ? (keys.crouch && onGround) : !onGround) kDodge = true;
+          if (kT > 240) {
+            if (kDodge) text(sx, GY - 70 * S, "УВЕРНУЛСЯ", "#5ce1e6"); else hurt(kx);
+            kState = "recover"; kT = 0;
+          }
+        } else if (kState === "recover") {
+          if (kT > 900) { kState = "idle"; kT = 0; }
+        } else if (kState === "hit") {
+          kx -= .08 * S * dt * (1 - kT / 300);
+          if (kT > 300) { kState = "idle"; kT = 0; kx = Math.max(W * .2, kx); }
+        } else if (kState === "ko") {
+          kVy += .0018 * S * dt; ky += kVy * dt; kx -= .35 * S * dt; kRot -= dt * .02;
+          if (kx < -80 * S) { kRot = 0; endFight(); }
+        }
+      }
+      parts = parts.filter((p) => {
+        p.t += dt; p.vy += .0016 * S * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+        if (p.type === "ring" && p.y > GY - 6 * S && p.vy > 0) { p.y = GY - 6 * S; p.vy *= -.6; }
+        return p.t < p.life;
+      });
+      texts = texts.filter((x) => { x.t += dt; return x.t < x.life; });
+    }
+    const LINES = ["Быстрее, Соник!", "Наклз на хвосте!", "Собирай кольца!", "Держи «Бегать», чтобы оторваться!"];
+    function pickLine() { return LINES[(Math.random() * LINES.length) | 0]; }
+
+    function render(t) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawBg();
+      objs.forEach(drawObj);
+      if (mode === "run" && kx > -60 * S) drawKnux(kx, ky, t);
+      if (mode === "fight") drawKnux(kx + (kState === "attack" ? 22 * S : 0), ky, t);
+      cv.dataset.k = mode + ":" + kState + ":" + kAtk + ":" + kHp + ":" + lives; // read by automated tests
+      drawSonic(sx, sy, t);
+      parts.forEach((p) => {
+        const a = Math.max(0, 1 - p.t / p.life);
+        if (p.type === "ring") drawRing(p.x, p.y, 6 * S, a);
+        else { ctx.globalAlpha = a; ctx.fillStyle = p.col; ctx.fillRect(p.x, p.y, 4 * S, 4 * S); ctx.globalAlpha = 1; }
+      });
+      // fight cue above Knuckles
+      if (mode === "fight" && (kState === "wind" || kState === "recover")) {
+        const label = kState === "recover" ? "БЕЙ!" : kAtk === "high" ? "▼ ПРИГНИСЬ" : "▲ ПРЫГАЙ";
+        const col = kState === "recover" ? "#9be15d" : "#ff6b7a";
+        ctx.font = `${Math.round(14 * S)}px "Rubik Mono One", Arial, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineWidth = 4; ctx.strokeStyle = "#12132a"; ctx.strokeText(label, kx + 10 * S, GY - 82 * S);
+        ctx.fillStyle = col; ctx.fillText(label, kx + 10 * S, GY - 82 * S);
+      }
+      texts.forEach((x) => {
+        const k = x.t / x.life;
+        ctx.globalAlpha = Math.min(1, (1 - k) * 2);
+        ctx.font = `${Math.round(16 * S)}px "Rubik Mono One", Arial, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.lineWidth = 4; ctx.strokeStyle = "#12132a"; ctx.strokeText(x.s, x.x, x.y - k * 30 * S);
+        ctx.fillStyle = x.col; ctx.fillText(x.s, x.x, x.y - k * 30 * S);
+        ctx.globalAlpha = 1;
+      });
+      // HUD: rings, lives, distance, Knuckles gap or HP
+      ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.font = `${Math.round(13 * S)}px "Rubik Mono One", Arial, sans-serif`;
+      drawRing(18 * S, 18 * S, 7 * S);
+      ctx.fillStyle = "#fff"; ctx.strokeStyle = "#12132a"; ctx.lineWidth = 3;
+      ctx.strokeText(String(rings), 30 * S, 11 * S); ctx.fillText(String(rings), 30 * S, 11 * S);
+      for (let i = 0; i < 3; i++) { ctx.fillStyle = i < lives ? "#1f5fe0" : "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(14 * S + i * 16 * S, 40 * S, 6 * S, 0, Math.PI * 2); ctx.fill(); }
+      ctx.textAlign = "right";
+      const meters = `${Math.floor(dist / (10 * S))} м`;
+      ctx.fillStyle = "#fff"; ctx.strokeText(meters, W - 10 * S, 11 * S); ctx.fillText(meters, W - 10 * S, 11 * S);
+      const bw = 110 * S, bx = W - 10 * S - bw, by = 32 * S;
+      ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.fillRect(bx, by, bw, 8 * S);
+      if (mode === "run") {
+        ctx.fillStyle = gap > 40 ? "#9be15d" : gap > 15 ? "#ffb547" : "#ff6b7a";
+        ctx.fillRect(bx, by, bw * gap / 100, 8 * S);
+        ctx.font = `${Math.round(9 * S)}px Arial, sans-serif`; ctx.fillStyle = "#fff";
+        ctx.fillText("до Наклза", W - 10 * S, by + 10 * S);
+      } else {
+        ctx.fillStyle = "#d8283a"; ctx.fillRect(bx, by, bw * Math.max(0, kHp) / 3, 8 * S);
+        ctx.font = `${Math.round(9 * S)}px Arial, sans-serif`; ctx.fillStyle = "#fff";
+        ctx.fillText("Наклз", W - 10 * S, by + 10 * S);
+      }
+    }
+    function frame(t) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(40, t - lastT) : 16; lastT = t;
+      step(dt); render(t);
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+
+    function overlay(title, txt, btn) {
+      if (!title) { ov.hidden = true; return; }
+      $("#sonicOvTitle").textContent = title; $("#sonicOvText").textContent = txt; $("#sonicOvBtn").textContent = btn;
+      ov.hidden = false;
+    }
+    function start() {
+      state = "run"; mode = "run";
+      dist = 0; speed = .3 * S; objs = []; parts = []; texts = []; nextSpawn = 200 * S;
+      rings = 0; hits = 0; broken = 0; lives = 3; bonusPts = 0;
+      gap = 100; kState = "chase"; kHp = 3; fightTimer = rnd(26000, 34000);
+      sx = W * .32; sy = GY; vy = 0; onGround = true; facing = 1; inv = 0;
+      overlay(null); hud();
+      Hero.say("sonic", "start", "Соник, беги! Наклз уже близко!");
+    }
+    function gameOver() {
+      state = "over"; hud(); updateHub();
+      overlay("Наклз победил", `Счёт: ${score} · Рекорд: ${best}`, "Ещё раз");
+    }
+    function pause() { if (state === "run") { state = "paused"; overlay("Пауза", `Счёт: ${score}`, "Продолжить"); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1;
+      const oldS = S;
+      W = w; H = Math.round(w * .75); S = H / 300; GY = H * .8;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      if (state === "ready") { sx = W * .32; sy = GY; kx = -100; }
+      else if (oldS !== S) { sx = sx / oldS * S; sy = GY; }
+      render(performance.now());
+    }
+
+    // ---------- controls ----------
+    function press(act, down) {
+      const btn = document.querySelector(`#sonicPad [data-act="${act}"]`);
+      if (btn) btn.classList.toggle("on", down);
+      if (act === "run") keys.run = down;
+      if (act === "crouch") keys.crouch = down;
+      if (down && act === "jump") jump();
+      if (down && act === "punch") punch();
+    }
+    $$("#sonicPad button").forEach((b) => {
+      const act = b.dataset.act;
+      b.addEventListener("pointerdown", (e) => { e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (err) {} press(act, true); });
+      ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => b.addEventListener(ev, () => press(act, false)));
+      b.addEventListener("contextmenu", (e) => e.preventDefault());
+    });
+    const KEYMAP = { ArrowRight: "run", Shift: "run", " ": "jump", ArrowUp: "jump", ArrowDown: "crouch", f: "punch", F: "punch", "а": "punch", "А": "punch" };
+    document.addEventListener("keyup", (e) => { if (current !== "sonic") return; const a = KEYMAP[e.key]; if (a === "run" || a === "crouch") press(a, false); if (a) { const b = document.querySelector(`#sonicPad [data-act="${a}"]`); if (b) b.classList.remove("on"); } });
+    $("#sonicOvBtn").addEventListener("click", () => { if (state === "paused") { state = "run"; overlay(null); } else start(); });
+    window.addEventListener("resize", () => { if (visible) fit(); });
+
+    return {
+      enter() { visible = true; fit(); hud(); loop(); },
+      leave() { pause(); visible = false; keys.run = keys.crouch = false; },
+      key(e) {
+        const a = KEYMAP[e.key];
+        if (!a) return;
+        e.preventDefault();
+        if (e.repeat && (a === "jump" || a === "punch")) return;
+        press(a, true);
+      },
+      best: () => best,
+      bonus(n) { bonusPts += n; hud(); },
+    };
+  })();
+
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -2965,6 +3535,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     $("#hubBlast").textContent = Blast.best();
     $("#hubZombie").textContent = Zombie.best();
     $("#hubVr").textContent = VR.best();
+    $("#hubSonic").textContent = Sonic.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -2984,7 +3555,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
   /* ================= Donate shop ================= */
   const shop = $("#shop");
-  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis" };
+  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", sonic: "Соник Даш" };
   let donated = store.get("donated", { count: 0, total: 0 });
   let lastFocus = null, toastTimer = 0;
   function shopStats() { $("#shopCount").textContent = donated.count; $("#shopTotal").textContent = "+" + donated.total; }
@@ -3128,7 +3699,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function rules() {
       if (Police.isBoss()) return [
-        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион).",
+        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион, Соник Даш).",
         "Собеседник — твой начальник. Ты его узнал, поэтому говоришь почтительно, по-военному («Так точно», «Есть», «товарищ начальник»), с юмором.",
         "Начальника ты НИКОГДА не называешь читером и не обвиняешь — даже если раньше в переписке называл. Его донаты ты одобряешь.",
         "Отвечай по-русски, 1–2 коротких предложения. Никаких грубостей и взрослых тем: игру могут открывать дети. Можно докладывать обстановку и давать советы по играм.",
@@ -3136,7 +3707,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         "Пиши только реплику полицейского, без пояснений и кавычек.",
       ].join("\n");
       return [
-        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион).",
+        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион, Соник Даш).",
         "Ты всегда подозреваешь игрока в читерстве, потому что в игре есть кнопка «Донат в игру», которая бесплатно даёт +1000.",
         "Отвечай по-русски, 1–2 коротких предложения, с юмором, и обязательно вставляй «Читер!!».",
         "Никаких реальных угроз, грубости и взрослых тем: игру могут открывать дети. Можно давать короткие советы по этим играм.",
@@ -3308,7 +3879,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function soloRules(c) {
       return [
-        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
+        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион, Соник Даш). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
         "Ты переписываешься с игроком. Отвечай по-русски, 1–2 коротких предложения, строго в своём характере, с юмором.",
         "В игре есть полицейский сержант Мигалкин, который всем кричит «Читер!!», и другие персонажи: " + CHARS.filter((x) => x.id !== c.id).map((x) => x.name).join(", ") + ".",
         "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
@@ -3412,8 +3983,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
         const prompt = [
           chatId === "group"
-            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион). Игрок пишет сообщение, персонажи отвечают."
-            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион) с игроком. Персонажи — напарники и отвечают вместе.",
+            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион, Соник Даш). Игрок пишет сообщение, персонажи отвечают."
+            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis, VR Аттракцион, Соник Даш) с игроком. Персонажи — напарники и отвечают вместе.",
           "Персонажи онлайн:", ...on.map(persona),
           "Персонажи в бане сейчас молчат: " + (members().filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
           "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
@@ -3621,6 +4192,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     if (document.hidden && current === "zombie") Zombie.leave();
     if (!document.hidden && current === "zombie") Zombie.enter();
     if (document.hidden && current === "vr") VR.leave();
+    if (document.hidden && current === "sonic") Sonic.leave();
     if (!document.hidden && current === "vr") VR.enter();
   });
 
