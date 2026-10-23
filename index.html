@@ -286,6 +286,39 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .zombie-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #blastFx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; }
 
+/* ---------- Events ---------- */
+.events-btn {
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; padding: 14px 16px; border-radius: 16px; cursor: pointer; text-align: left;
+  border: 2px solid var(--cyan); background: linear-gradient(110deg, rgba(92,225,230,.18), rgba(169,139,255,.18)); color: var(--fg);
+}
+.events-btn b { font-family: var(--display); font-size: 20px; letter-spacing: 3px; }
+.events-btn small { display: block; color: var(--muted); font-size: 12px; }
+.events-btn .ev-count { font-family: var(--mono); font-weight: 700; background: var(--cyan); color: var(--bg); border-radius: 999px; padding: 3px 10px; font-size: 13px; white-space: nowrap; }
+.events-btn .ev-dot { position: absolute; top: -5px; right: -5px; width: 14px; height: 14px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 0 3px var(--bg); animation: evpulse 1.2s ease-in-out infinite; }
+@keyframes evpulse { 50% { transform: scale(1.3); } }
+.ev-list { display: flex; flex-direction: column; gap: 12px; }
+.ev-card { display: grid; grid-template-columns: 56px 1fr; gap: 12px; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; }
+.ev-card.season { border-color: rgba(255,181,71,.6); }
+.ev-card.weekend { border-color: rgba(169,139,255,.6); }
+.ev-card.done { border-color: var(--lime); }
+.ev-art { width: 56px; height: 56px; border-radius: 12px; overflow: hidden; background: var(--bg); }
+.ev-art svg { display: block; width: 100%; height: 100%; }
+.ev-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ev-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.ev-kind { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; color: var(--cyan); }
+.ev-card.season .ev-kind { color: var(--amber); }
+.ev-card.weekend .ev-kind { color: #a98bff; }
+.ev-time { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ev-title { font-family: var(--display); font-size: 16px; line-height: 1.2; }
+.ev-desc { color: var(--muted); font-size: 13px; line-height: 1.4; margin: 0; }
+.ev-prog { height: 8px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.ev-prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--cyan), var(--lime)); border-radius: 999px; }
+.ev-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ev-foot .price { font-size: 13px; }
+.ev-foot .btn { padding: 8px 14px; font-size: 14px; }
+.ev-empty { color: var(--muted); text-align: center; padding: 24px 8px; }
+
 /* ---------- Characters ---------- */
 @property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
 .av { border-radius: 14px; overflow: hidden; background: var(--bg); flex: none; }
@@ -586,6 +619,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <button class="btn ghost small" type="button" data-go="gear">Аксессуары</button>
       </div>
     </div>
+    <button class="events-btn" type="button" data-go="events" id="eventsBtn">
+      <span><b>EVENTS</b><small id="eventsSub">События дня, турниры и праздники</small></span>
+      <span class="ev-count" id="eventsCount">0 сейчас</span>
+      <span class="ev-dot" id="eventsDot" hidden></span>
+    </button>
     <p class="lead">Выбери картридж</p>
     <div class="carts">
       <button class="cart" data-go="snake" type="button">
@@ -929,6 +967,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <p class="hint ghost-hide-when-full">Нажми на игру, чтобы управлять с клавиатуры. На телефоне кнопки управления — под полем игры. Каждые 1000 очков нового рекорда — +10 монет.</p>
   </section>
 
+  <!-- ===== Events ===== -->
+  <section id="events" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">EVENTS</div>
+      <div class="chip hi"><span>Монеты</span><b data-coins>0</b></div>
+    </div>
+    <div class="modes" role="group" aria-label="События" id="evTabs">
+      <button type="button" data-tab="now">Сейчас</button>
+      <button type="button" data-tab="soon">Скоро</button>
+      <button type="button" data-tab="past">Прошедшие</button>
+    </div>
+    <div class="ev-list" id="evList"></div>
+    <p class="hint">Прогресс засчитывается, пока событие идёт. Ежедневные события меняются в полночь.</p>
+  </section>
+
   <!-- ===== Characters ===== -->
   <section id="chars" class="screen" hidden>
     <div class="topbar">
@@ -1107,6 +1161,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     get(k, d) { try { const v = localStorage.getItem("v3:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem("v3:" + k, JSON.stringify(v)); } catch (e) {} },
   };
+
+  // Event hooks: games report progress here; the Events module fills window.__ev later.
+  function evReport(game, value) { if (window.__ev) window.__ev.report(game, value); }
+  function evAdd(game, n) { if (window.__ev) window.__ev.add(game, n); }
+  function evMult() { return window.__ev ? window.__ev.mult() : 1; }
 
   // Swipe detection on an element.
   function onSwipe(el, cb) {
@@ -1393,7 +1452,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       el.textContent = text || (kind === "start" && Math.random() < .5 ? c.motto : pick(LINES[kind] || LINES.start));
       el.classList.remove("talk"); void el.offsetWidth; el.classList.add("talk");
     }
-    function earn(n) { if (n > 0) { coins += n * (mateId() ? 2 : 1); store.set("coins", coins); refresh(); } }
+    function earn(n) { if (n > 0) { coins += Math.round(n * (mateId() ? 2 : 1) * evMult()); store.set("coins", coins); refresh(); } }
     // Teamwork: returns {ok, reason, leader, mate}
     function makeTeam(a, b) {
       if (!a) { team = null; store.set("team", null); refresh(); listeners.forEach((f) => f()); return { ok: true }; }
@@ -1496,6 +1555,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       isBanned, banClock: (id) => clock(banLeft(id)), activeId: act,
       makeTeam, inTeam, mateId,
       img, say, earn, refresh, roster, gearShop,
+      grant(n) { coins += n; store.set("coins", coins); refresh(); }, // fixed amount, no multipliers
       name: () => get().name, coins: () => coins, char: () => get(),
       accent: () => get().accent,
       tierColor: () => ({ free: "#eef0ff", paid: "#ffb547", ultra: "#ffe08a" })[get().tier],
@@ -1526,7 +1586,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       food = free[(Math.random() * free.length) | 0] || null;
     }
     function hud() {
-      $("#snakeScore").textContent = score;
+      $("#snakeScore").textContent = score; evReport("snake", score);
       $("#snakeBest").textContent = best;
     }
     function overlay(title, text, btn) {
@@ -1696,7 +1756,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       void boardEl.offsetWidth; // restart animations
       popped.forEach((i) => i >= 0 && cells[i].classList.add("pop"));
       merged.forEach((i) => cells[i].classList.add("merge"));
-      $("#g2048Score").textContent = score;
+      $("#g2048Score").textContent = score; evReport("g2048", score);
       $("#g2048Best").textContent = best;
       $("#g2048Undo").disabled = !prev;
     }
@@ -1843,7 +1903,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (w) {
         done = true;
         if (w.p === "D") { tally.d++; statusEl.textContent = "Ничья"; Hero.say("ttt", "draw"); if (vsBot()) Hero.earn(mode === "hard" ? 10 : 5); }
-        else if (w.p === "X") { tally.x++; statusEl.textContent = vsBot() ? "Вы победили!" : "Победил X!"; Hero.say("ttt", "win"); if (vsBot()) Hero.earn(mode === "hard" ? 50 : 20); }
+        else if (w.p === "X") { tally.x++; if (vsBot()) evAdd("ttt", 1); statusEl.textContent = vsBot() ? "Вы победили!" : "Победил X!"; Hero.say("ttt", "win"); if (vsBot()) Hero.earn(mode === "hard" ? 50 : 20); }
         else { tally.o++; statusEl.textContent = vsBot() ? "Бот победил" : "Победил O!"; Hero.say("ttt", vsBot() ? "bad" : "win"); }
         store.set("tttTally", tally); renderTally(); render(w); updateHub();
         return;
@@ -1971,7 +2031,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function save() { store.set("blast", { grid, pieces, score, over }); }
     function hud() {
-      $("#blastScore").textContent = score;
+      $("#blastScore").textContent = score; evReport("blast", score);
       $("#blastBest").textContent = best;
     }
     function newGame() {
@@ -2517,7 +2577,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
     // ---------- frame ----------
     function hud() {
-      $("#zombieScore").textContent = score;
+      $("#zombieScore").textContent = score; evReport("zombie", score);
       $("#zombieBest").textContent = best;
     }
     function drawHero() {
@@ -2932,7 +2992,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (lookBack && performance.now() - saidBack > 6000) { saidBack = performance.now(); Hero.say("vr", "start", "Не смотри назад, смотри вперёд!"); }
     }
     function lap() {
-      laps++; store.set("vrLaps", laps); hud(); updateHub();
+      laps++; store.set("vrLaps", laps); evAdd("vr", 1); hud(); updateHub();
       Hero.earn(5);
       Hero.say("vr", "win", `Круг ${laps}! +5`);
     }
@@ -3090,7 +3150,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function scoreNow() { return rings + hits * 5 + broken * 2 + Math.floor(dist / (60 * S)); }
     function hud() {
       score = scoreNow() + bonusPts;
-      $("#sonicScore").textContent = score;
+      $("#sonicScore").textContent = score; evReport("sonic", score);
       if (score > best) { best = score; store.set("sonicBest", best); }
       $("#sonicBest").textContent = best;
     }
@@ -3612,7 +3672,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const best = () => { try { return +localStorage.getItem("gol-best") || 0; } catch (e) { return 0; } };
     function sync() {
       const b = best();
-      $("#ghostBest").textContent = b.toLocaleString("ru-RU");
+      $("#ghostBest").textContent = b.toLocaleString("ru-RU"); evReport("ghost", b);
       if (seenBest === null) seenBest = store.get("ghostPaid", 0);
       // reward a new record: +10 coins for every 1000 points above what was already paid out
       const paid = Math.floor(seenBest / 1000), now = Math.floor(b / 1000);
@@ -3641,9 +3701,173 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Events ================= */
+  const Events = (() => {
+    const GAME = {
+      snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast",
+      zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas",
+    };
+    // daily pool: kind "best" = best score in one run during the event, "count" = total during the event
+    const DAILY = [
+      { game: "snake", title: "Змеиный марафон", goal: 25, kind: "best", unit: "очков за одну игру", reward: 250 },
+      { game: "g2048", title: "Плитка за плиткой", goal: 3000, kind: "best", unit: "очков в 2048", reward: 300 },
+      { game: "ttt", title: "Три победы", goal: 3, kind: "count", unit: "победы над ботом", reward: 200 },
+      { game: "blast", title: "Комбо-лихорадка", goal: 60, kind: "best", unit: "очков в одной партии", reward: 300 },
+      { game: "zombie", title: "Ночь в больнице", goal: 100, kind: "best", unit: "очков (20 зомби)", reward: 350 },
+      { game: "sonic", title: "Побег от Наклза", goal: 80, kind: "best", unit: "очков за забег", reward: 300 },
+      { game: "vr", title: "Три круга", goal: 3, kind: "count", unit: "круга на горках", reward: 250 },
+    ];
+    const DAY = 86400000;
+    const pad = (n) => String(n).padStart(2, "0");
+    const dkey = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+    const midnight = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    let tab = "now";
+
+    function dailyFor(day) {
+      const idx = Math.floor(midnight(day).getTime() / DAY);
+      const off = ((idx % 7) + 7) % 7;
+      const start = midnight(day).getTime(), end = start + DAY;
+      return [0, 2, 4].map((k) => {
+        const e = DAILY[(off + k) % 7];
+        return Object.assign({ id: `d-${dkey(day)}-${e.game}`, type: "daily", start, end, mult: 2 }, e);
+      });
+    }
+    function weekendFor(now) {
+      const d = midnight(now), dow = d.getDay(); // 0 Sun … 6 Sat
+      const toSat = dow === 6 ? 0 : dow === 0 ? -1 : 6 - dow;
+      const sat = new Date(d.getFullYear(), d.getMonth(), d.getDate() + toSat);
+      const list = [];
+      for (const k of [-7, 0, 7]) {
+        const s0 = new Date(sat.getFullYear(), sat.getMonth(), sat.getDate() + k);
+        list.push({ id: `w-${dkey(s0)}`, type: "weekend", game: "blast", title: "Турнир выходных", goal: 100, kind: "best",
+          unit: "очков в Block Blast", reward: 800, mult: 2, start: s0.getTime(), end: s0.getTime() + 2 * DAY });
+      }
+      return list;
+    }
+    function seasonal(now) {
+      const y = now.getFullYear(), list = [];
+      for (const yy of [y - 1, y]) {
+        list.push({ id: `s-halloween-${yy}`, type: "season", game: "zombie", title: "Хэллоуин в больнице", goal: 150, kind: "best",
+          unit: "очков в Zombie Apokalipsis", reward: 600, mult: 3, start: new Date(yy, 9, 25).getTime(), end: new Date(yy, 10, 1).getTime() });
+        list.push({ id: `s-muertos-${yy}`, type: "season", game: "ghost", title: "Ночь Мёртвых", goal: 5000, kind: "best",
+          unit: "очков рекорда в Ghost of Leyendas", reward: 500, mult: 1, start: new Date(yy, 9, 31).getTime(), end: new Date(yy, 10, 3).getTime() });
+        list.push({ id: `s-newyear-${yy}`, type: "season", game: "sonic", title: "Новогодний забег", goal: 150, kind: "best",
+          unit: "очков в Соник Даш", reward: 700, mult: 2, start: new Date(yy, 11, 25).getTime(), end: new Date(yy + 1, 0, 8).getTime() });
+      }
+      return list;
+    }
+    function all() {
+      const now = new Date();
+      const yest = new Date(now.getTime() - DAY), tom = new Date(now.getTime() + DAY);
+      return [...dailyFor(yest), ...dailyFor(now), ...dailyFor(tom), ...weekendFor(now), ...seasonal(now)];
+    }
+    const state = (e) => { const s = store.get("ev:" + e.id, null); return s && typeof s === "object" ? s : { prog: 0, claimed: false }; };
+    const saveState = (e, s) => store.set("ev:" + e.id, s);
+    const status = (e, t) => (t < e.start ? "soon" : t >= e.end ? "past" : "now");
+    const active = () => { const t = Date.now(); return all().filter((e) => status(e, t) === "now"); };
+
+    function report(game, value) {
+      let changed = false;
+      active().forEach((e) => {
+        if (e.game !== game || e.kind !== "best") return;
+        const s = state(e);
+        if (value > s.prog) { s.prog = value; saveState(e, s); changed = true; }
+      });
+      if (changed) refreshBadge();
+    }
+    function add(game, n) {
+      active().forEach((e) => {
+        if (e.game !== game || e.kind !== "count") return;
+        const s = state(e); s.prog += n; saveState(e, s);
+      });
+      refreshBadge();
+    }
+    function mult() {
+      const g = typeof current === "string" ? current : "";
+      return active().filter((e) => e.game === g).reduce((m, e) => Math.max(m, e.mult || 1), 1);
+    }
+    function greet(game) {
+      const e = active().find((x) => x.game === game);
+      if (!e) return;
+      const s = state(e);
+      if (s.claimed) return;
+      Hero.say(game, "start", s.prog >= e.goal ? `Событие «${e.title}» выполнено! Забери награду в EVENTS.` : `Событие «${e.title}»: ${e.goal} ${e.unit}.${e.mult > 1 ? ` Монеты ×${e.mult}!` : ""}`);
+    }
+    function left(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+      if (d) return `${d} д ${h} ч`;
+      return `${pad(h)}:${pad(m)}:${pad(s % 60)}`;
+    }
+    function refreshBadge() {
+      const now = active();
+      const ready = now.filter((e) => { const s = state(e); return !s.claimed && s.prog >= e.goal; }).length;
+      $("#eventsCount").textContent = `${now.length} сейчас`;
+      $("#eventsDot").hidden = !ready;
+      $("#eventsSub").textContent = ready ? `Награды ждут: ${ready}` : "События дня, турниры и праздники";
+    }
+    function card(e, t) {
+      const st = status(e, t), s = state(e);
+      const pct = Math.min(100, Math.round(s.prog / e.goal * 100));
+      const done = s.prog >= e.goal;
+      const art = document.querySelector(`.cart[data-go="${e.game}"] .cart-art svg`);
+      const kind = { daily: "Событие дня", weekend: "Турнир выходных", season: "Праздник" }[e.type];
+      const time = st === "now" ? `осталось ${left(e.end - t)}` : st === "soon" ? `через ${left(e.start - t)}` : "завершено";
+      let btn;
+      if (st === "soon") btn = `<button class="btn locked" type="button" disabled>Скоро</button>`;
+      else if (s.claimed) btn = `<button class="btn ghost" type="button" disabled>Получено</button>`;
+      else if (done && st !== "soon") btn = `<button class="btn donate" type="button" data-claim="${e.id}">Забрать +${e.reward}</button>`;
+      else if (st === "now") btn = `<button class="btn" type="button" data-join="${e.game}">Войти</button>`;
+      else btn = `<button class="btn locked" type="button" disabled>Не выполнено</button>`;
+      const el = document.createElement("article");
+      el.className = `ev-card ${e.type}` + (s.claimed || done ? " done" : "");
+      el.innerHTML = `<div class="ev-art">${art ? art.outerHTML : ""}</div>
+        <div class="ev-main">
+          <div class="ev-top"><span class="ev-kind">${kind} · ${GAME[e.game]}</span><span class="ev-time">${time}</span></div>
+          <div class="ev-title"></div>
+          <p class="ev-desc"></p>
+          <div class="ev-prog" aria-label="Прогресс"><i style="width:${pct}%"></i></div>
+          <div class="ev-foot"><span class="price">${Math.min(s.prog, e.goal)} / ${e.goal} · награда ◎ ${e.reward}</span>${btn}</div>
+        </div>`;
+      el.querySelector(".ev-title").textContent = e.title;
+      el.querySelector(".ev-desc").textContent = `Цель: ${e.goal} ${e.unit}.` + (e.mult > 1 ? ` Пока идёт событие, монеты в игре ×${e.mult}.` : "");
+      return el;
+    }
+    function render() {
+      $$("#evTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
+      const t = Date.now(), box = $("#evList");
+      const list = all().filter((e) => status(e, t) === tab)
+        .filter((e) => tab !== "past" || t - e.end < 14 * DAY)
+        .filter((e) => tab !== "soon" || e.start - t < 21 * DAY)
+        .sort((a, b) => (tab === "past" ? b.end - a.end : tab === "soon" ? a.start - b.start : a.end - b.end));
+      box.innerHTML = "";
+      if (!list.length) { box.innerHTML = `<p class="ev-empty">${tab === "now" ? "Сейчас событий нет." : tab === "soon" ? "Ближайших событий пока нет." : "Прошедших событий пока нет."}</p>`; }
+      list.forEach((e) => box.appendChild(card(e, t)));
+      refreshBadge();
+    }
+    $("#evTabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { tab = b.dataset.tab; render(); } });
+    $("#evList").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.join) { show(b.dataset.join); return; }
+      if (b.dataset.claim) {
+        const ev = all().find((x) => x.id === b.dataset.claim);
+        if (!ev) return;
+        const s = state(ev);
+        if (s.claimed || s.prog < ev.goal) return;
+        s.claimed = true; saveState(ev, s);
+        Hero.grant(ev.reward);
+        render();
+      }
+    });
+    setInterval(() => { if (!$("#events").hidden) render(); else refreshBadge(); }, 1000);
+    window.__ev = { report, add, mult };
+    refreshBadge();
+    return { render, greet, refreshBadge };
+  })();
+
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "chars", "gear", "chats"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -3666,6 +3890,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "chars") Hero.roster();
     if (name === "gear") Hero.gearShop();
     if (name === "chats") HeroChat.list();
+    if (name === "events") Events.render();
+    if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
     window.scrollTo(0, 0);
@@ -3694,7 +3920,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   $$("[data-shop]").forEach((el) => el.addEventListener("click", () => openShop(el.dataset.shop)));
   $$("[data-buy]").forEach((el) => el.addEventListener("click", () => {
     const g = el.dataset.buy;
-    if (g === "coins") Hero.earn(1000); else GAMES[g].bonus(1000);
+    if (g === "coins") Hero.grant(1000); else GAMES[g].bonus(1000);
     donated.count++; donated.total += 1000; store.set("donated", donated);
     Police.bust();
     shopStats(); updateHub();
