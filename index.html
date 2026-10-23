@@ -233,6 +233,9 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .slot canvas { display: block; pointer-events: none; }
 .slot.dim { opacity: .35; }
 .slot.dragging canvas { opacity: 0; }
+#zombieCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; cursor: crosshair; background: #0b0f0e; }
+#zombie .gtitle { font-size: 12px; line-height: 1.25; }
+.zombie-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 #blastFx { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 40; }
 
 /* ---------- Characters ---------- */
@@ -518,7 +521,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Четыре игры в одном кармане</span>
+        <span class="tag">Пять игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -576,6 +579,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <span class="cart-desc">Ставь фигуры из кубиков. Полная линия разлетается и даёт +5.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubBlast">0</span></span>
+      </button>
+      <button class="cart" data-go="zombie" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0f1513"/><path d="M0 0 L22 18 L22 46 L0 64Z" fill="#26322d"/><path d="M64 0 L42 18 L42 46 L64 64Z" fill="#26322d"/><rect x="22" y="18" width="20" height="28" fill="#33413a"/><rect x="27" y="26" width="10" height="20" fill="#050707"/><path d="M30 20h4v2h2v4h-2v2h-4v-2h-2v-4h2z" fill="#c43c4f"/><circle cx="32" cy="38" r="5" fill="#8fa67a"/><circle cx="30.3" cy="37.5" r="1" fill="#e8ff6b"/><circle cx="33.7" cy="37.5" r="1" fill="#e8ff6b"/><path d="M28 43 h8 v8 h-8z" fill="#9fb7c9"/><circle cx="14" cy="52" r="5" fill="#7a1220" opacity=".8"/><path d="M44 58 l10 -10" stroke="#fff3b0" stroke-width="1.5"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Zombie Apokalipsis</span>
+          <span class="cart-desc">Заброшенная больница. Жми туда, куда стрелять. Каждый зомби +5.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubZombie">0</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -712,6 +725,36 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button class="btn donate" type="button" data-shop="blast"><span class="coin">+1K</span>Донат в игру</button>
     </div>
     <p class="hint">Перетащи фигуру на поле. Заполненная строка или столбец ломается и даёт +5 очков.</p>
+  </section>
+
+  <!-- ===== Zombie Apokalipsis ===== -->
+  <section id="zombie" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Zombie Apokalipsis</div>
+      <div class="chips">
+        <div class="chip"><span>Счёт</span><b id="zombieScore">0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="zombieBest">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="zombieStage">
+      <canvas id="zombieCanvas" width="440" height="572" aria-label="Больничный коридор с зомби"></canvas>
+      <div class="overlay" id="zombieOverlay">
+        <h2 id="zombieOvTitle">Zombie Apokalipsis</h2>
+        <p id="zombieOvText">Нажимай туда, куда стрелять. Не подпускай зомби.</p>
+        <button class="btn" type="button" id="zombieOvBtn">Начать</button>
+      </div>
+    </div>
+    <div class="zombie-bar">
+      <button class="btn ghost" type="button" id="zombieReload">Перезарядка</button>
+      <button class="btn donate" type="button" data-shop="zombie"><span class="coin">+1K</span>Донат в игру</button>
+    </div>
+    <p class="hint">Попадание в зомби — +5 очков. В обойме 12 патронов, R — перезарядка. Зомби дошёл до тебя — минус жизнь.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -851,6 +894,10 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="shop-item" data-item="coins">
         <div><b>+1000 монет</b><small>На покупку платных и ультра-персонажей.</small></div>
         <button class="btn donate" type="button" data-buy="coins">Купить +1000</button>
+      </div>
+      <div class="shop-item" data-item="zombie">
+        <div><b>Zombie Apokalipsis · +1000 очков</b><small>Прибавится к счёту текущей игры.</small></div>
+        <button class="btn donate" type="button" data-buy="zombie">Купить +1000</button>
       </div>
       <div class="shop-item" data-item="blast">
         <div><b>Block Blast · +1000 очков</b><small>Прибавится к счёту текущей партии.</small></div>
@@ -1183,7 +1230,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       store.set("team", team);
       if (sel !== leader) { sel = leader; store.set("hero", sel); }
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
+      ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${byIdC(mate).name}: Тимворк! Играем вместе.`));
       return { ok: true, leader: byIdC(leader), mate: byIdC(mate) };
     }
     const inTeam = (a, b) => !!team && ((team.a === a && team.b === b) || (team.a === b && team.b === a));
@@ -1191,7 +1238,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (!owned.includes(id) || isBanned(id)) return;
       sel = id; store.set("hero", sel);
       refresh(); listeners.forEach((f) => f());
-      ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start"));
+      ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start"));
     }
     function buy(id) {
       const c = get(id);
@@ -1251,7 +1298,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       refresh(); listeners.forEach((f) => f());
       if (before !== act()) {
         const now = get();
-        ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
+        ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${c.name} в бане на 1 минуту. Пока играю я, ${now.name}!`));
       }
       return { ok: true, c };
     }
@@ -1264,7 +1311,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (changed) {
         store.set("bans", bans);
         refresh(); listeners.forEach((f) => f());
-        if (before !== act()) ["snake", "g2048", "ttt", "blast"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
+        if (before !== act()) ["snake", "g2048", "ttt", "blast", "zombie"].forEach((g) => say(g, "start", `${get().name} вернулся из бана!`));
       } else if (!$("#chars").hidden) roster();
     }, 1000);
     refresh();
@@ -1273,7 +1320,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       isBanned, banClock: (id) => clock(banLeft(id)), activeId: act,
       makeTeam, inTeam, mateId,
       img, say, earn, refresh, roster, gearShop,
-      name: () => get().name, coins: () => coins,
+      name: () => get().name, coins: () => coins, char: () => get(),
       accent: () => get().accent,
       tierColor: () => ({ free: "#eef0ff", paid: "#ffb547", ultra: "#ffe08a" })[get().tier],
       onChange: (f) => listeners.push(f),
@@ -1992,9 +2039,499 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     };
   })();
 
+  /* ================= Zombie Apokalipsis ================= */
+  const Zombie = (() => {
+    const cv = $("#zombieCanvas"), ctx = cv.getContext("2d");
+    const stage = $("#zombieStage"), ov = $("#zombieOverlay");
+    const bg = document.createElement("canvas"), bctx = bg.getContext("2d");
+    const decal = document.createElement("canvas"), dctx = decal.getContext("2d");
+    const MAG = 12, RELOAD_MS = 1100;
+    const SHIRTS = ["#9fb7c9", "#a9c2a0", "#c9c2a9", "#7f8fa6", "#b7a0a0"];
+    const SKINS = ["#8fa67a", "#9aaf86", "#7f9a72", "#a3b08a"];
+    let W = 440, H = 572, dpr = 1, V;
+    let state = "ready", score = 0, lives = 3, ammo = MAG, reloadT = 0, kills = 0, wave = 1;
+    let zs = [], drops = [], casings = [], flashes = [];
+    let aim = null, recoil = 0, spawnT = 0, hurtT = 0, flick = 1, flickT = 0;
+    let best = store.get("zombieBest", 0);
+    let raf = 0, lastT = 0, visible = false;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const lerp = (a, b, t) => a + (b - a) * t;
+
+    // ---------- scene geometry ----------
+    function geom() {
+      const vx = W / 2, vy = H * .36, bw = W * .3, bh = H * .24;
+      V = {
+        vx, vy, bw, bh,
+        bx0: vx - bw / 2, bx1: vx + bw / 2, by0: vy - bh * .55, by1: vy + bh * .45,
+        floorSide: H * .82,
+      };
+    }
+    // point on left/right wall: t = 0 back … 1 front, h = 0 floor … 1 ceiling
+    function wallPt(side, t, h) {
+      const bx = side < 0 ? V.bx0 : V.bx1, fx = side < 0 ? 0 : W;
+      const bottom = [lerp(bx, fx, t), lerp(V.by1, V.floorSide, t)];
+      const top = [lerp(bx, fx, t), lerp(V.by0, 0, t)];
+      return [lerp(bottom[0], top[0], h), lerp(bottom[1], top[1], h)];
+    }
+    function quad(c, pts, fill) { c.beginPath(); c.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) c.lineTo(pts[i][0], pts[i][1]); c.closePath(); c.fillStyle = fill; c.fill(); }
+    function door(c, side, t0, t1, h1, fill, frame) {
+      quad(c, [wallPt(side, t0, 0), wallPt(side, t1, 0), wallPt(side, t1, h1), wallPt(side, t0, h1)], frame);
+      const i0 = t0 + (t1 - t0) * .08, i1 = t1 - (t1 - t0) * .08;
+      quad(c, [wallPt(side, i0, 0), wallPt(side, i1, 0), wallPt(side, i1, h1 * .93), wallPt(side, i0, h1 * .93)], fill);
+    }
+    function drawBg() {
+      const c = bctx;
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.clearRect(0, 0, W, H);
+      // ceiling
+      let g = c.createLinearGradient(0, 0, 0, V.by0);
+      g.addColorStop(0, "#151b1a"); g.addColorStop(1, "#0c100f");
+      quad(c, [[0, 0], [W, 0], [V.bx1, V.by0], [V.bx0, V.by0]], g);
+      // walls
+      g = c.createLinearGradient(0, 0, V.bx0, 0);
+      g.addColorStop(0, "#3a4a42"); g.addColorStop(1, "#1d2622");
+      quad(c, [[0, 0], [V.bx0, V.by0], [V.bx0, V.by1], [0, V.floorSide]], g);
+      g = c.createLinearGradient(W, 0, V.bx1, 0);
+      g.addColorStop(0, "#3a4a42"); g.addColorStop(1, "#1d2622");
+      quad(c, [[W, 0], [V.bx1, V.by0], [V.bx1, V.by1], [W, V.floorSide]], g);
+      // lower wall panels (wainscot)
+      [-1, 1].forEach((sd) => quad(c, [wallPt(sd, 0, 0), wallPt(sd, 1, 0), wallPt(sd, 1, .38), wallPt(sd, 0, .38)], "rgba(20,40,32,.55)"));
+      [-1, 1].forEach((sd) => { const a = wallPt(sd, 0, .38), b = wallPt(sd, 1, .38); c.strokeStyle = "#56695f"; c.lineWidth = 2; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); });
+      // floor
+      g = c.createLinearGradient(0, V.by1, 0, H);
+      g.addColorStop(0, "#1a1f1c"); g.addColorStop(1, "#3a423c");
+      quad(c, [[0, V.floorSide], [V.bx0, V.by1], [V.bx1, V.by1], [W, V.floorSide], [W, H], [0, H]], g);
+      c.save();
+      c.beginPath(); c.moveTo(0, V.floorSide); c.lineTo(V.bx0, V.by1); c.lineTo(V.bx1, V.by1); c.lineTo(W, V.floorSide); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.clip();
+      c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = 1.2;
+      for (let k = -8; k <= 8; k++) { c.beginPath(); c.moveTo(V.vx + k * V.bw / 12, V.by1); c.lineTo(V.vx + k * W / 5.2, H); c.stroke(); }
+      for (let i = 1; i <= 12; i++) { const y = V.by1 + (H - V.by1) * Math.pow(i / 12, 1.9); c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+      // grime and old blood on the floor
+      [[.3, .75, 60, "rgba(0,0,0,.35)"], [.68, .88, 70, "rgba(90,10,20,.45)"], [.55, .6, 28, "rgba(90,10,20,.4)"], [.2, .93, 50, "rgba(0,0,0,.3)"]].forEach(([x, y, r, col]) => {
+        const rg = c.createRadialGradient(W * x, H * y, 2, W * x, H * y, r * W / 440);
+        rg.addColorStop(0, col); rg.addColorStop(1, "rgba(0,0,0,0)");
+        c.fillStyle = rg; c.beginPath(); c.ellipse(W * x, H * y, r * W / 440, r * W / 440 * .45, 0, 0, Math.PI * 2); c.fill();
+      });
+      c.restore();
+      // back wall with dark doorway
+      quad(c, [[V.bx0, V.by0], [V.bx1, V.by0], [V.bx1, V.by1], [V.bx0, V.by1]], "#33413a");
+      const dw = V.bw * .44, dh = V.bh * .72, dx0 = V.vx - dw / 2, dy0 = V.by1 - dh;
+      g = c.createLinearGradient(0, dy0, 0, V.by1);
+      g.addColorStop(0, "#000"); g.addColorStop(1, "#0b1010");
+      quad(c, [[dx0, dy0], [dx0 + dw, dy0], [dx0 + dw, V.by1], [dx0, V.by1]], g);
+      c.strokeStyle = "#56695f"; c.lineWidth = 2; c.strokeRect(dx0, dy0, dw, dh);
+      // red cross sign
+      const cs = V.bw * .07, cx = V.vx, cy = V.by0 + V.bh * .12;
+      c.fillStyle = "#e9eefc"; c.fillRect(cx - cs * 1.6, cy - cs * 1.6, cs * 3.2, cs * 3.2);
+      c.fillStyle = "#c43c4f"; c.fillRect(cx - cs * .45, cy - cs * 1.3, cs * .9, cs * 2.6); c.fillRect(cx - cs * 1.3, cy - cs * .45, cs * 2.6, cs * .9);
+      // EXIT sign
+      const ex = V.bx1 - V.bw * .2, ey = V.by0 + V.bh * .1;
+      c.fillStyle = "#0a2a12"; c.fillRect(ex - V.bw * .12, ey - V.bh * .05, V.bw * .24, V.bh * .1);
+      c.fillStyle = "#4dff7a"; c.font = `700 ${Math.max(7, V.bh * .075)}px Arial, sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText("EXIT", ex, ey + 1);
+      // doors
+      door(c, -1, .28, .42, .62, "#0e1312", "#4a5b52");
+      door(c, -1, .7, .9, .64, "#0a0d0c", "#4a5b52");
+      door(c, 1, .14, .27, .6, "#0d1a14", "#4a5b52");
+      door(c, 1, .55, .72, .62, "#0e1312", "#4a5b52");
+      // room numbers
+      c.fillStyle = "#a7b8ae"; c.font = `700 ${Math.max(8, W * .026)}px Arial, sans-serif`;
+      const n1 = wallPt(-1, .35, .7); c.fillText("13", n1[0], n1[1]);
+      const n2 = wallPt(1, .63, .7); c.fillText("14", n2[0], n2[1]);
+      // blood handprint smears on walls
+      c.fillStyle = "rgba(110,12,24,.6)";
+      const s1 = wallPt(-1, .55, .42); c.beginPath(); c.ellipse(s1[0], s1[1], W * .025, W * .05, -.4, 0, Math.PI * 2); c.fill();
+      const s2 = wallPt(1, .85, .3); c.beginPath(); c.ellipse(s2[0], s2[1], W * .03, W * .07, .5, 0, Math.PI * 2); c.fill();
+      // ceiling lights
+      [.15, .45, .78].forEach((t, i) => {
+        const l0 = [lerp(V.bx0, 0, t), lerp(V.by0, 0, t)], r0 = [lerp(V.bx1, W, t), lerp(V.by0, 0, t)];
+        const t2 = t + .07, l1 = [lerp(V.bx0, 0, t2), lerp(V.by0, 0, t2)], r1 = [lerp(V.bx1, W, t2), lerp(V.by0, 0, t2)];
+        const P = (a, b, u) => [lerp(a[0], b[0], u), lerp(a[1], b[1], u)];
+        quad(c, [P(l0, r0, .38), P(l0, r0, .62), P(l1, r1, .62), P(l1, r1, .38)], i === 1 ? "#2a302e" : "#d9f5e6");
+      });
+    }
+
+    // ---------- zombies ----------
+    function spawn() {
+      zs.push({
+        z: .02, u: rnd(-.55, .55), du: rnd(-.00006, .00006),
+        speed: rnd(.000055, .00009) * (1 + (wave - 1) * .14),
+        phase: rnd(0, 6), shirt: SHIRTS[(Math.random() * SHIRTS.length) | 0], skin: SKINS[(Math.random() * SKINS.length) | 0],
+        state: "walk", theta: 0, omega: 0, dir: 1, kb: 0, t: 0, head: 0, slide: 0, slideV: 0, pool: 0, alpha: 1, bounced: false,
+      });
+    }
+    function feet(zm) {
+      const y = lerp(V.by1, H * .97, zm.z);
+      const x = V.vx + zm.u * lerp(V.bw * .42, W * .42, zm.z) + zm.slide * lerp(.3, 1, zm.z);
+      const k = lerp(.2, 1.05, zm.z) * (H * .34) / 100; // pixels per body unit (body is 100 units tall)
+      return { x, y, k };
+    }
+    function limb(x1, y1, x2, y2, w, col) {
+      ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    }
+    function drawZombie(zm) {
+      const f = feet(zm);
+      ctx.save();
+      ctx.globalAlpha = zm.alpha;
+      ctx.translate(f.x, f.y); ctx.scale(f.k, f.k);
+      // shadow / blood pool on the floor
+      if (zm.pool > 0) {
+        ctx.fillStyle = "rgba(95,8,18,.85)";
+        ctx.beginPath(); ctx.ellipse(zm.dir * 40 * Math.min(1, Math.abs(zm.theta) / 1.5), 2, zm.pool, zm.pool * .32, 0, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = "rgba(0,0,0,.35)";
+      ctx.beginPath(); ctx.ellipse(0, 0, 20 + Math.abs(zm.theta) * 22, 5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.rotate(zm.theta);
+      const walk = zm.state === "walk";
+      const sw = walk ? Math.sin(zm.phase) * .32 : 0;
+      const kb = zm.kb; // knee buckle 0..1
+      const hipY = -46 + kb * 12;
+      // legs (thigh + shin) with knee bend
+      [-1, 1].forEach((sd) => {
+        const a = sd * sw;
+        const hx = sd * 7, kx = hx + Math.sin(a) * 23 + sd * kb * 6, ky = hipY + 23 - kb * 4;
+        const fx = sd * 8 + Math.sin(a) * 6, fy = 0;
+        limb(hx, hipY, kx, ky, 9, "#2b3446");
+        limb(kx, ky, fx, fy, 8, "#262e3d");
+        ctx.fillStyle = "#151515"; ctx.beginPath(); ctx.ellipse(fx, -1, 6, 3, 0, 0, Math.PI * 2); ctx.fill();
+      });
+      // torso
+      const shY = hipY - 32;
+      ctx.fillStyle = zm.shirt;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(-14, shY, 28, 34, 6); else ctx.rect(-14, shY, 28, 34);
+      ctx.fill();
+      ctx.fillStyle = "rgba(110,12,24,.75)";
+      ctx.beginPath(); ctx.ellipse(5, shY + 18, 6, 9, .4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(-14, shY + 26, 28, 4);
+      // arms reaching forward, flopping when dead
+      const reach = walk ? Math.sin(zm.phase * .5) * 3 : 0;
+      [-1, 1].forEach((sd) => {
+        const flop = kb * 18;
+        const ex = sd * 20, ey = shY + 10 + reach * sd + flop * .5;
+        const hx = sd * 25, hy = shY + 4 - reach * sd + flop;
+        limb(sd * 12, shY + 4, ex, ey, 7, zm.shirt);
+        limb(ex, ey, hx, hy, 6, zm.skin);
+        ctx.fillStyle = zm.skin; ctx.beginPath(); ctx.arc(hx, hy, 3.6, 0, Math.PI * 2); ctx.fill();
+      });
+      // head (lags behind the body when hit)
+      ctx.save();
+      ctx.translate(0, shY - 4); ctx.rotate(zm.head + (walk ? Math.sin(zm.phase * .5) * .08 : 0));
+      ctx.fillStyle = zm.skin; ctx.fillRect(-4, -4, 8, 6);
+      ctx.beginPath(); ctx.arc(0, -12, 11, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(60,80,50,.6)"; ctx.beginPath(); ctx.arc(-4, -19, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(120,14,26,.85)"; ctx.beginPath(); ctx.arc(6, -17, 3, 0, Math.PI * 2); ctx.fill();
+      const eye = zm.state === "walk" ? "#e8ff6b" : "#3a3a2a";
+      ctx.fillStyle = eye; ctx.beginPath(); ctx.arc(-4, -13, 2, 0, Math.PI * 2); ctx.arc(4, -13, 2, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1a0b0b"; ctx.beginPath(); ctx.moveTo(-5, -6); ctx.lineTo(5, -6); ctx.lineTo(3, -3); ctx.lineTo(-3, -3); ctx.closePath(); ctx.fill();
+      ctx.restore();
+      ctx.restore();
+    }
+    function updateZombie(zm, dt) {
+      if (zm.state === "walk") {
+        zm.z += zm.speed * dt;
+        zm.u = Math.max(-1, Math.min(1, zm.u + zm.du * dt));
+        zm.phase += dt * .006;
+        if (zm.z >= 1) { zm.state = "gone"; hurt(); }
+        return;
+      }
+      zm.t += dt;
+      zm.slide += zm.slideV * dt; zm.slideV *= Math.pow(.992, dt);
+      if (zm.state === "dying") {
+        if (zm.t < 140) {
+          // stagger: knees start to buckle, head snaps back
+          zm.kb = Math.min(.55, zm.kb + dt * .004);
+          zm.head += (zm.dir * -.5 - zm.head) * Math.min(1, dt * .02);
+          zm.theta += zm.omega * dt;
+        } else {
+          // falling like a toppling pole: angular acceleration grows with the angle
+          zm.kb = Math.min(1, zm.kb + dt * .003);
+          zm.omega += zm.dir * .000006 * dt * (1 + 3 * Math.abs(zm.theta));
+          zm.theta += zm.omega * dt;
+          zm.head += (zm.dir * .35 - zm.head) * Math.min(1, dt * .008);
+          if (Math.abs(zm.theta) >= 1.5) {
+            zm.theta = Math.sign(zm.theta) * 1.5;
+            if (!zm.bounced) { zm.omega = -zm.omega * .28; zm.bounced = true; }
+            else if (Math.abs(zm.omega) < .002) { zm.state = "dead"; zm.t = 0; zm.omega = 0; }
+            else zm.omega = -zm.omega * .2;
+          }
+        }
+      } else if (zm.state === "dead") {
+        zm.pool = Math.min(34, zm.pool + dt * .03);
+        if (zm.t > 4500) zm.alpha = Math.max(0, 1 - (zm.t - 4500) / 900);
+        if (zm.alpha <= 0) zm.state = "gone";
+      }
+    }
+
+    // ---------- shooting ----------
+    function shoulder() { return [W * .3, H * .935]; }
+    function muzzle() {
+      const [sx, sy] = shoulder();
+      const a = aimAngle(), len = W * (.2 - recoil * .03) + W * .075;
+      return [sx + Math.cos(a) * len, sy + Math.sin(a) * len];
+    }
+    function aimAngle() {
+      const [sx, sy] = shoulder();
+      const t = aim || [V.vx, V.by1];
+      return Math.atan2(t[1] - sy, t[0] - sx) - recoil * .18;
+    }
+    function shoot(px, py) {
+      if (state !== "run") return;
+      aim = [px, py];
+      if (reloadT > 0) return;
+      if (ammo <= 0) { startReload(); return; }
+      ammo--; recoil = 1;
+      const m = muzzle();
+      flashes.push({ kind: "flash", x: m[0], y: m[1], t: 0, life: 60 });
+      flashes.push({ kind: "tracer", x0: m[0], y0: m[1], x1: px, y1: py, t: 0, life: 90 });
+      const a = aimAngle();
+      casings.push({ x: m[0] - Math.cos(a) * W * .06, y: m[1] - Math.sin(a) * W * .06, vx: rnd(.08, .16), vy: rnd(-.42, -.3), r: 0, vr: rnd(-.03, .03), t: 0 });
+      // hit test, nearest zombie first
+      const alive = zs.filter((zm) => zm.state === "walk").sort((a1, b1) => b1.z - a1.z);
+      let hit = null, head = false, lx = 0;
+      for (const zm of alive) {
+        const f = feet(zm);
+        const x = (px - f.x) / f.k, y = (py - f.y) / f.k;
+        if (Math.hypot(x, y + 90) < 13) { hit = zm; head = true; lx = x; break; }
+        if ((Math.abs(x) < 16 && y < 0 && y > -80) || (Math.abs(x) < 28 && y < -60 && y > -82)) { hit = zm; lx = x; break; }
+      }
+      if (hit) kill(hit, px, py, head, lx);
+      else hole(px, py);
+      if (ammo === 0) startReload();
+    }
+    function kill(zm, px, py, head, lx) {
+      zm.state = "dying"; zm.t = 0;
+      zm.dir = lx > 2 ? -1 : lx < -2 ? 1 : (Math.random() < .5 ? -1 : 1);
+      zm.omega = zm.dir * (head ? .0018 : .0012);
+      zm.slideV = zm.dir * .02; // small knockback in the fall direction
+      zm.head = head ? zm.dir * -.6 : 0;
+      const f = feet(zm);
+      const [mx, my] = muzzle();
+      let dx = px - mx, dy = py - my; const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+      const n = head ? 26 : 16;
+      for (let i = 0; i < n; i++) {
+        const sp = rnd(.12, .45) * f.k;
+        drops.push({
+          x: px, y: py, vx: dx * sp * 1.4 + rnd(-.18, .18) * f.k, vy: dy * sp - rnd(.05, .3) * f.k,
+          r: rnd(.8, 2.4) * f.k, floor: f.y + rnd(-6, 6) * f.k,
+        });
+      }
+      kills++; score += 5;
+      if (kills % 10 === 0) wave++;
+      if (score > best) { best = score; store.set("zombieBest", best); updateHub(); }
+      Hero.earn(2);
+      flashes.push({ kind: "text", x: px, y: py - 10, text: head ? "ХЕДШОТ +5" : "+5", t: 0, life: 900, color: head ? "#ff6b7a" : "#ffb547" });
+      if (head) Hero.say("zombie", "good", "Хедшот! Чистая работа.");
+      else if (kills % 5 === 0) Hero.say("zombie", "good");
+      hud();
+    }
+    function hole(px, py) {
+      dctx.fillStyle = "rgba(0,0,0,.75)"; dctx.beginPath(); dctx.arc(px, py, 2.4, 0, Math.PI * 2); dctx.fill();
+      dctx.strokeStyle = "rgba(200,210,200,.25)"; dctx.lineWidth = 1; dctx.beginPath(); dctx.arc(px, py, 3.6, 0, Math.PI * 2); dctx.stroke();
+      for (let i = 0; i < 5; i++) flashes.push({ kind: "spark", x: px, y: py, vx: rnd(-.15, .15), vy: rnd(-.2, .05), t: 0, life: 220 });
+    }
+    function startReload() { if (reloadT > 0 || ammo === MAG || state !== "run") return; reloadT = RELOAD_MS; }
+    function hurt() {
+      lives--; hurtT = 380;
+      stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake");
+      if (lives <= 0) gameOver(); else Hero.say("zombie", "bad", "Ай! Он меня укусил!");
+      hud();
+    }
+
+    // ---------- frame ----------
+    function hud() {
+      $("#zombieScore").textContent = score;
+      $("#zombieBest").textContent = best;
+    }
+    function drawHero() {
+      const [sx, sy] = shoulder();
+      const ch = Hero.char();
+      // body
+      ctx.fillStyle = ch.shirt;
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(W * .03, H - W * .07, W * .3, W * .12, W * .05); else ctx.rect(W * .03, H - W * .07, W * .3, W * .12);
+      ctx.fill();
+      // arm and pistol
+      const a = aimAngle(), len = W * (.2 - recoil * .03);
+      const hx = sx + Math.cos(a) * len, hy = sy + Math.sin(a) * len;
+      limb(sx, sy, hx, hy, W * .045, ch.shirt);
+      limb(hx - Math.cos(a) * W * .03, hy - Math.sin(a) * W * .03, hx, hy, W * .04, ch.skin);
+      ctx.save(); ctx.translate(hx, hy); ctx.rotate(a);
+      ctx.fillStyle = "#2b2e33"; ctx.fillRect(-W * .005, -W * .016, W * .08, W * .026);
+      ctx.fillStyle = "#4a4f57"; ctx.fillRect(-W * .005, -W * .016, W * .08, W * .009);
+      ctx.fillStyle = "#1c1e22"; ctx.fillRect(0, W * .006, W * .022, W * .04);
+      ctx.restore();
+      // portrait of the playing character
+      const im = Hero.img(), ps = W * .23, px = W * .02, py = H - W * .3;
+      ctx.save();
+      ctx.beginPath(); ctx.arc(px + ps / 2, py + ps / 2, ps / 2, 0, Math.PI * 2); ctx.clip();
+      if (im.complete && im.naturalWidth) ctx.drawImage(im, px, py, ps, ps); else { ctx.fillStyle = ch.skin; ctx.fill(); }
+      ctx.restore();
+      ctx.strokeStyle = Hero.tierColor(); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(px + ps / 2, py + ps / 2, ps / 2, 0, Math.PI * 2); ctx.stroke();
+    }
+    function drawHud() {
+      ctx.textBaseline = "top"; ctx.textAlign = "left";
+      ctx.font = `${Math.round(W * .055)}px Arial, sans-serif`;
+      for (let i = 0; i < 3; i++) { ctx.fillStyle = i < lives ? "#ff6b7a" : "rgba(255,255,255,.18)"; ctx.fillText("♥", 10 + i * W * .06, 8); }
+      for (let i = 0; i < MAG; i++) {
+        ctx.fillStyle = i < ammo ? "#ffc35c" : "rgba(255,255,255,.15)";
+        ctx.fillRect(W - 12 - (MAG - i) * W * .018, 12, W * .011, W * .04);
+      }
+      ctx.textAlign = "center"; ctx.fillStyle = "rgba(233,238,252,.8)";
+      ctx.font = `${Math.round(W * .032)}px "Rubik Mono One", Arial, sans-serif`;
+      ctx.fillText(`ВОЛНА ${wave}`, W / 2, 10);
+      if (reloadT > 0) {
+        ctx.fillStyle = "#ffb547"; ctx.fillText("ПЕРЕЗАРЯДКА…", W * .64, H - W * .1);
+        ctx.fillStyle = "rgba(255,255,255,.2)"; ctx.fillRect(W * .46, H - W * .06, W * .36, 5);
+        ctx.fillStyle = "#ffb547"; ctx.fillRect(W * .46, H - W * .06, W * .36 * (1 - reloadT / RELOAD_MS), 5);
+      }
+    }
+    function step(dt) {
+      if (state === "run") {
+        spawnT -= dt;
+        if (spawnT <= 0) { spawn(); spawnT = Math.max(550, 1900 - wave * 160) * rnd(.7, 1.3); }
+        if (reloadT > 0) { reloadT -= dt; if (reloadT <= 0) { reloadT = 0; ammo = MAG; } }
+      }
+      if (state === "run" || state === "over") zs.forEach((zm) => { if (state === "run" || zm.state !== "walk") updateZombie(zm, dt); });
+      zs = zs.filter((zm) => zm.state !== "gone");
+      recoil = Math.max(0, recoil - dt * .008);
+      hurtT = Math.max(0, hurtT - dt);
+      flickT -= dt;
+      if (flickT <= 0) { flick = Math.random() < .12 ? rnd(.35, .7) : 1; flickT = rnd(60, 400); }
+      drops = drops.filter((d) => {
+        d.vy += .0016 * dt; d.x += d.vx * dt; d.y += d.vy * dt;
+        if (d.y >= d.floor && d.vy > 0) {
+          dctx.fillStyle = "rgba(105,8,20,.85)";
+          dctx.beginPath(); dctx.ellipse(d.x, d.floor, d.r * 1.8, d.r * .7, 0, 0, Math.PI * 2); dctx.fill();
+          return false;
+        }
+        return d.y < H + 20;
+      });
+      casings = casings.filter((c) => {
+        c.t += dt; c.vy += .0016 * dt; c.x += c.vx * dt; c.y += c.vy * dt; c.r += c.vr * dt;
+        if (c.y > H * .985) { c.y = H * .985; c.vy *= -.35; c.vx *= .6; }
+        return c.t < 1400;
+      });
+      flashes = flashes.filter((f) => { f.t += dt; if (f.kind === "spark") { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += .001 * dt; } return f.t < f.life; });
+    }
+    function render() {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.drawImage(bg, 0, 0, W, H);
+      ctx.drawImage(decal, 0, 0, W, H);
+      // flickering ceiling light glow
+      const lg = ctx.createRadialGradient(V.vx, H * .08, 4, V.vx, H * .08, W * .6);
+      lg.addColorStop(0, `rgba(210,255,230,${.16 * flick})`); lg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+      zs.slice().sort((a, b) => a.z - b.z).forEach(drawZombie);
+      drops.forEach((d) => { ctx.fillStyle = "#8a0c1c"; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill(); });
+      flashes.forEach((f) => {
+        const k = 1 - f.t / f.life;
+        if (f.kind === "tracer") { ctx.globalAlpha = k; limb(f.x0, f.y0, f.x1, f.y1, 2, "#fff3b0"); ctx.globalAlpha = 1; }
+        if (f.kind === "spark") { ctx.fillStyle = `rgba(255,220,140,${k})`; ctx.fillRect(f.x, f.y, 2, 2); }
+      });
+      drawHero();
+      casings.forEach((c) => { ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.r); ctx.fillStyle = "#d9a441"; ctx.fillRect(-W * .008, -W * .004, W * .016, W * .008); ctx.restore(); });
+      flashes.forEach((f) => {
+        const k = 1 - f.t / f.life;
+        if (f.kind === "flash") {
+          ctx.fillStyle = `rgba(255,230,150,${.18 * k})`; ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = `rgba(255,240,180,${k})`;
+          ctx.beginPath();
+          for (let i = 0; i < 10; i++) { const r = i % 2 ? W * .015 : W * .045, a = i / 10 * Math.PI * 2; ctx.lineTo(f.x + Math.cos(a) * r, f.y + Math.sin(a) * r); }
+          ctx.closePath(); ctx.fill();
+        }
+        if (f.kind === "text") {
+          ctx.globalAlpha = Math.min(1, k * 2);
+          ctx.font = `${Math.round(W * .05)}px "Rubik Mono One", Arial, sans-serif`;
+          ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.lineWidth = 4; ctx.strokeStyle = "#0b0f0e"; ctx.strokeText(f.text, f.x, f.y - (1 - k) * 40);
+          ctx.fillStyle = f.color; ctx.fillText(f.text, f.x, f.y - (1 - k) * 40);
+          ctx.globalAlpha = 1;
+        }
+      });
+      // darkness, vignette, damage flash
+      ctx.fillStyle = `rgba(0,0,0,${.22 + (1 - flick) * .35})`; ctx.fillRect(0, 0, W, H);
+      const vg = ctx.createRadialGradient(W / 2, H * .5, W * .3, W / 2, H * .5, W * .85);
+      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.7)");
+      ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+      if (hurtT > 0) { ctx.fillStyle = `rgba(200,0,30,${hurtT / 380 * .45})`; ctx.fillRect(0, 0, W, H); }
+      drawHud();
+    }
+    function frame(t) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(40, t - lastT) : 16; lastT = t;
+      step(dt); render();
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+
+    // ---------- states ----------
+    function overlay(title, text, btn) {
+      if (!title) { ov.hidden = true; return; }
+      $("#zombieOvTitle").textContent = title; $("#zombieOvText").textContent = text; $("#zombieOvBtn").textContent = btn;
+      ov.hidden = false;
+    }
+    function start() {
+      state = "run"; score = 0; lives = 3; ammo = MAG; reloadT = 0; kills = 0; wave = 1;
+      zs = []; drops = []; casings = []; flashes = []; spawnT = 600; aim = null;
+      dctx.setTransform(dpr, 0, 0, dpr, 0, 0); dctx.clearRect(0, 0, W, H);
+      overlay(null); hud();
+      Hero.say("zombie", "start", "Держу пистолет. Пусть только сунутся!");
+    }
+    function gameOver() {
+      state = "over";
+      if (score > best) { best = score; store.set("zombieBest", best); }
+      hud(); updateHub();
+      Hero.say("zombie", "bad", "Нас съели… Ещё раз?");
+      overlay("Тебя съели", `Зомби: ${kills} · Счёт: ${score} · Рекорд: ${best}`, "Ещё раз");
+    }
+    function pause() { if (state === "run") { state = "paused"; overlay("Пауза", `Счёт: ${score}`, "Продолжить"); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1;
+      W = w; H = Math.round(w * 1.3);
+      [cv, bg].forEach((c) => { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); });
+      if (decal.width !== Math.round(W * dpr)) { decal.width = Math.round(W * dpr); decal.height = Math.round(H * dpr); }
+      dctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      geom(); drawBg(); render();
+    }
+    cv.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const r = cv.getBoundingClientRect();
+      shoot((e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height);
+    });
+    cv.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse" || state !== "run") return;
+      const r = cv.getBoundingClientRect();
+      aim = [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height];
+    });
+    $("#zombieOvBtn").addEventListener("click", () => { if (state === "paused") { state = "run"; overlay(null); } else start(); });
+    $("#zombieReload").addEventListener("click", startReload);
+    window.addEventListener("resize", () => { if (visible) fit(); });
+
+    return {
+      enter() { visible = true; fit(); hud(); loop(); },
+      leave() { pause(); visible = false; },
+      key(e) {
+        if (e.key === "r" || e.key === "R" || e.key === "к" || e.key === "К") startReload();
+        if (e.key === " ") { e.preventDefault(); if (state === "run") pause(); else if (state === "paused") { state = "run"; overlay(null); } }
+      },
+      best: () => best,
+      bonus(n) {
+        score += n;
+        if (score > best) { best = score; store.set("zombieBest", best); }
+        hud();
+      },
+    };
+  })();
+
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -2002,6 +2539,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     $("#hub2048").textContent = G.best();
     $("#hubTtt").textContent = T.wins();
     $("#hubBlast").textContent = Blast.best();
+    $("#hubZombie").textContent = Zombie.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -2021,7 +2559,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 
   /* ================= Donate shop ================= */
   const shop = $("#shop");
-  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast" };
+  const NAMES = { coins: "Монеты", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis" };
   let donated = store.get("donated", { count: 0, total: 0 });
   let lastFocus = null, toastTimer = 0;
   function shopStats() { $("#shopCount").textContent = donated.count; $("#shopTotal").textContent = "+" + donated.total; }
@@ -2165,7 +2703,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function rules() {
       if (Police.isBoss()) return [
-        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast).",
+        "Ты — сержант Мигалкин, мультяшный полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis).",
         "Собеседник — твой начальник. Ты его узнал, поэтому говоришь почтительно, по-военному («Так точно», «Есть», «товарищ начальник»), с юмором.",
         "Начальника ты НИКОГДА не называешь читером и не обвиняешь — даже если раньше в переписке называл. Его донаты ты одобряешь.",
         "Отвечай по-русски, 1–2 коротких предложения. Никаких грубостей и взрослых тем: игру могут открывать дети. Можно докладывать обстановку и давать советы по играм.",
@@ -2173,7 +2711,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         "Пиши только реплику полицейского, без пояснений и кавычек.",
       ].join("\n");
       return [
-        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast).",
+        "Ты — сержант Мигалкин, мультяшный строгий, но смешной полицейский в мобильной игре V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis).",
         "Ты всегда подозреваешь игрока в читерстве, потому что в игре есть кнопка «Донат в игру», которая бесплатно даёт +1000.",
         "Отвечай по-русски, 1–2 коротких предложения, с юмором, и обязательно вставляй «Читер!!».",
         "Никаких реальных угроз, грубости и взрослых тем: игру могут открывать дети. Можно давать короткие советы по этим играм.",
@@ -2345,7 +2883,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     }
     function soloRules(c) {
       return [
-        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
+        `Ты — ${c.name}, персонаж мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis). Характер: ${PERSONA[c.id].p}. Твоя фраза: «${c.motto}».`,
         "Ты переписываешься с игроком. Отвечай по-русски, 1–2 коротких предложения, строго в своём характере, с юмором.",
         "В игре есть полицейский сержант Мигалкин, который всем кричит «Читер!!», и другие персонажи: " + CHARS.filter((x) => x.id !== c.id).map((x) => x.name).join(", ") + ".",
         "Никаких грубостей и взрослых тем: игру могут открывать дети. Пиши только свою реплику, без имени, кавычек и пояснений.",
@@ -2449,8 +2987,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         const hist = turns.slice(-14).map((t) => `${t.who === "me" ? "Игрок" : (byId(t.who) || {}).name}: ${t.text}`).join("\n");
         const prompt = [
           chatId === "group"
-            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast). Игрок пишет сообщение, персонажи отвечают."
-            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast) с игроком. Персонажи — напарники и отвечают вместе.",
+            ? "Это общий чат персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis). Игрок пишет сообщение, персонажи отвечают."
+            : "Это совместный чат двух персонажей мобильной игры V3 Games (Змейка, 2048, Крестики-нолики, Block Blast, Zombie Apokalipsis) с игроком. Персонажи — напарники и отвечают вместе.",
           "Персонажи онлайн:", ...on.map(persona),
           "Персонажи в бане сейчас молчат: " + (members().filter((c) => Hero.isBanned(c.id)).map((c) => c.name).join(", ") || "никто") + ".",
           "Ещё есть полицейский сержант Мигалкин, который всем кричит «Читер!!» (в этом чате его нет).",
@@ -2653,7 +3191,11 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
     if (GAMES[current]) GAMES[current].key(e);
   });
-  document.addEventListener("visibilitychange", () => { if (document.hidden && current === "snake") Snake.leave(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && current === "snake") Snake.leave();
+    if (document.hidden && current === "zombie") Zombie.leave();
+    if (!document.hidden && current === "zombie") Zombie.enter();
+  });
 
   show((location.hash || "").slice(1));
 })();
