@@ -249,6 +249,9 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .pad4 [data-act="jump"] span { color: var(--lime); }
 .pad4 [data-act="crouch"] span { color: var(--amber); }
 .pad4 [data-act="punch"] span { color: var(--coral); }
+.pad4 [data-act="block"] span { color: #a98bff; }
+#sonicPad { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+#sonicPad button { font-size: 12px; padding: 0 2px; }
 .vr-stage { position: relative; width: 100%; max-width: 440px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #8fd3ff; }
 .vr-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
 .vr-stage:fullscreen { max-width: none; border-radius: 0; }
@@ -860,7 +863,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <canvas id="sonicCanvas" width="440" height="330" aria-label="Соник убегает от Наклза"></canvas>
       <div class="overlay" id="sonicOverlay">
         <h2 id="sonicOvTitle">Соник Даш</h2>
-        <p id="sonicOvText">Беги от Наклза! Держи «Бегать», чтобы оторваться. Догонит — дерись: пригнись от удара сверху, прыгни от подсечки и бей, когда он открылся.</p>
+        <p id="sonicOvText">Беги от Наклза! Держи «Бегать», чтобы оторваться. Догонит — дерись: пригнись от удара сверху, прыгни от подсечки или держи «Блок», а бей, когда он открылся.</p>
         <button class="btn" type="button" id="sonicOvBtn">Старт</button>
       </div>
     </div>
@@ -869,11 +872,12 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button type="button" data-act="jump"><span>▲</span>Прыгать</button>
       <button type="button" data-act="crouch"><span>▼</span>Присесть</button>
       <button type="button" data-act="punch"><span>●</span>Удар</button>
+      <button type="button" data-act="block"><span>■</span>Блок</button>
     </div>
     <div class="row-actions">
       <button class="btn donate" type="button" data-shop="sonic"><span class="coin">+1K</span>Донат в игру</button>
     </div>
-    <p class="hint">Клавиатура: → или Shift — бег, пробел или ↑ — прыжок, ↓ — присесть, F — удар. Кольца защищают: при ударе они разлетаются, а без колец теряешь жизнь.</p>
+    <p class="hint">Клавиатура: → или Shift — бег, пробел или ↑ — прыжок, ↓ — присесть, F — удар, B — блок. Блок в последний момент — идеальный: Наклз оглушён дольше. Кольца защищают: при ударе они разлетаются, а без колец теряешь жизнь.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -3023,7 +3027,8 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     let W = 440, H = 330, S = 1.1, dpr = 1, GY = 264;
     let state = "ready", mode = "run", visible = false, raf = 0, lastT = 0;
     let best = store.get("sonicBest", 0);
-    const keys = { run: false, crouch: false };
+    const keys = { run: false, crouch: false, block: false };
+    let blockSince = 0, kBlock = false, kPerfect = false, kRecover = 900;
     // Sonic
     let sx = 0, sy = 0, vy = 0, onGround = true, punchT = 0, punchCd = 0, hurtT = 0, inv = 0, runPhase = 0, facing = 1;
     // world
@@ -3126,8 +3131,15 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       } else { ell(4, -2, 9, 4, "#e3263a"); ell(-4, -2, 9, 4, "#c81f31"); }
       // body
       circle(0, -18 + sq * .6, 9, blue); ell(3, -17 + sq * .6, 5, 6, peach);
-      // arm / punch
-      if (punchT > 0) {
+      // arm / punch / block
+      if (keys.block && onGround && !crouch) {
+        line(2, -24, 12, -16, 3.5, peach); line(2, -16, 12, -24, 3.5, peach);
+        circle(13, -15, 4, "#fff"); circle(13, -25, 4, "#fff");
+        ctx.save(); ctx.globalAlpha = .45 + Math.sin(t * .02) * .1;
+        ctx.strokeStyle = "#a9d8ff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(4, -24, 26, -1.1, 1.1); ctx.stroke();
+        ctx.fillStyle = "rgba(140,200,255,.18)"; ctx.beginPath(); ctx.arc(4, -24, 26, -1.1, 1.1); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      } else if (punchT > 0) {
         line(3, -20 + sq * .6, 22, -22 + sq * .6, 3.5, peach); circle(25, -22 + sq * .6, 5.5, "#fff");
         ctx.globalAlpha = .6; line(30, -26 + sq, 40, -26 + sq, 2, "#fff"); line(30, -18 + sq, 38, -16 + sq, 2, "#fff"); ctx.globalAlpha = 1;
       } else {
@@ -3275,9 +3287,9 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     function text(x, y, s1, col) { texts.push({ x, y, s: s1, col, t: 0, life: 800 }); }
     function burst(x, y, col, n) { for (let i = 0; i < n; i++) parts.push({ type: "bit", x, y, vx: rnd(-.3, .3) * S, vy: rnd(-.45, -.1) * S, t: 0, life: 700, col }); }
 
-    function jump() { if (state !== "run") return; if (onGround) { vy = -.78 * S; onGround = false; } }
+    function jump() { if (state !== "run" || keys.block) return; if (onGround) { vy = -.78 * S; onGround = false; } }
     function punch() {
-      if (state !== "run" || punchCd > 0) return;
+      if (state !== "run" || punchCd > 0 || keys.block) return;
       punchT = 230; punchCd = 330;
       if (mode === "run") {
         objs.forEach((o) => {
@@ -3324,7 +3336,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (sy >= GY) { sy = GY; vy = 0; onGround = true; }
       if (mode === "run") {
         const base = (.32 + Math.min(.12, dist / (60000 * S))) * S, boost = .52 * S;
-        const target = keys.run ? boost : base;
+        const target = keys.block && onGround ? base * .6 : keys.run ? boost : base;
         speed += (target - speed) * Math.min(1, dt * .004);
         dist += speed * dt;
         sx += (W * .32 - sx) * Math.min(1, dt * .004);
@@ -3351,6 +3363,11 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           if (o.type === "rock") { l = x - 16 * S; r = x + 16 * S; t2 = GY - 28 * S; bt = GY; }
           if (o.type === "bee") { l = x - 12 * S; r = x + 12 * S; t2 = o.y - 8 * S; bt = o.y + 8 * S; }
           if (b.r > l && b.l < r && b.b > t2 && b.t < bt) {
+            if (keys.block && onGround && o.type !== "spikes") {
+              o.dead = true; speed *= .5; gap = Math.max(0, gap - 6);
+              burst(x, o.type === "bee" ? o.y : GY - 16 * S, "#a98bff", 8); text(sx, GY - 64 * S, "БЛОК", "#a98bff");
+              return;
+            }
             if (o.type === "bee" && !onGround && vy > 0) { o.dead = true; broken++; vy = -.5 * S; burst(x, o.y, "#ffd84d", 10); text(x, o.y - 20 * S, "+2", "#9be15d"); hud(); return; }
             hurt(x); o.dead = o.type !== "spikes";
           }
@@ -3368,16 +3385,28 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
         } else if (kState === "idle" || kState === "wind") {
           kx += (W * .4 - kx) * Math.min(1, dt * .004); // step back in after being knocked away
           if (kState === "idle" && kT > rnd(450, 900)) { kState = "wind"; kT = 0; kAtk = Math.random() < .5 ? "high" : "low"; }
-          else if (kState === "wind" && kT > 700) { kState = "attack"; kT = 0; kDodge = false; }
+          else if (kState === "wind" && kT > 700) {
+            kState = "attack"; kT = 0; kDodge = false; kBlock = false;
+            // a block raised just before the swing counts as perfect
+            kPerfect = keys.block && onGround && performance.now() - blockSince < 260;
+          }
         } else if (kState === "attack") {
           // dodged if Sonic ducks (high punch) or is in the air (low sweep) at any moment of the swing
           if (kAtk === "high" ? (keys.crouch && onGround) : !onGround) kDodge = true;
+          if (keys.block && onGround) { kBlock = true; if (kT < 120 && performance.now() - blockSince < 260) kPerfect = true; }
           if (kT > 240) {
-            if (kDodge) text(sx, GY - 70 * S, "УВЕРНУЛСЯ", "#5ce1e6"); else hurt(kx);
+            kRecover = 900;
+            if (kDodge) text(sx, GY - 70 * S, "УВЕРНУЛСЯ", "#5ce1e6");
+            else if (kBlock) {
+              sx += 10 * S;
+              burst(sx - 14 * S, GY - 26 * S, "#a98bff", 8);
+              if (kPerfect) { kRecover = 1600; text(sx, GY - 70 * S, "ИДЕАЛЬНЫЙ БЛОК", "#a98bff"); Hero.say("sonic", "good", "Идеальный блок! Бей, пока он оглушён!"); }
+              else text(sx, GY - 70 * S, "БЛОК", "#a98bff");
+            } else hurt(kx);
             kState = "recover"; kT = 0;
           }
         } else if (kState === "recover") {
-          if (kT > 900) { kState = "idle"; kT = 0; }
+          if (kT > kRecover) { kState = "idle"; kT = 0; }
         } else if (kState === "hit") {
           kx -= .08 * S * dt * (1 - kT / 300);
           if (kT > 300) { kState = "idle"; kT = 0; kx = Math.max(W * .2, kx); }
@@ -3494,6 +3523,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       if (btn) btn.classList.toggle("on", down);
       if (act === "run") keys.run = down;
       if (act === "crouch") keys.crouch = down;
+      if (act === "block") { if (down && !keys.block) blockSince = performance.now(); keys.block = down; }
       if (down && act === "jump") jump();
       if (down && act === "punch") punch();
     }
@@ -3503,14 +3533,14 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       ["pointerup", "pointercancel", "lostpointercapture"].forEach((ev) => b.addEventListener(ev, () => press(act, false)));
       b.addEventListener("contextmenu", (e) => e.preventDefault());
     });
-    const KEYMAP = { ArrowRight: "run", Shift: "run", " ": "jump", ArrowUp: "jump", ArrowDown: "crouch", f: "punch", F: "punch", "а": "punch", "А": "punch" };
-    document.addEventListener("keyup", (e) => { if (current !== "sonic") return; const a = KEYMAP[e.key]; if (a === "run" || a === "crouch") press(a, false); if (a) { const b = document.querySelector(`#sonicPad [data-act="${a}"]`); if (b) b.classList.remove("on"); } });
+    const KEYMAP = { ArrowRight: "run", Shift: "run", " ": "jump", ArrowUp: "jump", ArrowDown: "crouch", f: "punch", F: "punch", "а": "punch", "А": "punch", b: "block", B: "block", "и": "block", "И": "block" };
+    document.addEventListener("keyup", (e) => { if (current !== "sonic") return; const a = KEYMAP[e.key]; if (a === "run" || a === "crouch" || a === "block") press(a, false); if (a) { const b = document.querySelector(`#sonicPad [data-act="${a}"]`); if (b) b.classList.remove("on"); } });
     $("#sonicOvBtn").addEventListener("click", () => { if (state === "paused") { state = "run"; overlay(null); } else start(); });
     window.addEventListener("resize", () => { if (visible) fit(); });
 
     return {
       enter() { visible = true; fit(); hud(); loop(); },
-      leave() { pause(); visible = false; keys.run = keys.crouch = false; },
+      leave() { pause(); visible = false; keys.run = keys.crouch = keys.block = false; $$("#sonicPad button").forEach((b) => b.classList.remove("on")); },
       key(e) {
         const a = KEYMAP[e.key];
         if (!a) return;
