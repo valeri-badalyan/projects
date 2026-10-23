@@ -1,6 +1,7 @@
 // ===== Данные игр =====
 const games = [
-  { title: "Neon Dodge", genre: "action", label: "Экшен", emoji: "⚡", desc: "Аркада на реакцию в неоновом мире. Играй прямо на сайте!", rating: 4.9, platform: "Браузер", color: "#ff2e88" },
+  { title: "Neon Dodge", genre: "action", label: "Экшен", emoji: "⚡", desc: "Аркада на реакцию в неоновом мире. Играй прямо на сайте!", rating: 4.9, platform: "Браузер", color: "#ff2e88", link: "#play" },
+  { title: "Память", genre: "puzzle", label: "Головоломка", emoji: "🧱", desc: "Запомни башню из кубиков за 2 секунды и собери её точно так же.", rating: null, tag: "Новинка", platform: "Браузер", color: "#2effa1", link: "#memory" },
   { title: "Pixel Kingdoms", genre: "strategy", label: "Стратегия", emoji: "🏰", desc: "Строй королевство, заключай союзы и захватывай земли.", rating: 4.8, platform: "ПК", color: "#7b5cff" },
   { title: "Void Runner", genre: "action", label: "Экшен", emoji: "🚀", desc: "Космический раннер на бешеной скорости. Скоро!", rating: null, platform: "ПК / Mobile", color: "#19e3ff" },
   { title: "Cube Logic", genre: "puzzle", label: "Головоломка", emoji: "🧩", desc: "200 уровней головоломок с кубами и порталами.", rating: 4.7, platform: "Mobile", color: "#ffd23f" },
@@ -21,9 +22,10 @@ function renderGames(filter = "all") {
           <h3>${g.title}</h3>
           <p>${g.desc}</p>
           <div class="card-meta">
-            <span class="rating">${g.rating ? "★ " + g.rating : "Скоро"}</span>
+            <span class="rating">${g.rating ? "★ " + g.rating : (g.tag || "Скоро")}</span>
             <span class="platform">${g.platform}</span>
           </div>
+          ${g.link ? `<a class="card-play" href="${g.link}">Играть ▶</a>` : ""}
         </div>
       </article>`)
     .join("");
@@ -261,4 +263,113 @@ document.querySelectorAll("[data-count]").forEach(el => {
 
   reset();
   requestAnimationFrame(t => { last = t; loop(t); });
+})();
+
+// ===== Мини-игра «Память» =====
+(() => {
+  const COLORS = [
+    { name: "розовый", c: "#ff2e88" },
+    { name: "голубой", c: "#19e3ff" },
+    { name: "жёлтый", c: "#ffd23f" },
+    { name: "зелёный", c: "#2effa1" },
+    { name: "фиолетовый", c: "#9b5cff" },
+  ];
+  const SHOW_MS = 2000;
+  const $ = id => document.getElementById(id);
+  const card = $("memCard"), target = $("memTarget"), build = $("memBuild");
+  const timer = $("memTimer"), msg = $("memMsg"), palette = $("memPalette");
+  const startBtn = $("memStart"), levelEl = $("memLevel"), bestEl = $("memBest");
+
+  let level = 1, seq = [], built = [], accepting = false, showTimeout = null;
+  let best = 0;
+  try { best = +localStorage.getItem("fdm1-memory-best") || 0; } catch (_) {}
+  bestEl.textContent = best;
+
+  const cube = (i, extra = "") => `<div class="cube ${extra}" style="--c:${COLORS[i].c}" title="${COLORS[i].name}"></div>`;
+
+  function renderTower(el, list, total, wrongAt = -1) {
+    let html = "";
+    for (let k = 0; k < total; k++) {
+      if (k < list.length) html += cube(list[k], (k === wrongAt ? "wrong " : "") + (k === list.length - 1 ? "pop" : ""));
+      else html += '<div class="cube slot"></div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function setMsg(text, kind = "") { msg.textContent = text; msg.className = "mem-msg " + kind; }
+  function setPalette(on) { palette.querySelectorAll("button").forEach(b => (b.disabled = !on)); }
+
+  palette.innerHTML = COLORS.map((col, i) =>
+    `<button type="button" data-i="${i}" style="--c:${col.c}" aria-label="Поставить ${col.name} кубик" disabled></button>`).join("");
+  palette.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (b) pick(+b.dataset.i);
+  });
+
+  function nextRound() {
+    const len = Math.min(2 + level, 10);
+    seq = Array.from({ length: len }, () => Math.floor(Math.random() * COLORS.length));
+    built = [];
+    levelEl.textContent = level;
+    renderTower(target, seq, len);
+    renderTower(build, [], len);
+    card.classList.remove("covered");
+    timer.classList.remove("run"); void timer.offsetWidth; timer.classList.add("run");
+    setPalette(false);
+    accepting = false;
+    setMsg(`Запоминай! ${len} кубиков`);
+    clearTimeout(showTimeout);
+    showTimeout = setTimeout(() => {
+      card.classList.add("covered");
+      timer.classList.remove("run");
+      accepting = true;
+      setPalette(true);
+      setMsg("Собери башню снизу вверх");
+    }, SHOW_MS);
+  }
+
+  function pick(i) {
+    if (!accepting) return;
+    const k = built.length;
+    built.push(i);
+    if (i !== seq[k]) {
+      renderTower(build, built, seq.length, k);
+      lose();
+      return;
+    }
+    renderTower(build, built, seq.length);
+    if (built.length === seq.length) {
+      accepting = false;
+      setPalette(false);
+      setMsg("Верно! Следующая башня выше", "good");
+      level++;
+      showTimeout = setTimeout(nextRound, 1000);
+    }
+  }
+
+  function lose() {
+    accepting = false;
+    setPalette(false);
+    card.classList.remove("covered");
+    const passed = level - 1;
+    if (passed > best) {
+      best = passed;
+      try { localStorage.setItem("fdm1-memory-best", best); } catch (_) {}
+      bestEl.textContent = best;
+    }
+    setMsg(`Неправильно! Проигрыш. Пройдено уровней: ${passed}`, "bad");
+    startBtn.textContent = "Ещё раз";
+    startBtn.hidden = false;
+  }
+
+  startBtn.addEventListener("click", () => {
+    level = 1;
+    startBtn.hidden = true;
+    nextRound();
+  });
+
+  // пример башни до старта
+  seq = [0, 1, 2];
+  renderTower(target, seq, 3);
+  renderTower(build, [], 3);
 })();

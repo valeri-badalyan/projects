@@ -156,6 +156,54 @@ a { color: inherit; text-decoration: none; }
 .game-overlay.hidden { display: none; }
 .hud { position: absolute; top: 10px; left: 14px; font-family: "Press Start 2P", monospace; font-size: .7rem; color: var(--yellow); }
 
+/* MEMORY */
+.memory .muted { max-width: 560px; margin: -16px auto 28px; }
+.mem {
+  max-width: 480px; margin: 0 auto; display: grid; gap: 18px; justify-items: center;
+  background: var(--bg2); border: 2px solid var(--cyan); border-radius: var(--radius);
+  padding: 20px 16px 24px; box-shadow: 0 0 40px #19e3ff33;
+}
+.mem-status { width: 100%; display: flex; justify-content: space-between; font-family: "Press Start 2P", monospace; font-size: .7rem; color: var(--muted); }
+.mem-status b { color: var(--yellow); }
+.mem-stage { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.mem-panel { display: grid; gap: 8px; min-width: 0; }
+.mem-panel figcaption { text-align: center; font-size: .8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); font-weight: 600; }
+.mem-card {
+  position: relative; height: 330px; overflow: hidden;
+  background: #06060f; border-radius: 12px; border: 1px solid #ffffff1a;
+  display: flex; align-items: flex-end; justify-content: center; padding: 12px;
+}
+.tower { display: flex; flex-direction: column-reverse; gap: 4px; align-items: center; }
+.cube { width: 52px; height: 26px; border-radius: 5px; box-shadow: 0 0 12px var(--c), inset 0 -4px 0 #0004; background: var(--c); }
+.cube.slot { background: transparent; border: 2px dashed #ffffff26; box-shadow: none; }
+.cube.wrong { outline: 3px solid #fff; outline-offset: 2px; animation: shake .4s; }
+.cube.pop { animation: pop .18s ease-out; }
+@keyframes pop { from { transform: scale(.6); } to { transform: none; } }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.mem-cover {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font: 2.4rem "Press Start 2P", monospace; color: var(--pink); text-shadow: 0 0 14px var(--pink);
+  background: repeating-linear-gradient(45deg, #12122a 0 12px, #181834 12px 24px);
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.mem-card.covered .mem-cover { opacity: 1; }
+.mem-timer { position: absolute; left: 0; bottom: 0; height: 4px; width: 0; background: var(--yellow); }
+.mem-timer.run { animation: memtimer 2s linear forwards; }
+@keyframes memtimer { from { width: 100%; } to { width: 0; } }
+.mem-msg { min-height: 1.6em; text-align: center; font-weight: 600; }
+.mem-msg.bad { color: var(--pink); }
+.mem-msg.good { color: #2effa1; }
+.mem-palette { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.mem-palette button {
+  width: 52px; height: 52px; border-radius: 12px; border: 2px solid #ffffff33; cursor: pointer;
+  background: var(--c); box-shadow: 0 0 14px var(--c); transition: transform .1s;
+}
+.mem-palette button:active { transform: scale(.9); }
+.mem-palette button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.mem-palette button:disabled { opacity: .3; cursor: not-allowed; box-shadow: none; }
+.card-play { display: inline-block; margin-top: 12px; color: var(--pink); font-weight: 700; }
+.card-play:hover { color: var(--text); }
+
 /* ABOUT */
 .about { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 .about p { color: var(--muted); margin-bottom: 14px; font-size: 1.05rem; }
