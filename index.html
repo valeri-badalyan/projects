@@ -249,6 +249,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ghost-wrap:not(.full) .ghost-close { display: none; }
 .ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+#geoCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #120a2e; cursor: pointer; user-select: none; -webkit-user-select: none; }
+.geo-levels { display: grid; gap: 8px; width: min(320px, 100%); }
+.geo-levels button {
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg);
+  font-weight: 800; cursor: pointer; text-align: left;
+}
+.geo-levels button:hover { border-color: var(--cyan); }
+.geo-levels small { font-family: var(--mono); color: var(--muted); font-weight: 700; }
+.geo-levels .done small { color: var(--lime); }
 #sonicCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #5aa9ff; }
 .pad4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .pad4 button {
@@ -602,7 +612,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Восемь игр в одном кармане</span>
+        <span class="tag">Девять игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -705,6 +715,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Призрак в сомбреро против тварей из легенд, Савера и великана Зоера.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubGhost">0</span></span>
+      </button>
+      <button class="cart" data-go="geo" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="geobg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a1c9e"/><stop offset="1" stop-color="#0f6fb8"/></linearGradient></defs><rect width="64" height="64" fill="url(#geobg)"/><rect x="0" y="46" width="64" height="18" fill="#0c0a24"/><path d="M0 46 H64" stroke="#5ce1e6" stroke-width="2"/><g transform="rotate(-20 20 34)"><rect x="12" y="26" width="16" height="16" rx="2" fill="#ffd84d" stroke="#fff" stroke-width="2"/><rect x="16" y="31" width="3" height="3" fill="#12132a"/><rect x="22" y="31" width="3" height="3" fill="#12132a"/></g><path d="M36 46 L42 34 L48 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><path d="M48 46 L54 34 L60 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><g fill="#ffd84d" opacity=".7"><rect x="4" y="38" width="3" height="3"/><rect x="0" y="34" width="2" height="2"/></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Geometry Lite</span>
+          <span class="cart-desc">Кубик бежит под бит. Жми, чтобы прыгать через шипы. Три уровня.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Уровни</span><span class="stat-val" id="hubGeo">0/3</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -981,6 +1001,37 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
     <div class="ev-list" id="evList"></div>
     <p class="hint">Прогресс засчитывается, пока событие идёт. Ежедневные события меняются в полночь.</p>
+  </section>
+
+  <!-- ===== Geometry Lite ===== -->
+  <section id="geo" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Geometry Lite</div>
+      <div class="chips">
+        <div class="chip"><span>Попытка</span><b id="geoAttempt">1</b></div>
+        <div class="chip hi"><span>Лучший</span><b id="geoBest">0%</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="geoStage">
+      <canvas id="geoCanvas" width="440" height="300" aria-label="Уровень Geometry Lite"></canvas>
+      <div class="overlay" id="geoOverlay">
+        <h2 id="geoOvTitle">Geometry Lite</h2>
+        <p id="geoOvText">Кубик бежит сам. Нажимай на экран, чтобы прыгать. Держи — прыгает без остановки.</p>
+        <div class="geo-levels" id="geoLevels"></div>
+      </div>
+    </div>
+    <div class="row-actions">
+      <button class="btn ghost" type="button" id="geoMenu">Уровни</button>
+      <button class="btn ghost" type="button" id="geoMute" aria-pressed="false">Музыка: вкл</button>
+      <a class="btn ghost" href="https://geometrylitepc.net/" target="_blank" rel="noopener">Открыть сайт</a>
+    </div>
+    <p class="hint">Пробел, ↑ или нажатие — прыжок. Жёлтый батут подбрасывает сам, жёлтое кольцо — нажми, пока касаешься. В розовом портале кубик становится кораблём: держи, чтобы лететь вверх.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -3701,6 +3752,319 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Geometry Lite ================= */
+  const Geo = (() => {
+    // World units are cells. Physics runs at a fixed 240 Hz so every attempt plays out the same way.
+    const STEP = 1 / 240, SPEED = 10.4, GRAV = 91, JUMP = 20, PAD = 27, ORB = 19, SHIP_ACC = 34, SHIP_VMAX = 9;
+    function build(fn) {
+      const objs = []; let x = 12;
+      const api = {
+        gap(n) { x += n; return api; },
+        sp(n = 1, y = 0) { for (let i = 0; i < n; i++) objs.push({ t: "spike", x: x + i, y }); x += n; return api; },
+        blk(w, h = 1, y = 0) { objs.push({ t: "block", x, y, w, h }); x += w; return api; },
+        put(t, dx, y, w = 1, h = 1) { objs.push({ t, x: x + dx, y, w, h }); return api; },
+        pad() { objs.push({ t: "pad", x, y: 0 }); x += 1; return api; },
+        orb(y) { objs.push({ t: "orb", x, y }); return api; },
+        portal(mode) { objs.push({ t: "portal", mode, x }); x += 1; return api; },
+        x: () => x,
+      };
+      fn(api);
+      return { objs: objs.sort((a, b) => a.x - b.x), len: x + 8 };
+    }
+    const LEVELS = [
+      { name: "Первый ритм", stars: 1, hue: 260, reward: 100, data: build((L) => {
+        L.sp().gap(6).sp().gap(6).sp(2).gap(6).blk(2).gap(3).sp().gap(5).blk(3).blk(2, 2).gap(4).sp(2).gap(6)
+          .pad().gap(1).sp(3).gap(6).sp().gap(2).sp().gap(6).blk(6).put("spike", -3, 1).gap(5).sp(2).gap(6).blk(2).blk(2, 2).blk(2, 3).gap(4).sp(3).gap(8);
+      }) },
+      { name: "Неоновый прыжок", stars: 2, hue: 200, reward: 200, data: build((L) => {
+        L.sp(2).gap(5).blk(2).gap(1).sp(2).gap(5).pad().gap(1).sp(3).gap(5)
+          .put("orb", 2, 1.8).put("spike", 0, 0).put("spike", 1, 0).put("spike", 2, 0).put("spike", 3, 0).put("spike", 4, 0).put("spike", 5, 0).gap(6).gap(5)
+          .blk(2).blk(2, 2).blk(2, 3).gap(1).put("spike", 0, 0).put("spike", 1, 0).put("spike", 2, 0).gap(3).blk(4, 2).gap(4).sp(2).gap(6)
+          .pad().gap(1).blk(3, 3).gap(5).sp(3).gap(5).sp().gap(2).sp(2).gap(8);
+      }) },
+      { name: "Полёт кубика", stars: 3, hue: 320, reward: 300, data: build((L) => {
+        L.sp().gap(5).sp(2).gap(6).portal("ship").gap(6);
+        const gaps = [[1, 5], [2, 6], [3, 7], [2, 6], [1, 5], [3, 7], [4, 8], [2, 6], [1, 5]];
+        gaps.forEach(([lo, hi]) => { L.put("block", 0, 0, 1, lo).put("block", 0, hi, 1, 9 - hi).gap(6); });
+        L.portal("cube").gap(6).sp(2).gap(6).blk(2).blk(2, 2).gap(4).sp(3).gap(8);
+      }) },
+    ];
+    const SHIP_CEIL = 9;
+
+    function init(level) {
+      return { x: 0, y: 0, vy: 0, mode: "cube", ground: true, rot: 0, dead: false, win: false, buffer: 0, used: new Set() };
+    }
+    const overlap = (ax, ay, aw, ah, bx, by, bw, bh) => ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+    // one physics step; held = button held, press = a fresh press this step
+    function step(s, lvl, held, press) {
+      if (s.dead || s.win) return s;
+      if (press) s.buffer = .12;
+      s.buffer = Math.max(0, s.buffer - STEP);
+      const objs = lvl.data.objs;
+      s.x += SPEED * STEP;
+      const near = objs.filter((o) => o.x > s.x - 3 && o.x < s.x + 3);
+      // side hits on blocks
+      for (const o of near) {
+        if (o.t !== "block") continue;
+        if (overlap(s.x, s.y + .08, 1, .84, o.x, o.y, o.w, o.h)) { s.dead = true; return s; }
+      }
+      const prevY = s.y;
+      if (s.mode === "cube") {
+        if (s.ground && held) { s.vy = JUMP; s.ground = false; }
+        s.vy -= GRAV * STEP;
+      } else {
+        s.vy = Math.max(-SHIP_VMAX, Math.min(SHIP_VMAX, s.vy + (held ? SHIP_ACC : -SHIP_ACC) * STEP));
+      }
+      s.y += s.vy * STEP;
+      s.ground = false;
+      if (s.y <= 0) { s.y = 0; s.vy = Math.max(0, s.vy); s.ground = s.mode === "cube" || true; }
+      if (s.mode === "ship" && s.y >= SHIP_CEIL - 1) { s.y = SHIP_CEIL - 1; s.vy = Math.min(0, s.vy); }
+      for (const o of near) {
+        if (o.t === "block") {
+          if (!overlap(s.x, s.y, 1, 1, o.x, o.y, o.w, o.h)) {
+            if (s.mode === "cube" && Math.abs(s.y - (o.y + o.h)) < 1e-6 && s.x + 1 > o.x && s.x < o.x + o.w) s.ground = true;
+            continue;
+          }
+          const top = o.y + o.h;
+          if (s.mode === "cube" && s.vy <= 0 && prevY >= top - .25) { s.y = top; s.vy = 0; s.ground = true; }
+          else { s.dead = true; return s; }
+        } else if (o.t === "spike") {
+          if (overlap(s.x + .1, s.y + .1, .8, .8, o.x + .35, o.y, .3, .5)) { s.dead = true; return s; }
+        } else if (o.t === "pad") {
+          if (!s.used.has(o) && overlap(s.x, s.y, 1, 1, o.x, o.y, 1, .3)) { s.used.add(o); s.vy = PAD; s.ground = false; }
+        } else if (o.t === "orb") {
+          if (!s.used.has(o) && s.buffer > 0 && Math.hypot(s.x + .5 - (o.x + .5), s.y + .5 - (o.y + .5)) < 1.1) { s.used.add(o); s.buffer = 0; s.vy = ORB; s.ground = false; }
+        } else if (o.t === "portal") {
+          if (s.mode !== o.mode && s.x + 1 > o.x + .4 && s.x < o.x + .6) { s.mode = o.mode; s.vy = Math.min(s.vy, 4); }
+        }
+      }
+      if (s.mode === "cube") {
+        if (s.ground) s.rot = Math.round(s.rot / (Math.PI / 2)) * (Math.PI / 2);
+        else s.rot += STEP * 7.2;
+      } else s.rot = -s.vy * .06;
+      if (s.x >= lvl.data.len - 6) s.win = true;
+      return s;
+    }
+
+    // ---------- page ----------
+    const cv = $("#geoCanvas"), ctx = cv.getContext("2d"), stage = $("#geoStage"), ov = $("#geoOverlay");
+    let W = 440, H = 300, dpr = 1, CELL = 30, visible = false, raf = 0, lastT = 0, acc = 0;
+    let lvlIdx = 0, S = null, attempts = 1, held = false, pressQ = false, deadT = 0, parts = [], trail = [], playing = false;
+    let prog = store.get("geoProg", [0, 0, 0]); if (!Array.isArray(prog)) prog = [0, 0, 0];
+    let done = store.get("geoDone", [false, false, false]); if (!Array.isArray(done)) done = [false, false, false];
+    let muted = !!store.get("geoMute", false);
+    const pct = () => Math.min(100, Math.floor(S.x / (LEVELS[lvlIdx].data.len - 6) * 100));
+
+    // ---------- music: a simple 128 BPM loop ----------
+    let AC = null, nextBeat = 0, beat = 0, musicT = 0, pulse = 0;
+    const BASS = [55, 55, 65.4, 49, 55, 55, 73.4, 65.4];
+    function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === "suspended") AC.resume(); }
+    function note(f, t, dur, type, vol, to) {
+      const o = AC.createOscillator(), g = AC.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + .02);
+    }
+    function schedule() {
+      if (!AC || muted || !playing) return;
+      const spb = 60 / 128 / 2; // eighth notes
+      if (nextBeat < AC.currentTime) nextBeat = AC.currentTime + .05;
+      while (nextBeat < AC.currentTime + .12) {
+        const t = nextBeat, k = beat % 16;
+        if (k % 4 === 0) note(150, t, .18, "sine", .5, 45);
+        if (k % 4 === 2) note(9000, t, .03, "square", .03);
+        if (k % 2 === 0) note(BASS[(beat >> 1) % 8], t, spb * .9, "sawtooth", .07);
+        if (k % 8 === 4) note(1800, t, .06, "triangle", .05, 600);
+        if (k === 0 || k === 6 || k === 10) note([440, 523, 659][(beat >> 4) % 3], t, .14, "square", .035);
+        nextBeat += spb; beat++;
+      }
+    }
+    function boom() { if (AC && !muted) { note(120, AC.currentTime, .3, "sawtooth", .2, 30); } }
+
+    // ---------- drawing ----------
+    function hsl(h, sat, l, a) { return `hsla(${h},${sat}%,${l}%,${a == null ? 1 : a})`; }
+    function draw(t) {
+      const L = LEVELS[lvlIdx], hue = L.hue, groundY = H - CELL * 1.6;
+      const camX = S ? S.x - W * .28 / CELL : 0;
+      const shipView = S && S.mode === "ship";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const g = ctx.createLinearGradient(0, 0, W, H);
+      g.addColorStop(0, hsl(hue, 70, 22 + pulse * 6)); g.addColorStop(1, hsl(hue + 40, 70, 12));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      // parallax squares
+      ctx.strokeStyle = hsl(hue + 30, 80, 70, .12); ctx.lineWidth = 2;
+      for (let i = 0; i < 9; i++) {
+        const sz = 40 + (i % 3) * 30, x = ((i * 97 - camX * CELL * .25) % (W + 200) + W + 200) % (W + 200) - 100;
+        ctx.strokeRect(x, 20 + (i * 53) % (groundY - 80), sz, sz);
+      }
+      const sx = (x) => (x - camX) * CELL, sy = (y) => groundY - y * CELL;
+      // ship ceiling
+      if (shipView) { ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.fillRect(0, 0, W, sy(SHIP_CEIL)); ctx.strokeStyle = hsl(320, 90, 70); ctx.beginPath(); ctx.moveTo(0, sy(SHIP_CEIL)); ctx.lineTo(W, sy(SHIP_CEIL)); ctx.stroke(); }
+      // ground
+      ctx.fillStyle = hsl(hue, 60, 8); ctx.fillRect(0, groundY, W, H - groundY);
+      ctx.strokeStyle = hsl(hue + 20, 70, 30, .6); ctx.lineWidth = 1;
+      for (let gx = -((camX * CELL) % CELL); gx < W; gx += CELL) { ctx.beginPath(); ctx.moveTo(gx, groundY); ctx.lineTo(gx - CELL * .6, H); ctx.stroke(); }
+      ctx.strokeStyle = "#e9fffb"; ctx.lineWidth = 2; ctx.shadowColor = hsl(hue + 60, 100, 70); ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke(); ctx.shadowBlur = 0;
+      // objects
+      for (const o of L.data.objs) {
+        const x = sx(o.x);
+        if (x < -CELL * 8 || x > W + CELL) continue;
+        if (o.t === "block") {
+          const y = sy(o.y + o.h), w = o.w * CELL, h = o.h * CELL;
+          ctx.fillStyle = "rgba(6,4,20,.92)"; ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = hsl(hue + 60, 90, 75); ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+          ctx.strokeStyle = hsl(hue + 60, 90, 75, .25);
+          for (let i = 0; i < o.w; i++) for (let j = 0; j < o.h; j++) ctx.strokeRect(x + i * CELL + 5, y + j * CELL + 5, CELL - 10, CELL - 10);
+        } else if (o.t === "spike") {
+          const y = sy(o.y);
+          ctx.fillStyle = "rgba(6,4,20,.95)"; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(x + 2, y); ctx.lineTo(x + CELL / 2, y - CELL * .92); ctx.lineTo(x + CELL - 2, y); ctx.closePath(); ctx.fill(); ctx.stroke();
+        } else if (o.t === "pad") {
+          ctx.fillStyle = "#ffd84d"; ctx.shadowColor = "#ffd84d"; ctx.shadowBlur = 12;
+          ctx.beginPath(); ctx.ellipse(x + CELL / 2, sy(0), CELL * .45, CELL * .22, 0, Math.PI, 0); ctx.fill(); ctx.shadowBlur = 0;
+        } else if (o.t === "orb") {
+          const r = CELL * (.32 + Math.sin(t * .01) * .04);
+          ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 3; ctx.shadowColor = "#ffd84d"; ctx.shadowBlur = 14;
+          ctx.beginPath(); ctx.arc(x + CELL / 2, sy(o.y + .5), r, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = "rgba(255,216,77,.5)"; ctx.beginPath(); ctx.arc(x + CELL / 2, sy(o.y + .5), r * .5, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+        } else if (o.t === "portal") {
+          const col = o.mode === "ship" ? "#ff5ad1" : "#9be15d";
+          ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.shadowColor = col; ctx.shadowBlur = 16;
+          ctx.beginPath(); ctx.ellipse(x + CELL / 2, sy(2), CELL * .35, CELL * 1.6, 0, 0, Math.PI * 2); ctx.stroke(); ctx.shadowBlur = 0;
+        }
+      }
+      // finish line
+      const fx = sx(L.data.len - 6);
+      if (fx < W) { ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(fx, 0, W - fx, groundY); ctx.fillStyle = "#fff"; ctx.fillRect(fx, 0, 3, groundY); }
+      // trail and particles
+      trail.forEach((p) => { ctx.globalAlpha = p.a; ctx.fillStyle = Hero.accent(); ctx.fillRect(sx(p.x) + CELL * .3, sy(p.y) - CELL * .65, CELL * .35, CELL * .35); });
+      ctx.globalAlpha = 1;
+      // player
+      if (S && !S.dead) {
+        const px = sx(S.x), py = sy(S.y);
+        ctx.save(); ctx.translate(px + CELL / 2, py - CELL / 2); ctx.rotate(S.rot);
+        if (S.mode === "ship") {
+          ctx.fillStyle = "#ff5ad1"; ctx.strokeStyle = "#fff"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(-CELL * .7, CELL * .35); ctx.lineTo(CELL * .75, CELL * .15); ctx.lineTo(-CELL * .5, -CELL * .05); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.translate(-CELL * .1, -CELL * .25); ctx.scale(.6, .6);
+        }
+        const im = Hero.img(), c = CELL * .92;
+        ctx.fillStyle = Hero.accent(); ctx.fillRect(-c / 2, -c / 2, c, c);
+        if (im.complete && im.naturalWidth) ctx.drawImage(im, -c / 2 + 3, -c / 2 + 3, c - 6, c - 6);
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.strokeRect(-c / 2, -c / 2, c, c);
+        ctx.restore();
+      }
+      parts.forEach((p) => { ctx.globalAlpha = Math.max(0, p.l); ctx.fillStyle = p.c; ctx.fillRect(sx(p.x), sy(p.y), p.s, p.s); });
+      ctx.globalAlpha = 1;
+      // progress bar
+      if (S) {
+        const bw = W * .5, bx = (W - bw) / 2;
+        ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(bx, 10, bw, 8);
+        ctx.fillStyle = "#9be15d"; ctx.fillRect(bx, 10, bw * pct() / 100, 8);
+        ctx.font = `700 ${Math.round(W * .03)}px "JetBrains Mono", monospace`; ctx.fillStyle = "#fff"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+        ctx.fillText(`${pct()}%`, bx + bw + 8, 14);
+        if (S.x < 6) { ctx.textAlign = "center"; ctx.font = `${Math.round(W * .05)}px "Rubik Mono One", sans-serif`; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fillText(`Попытка ${attempts}`, W * .55, H * .35); }
+      }
+    }
+
+    // ---------- flow ----------
+    function hud() {
+      $("#geoAttempt").textContent = attempts;
+      $("#geoBest").textContent = `${prog[lvlIdx] || 0}%`;
+    }
+    function startLevel(i) {
+      lvlIdx = i; S = init(); attempts = 1; parts = []; trail = []; deadT = 0; playing = true;
+      ov.hidden = true; audio(); nextBeat = 0; beat = 0; hud();
+      Hero.say("geo", "start", `«${LEVELS[i].name}» — ${"★".repeat(LEVELS[i].stars)}. Погнали!`);
+    }
+    function crash() {
+      boom(); deadT = .7;
+      for (let i = 0; i < 18; i++) parts.push({ x: S.x + .5, y: S.y + .5, vx: (Math.random() - .5) * 14, vy: Math.random() * 12 - 2, s: 4 + Math.random() * 5, l: 1, c: i % 2 ? Hero.accent() : "#fff" });
+      const p = pct();
+      if (p > (prog[lvlIdx] || 0)) { prog[lvlIdx] = p; store.set("geoProg", prog); Hero.say("geo", "good", `Новый рекорд: ${p}%!`); }
+      else if (attempts % 5 === 0) Hero.say("geo", "bad", `Попытка ${attempts}… Ещё раз!`);
+      hud();
+    }
+    function win() {
+      playing = false; prog[lvlIdx] = 100; store.set("geoProg", prog);
+      const first = !done[lvlIdx];
+      if (first) { done[lvlIdx] = true; store.set("geoDone", done); Hero.grant(LEVELS[lvlIdx].reward); }
+      hud(); updateHub();
+      Hero.say("geo", "win", first ? `Уровень пройден! +${LEVELS[lvlIdx].reward} монет` : "Уровень пройден снова!");
+      menu(`Уровень пройден за ${attempts} ${attempts === 1 ? "попытку" : attempts < 5 ? "попытки" : "попыток"}!` + (first ? ` +${LEVELS[lvlIdx].reward} ◎` : ""));
+    }
+    function menu(text) {
+      playing = false;
+      $("#geoOvTitle").textContent = text ? "Готово!" : "Geometry Lite";
+      $("#geoOvText").textContent = text || "Кубик бежит сам. Нажимай на экран, чтобы прыгать. Держи — прыгает без остановки.";
+      const box = $("#geoLevels"); box.innerHTML = "";
+      LEVELS.forEach((l, i) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = done[i] ? "done" : "";
+        b.innerHTML = `<span>${"★".repeat(l.stars)} ${l.name}</span><small>${done[i] ? "пройден" : (prog[i] || 0) + "%"}</small>`;
+        b.addEventListener("click", () => startLevel(i));
+        box.appendChild(b);
+      });
+      ov.hidden = false;
+    }
+    function frame(t) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(.05, (t - lastT) / 1000) : 1 / 60; lastT = t;
+      pulse = Math.max(0, pulse - dt * 4);
+      if (AC && playing && !muted) { schedule(); const ph = (AC.currentTime * 128 / 60) % 1; if (ph < .08) pulse = 1; }
+      if (playing && S) {
+        if (deadT > 0) {
+          deadT -= dt;
+          if (deadT <= 0) { attempts++; S = init(); trail = []; hud(); }
+        } else {
+          acc += dt;
+          while (acc >= STEP) {
+            acc -= STEP;
+            step(S, LEVELS[lvlIdx], held, pressQ); pressQ = false;
+            if (S.dead) { crash(); break; }
+            if (S.win) { win(); break; }
+          }
+          if (Math.random() < .5) trail.push({ x: S.x, y: S.y, a: .6 });
+        }
+      }
+      trail.forEach((p) => { p.a -= dt * 2; p.x -= 0; }); trail = trail.filter((p) => p.a > 0);
+      parts.forEach((p) => { p.vy -= 30 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.l -= dt * 1.4; }); parts = parts.filter((p) => p.l > 0);
+      draw(t);
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .82); CELL = H / 11.5;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      if (!S) S = init();
+      draw(performance.now());
+    }
+    const down = () => { if (!playing) return; audio(); held = true; pressQ = true; };
+    const up = () => { held = false; };
+    cv.addEventListener("pointerdown", (e) => { e.preventDefault(); try { cv.setPointerCapture(e.pointerId); } catch (err) {} down(); });
+    ["pointerup", "pointercancel"].forEach((ev) => cv.addEventListener(ev, up));
+    document.addEventListener("keyup", (e) => { if ((e.key === " " || e.key === "ArrowUp") && current === "geo") up(); });
+    $("#geoMenu").addEventListener("click", () => menu());
+    const muteLabel = () => { $("#geoMute").textContent = `Музыка: ${muted ? "выкл" : "вкл"}`; $("#geoMute").setAttribute("aria-pressed", String(muted)); };
+    $("#geoMute").addEventListener("click", () => { muted = !muted; store.set("geoMute", muted); muteLabel(); });
+    muteLabel();
+    window.addEventListener("resize", () => { if (visible) fit(); });
+    window.__geo = { LEVELS, init, step, STEP }; // used by automated level checks
+
+    return {
+      enter() { visible = true; fit(); hud(); if (!playing) menu(); loop(); },
+      leave() { visible = false; held = false; if (playing) menu(); },
+      key(e) {
+        if ((e.key === " " || e.key === "ArrowUp") && !e.repeat) { e.preventDefault(); down(); }
+        else if (e.key === " " || e.key === "ArrowUp") e.preventDefault();
+      },
+      best: () => `${done.filter(Boolean).length}/3`,
+    };
+  })();
+
   /* ================= Events ================= */
   const Events = (() => {
     const GAME = {
@@ -3866,8 +4230,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -3879,6 +4243,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubVr").textContent = VR.best();
     $("#hubSonic").textContent = Sonic.best();
     $("#hubGhost").textContent = Ghost.best();
+    $("#hubGeo").textContent = Geo.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -4539,6 +4904,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (!document.hidden && current === "zombie") Zombie.enter();
     if (document.hidden && current === "vr") VR.leave();
     if (document.hidden && current === "sonic") Sonic.leave();
+    if (document.hidden && current === "geo") Geo.leave();
     if (!document.hidden && current === "vr") VR.enter();
   });
 
