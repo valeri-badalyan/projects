@@ -249,6 +249,57 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ghost-wrap:not(.full) .ghost-close { display: none; }
 .ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+/* ---------- Link race: a computer with a browser ---------- */
+.pc { display: flex; flex-direction: column; align-items: center; }
+.pc-screen {
+  position: relative; width: 100%; height: 440px; overflow: hidden; cursor: none;
+  border: 10px solid #2a2d3e; border-bottom-width: 16px; border-radius: 14px;
+  background: radial-gradient(circle at 30% 20%, #3b6fd8, #1b2a6b 70%); touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
+}
+.pc-stand { width: 90px; height: 22px; background: linear-gradient(#2a2d3e, #1b1d2a); clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%); }
+.pc-base { width: 150px; height: 8px; border-radius: 6px; background: #1b1d2a; }
+.pc-win { position: absolute; left: 10px; right: 10px; top: 10px; bottom: 40px; background: #f4f6fb; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.pc-title { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #dfe3ee; color: #33384d; font: 600 12px var(--body); }
+.pc-title i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.pc-addr { margin: 0 10px 6px; padding: 4px 10px; border-radius: 999px; background: #fff; border: 1px solid #c9cfdf; color: #4a5068; font: 500 11px var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-page { flex: 1; padding: 8px 12px; color: #23273a; font: 13px/1.45 Georgia, "Times New Roman", serif; overflow: hidden; position: relative; }
+.pc-page h3 { margin: 0 0 4px; font: 700 16px Georgia, serif; color: #12132a; }
+.pc-page p { margin: 0 0 6px; }
+.pc-nav, .pc-foot { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 4px 0; border-bottom: 1px solid #d7dbe8; margin-bottom: 6px; }
+.pc-foot { border-bottom: 0; border-top: 1px solid #d7dbe8; margin: 6px 0 0; font-size: 12px; }
+.lnk {
+  position: relative; display: inline; padding: 0; border: 0; background: none; font: inherit; cursor: none;
+  color: #1a4fd6; text-decoration: underline; text-underline-offset: 2px;
+}
+.lnk.mine { color: #7a2fb8; }
+.lnk.mine::after { content: " ✓"; color: #2fa84a; font-weight: 700; text-decoration: none; }
+.lnk .marks { display: inline-flex; gap: 2px; margin-left: 2px; vertical-align: middle; }
+.lnk .marks b { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.pc-task { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: rgba(12,14,30,.85); color: #e9eefc; font: 700 12px var(--mono); }
+.pc-task .start { background: linear-gradient(110deg, var(--amber), var(--coral)); color: var(--bg); border-radius: 6px; padding: 3px 8px; font-family: var(--display); }
+.pc-task .clock { margin-left: auto; }
+.pc-cursor { position: absolute; left: 0; top: 0; width: 22px; height: 26px; pointer-events: none; z-index: 6; transform: translate(-2px, -2px); }
+.pc-cursor svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 1px rgba(0,0,0,.4)); }
+.pc-cursor span { position: absolute; left: 16px; top: 18px; font: 800 10px var(--body); padding: 1px 5px; border-radius: 6px; white-space: nowrap; color: #12132a; }
+.pc-click { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; border: 2px solid; pointer-events: none; z-index: 5; animation: pcclick .4s ease-out forwards; }
+@keyframes pcclick { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
+.pc-ad {
+  position: absolute; z-index: 4; width: 210px; background: #fffbe6; border: 2px solid #e3263a; border-radius: 8px; box-shadow: 0 10px 24px rgba(0,0,0,.35);
+  color: #12132a; font: 13px var(--body); text-align: center; overflow: hidden; animation: adin .18s ease-out;
+}
+@keyframes adin { from { transform: scale(.7); opacity: 0; } }
+.pc-ad header { display: flex; justify-content: space-between; align-items: center; background: #e3263a; color: #fff; padding: 3px 4px 3px 8px; font-weight: 800; font-size: 11px; }
+.pc-ad header button { border: 0; background: #fff; color: #e3263a; width: 18px; height: 18px; border-radius: 4px; font-weight: 900; cursor: none; padding: 0; line-height: 18px; }
+.pc-ad p { margin: 8px 8px 4px; font-weight: 800; }
+.pc-ad .claim { margin: 4px 0 10px; border: 0; border-radius: 6px; background: #2fa84a; color: #fff; padding: 6px 14px; font-weight: 800; cursor: none; }
+.pc-freeze { position: absolute; inset: 0; z-index: 7; background: rgba(227,38,58,.18); display: flex; align-items: center; justify-content: center; font: 900 20px var(--display); color: #e3263a; text-shadow: 0 2px 0 #fff; pointer-events: all; }
+.pc-screen .overlay { z-index: 8; }
+.race { display: grid; gap: 6px; }
+.race-row { display: grid; grid-template-columns: 90px 1fr 44px; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+.race-row .bar { height: 10px; border-radius: 999px; background: var(--panel); overflow: hidden; }
+.race-row .bar i { display: block; height: 100%; border-radius: 999px; }
+.race-row b { font-family: var(--mono); text-align: right; }
 #geoCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #120a2e; cursor: pointer; user-select: none; -webkit-user-select: none; }
 .geo-levels { display: grid; gap: 8px; width: min(320px, 100%); }
 .geo-levels button {
@@ -614,7 +665,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Девять игр в одном кармане</span>
+        <span class="tag">Десять игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -728,6 +779,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Кубик бежит под бит. Жми, чтобы прыгать через шипы. Три уровня.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Уровни</span><span class="stat-val" id="hubGeo">0/3</span></span>
+      </button>
+      <button class="cart" data-go="links" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1b2a6b"/><rect x="6" y="8" width="52" height="38" rx="3" fill="#2a2d3e"/><rect x="9" y="11" width="46" height="32" fill="#f4f6fb"/><rect x="9" y="11" width="46" height="5" fill="#dfe3ee"/><g stroke="#1a4fd6" stroke-width="2"><path d="M13 22h14M31 22h10M13 28h8"/></g><g stroke="#7a2fb8" stroke-width="2"><path d="M25 28h16M13 34h12"/></g><path d="M26 46h12l3 8H23z" fill="#2a2d3e"/><path d="M38 26 L38 40 L41 37 L44 43 L46 42 L43 36 L47 36Z" fill="#fff" stroke="#12132a" stroke-width="1.2"/><path d="M48 30 L48 40 L50 38 L52 42 L53.5 41 L51.5 37 L54.5 37Z" fill="#ff6b7a"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Ссылка</span>
+          <span class="cart-desc">Гонка курсоров: кто первым нажмёт все ссылки на странице, тот выиграл.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubLinks">—</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1035,6 +1096,42 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <a class="btn ghost" href="https://geometrylitepc.net/" target="_blank" rel="noopener">Открыть сайт</a>
     </div>
     <p class="hint">Пробел, ↑ или нажатие — прыжок. Жёлтый батут подбрасывает сам, жёлтое кольцо — нажми, пока касаешься. В розовом портале кубик становится кораблём: держи, чтобы лететь вверх.</p>
+  </section>
+
+  <!-- ===== Link race ===== -->
+  <section id="links" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Ссылка</div>
+      <div class="chips">
+        <div class="chip"><span>Время</span><b id="lkTime">0.0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="lkBest">—</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="pc">
+      <div class="pc-screen" id="pcScreen">
+        <div class="pc-win">
+          <div class="pc-title"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span id="pcTab">V3 Browser</span></div>
+          <div class="pc-addr" id="pcAddr">https://v3.games/</div>
+          <div class="pc-page" id="pcPage"></div>
+        </div>
+        <div class="pc-task"><span class="start">V3</span><span id="pcTaskName">Браузер</span><span class="clock" id="pcClock">00:00</span></div>
+        <div class="overlay" id="lkOverlay">
+          <h2 id="lkOvTitle">Ссылка</h2>
+          <p id="lkOvText">На странице 10 ссылок. Нажми их все раньше соперников. Рекламу закрывай крестиком!</p>
+          <div class="geo-levels" id="lkModes"></div>
+        </div>
+      </div>
+      <div class="pc-stand"></div>
+      <div class="pc-base"></div>
+    </div>
+    <div class="race" id="lkRace" aria-live="polite"></div>
+    <p class="hint">Ссылки синие и подчёркнутые. Твои нажатые становятся фиолетовыми с галочкой, цветные точки — ссылки, которые уже нажали соперники.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -4068,6 +4165,238 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Link race ================= */
+  const Links = (() => {
+    const N = 10;
+    const scr = $("#pcScreen"), page = $("#pcPage"), ov = $("#lkOverlay");
+    const MODES = [
+      { id: "easy", name: "Лёгкий · 1 соперник", bots: 1, speed: [1.5, 2.1], reward: 40 },
+      { id: "mid", name: "Средний · 2 соперника", bots: 2, speed: [1.05, 1.5], reward: 70 },
+      { id: "hard", name: "Сложный · 3 соперника", bots: 3, speed: [.7, 1.05], reward: 120 },
+    ];
+    const SITES = [
+      { host: "news.v3.games", title: "Новости V3", lines: ["Сегодня в V3 Games вышла новая игра.", "Полиция снова ищет читеров на главной площади.", "Хабич заявил, что он лучший игрок недели.", "Эмир побил рекорд скорости на американских горках.", "Погода в мире V3: солнечно, местами донат."] },
+      { host: "pizza.recipes", title: "Рецепт пиццы", lines: ["Возьмите муку, воду и щепотку соли.", "Тесто должно отдохнуть полчаса.", "Сыр кладите щедро, но без фанатизма.", "Выпекайте при высокой температуре.", "Подавайте горячей и делитесь с друзьями."] },
+      { host: "space.wiki", title: "Космос для всех", lines: ["Луна удаляется от Земли на несколько сантиметров в год.", "На Марсе есть самый высокий вулкан в Солнечной системе.", "Свет от Солнца летит до нас около восьми минут.", "Сатурн мог бы плавать в огромной ванне.", "Звёзды мерцают из-за движения воздуха."] },
+      { host: "cats.forum", title: "Форум кошатников", lines: ["Мой кот снова уронил кружку со стола.", "Кто знает, почему они любят коробки?", "Сегодня кот спал двадцать часов подряд.", "Делимся фото самых ленивых котиков.", "Как отучить кота будить меня в пять утра?"] },
+    ];
+    const WORDS = ["новости", "погода", "карта", "фото", "видео", "форум", "правила", "контакты", "помощь", "отзывы", "архив", "блог", "магазин", "профиль", "подробнее", "рецепты", "музыка", "игры", "поиск", "настройки"];
+    const ARROW = (fill) => `<svg viewBox="0 0 22 26"><path d="M2 2 L2 21 L7 16.5 L10.5 24 L14 22.5 L10.6 15 L17 15Z" fill="${fill}" stroke="#12132a" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+    let mode = MODES[0], state = "ready", t0 = 0, raf = 0, visible = false;
+    let links = [], mine = new Set(), bots = [], freezeUntil = 0, adTimer = 0, ads = [];
+    let best = store.get("lkBest", null);
+    const me = document.createElement("div");
+    me.className = "pc-cursor"; me.innerHTML = ARROW("#ffffff"); scr.appendChild(me);
+    const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const rel = (el) => { const r = el.getBoundingClientRect(), s = scr.getBoundingClientRect(); return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 }; };
+    const fmt = (sec) => sec.toFixed(1);
+
+    function buildPage() {
+      const site = SITES[(Math.random() * SITES.length) | 0];
+      const words = shuffle(WORDS.slice()).slice(0, N);
+      $("#pcTab").textContent = site.title;
+      $("#pcAddr").textContent = `https://${site.host}/`;
+      $("#pcTaskName").textContent = site.title;
+      page.innerHTML = "";
+      const mk = (w) => { const b = document.createElement("button"); b.type = "button"; b.className = "lnk"; b.textContent = w; b.dataset.w = w; b.innerHTML += '<span class="marks"></span>'; return b; };
+      const nav = document.createElement("div"); nav.className = "pc-nav";
+      words.slice(0, 3).forEach((w) => nav.appendChild(mk(w)));
+      const h = document.createElement("h3"); h.textContent = site.title;
+      page.append(nav, h);
+      const body = words.slice(3, 8), lines = shuffle(site.lines.slice());
+      for (let i = 0; i < 4; i++) {
+        const p = document.createElement("p");
+        p.append(lines[i % lines.length] + " ");
+        const take = i === 3 ? body.splice(0) : body.splice(0, Math.random() < .5 ? 1 : 2);
+        take.forEach((w, k) => { p.append(k ? " и " : "Смотрите: "); p.appendChild(mk(w)); });
+        p.append((take.length ? ". " : "") + lines[(i + 2) % lines.length]);
+        page.appendChild(p);
+      }
+      const foot = document.createElement("div"); foot.className = "pc-foot";
+      foot.append("© 2026 · ");
+      words.slice(8).forEach((w) => { foot.appendChild(mk(w)); });
+      page.appendChild(foot);
+      links = [...page.querySelectorAll(".lnk")];
+    }
+    function race() {
+      const rows = [{ name: "Ты", col: Hero.accent(), n: mine.size }, ...bots.map((b) => ({ name: b.c.name, col: b.c.accent, n: b.done.size }))];
+      $("#lkRace").innerHTML = rows.map((r) => `<div class="race-row"><span style="color:${r.col}">${r.name}</span><div class="bar"><i style="width:${r.n / N * 100}%;background:${r.col}"></i></div><b>${r.n}/${N}</b></div>`).join("");
+    }
+    function clickFx(x, y, col) {
+      const c = document.createElement("div"); c.className = "pc-click"; c.style.left = x + "px"; c.style.top = y + "px"; c.style.borderColor = col;
+      scr.appendChild(c); setTimeout(() => c.remove(), 450);
+    }
+    function mark(link, col) { const m = document.createElement("b"); m.style.background = col; link.querySelector(".marks").appendChild(m); }
+
+    // ---------- bots ----------
+    function makeBots() {
+      bots.forEach((b) => b.el.remove());
+      const pool = shuffle(CHARS.filter((c) => c.id !== Hero.char().id)).slice(0, mode.bots);
+      const s = scr.getBoundingClientRect();
+      bots = pool.map((c, i) => {
+        const el = document.createElement("div");
+        el.className = "pc-cursor"; el.innerHTML = ARROW(c.accent) + `<span style="background:${c.accent}">${c.name}</span>`;
+        scr.appendChild(el);
+        const b = { c, el, x: s.width * (.3 + i * .2), y: s.height - 60, from: null, to: null, t: 0, dur: 1, wait: rnd(.3, .8), order: shuffle(links.slice()), done: new Set() };
+        place(b.el, b.x, b.y);
+        return b;
+      });
+    }
+    function place(el, x, y) { el.style.transform = `translate(${x - 2}px, ${y - 2}px)`; }
+    const ease = (k) => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    function stepBot(b, dt) {
+      if (b.done.size >= N) return;
+      if (performance.now() < b.pause) return;
+      if (b.wait > 0) { b.wait -= dt; return; }
+      if (!b.to) {
+        const link = b.order.find((l) => !b.done.has(l));
+        const p = rel(link);
+        b.from = { x: b.x, y: b.y }; b.to = { x: p.x + rnd(-8, 8), y: p.y + rnd(-3, 3), link };
+        b.t = 0; b.dur = rnd(mode.speed[0], mode.speed[1]) * (.6 + Math.min(1, Math.hypot(p.x - b.x, p.y - b.y) / 300) * .6);
+        // a curved path, like a real hand on a mouse
+        b.bend = rnd(-60, 60);
+      }
+      b.t += dt;
+      const k = Math.min(1, b.t / b.dur), e = ease(k);
+      const nx = -(b.to.y - b.from.y), ny = b.to.x - b.from.x, L = Math.hypot(nx, ny) || 1;
+      const arc = Math.sin(k * Math.PI) * b.bend;
+      b.x = b.from.x + (b.to.x - b.from.x) * e + nx / L * arc;
+      b.y = b.from.y + (b.to.y - b.from.y) * e + ny / L * arc;
+      place(b.el, b.x, b.y);
+      if (k >= 1) {
+        b.done.add(b.to.link); mark(b.to.link, b.c.accent); clickFx(b.x, b.y, b.c.accent);
+        b.to = null; b.wait = rnd(.12, .35); race();
+        if (b.done.size >= N) finish(b);
+      }
+    }
+
+    // ---------- ads ----------
+    function spawnAd() {
+      const s = scr.getBoundingClientRect();
+      const ad = document.createElement("div"); ad.className = "pc-ad";
+      const offers = ["Вы выиграли миллион монет!", "Бесплатный ультра-персонаж!", "Ваш компьютер медленный! Ускорить?", "Сержант Мигалкин хочет с вами дружить"];
+      ad.innerHTML = `<header><span>РЕКЛАМА</span><button type="button" class="x" aria-label="Закрыть рекламу">✕</button></header><p></p><button type="button" class="claim">Забрать</button>`;
+      ad.querySelector("p").textContent = offers[(Math.random() * offers.length) | 0];
+      ad.style.left = rnd(10, Math.max(12, s.width - 230)) + "px"; ad.style.top = rnd(60, Math.max(62, s.height - 200)) + "px";
+      ad.querySelector(".x").addEventListener("click", (e) => { e.stopPropagation(); ad.remove(); ads = ads.filter((a) => a !== ad); });
+      ad.querySelector(".claim").addEventListener("click", (e) => {
+        e.stopPropagation(); ad.remove(); ads = ads.filter((a) => a !== ad); freeze();
+      });
+      scr.appendChild(ad); ads.push(ad);
+      bots.forEach((b) => { b.pause = performance.now() + rnd(400, 900); });
+    }
+    function freeze() {
+      freezeUntil = performance.now() + 2000;
+      const f = document.createElement("div"); f.className = "pc-freeze"; f.textContent = "Это была реклама! −2 с";
+      scr.appendChild(f); setTimeout(() => f.remove(), 2000);
+      Hero.say("links", "bad", "Ой, это была реклама…");
+    }
+
+    // ---------- flow ----------
+    function menu(title, text) {
+      state = "ready";
+      $("#lkOvTitle").textContent = title || "Ссылка";
+      $("#lkOvText").textContent = text || "На странице 10 ссылок. Нажми их все раньше соперников. Рекламу закрывай крестиком!";
+      const box = $("#lkModes"); box.innerHTML = "";
+      MODES.forEach((m) => {
+        const b = document.createElement("button"); b.type = "button";
+        b.innerHTML = `<span>${m.name}</span><small>◎ ${m.reward}</small>`;
+        b.addEventListener("click", (e) => { e.stopPropagation(); start(m); });
+        box.appendChild(b);
+      });
+      ov.hidden = false;
+    }
+    function start(m) {
+      mode = m; mine = new Set(); ads.forEach((a) => a.remove()); ads = [];
+      buildPage(); makeBots(); race();
+      ov.hidden = true; state = "count"; t0 = performance.now() + 1500;
+      $("#lkTime").textContent = "0.0";
+      Hero.say("links", "start", "Готовься… 3, 2, 1 — жми ссылки!");
+      adTimer = rnd(4, 7);
+      showCount();
+    }
+    function showCount() {
+      const f = document.createElement("div"); f.className = "pc-freeze"; f.style.background = "rgba(18,19,42,.35)"; f.style.color = "#fff"; f.style.textShadow = "0 2px 0 #12132a";
+      scr.appendChild(f);
+      const tick = () => {
+        const left = t0 - performance.now();
+        if (left <= 0 || state !== "count") { f.remove(); if (state === "count") state = "run"; return; }
+        f.textContent = left > 1000 ? "3" : left > 500 ? "2" : "1";
+        requestAnimationFrame(tick);
+      };
+      tick();
+    }
+    function finish(winner) {
+      if (state !== "run") return;
+      state = "over";
+      const sec = (performance.now() - t0) / 1000;
+      ads.forEach((a) => a.remove()); ads = [];
+      if (winner === "me") {
+        if (best === null || sec < best) { best = sec; store.set("lkBest", best); }
+        Hero.earn(mode.reward); updateHub();
+        Hero.say("links", "win", `Победа за ${fmt(sec)} с! +${mode.reward}`);
+        menu("Ты выиграл!", `Все ссылки за ${fmt(sec)} с. Рекорд: ${fmt(best)} с. Ещё раз?`);
+      } else {
+        Hero.say("links", "bad", `${winner.c.name} оказался быстрее…`);
+        menu(`Победил ${winner.c.name}`, `Ты успел ${mine.size} из ${N}. Попробуй ещё раз!`);
+      }
+      $("#lkBest").textContent = best === null ? "—" : fmt(best);
+    }
+
+    // ---------- your cursor ----------
+    function moveMe(e) {
+      const s = scr.getBoundingClientRect();
+      place(me, e.clientX - s.left, e.clientY - s.top);
+    }
+    scr.addEventListener("pointermove", moveMe);
+    scr.addEventListener("pointerdown", (e) => {
+      moveMe(e);
+      const s = scr.getBoundingClientRect();
+      clickFx(e.clientX - s.left, e.clientY - s.top, "#ffffff");
+    });
+    page.addEventListener("click", (e) => {
+      const l = e.target.closest(".lnk");
+      if (!l) return;
+      e.preventDefault();
+      if (state !== "run" || performance.now() < freezeUntil || mine.has(l)) return;
+      mine.add(l); l.classList.add("mine"); race();
+      if (mine.size === 5) Hero.say("links", "good", "Половина есть! Быстрее!");
+      if (mine.size >= N) finish("me");
+    });
+
+    function frame(t) {
+      raf = 0;
+      if (!visible) return;
+      const now = performance.now();
+      const dt = Math.min(.05, (now - (frame.last || now)) / 1000); frame.last = now;
+      const d = new Date(); $("#pcClock").textContent = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      if (state === "run") {
+        $("#lkTime").textContent = fmt((now - t0) / 1000);
+        bots.forEach((b) => stepBot(b, dt));
+        adTimer -= dt;
+        if (adTimer <= 0 && ads.length < 2) { spawnAd(); adTimer = rnd(5, 9); }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { frame.last = 0; raf = requestAnimationFrame(frame); } }
+    buildPage(); place(me, 160, 220);
+
+    return {
+      enter() {
+        visible = true; $("#lkBest").textContent = best === null ? "—" : fmt(best);
+        if (state !== "run" && state !== "count") { buildPage(); bots.forEach((b) => b.el.remove()); bots = []; mine = new Set(); race(); menu(); }
+        loop();
+      },
+      leave() {
+        visible = false;
+        if (state === "run" || state === "count") { state = "ready"; ads.forEach((a) => a.remove()); ads = []; }
+      },
+      key() {},
+      best: () => (best === null ? "—" : fmt(best) + " с"),
+    };
+  })();
+
   /* ================= Events ================= */
   const Events = (() => {
     const GAME = {
@@ -4233,8 +4562,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -4247,6 +4576,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubSonic").textContent = Sonic.best();
     $("#hubGhost").textContent = Ghost.best();
     $("#hubGeo").textContent = Geo.best();
+    $("#hubLinks").textContent = Links.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
