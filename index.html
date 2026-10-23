@@ -139,6 +139,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
   font-size: 15px;
 }
 .btn.ghost { background: var(--panel); color: var(--fg); border: 2px solid var(--line); }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
 .overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
@@ -235,6 +236,19 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .slot.dragging canvas { opacity: 0; }
 #zombieCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; cursor: crosshair; background: #0b0f0e; }
 #vr .gtitle { font-size: 15px; }
+.ghost-wrap { position: relative; width: 100%; height: min(78vh, 760px); border-radius: 12px; overflow: hidden; background: #0e0b17; border: 2px solid var(--line); }
+.ghost-wrap iframe { display: block; width: 100%; height: 100%; border: 0; background: #0e0b17; }
+.ghost-wrap.full {
+  position: fixed; inset: 0; z-index: 45; height: auto; border-radius: 0; border: 0;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.ghost-close {
+  position: absolute; z-index: 2; top: calc(8px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px));
+  padding: 6px 12px; border-radius: 10px; border: 2px solid var(--line); background: rgba(18,19,42,.85); color: var(--fg); font-weight: 800; cursor: pointer;
+}
+.ghost-wrap:not(.full) .ghost-close { display: none; }
+.ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
+#ghost .gtitle { font-size: 15px; }
 #sonicCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #5aa9ff; }
 .pad4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .pad4 button {
@@ -555,7 +569,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Семь игр в одном кармане</span>
+        <span class="tag">Восемь игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -643,6 +657,16 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
           <span class="cart-desc">Соник убегает от Наклза и иногда с ним дерётся.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubSonic">0</span></span>
+      </button>
+      <button class="cart" data-go="ghost" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="golsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f0b1d"/><stop offset="1" stop-color="#4b2843"/></linearGradient></defs><rect width="64" height="64" fill="url(#golsky)"/><circle cx="16" cy="16" r="8" fill="#efe6cf"/><path d="M0 50 C14 42 26 46 38 42 C48 39 56 44 64 42 V64 H0Z" fill="#181122"/><rect x="0" y="54" width="64" height="10" fill="#1d1528"/><path d="M34 52 L40 52 L42 36 L30 36Z" fill="#262d4a"/><rect x="31" y="40" width="12" height="2" fill="#c8364e"/><circle cx="37" cy="31" r="4.5" fill="#141828"/><rect x="38" y="30" width="3" height="1.2" fill="#79d4c4"/><ellipse cx="37" cy="27" rx="11" ry="2.2" fill="#b38e57"/><path d="M33 27 Q33 20 37 20 Q41 20 41 27Z" fill="#b38e57"/><path d="M42 40 L56 33" stroke="#d8d4e0" stroke-width="2" stroke-linecap="round"/><g fill="#f0a23b"><circle cx="10" cy="56" r="1.6"/><circle cx="20" cy="58" r="1.4"/><circle cx="52" cy="57" r="1.6"/></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Ghost of Leyendas</span>
+          <span class="cart-desc">Призрак в сомбреро против тварей из легенд, Савера и великана Зоера.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubGhost">0</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -878,6 +902,31 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
       <button class="btn donate" type="button" data-shop="sonic"><span class="coin">+1K</span>Донат в игру</button>
     </div>
     <p class="hint">Клавиатура: → или Shift — бег, пробел или ↑ — прыжок, ↓ — присесть, F — удар, B — блок. Блок в последний момент — идеальный: Наклз оглушён дольше. Кольца защищают: при ударе они разлетаются, а без колец теряешь жизнь.</p>
+  </section>
+
+  <!-- ===== Ghost of Leyendas (separate page in a frame) ===== -->
+  <section id="ghost" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Ghost of Leyendas</div>
+      <div class="chips">
+        <div class="chip hi"><span>Рекорд</span><b id="ghostBest">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="ghost-wrap" id="ghostWrap">
+      <button class="ghost-close" type="button" id="ghostClose">✕ Свернуть</button>
+      <iframe id="ghostFrame" title="Ghost of Leyendas"></iframe>
+    </div>
+    <div class="row-actions ghost-hide-when-full">
+      <button class="btn" type="button" id="ghostFull">На весь экран</button>
+      <a class="btn ghost" id="ghostOpen" href="games/ghost-of-leyendas.html" target="_blank" rel="noopener">Открыть отдельно</a>
+    </div>
+    <p class="hint ghost-hide-when-full">Нажми на игру, чтобы управлять с клавиатуры. На телефоне кнопки управления — под полем игры. Каждые 1000 очков нового рекорда — +10 монет.</p>
   </section>
 
   <!-- ===== Characters ===== -->
@@ -3553,9 +3602,48 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     };
   })();
 
+  /* ================= Ghost of Leyendas ================= */
+  // The game is its own page (games/ghost-of-leyendas.html) shown in a frame, so its keys and styles stay separate.
+  const Ghost = (() => {
+    const SRC = "games/ghost-of-leyendas.html";
+    const frame = $("#ghostFrame"), wrap = $("#ghostWrap");
+    let loaded = false, seenBest = null;
+    // the game keeps its record in this browser's storage under "gol-best"
+    const best = () => { try { return +localStorage.getItem("gol-best") || 0; } catch (e) { return 0; } };
+    function sync() {
+      const b = best();
+      $("#ghostBest").textContent = b.toLocaleString("ru-RU");
+      if (seenBest === null) seenBest = store.get("ghostPaid", 0);
+      // reward a new record: +10 coins for every 1000 points above what was already paid out
+      const paid = Math.floor(seenBest / 1000), now = Math.floor(b / 1000);
+      if (now > paid) {
+        Hero.earn((now - paid) * 10);
+        Hero.say("ghost", "win", `Новый рекорд в Ghost of Leyendas! +${(now - paid) * 10} монет`);
+        seenBest = b; store.set("ghostPaid", b); updateHub();
+      }
+    }
+    function setFull(on) {
+      wrap.classList.toggle("full", on);
+      $("#cop").hidden = on;
+      if (on) { try { frame.focus(); } catch (e) {} }
+    }
+    $("#ghostFull").addEventListener("click", () => setFull(true));
+    $("#ghostClose").addEventListener("click", () => setFull(false));
+    setInterval(() => { if (!$("#ghost").hidden) sync(); }, 2000);
+    return {
+      enter() {
+        if (!loaded) { frame.src = SRC; loaded = true; Hero.say("ghost", "start", "Ночь Мёртвых началась. Жди знака «!» и бей!"); }
+        sync();
+      },
+      leave() { setFull(false); sync(); },
+      key(e) { if (e.key === "Escape" && wrap.classList.contains("full")) setFull(false); },
+      best: () => best(),
+    };
+  })();
+
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -3566,6 +3654,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     $("#hubZombie").textContent = Zombie.best();
     $("#hubVr").textContent = VR.best();
     $("#hubSonic").textContent = Sonic.best();
+    $("#hubGhost").textContent = Ghost.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -4214,6 +4303,7 @@ button:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
     if (CopChat.isOpen()) { if (e.key === "Escape") CopChat.close(); return; }
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
+    if (e.key === "Escape" && current === "ghost" && $("#ghostWrap").classList.contains("full")) { GAMES.ghost.key(e); return; }
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
     if (GAMES[current]) GAMES[current].key(e);
   });
