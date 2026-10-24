@@ -761,6 +761,20 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .shop-item .btn { padding: 9px 12px; font-size: 14px; white-space: nowrap; }
 .shop-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
 .shop-foot b { font-family: var(--mono); color: var(--fg); }
+.inv-sync { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--bg); border: 2px solid var(--line); font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.inv-sync i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--muted); }
+.inv-sync.synced i { background: var(--lime); } .inv-sync.saving i { background: var(--amber); } .inv-sync.offline i, .inv-sync.error i { background: #ff6b6b; }
+.inv-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 52vh; overflow-y: auto; }
+.inv-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--bg); text-align: center; min-width: 0; }
+.inv-item.held { border-color: var(--amber); }
+.inv-item .ico { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 24px; }
+.inv-item b { font-size: 13px; line-height: 1.2; overflow-wrap: anywhere; }
+.inv-item small { color: var(--muted); font-size: 11.5px; }
+.inv-item .btn { padding: 7px 10px; font-size: 12.5px; width: 100%; }
+.inv-empty { grid-column: 1 / -1; color: var(--muted); font-size: 13px; text-align: center; padding: 16px 4px; }
+.held-badge { position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; background: var(--panel-2); border: 2px solid var(--amber); pointer-events: none; z-index: 2; }
+.player { position: relative; }
+.player > .held-badge { left: 52px; top: 52px; right: auto; bottom: auto; }
 .shop-toast { color: var(--lime); font-weight: 800; min-height: 20px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -800,6 +814,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
         <button class="btn ghost small" type="button" data-go="chars">Персонажи</button>
         <button class="btn ghost small" type="button" data-go="gear">Аксессуары</button>
+        <button class="btn ghost small" type="button" data-inv-open>Мои вещи</button>
       </div>
     </div>
     <button class="events-btn" type="button" data-go="events" id="eventsBtn">
@@ -1281,6 +1296,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <div class="dx-acts">
       <button class="btn" type="button" id="dxAction" hidden>Действие</button>
       <button class="btn ghost" type="button" id="dxMap">Карта</button>
+      <button class="btn ghost" type="button" data-inv-open>Мои вещи</button>
     </div>
     <div class="dx-shops" id="dxShops" hidden aria-label="Магазины Deira City Centre"></div>
     <div class="dx-places" id="dxPlaces">
@@ -1505,6 +1521,20 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 </div>
 
 <canvas id="blastFx" hidden></canvas>
+
+<!-- ===== Inventory ===== -->
+<div class="shop" id="invModal" hidden role="dialog" aria-modal="true" aria-labelledby="invTitle">
+  <div class="shop-card">
+    <div class="shop-head">
+      <h2 id="invTitle">Мои вещи</h2>
+      <button class="shop-x" type="button" id="invClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="inv-sync" id="invSync" aria-live="polite"><i></i><span>Сохранено на этом устройстве</span></div>
+    <p class="shop-note">Всё, что купил в Deira City Center. Еду можно съесть, остальное — взять в руки: вещь будет видна у персонажа во всех играх.</p>
+    <div class="inv-grid" id="invGrid"></div>
+    <p class="shop-toast" id="invToast" aria-live="polite"></p>
+  </div>
+</div>
 
 <!-- ===== Give an idea ===== -->
 <div class="shop" id="ideaModal" hidden role="dialog" aria-modal="true" aria-labelledby="ideaTitle">
@@ -4517,6 +4547,115 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Just Dubai! ================= */
+  // ---------- Inventory: saved on the device, synced to the account when online ----------
+  const Inv = (() => {
+    const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет"];
+    const clean = (o) => {
+      const items = {};
+      if (o && o.items && typeof o.items === "object") Object.entries(o.items).slice(0, 300).forEach(([k, v]) => {
+        if (!v || typeof v !== "object") return;
+        const n = Math.max(0, Math.min(9999, Math.floor(+v.n || 0)));
+        if (n) items[String(k).slice(0, 40)] = { n, col: /^#[0-9a-f]{3,8}$/i.test(v.col) ? v.col : "#9fb3cc", ico: String(v.ico || "🎁").slice(0, 4), shop: String(v.shop || "").slice(0, 30) };
+      });
+      const held = o && typeof o.held === "string" && items[o.held] ? o.held : null;
+      return { items, held, t: Math.max(0, +(o && o.t) || 0) };
+    };
+    let data = clean(store.get("inv", null));
+    let ref = null, state = "local", lastFocus = null;
+
+    function setState(st) {
+      state = st;
+      const el = $("#invSync"); el.className = "inv-sync " + st;
+      el.querySelector("span").textContent = {
+        local: "Сохранено на этом устройстве — работает без интернета",
+        saving: "Синхронизирую с аккаунтом…",
+        synced: "Синхронизировано с аккаунтом ✓ (и сохранено на устройстве)",
+        offline: "Нет интернета — вещи на устройстве, синхронизирую, когда сеть появится",
+        error: "Не удалось синхронизировать — вещи сохранены на устройстве",
+      }[st];
+    }
+    async function push() {
+      if (!ref) return;
+      if (navigator.onLine === false) { setState("offline"); return; }
+      setState("saving");
+      try { await ref.set({ items: data.items, held: data.held, t: data.t }); setState("synced"); }
+      catch (e) { setState(navigator.onLine === false ? "offline" : "error"); }
+    }
+    function commit() { data.t = Date.now(); store.set("inv", data); badges(); if (!modal.hidden) render(); push(); }
+
+    (async () => {
+      if (!(window.claude && typeof window.claude.use === "function")) return;
+      let db = null, user = null, uid = null;
+      try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch (e) { return; }
+      try { uid = user ? await user.id() : null; } catch (e) { uid = null; }
+      if (!db || !uid) return;
+      ref = db.doc("data/users/" + uid + "/inventory");
+      ref.onSnapshot((snap) => {
+        const r = snap.exists ? snap.data() : null;
+        if (r && (+r.t || 0) > data.t) { data = clean(r); store.set("inv", data); badges(); if (!modal.hidden) render(); setState("synced"); }
+        else if (!r || (+r.t || 0) < data.t) push();
+        else if (state !== "saving") setState("synced");
+      }, () => { ref = null; setState("local"); });
+    })();
+    window.addEventListener("online", push);
+    window.addEventListener("offline", () => { if (ref) setState("offline"); });
+
+    function add(it, shop) {
+      const cur = data.items[it.name] || { n: 0, col: it.col, ico: it.ico, shop };
+      cur.n = Math.min(9999, cur.n + 1); data.items[it.name] = cur;
+      commit();
+    }
+    function use(name) {
+      const it = data.items[name]; if (!it) return;
+      const t = $("#invToast");
+      if (FOOD.includes(it.shop)) {
+        it.n--; if (!it.n) { delete data.items[name]; if (data.held === name) data.held = null; }
+        Hero.grant(5); t.textContent = `${Hero.char().name} съел: ${name}. Ням! +5 монет`;
+      } else if (data.held === name) { data.held = null; t.textContent = `${name} убрано в рюкзак`; }
+      else { data.held = name; t.textContent = `${Hero.char().name} взял в руки: ${name}. Видно во всех играх!`; }
+      commit();
+    }
+    function render() {
+      const g = $("#invGrid"); g.innerHTML = "";
+      const list = Object.entries(data.items);
+      if (!list.length) { g.innerHTML = `<p class="inv-empty">Пока пусто. Загляни в Just Dubai! → Deira City Center — там деньги бесконечные.</p>`; return; }
+      list.forEach(([name, it]) => {
+        const c = document.createElement("div"); c.className = "inv-item" + (data.held === name ? " held" : "");
+        const food = FOOD.includes(it.shop);
+        c.innerHTML = `<span class="ico"></span><b></b><small></small><button class="btn small" type="button"></button>`;
+        c.querySelector(".ico").textContent = it.ico; c.querySelector(".ico").style.background = it.col;
+        c.querySelector("b").textContent = name;
+        c.querySelector("small").textContent = `×${it.n}${it.shop ? " · " + it.shop : ""}`;
+        const b = c.querySelector("button");
+        b.textContent = food ? "Съесть" : data.held === name ? "Убрать" : "Взять в руки";
+        if (!food && data.held !== name) b.classList.add("ghost");
+        b.addEventListener("click", () => use(name));
+        g.appendChild(c);
+      });
+    }
+    function badges() {
+      const ico = data.held && data.items[data.held] ? data.items[data.held].ico : "";
+      $$(".buddy-pics, .player").forEach((host) => {
+        let b = host.querySelector(":scope > .held-badge");
+        if (!ico) { if (b) b.remove(); return; }
+        if (!b) { b = document.createElement("span"); b.className = "held-badge"; host.appendChild(b); }
+        b.textContent = ico; b.title = data.held;
+      });
+    }
+    function open() {
+      lastFocus = document.activeElement; $("#invToast").textContent = "";
+      if (!ref) setState("local");
+      render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
+    }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
+    $("#invClose").addEventListener("click", close);
+    modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
+    badges(); setState("local");
+    return { add, count: () => Object.values(data.items).reduce((a, it) => a + it.n, 0) };
+  })();
+
   const Dubai = (() => {
     const cv = $("#dxCanvas"), ctx = cv.getContext("2d"), stage = $("#dxStage");
     let W = 440, H = 330, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
@@ -4745,7 +4884,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
     function openShop(i) {
       shop = (i + SHOPS.length) % SHOPS.length; flyers = [];
-      items = SHOPS[shop].items.map(([name, price, col, ico], k) => ({ name, price, col, ico, i: k, x: 0, y: 0, pop: 0 }));
+      items = SHOPS[shop].items.map(([name, price, col, ico], k) => ({ name, price, col, ico, i: k, x: W * (.16 + (k % 4) * .225), y: H * (.32 + Math.floor(k / 4) * .3), pop: 0 }));
       deiraMsg = `Магазин «${SHOPS[shop].name}» — денег бесконечно!`;
       $$("#dxShops button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.store === shop)));
       const cur = $(`#dxShops button[data-store="${shop}"]`); if (cur) { const box = $("#dxShops"); box.scrollLeft = cur.offsetLeft - box.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2; }
@@ -4891,7 +5030,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         const it = items.find((i) => Math.abs(i.x - x) < 20 * U && Math.abs(i.y - y) < 20 * U);
         if (!it) return;
         it.pop = 1; flyers.push({ x: it.x, y: it.y, col: it.col, t: 0 }); bag.push(it.name);
-        deiraMsg = `Куплено: ${it.name} за ${it.price.toLocaleString("ru-RU")} AED. Деньги: ∞`;
+        Inv.add(it, SHOPS[shop].name);
+        deiraMsg = `Куплено: ${it.name} — уже в «Мои вещи». Деньги: ∞`;
         if (bag.length === 4 && !stamps.deira) { giveStamp("deira"); Hero.say("dubai", "win", `Купили: ${bag.slice(0, 4).join(", ")}!`); }
         else if (bag.length % 10 === 0) Hero.say("dubai", "good", `Уже ${bag.length} покупок! Деньги не кончаются!`);
       }
