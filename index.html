@@ -5475,13 +5475,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!sp) return;
       if (sp.id === "curtains") hotel.curtains = !hotel.curtains;
       if (sp.id === "tv") hotel.tv = !hotel.tv;
-      if (sp.id === "bar") hotel.bar = !hotel.bar;
+      if (sp.id === "bar") {
+        if (!hotel.bar) { hotel.bar = true; if (hotel.bottles === undefined) hotel.bottles = 4; }
+        else if (hotel.bottles > 0) { hotel.bottles--; hotel.chew = .5; floaters.push({ t: 1, x: sp.x + sp.w / 2, y: sp.y - 6 * U, s: "Глоть!" }); Hero.say("dubai", "good", ["Апельсиновый сок — свежак!", "Лимонад с мятой!", "Вишнёвый морс!", "Холодная вода — самое то!"][3 - hotel.bottles]); }
+        else { hotel.bar = false; hotel.bottles = 4; Hero.say("dubai", "good", "Мини-бар пуст — горничная пополнит!"); }
+      }
       if (sp.id === "bed") hotel.jump = 1.6;
       task(sp.id);
     }
     // room look, kept between visits
     const RS = {
-      food: [["🍔", "Бургер"], ["🍕", "Пицца"], ["🍣", "Суши"], ["🥗", "Салат"], ["🍰", "Торт"], ["🍝", "Паста"], ["🥞", "Блинчики"], ["🍦", "Мороженое"], ["🥤", "Лимонад"]],
+      food: [["🍔", "Бургер"], ["🍕", "Пицца"], ["🍣", "Суши"], ["🥗", "Салат"], ["🍰", "Торт"], ["🍝", "Паста"], ["🥞", "Блинчики"], ["🍦", "Мороженое"], ["🥤", "Лимонад"], ["🧃", "Сок"], ["☕", "Какао"], ["🥛", "Молоко"]],
       sheet: [["#ffffff", "Белое"], ["#ffd6e8", "Розовое"], ["#d6ecff", "Голубое"], ["#fff3b0", "Жёлтое"], ["#d9f7c9", "Мятное"], ["#e2d6ff", "Лавандовое"], ["#3a3a52", "Чёрное"], ["#ffcf99", "Персик"], ["#c9f2f0", "Бирюза"]],
       blanket: [["plain", "#2f6fd6", "Синее"], ["stripes", "#c43c4f", "Полоски"], ["stars", "#12132a", "Звёзды"], ["hearts", "#ff5ad1", "Сердечки"], ["dots", "#2fa84a", "Горошек"], ["gold", "#d9a520", "Золотое"], ["check", "#7b5cff", "Клетка"], ["plain", "#ff8a3d", "Оранжевое"]],
       games: [["console", "🎮", "Приставка"], ["chess", "♟️", "Шахматы"], ["dice", "🎲", "Настолка"], ["cards", "🃏", "Карты"], ["puzzle", "🧩", "Пазл"], ["ball", "⚽", "Мяч"]],
@@ -5494,6 +5498,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     ["games", "fun"].forEach((k) => { if (!Array.isArray(room[k])) room[k] = []; });
     room.furn = room.furn.filter((f) => f && typeof f.e === "string" && isFinite(f.x) && isFinite(f.y)).slice(0, 40);
     const saveRoom = () => store.set("dxRoom", room);
+    const DRINKS = ["🥤", "🧃", "☕", "🥛"];
+    let floaters = [];
+    const isDrink = () => DRINKS.includes(room.dish);
+    function eatTap(x, y) {
+      const c = hotel.cartXY;
+      if (!c || hotel.cart < 1 || (hotel.bites || 0) >= 3 || Math.abs(x - c.x) > 34 * U || Math.abs(y - c.y) > 34 * U) return false;
+      hotel.bites = (hotel.bites || 0) + 1; hotel.chew = .5;
+      const drink = isDrink(), name = room.dishName || "Еда";
+      floaters.push({ t: 1, x: c.x, y: c.y - 30 * U, s: drink ? "Глоть!" : "Ням!" });
+      if (hotel.bites >= 3) { Hero.grant(5); Hero.say("dubai", "good", drink ? `${name} — выпито до дна! Освежает! +5 монет` : `${name} — съедено! Вкуснотища! +5 монет`); }
+      else Hero.say("dubai", "good", drink ? `Глоток ${hotel.bites}/3 — вкусно!` : `Укус ${hotel.bites}/3 — ням-ням!`);
+      return true;
+    }
     let rsTab = "food", placing = null, drag = null, pointer = null, fx = [];
     function roomService() { if (hotel.phase === "room") openRS(); }
     function openRS(tab) {
@@ -5508,7 +5525,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const btn = (ico, label, on, fn, bg) => { const b = document.createElement("button"); b.type = "button"; b.innerHTML = "<i></i><span></span>"; b.querySelector("i").textContent = ico; if (bg) b.querySelector("i").style.background = bg; b.querySelector("span").textContent = label; if (on) b.classList.add("on"); b.addEventListener("click", fn); g.appendChild(b); return b; };
       const note = { food: "Выбери блюдо — официант привезёт его на тележке.", sheet: "Цвет простыни и подушек на кровати.", blanket: "Какое одеяло постелить?", games: "Игры приносят в номер. Нажми ещё раз — унесут.", fun: "Включай сколько хочешь — нажми ещё раз, чтобы выключить.", furn: "Выбери мебель, потом нажми в номере, куда её поставить. Мебель можно двигать пальцем, а чтобы убрать — перетащи в корзину 🗑." }[rsTab];
       $("#rsNote").textContent = note;
-      if (rsTab === "food") RS.food.forEach(([e, n]) => btn(e, n, false, () => { room.dish = e; saveRoom(); hotel.cart = 0; order(`${n} уже едет в номер 1207!`); setTimeout(closeRS, 500); }));
+      if (rsTab === "food") RS.food.forEach(([e, n]) => btn(e, n, false, () => { room.dish = e; room.dishName = n; saveRoom(); hotel.cart = 0; hotel.bites = 0; order(`${n} уже едет в номер 1207! Нажми на тележку, чтобы ${DRINKS.includes(e) ? "выпить" : "съесть"}.`); setTimeout(closeRS, 500); }));
       if (rsTab === "sheet") RS.sheet.forEach(([c, n]) => btn("", n, room.sheet === c, () => { room.sheet = c; saveRoom(); order(`Постелили ${n.toLowerCase()} бельё`); rsRender(); }, c));
       if (rsTab === "blanket") RS.blanket.forEach(([pat, c, n]) => btn({ plain: "", stripes: "≡", stars: "★", hearts: "♥", dots: "•", gold: "✦", check: "▦" }[pat], n, room.blanket[0] === pat && room.blanket[1] === c, () => { room.blanket = [pat, c]; saveRoom(); order(`Одеяло «${n}» на кровати`); rsRender(); }, c));
       if (rsTab === "games" || rsTab === "fun") RS[rsTab].forEach(([id, e, n]) => { const list = room[rsTab], on = list.includes(id); btn(e, n, on, () => { if (on) list.splice(list.indexOf(id), 1); else list.push(id); if (id === "fireworks" && !on) hotel.curtains = true; if (id === "console" && !on) hotel.tv = true; saveRoom(); order(on ? `${n} — выключено` : `${n} — уже в номере!`); rsRender(); }); });
@@ -5633,7 +5650,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       rect(mx, my, mw, mh, "#e8e8f0");
       if (hotel.bar) {
         rect(mx + 3, my + 3, mw - 6, mh - 6, "#fffbe0");
-        ["#ff8a3d", "#2fa84a", "#c43c4f", "#5ce1e6"].forEach((c, i) => rect(mx + 5 + (i % 2) * mw * .42, my + 8 + Math.floor(i / 2) * mh * .42, mw * .3, mh * .3, c));
+        ["#ff8a3d", "#2fa84a", "#c43c4f", "#5ce1e6"].slice(4 - (hotel.bottles ?? 4)).forEach((c, i) => rect(mx + 5 + (i % 2) * mw * .42, my + 8 + Math.floor(i / 2) * mh * .42, mw * .3, mh * .3, c));
         rect(mx - mw * .7, my, mw * .7, 3, "#c9c9d6");
       } else { rect(mx + mw - 8, my + mh * .35, 3, mh * .3, "#9fa3b5"); text("BAR", mx + mw / 2, my + 12 * U, 7, "#6a6f85", "center", 800); }
       sp.push({ id: "bar", x: mx, y: my, w: mw, h: mh });
@@ -5662,14 +5679,25 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       room.furn.forEach((f) => { ctx.fillStyle = "rgba(0,0,0,.15)"; ctx.beginPath(); ctx.ellipse(f.x * W, f.y * H + f.sz * 1.5 * U * .45, f.sz * 1.5 * U * .45, 4 * U, 0, 0, 7); ctx.fill(); emo(f.e, f.x * W, f.y * H, f.sz * 1.5 * (drag && drag.f === f ? 1.15 : 1)); });
       // player: bounces on the bed
       if (hotel.jump > 0) { hotel.jump -= dt; me(bx + bw * .55, by - Math.abs(Math.sin(hotel.jump * 7)) * 40 * U - 6 * U, 36); }
-      else me(W * .2, H * .82, 36);
+      else { hotel.chew = Math.max(0, (hotel.chew || 0) - dt); me(W * .2, H * .82 - Math.abs(Math.sin(hotel.chew * 20)) * 5 * U, 36); }
       // room service cart
       if (hotel.cart >= 0) {
         hotel.cart = Math.min(1, hotel.cart + dt * .45);
         const cx = -W * .2 + (W * .3) * Math.min(1, hotel.cart * 1.4), cy = H * .86;
         rect(cx - 26 * U, cy - 6 * U, 52 * U, 5 * U, "#c9c9d6"); rect(cx - 22 * U, cy, 3, 14 * U, "#9fa3b5"); rect(cx + 20 * U, cy, 3, 14 * U, "#9fa3b5");
         if (hotel.cart < .75) { ctx.fillStyle = "#d8d8e0"; ctx.beginPath(); ctx.arc(cx, cy - 6 * U, 16 * U, Math.PI, 0); ctx.fill(); }
-        else emo(room.dish || "🍔", cx, cy - 16 * U, 24);
+        else {
+          hotel.cartXY = { x: cx, y: cy - 16 * U };
+          const left = 3 - (hotel.bites || 0);
+          if (left > 0) {
+            // what is left of the dish: bitten away from the right, a drink empties from the top
+            const sz = 24 * U, k = left / 3;
+            ctx.save(); ctx.beginPath();
+            if (isDrink()) ctx.rect(cx - sz, cy - 16 * U - sz / 2 + sz * (1 - k), sz * 2, sz * 2); else ctx.rect(cx - sz, cy - 16 * U - sz, sz * (1 + k), sz * 2);
+            ctx.clip(); emo(room.dish || "🍔", cx, cy - 16 * U, 24); ctx.restore();
+            text(isDrink() ? "👆 выпить" : "👆 съесть", cx, cy - 42 * U - Math.abs(Math.sin(t * 3)) * 4 * U, 9, "#ffd84d");
+          } else { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy - 8 * U, 14 * U, 4 * U, 0, 0, 7); ctx.fill(); }
+        }
       }
       // entertainment
       const fun = (id) => room.fun.includes(id);
@@ -5689,6 +5717,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         rect(0, H - 22 * U, W, 22 * U, "rgba(18,19,42,.65)"); text(`Нажми, куда поставить: ${placing.n}`, W / 2, H - 11 * U, 10, "#ffd84d");
         if (pointer) { ctx.globalAlpha = .55; emo(placing.e, pointer.x, pointer.y, placing.sz * 1.5); ctx.globalAlpha = 1; }
       }
+      floaters = floaters.filter((f) => (f.t -= dt) > 0);
+      floaters.forEach((f) => { ctx.globalAlpha = Math.min(1, f.t * 2); text(f.s, f.x, f.y - (1 - f.t) * 24 * U, 12, "#fff"); ctx.globalAlpha = 1; });
       if (drag) { const tr = TRASH(); rect(tr.x, tr.y, tr.w, tr.h, "rgba(255,59,79,.85)"); emo("🗑", tr.x + tr.w / 2, tr.y + tr.h / 2, 20); }
       const n = Object.keys(hotel.done).length;
       rect(0, 0, W, 22 * U, "rgba(18,19,42,.55)");
@@ -5772,7 +5802,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       }
       if (scene === "marina") {
         if (hotel.phase === "lobby") { if (hotel.spots.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h)) { checkIn(); updateAction(); } }
-        else if (!roomDown(x, y)) roomTap(x, y);
+        else if (!eatTap(x, y) && !roomDown(x, y)) roomTap(x, y);
       }
     });
     const dxXY = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
