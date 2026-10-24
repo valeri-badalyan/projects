@@ -313,6 +313,27 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- My Mine (RTS) ---------- */
+.mm-res { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.mm-res span { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; border-radius: 10px; background: var(--panel); font-size: 13px; }
+.mm-res b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.mm-wrap { position: relative; width: 100%; max-width: 440px; margin: 0 auto; border-radius: 14px; overflow: hidden; }
+#mmCanvas { display: block; width: 100%; touch-action: none; background: #3a7a3a; user-select: none; -webkit-user-select: none; }
+.mm-wrap .overlay { z-index: 5; }
+.mm-info { padding: 8px 12px; border-radius: 12px; background: var(--panel); font-size: 13px; line-height: 1.35; min-height: 40px; }
+.mm-info b { color: var(--amber); }
+.mm-info .hpbar { height: 6px; border-radius: 3px; background: var(--bg); overflow: hidden; margin-top: 4px; }
+.mm-info .hpbar i { display: block; height: 100%; background: var(--lime); }
+.mm-acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.mm-acts:empty { display: none; }
+.mm-acts button { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
+.mm-acts button i { font-style: normal; font-size: 22px; flex: none; }
+.mm-acts button b { display: block; font-size: 13px; }
+.mm-acts button small { display: block; color: var(--muted); font-size: 11px; }
+.mm-acts button[disabled] { opacity: .45; cursor: default; }
+.mm-acts button.on { border-color: var(--amber); }
+.mm-global { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.mm-global .btn { padding: 9px 4px; font-size: 12.5px; }
 /* ---------- Cooking ---------- */
 .ck-clients { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .ck-client { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px 8px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; min-height: 132px; font: inherit; }
@@ -962,7 +983,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Шестнадцать игр в одном кармане</span>
+        <span class="tag">Семнадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -1111,6 +1132,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Файтинг: 7 бойцов, суперприёмы, блок и парирование. До двух побед.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubMk">0</span></span>
+      </button>
+      <button class="cart" data-go="mine" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#4a8a3a"/><ellipse cx="40" cy="40" rx="18" ry="12" fill="#2f7fc4"/><circle cx="38" cy="40" r="3" fill="#141419"/><circle cx="10" cy="12" r="5" fill="#1f5a2a"/><circle cx="16" cy="8" r="4" fill="#1f5a2a"/><rect x="6" y="38" width="16" height="14" fill="#9aa0ad"/><path d="M4 38 L14 30 L24 38Z" fill="#3b82f6"/><rect x="42" y="6" width="14" height="12" fill="#9aa0ad"/><path d="M40 6 L49 0 L58 6Z" fill="#ef4444"/><rect x="26" y="10" width="7" height="6" fill="#ffd84d"/><circle cx="30" cy="28" r="3" fill="#3b82f6"/><circle cx="48" cy="24" r="3" fill="#ef4444"/><path d="M31 27 L47 24" stroke="#fff" stroke-dasharray="2 2"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">My Mine</span>
+          <span class="cart-desc">Стратегия, вид сверху: крестьяне, повстанцы, лучники, ратуша, казарма, порт, башни. Уничтожь оппонента!</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Победы</span><span class="stat-val" id="hubMine">0</span></span>
       </button>
       <button class="cart" data-go="cook" type="button">
         <span class="cart-art" aria-hidden="true">
@@ -1572,6 +1603,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
     <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
+  </section>
+
+  <!-- ===== My Mine ===== -->
+  <section id="mine" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">My Mine</div>
+      <div class="chips"><div class="chip hi"><span>Победы</span><b id="mmWins">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="mm-res"><span title="Золото">🪙 <b id="mmGold">0</b></span><span title="Дерево">🪵 <b id="mmWood">0</b></span><span title="Нефть">🛢️ <b id="mmOil">0</b></span><span title="Армия / враги">⚔️ <b id="mmPop">0</b></span></div>
+    <div class="mm-wrap" id="mmWrap">
+      <canvas id="mmCanvas" width="360" height="380" aria-label="Карта My Mine"></canvas>
+      <div class="overlay" id="mmOverlay">
+        <h2 id="mmOvTitle">My Mine</h2>
+        <p id="mmOvText">Ты — синие, оппонент — красные. Добывай золото и дерево, строй казарму и башни, собери армию и уничтожь все здания оппонента!</p>
+        <div class="mk-diff" id="mmDiff"><button type="button" data-d="0">Лёгкий</button><button type="button" data-d="1" aria-pressed="true">Нормальный</button><button type="button" data-d="2">Сложный</button></div>
+        <button class="btn" type="button" id="mmStart">Начать миссию</button>
+      </div>
+    </div>
+    <div class="mm-info" id="mmInfo">Нажми на своего крестьянина, потом на золото или дерево.</div>
+    <div class="mm-acts" id="mmActs"></div>
+    <div class="mm-global">
+      <button class="btn ghost" type="button" id="mmArmy">🛡️ Все воины</button>
+      <button class="btn" type="button" id="mmAttack">⚔️ В атаку!</button>
+      <button class="btn ghost" type="button" id="mmHome">🏛️ К базе</button>
+    </div>
+    <p class="hint">Карту двигай пальцем. Нажми на юнита — выбрать; на землю — идти; на врага — атаковать; крестьянином на дерево или золото — добывать. Танкеры возят нефть к порту. 1 клетка = 20 м.</p>
   </section>
 
   <!-- ===== Cooking ===== -->
@@ -5170,7 +5233,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -5382,7 +5445,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -6734,7 +6797,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -6969,6 +7032,498 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       leave() { drag = null; },
       key() {},
       best: () => (best === null ? "—" : fmt(best) + " с"),
+    };
+  })();
+
+  /* ================= My Mine: top-down strategy ================= */
+  const Mine = (() => {
+    const cv = $("#mmCanvas"), ctx = cv.getContext("2d"), wrapEl = $("#mmWrap");
+    const MW = 44, MH = 32, T = 24, N = MW * MH;
+    const GRASS = 0, WATER = 1, TREE = 2, GOLD = 3, OIL = 4;
+    const COL = ["#3b82f6", "#ef4444"];
+    const U = {
+      peasant: { n: "Крестьянин", ico: "⛏️", hp: 45, spd: 1.8, dmg: 3, rng: 1.2, cd: 1.2, cost: { g: 400 }, time: 5, from: "hall" },
+      rebel: { n: "Повстанец", ico: "🗡️", hp: 110, spd: 1.6, dmg: 10, rng: 1.2, cd: .9, cost: { g: 600 }, time: 7, from: "barracks" },
+      archer: { n: "Лучник", ico: "🏹", hp: 70, spd: 1.6, dmg: 8, rng: 4.5, cd: 1.3, cost: { g: 600 }, time: 7, from: "barracks" },
+      tanker: { n: "Танкер", ico: "🛢️", hp: 160, spd: 1.5, dmg: 0, rng: 0, cd: 1, cost: { g: 500, w: 200 }, time: 8, from: "port", naval: true },
+      destroyer: { n: "Эсминец", ico: "🚢", hp: 280, spd: 1.5, dmg: 16, rng: 5, cd: 1.5, cost: { g: 700, w: 300, o: 200 }, time: 10, from: "port", naval: true },
+    };
+    const B = {
+      hall: { n: "Ратуша", ico: "🏛️", hp: 900, size: 3, cost: { g: 200, w: 100 }, time: 14, makes: ["peasant"] },
+      barracks: { n: "Казарма", ico: "⚔️", hp: 650, size: 3, cost: { g: 800, w: 500 }, time: 16, makes: ["rebel", "archer"] },
+      port: { n: "Порт", ico: "⚓", hp: 550, size: 3, cost: { g: 800, w: 700 }, time: 16, makes: ["tanker", "destroyer"] },
+      tower: { n: "Защищающая башня", ico: "🗼", hp: 520, size: 2, cost: { g: 700, w: 500 }, time: 14, makes: [], dmg: 12, rng: 5, cd: 1 },
+    };
+    const DIFF = [{ n: "Лёгкий", mult: .7, wave: 3, peas: 4, reward: 120 }, { n: "Нормальный", mult: 1, wave: 5, peas: 6, reward: 200 }, { n: "Сложный", mult: 1.4, wave: 7, peas: 8, reward: 350 }];
+    let tile, amt, occ, ents = [], nid = 1, res, sel = [], placing = null, proj = [], floats = [], state = "menu", diff = 1, aiT = 0, aiWave = 5, terr = null, terrDirty = true;
+    let cam = { x: 0, y: 0 }, vw = 360, vh = 380, dpr = 1, raf = 0, last = 0, uiT = 0, winT = 0, ghost = null, gameT = 0;
+    let wins = store.get("mmWins", 0) | 0;
+    const idx = (x, y) => y * MW + x;
+    const inb = (x, y) => x >= 0 && y >= 0 && x < MW && y < MH;
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    const isU = (e) => !!U[e.kind], isB = (e) => !!B[e.kind];
+    const byId = (id) => ents.find((e) => e.id === id);
+
+    // ---------- map ----------
+    function gen() {
+      tile = new Uint8Array(N); amt = new Int32Array(N); occ = new Int32Array(N);
+      for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+        const ex = (x + .5 - MW / 2) / 8.6, ey = (y + .5 - MH / 2) / 6.4, wob = .08 * Math.sin(x * 1.3) * Math.cos(y * 1.1);
+        if (ex * ex + ey * ey < 1 + wob) tile[idx(x, y)] = WATER;
+      }
+      const both = (x, y, f) => { f(x, y); f(MW - 1 - x, MH - 1 - y); };
+      const setT = (x, y, t, a) => { if (inb(x, y)) { tile[idx(x, y)] = t; amt[idx(x, y)] = a; } };
+      [[19, 13], [21, 17], [24, 12], [17, 16]].forEach(([x, y]) => both(x, y, (a, b) => { if (tile[idx(a, b)] === WATER) setT(a, b, OIL, 99999); }));
+      // gold mines (2x2)
+      [[1, 20], [11, 29], [19, 3]].forEach(([x, y]) => both(x, y, (a, b) => { const x0 = Math.min(a, a + (a === x ? 0 : -1)), y0 = Math.min(b, b + (b === y ? 0 : -1)); for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) setT(x0 + dx, y0 + dy, GOLD, 1500); }));
+      // forests
+      const clumps = [[2, 13, 2], [6, 16, 1], [15, 26, 2], [3, 29, 1], [14, 21, 1], [9, 4, 2], [2, 6, 2], [29, 3, 1], [33, 9, 1], [26, 28, 1]];
+      clumps.forEach(([cx, cy, r]) => both(cx, cy, (a, b) => { for (let dy = -r; dy <= r; dy++) for (let dx = -r - 1; dx <= r + 1; dx++) { const x = a + dx, y = b + dy; if (inb(x, y) && tile[idx(x, y)] === GRASS && dx * dx * .7 + dy * dy <= r * r + 1 && Math.random() < .85) setT(x, y, TREE, 150); } }));
+      // keep both base areas clear of trees
+      for (let y = 21; y < 31; y++) for (let x = 2; x < 11; x++) both(x, y, (a, b) => { if (tile[idx(a, b)] === TREE) setT(a, b, GRASS, 0); });
+      terrDirty = true;
+    }
+    function drawTerrain() {
+      terr = terr || document.createElement("canvas"); terr.width = MW * T; terr.height = MH * T;
+      const g = terr.getContext("2d");
+      for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+        const t = tile[idx(x, y)], px = x * T, py = y * T;
+        if (t === WATER || t === OIL) { g.fillStyle = (x + y) % 2 ? "#2f7fc4" : "#2b78ba"; g.fillRect(px, py, T, T); }
+        else { g.fillStyle = (x * 7 + y * 3) % 5 === 0 ? "#4f9a3e" : (x + y) % 2 ? "#4a923a" : "#468d37"; g.fillRect(px, py, T, T); }
+        // sandy shore
+        if (t !== WATER && t !== OIL) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (inb(nx, ny) && (tile[idx(nx, ny)] === WATER || tile[idx(nx, ny)] === OIL)) { g.fillStyle = "#d9c38a"; g.fillRect(px + (dx > 0 ? T - 5 : 0), py + (dy > 0 ? T - 5 : 0), dx ? 5 : T, dy ? 5 : T); } }
+        if (t === TREE) { g.fillStyle = "#6a4024"; g.fillRect(px + 10, py + 14, 4, 8); g.fillStyle = "#1f5a2a"; g.beginPath(); g.arc(px + 12, py + 11, 9, 0, 7); g.fill(); g.fillStyle = "#2e7a36"; g.beginPath(); g.arc(px + 9, py + 9, 5, 0, 7); g.fill(); }
+        if (t === GOLD) { g.fillStyle = "#7a7e8a"; g.beginPath(); g.moveTo(px + 2, py + T - 2); g.lineTo(px + 8, py + 4); g.lineTo(px + 18, py + 3); g.lineTo(px + T - 2, py + T - 3); g.fill(); g.fillStyle = "#ffd84d"; [[8, 12], [14, 9], [15, 16], [9, 18]].forEach(([a, b]) => { g.beginPath(); g.arc(px + a, py + b, 2.4, 0, 7); g.fill(); }); }
+        if (t === OIL) { g.fillStyle = "#0b0b10"; g.beginPath(); g.ellipse(px + 12, py + 12, 10, 7, .4, 0, 7); g.fill(); g.fillStyle = "rgba(180,120,255,.45)"; g.beginPath(); g.ellipse(px + 9, py + 10, 4, 2, .4, 0, 7); g.fill(); }
+      }
+      terrDirty = false;
+    }
+
+    // ---------- path finding (8-way BFS on the tile grid) ----------
+    const Q = new Int32Array(N), PREV = new Int32Array(N), SEEN = new Uint32Array(N); let stamp = 0;
+    const pass = (x, y, naval) => inb(x, y) && (naval ? tile[idx(x, y)] === WATER : tile[idx(x, y)] === GRASS && !occ[idx(x, y)]);
+    function bfs(sx, sy, naval, goal) {
+      if (!inb(sx, sy)) return null;
+      stamp++; const s = idx(sx, sy); let h = 0, t = 0; Q[t++] = s; SEEN[s] = stamp; PREV[s] = -1;
+      while (h < t) {
+        const c = Q[h++], cx = c % MW, cy = (c / MW) | 0;
+        if (goal(cx, cy)) { const path = []; let k = c; while (k !== s && k >= 0) { path.push([k % MW, (k / MW) | 0]); k = PREV[k]; } return path.reverse(); }
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          if (!dx && !dy) continue;
+          const nx = cx + dx, ny = cy + dy; if (!inb(nx, ny)) continue;
+          const ni = idx(nx, ny); if (SEEN[ni] === stamp || !pass(nx, ny, naval)) continue;
+          if (dx && dy && (!pass(cx + dx, cy, naval) || !pass(cx, cy + dy, naval))) continue;
+          SEEN[ni] = stamp; PREV[ni] = c; Q[t++] = ni;
+        }
+      }
+      return null;
+    }
+    const nearRect = (x0, y0, w, h) => (x, y) => x >= x0 - 1 && x <= x0 + w && y >= y0 - 1 && y <= y0 + h;
+    function distTo(px, py, e) {
+      if (isU(e)) return Math.hypot(e.x - px, e.y - py);
+      const dx = Math.max(e.tx - px, 0, px - (e.tx + e.w)), dy = Math.max(e.ty - py, 0, py - (e.ty + e.h));
+      return Math.hypot(dx, dy);
+    }
+    const center = (e) => isU(e) ? [e.x, e.y] : [e.tx + e.w / 2, e.ty + e.h / 2];
+
+    // ---------- entities ----------
+    function addUnit(side, kind, x, y) {
+      const d = U[kind], e = { id: nid++, side, kind, x, y, hp: d.hp, max: d.hp, task: { t: "idle" }, path: [], cd: 0, carry: 0, ctype: 0, repath: 0, ang: 0 };
+      ents.push(e); return e;
+    }
+    function addBuilding(side, kind, tx, ty, done) {
+      const d = B[kind], e = { id: nid++, side, kind, tx, ty, w: d.size, h: d.size, hp: done ? d.hp : Math.round(d.hp * .1), max: d.hp, prog: done ? 1 : 0, queue: [], tp: 0, cd: 0 };
+      ents.push(e); for (let y = ty; y < ty + e.h; y++) for (let x = tx; x < tx + e.w; x++) occ[idx(x, y)] = e.id;
+      return e;
+    }
+    function removeEnt(e) {
+      ents = ents.filter((q) => q !== e);
+      if (isB(e)) { for (let y = e.ty; y < e.ty + e.h; y++) for (let x = e.tx; x < e.tx + e.w; x++) if (occ[idx(x, y)] === e.id) occ[idx(x, y)] = 0; }
+      sel = sel.filter((id) => id !== e.id);
+      const [cx, cy] = center(e); floats.push({ x: cx, y: cy, s: "💥", t: 1 });
+    }
+    function canPlace(kind, tx, ty) {
+      const sz = B[kind].size; let water = false;
+      for (let y = ty; y < ty + sz; y++) for (let x = tx; x < tx + sz; x++) { if (!inb(x, y) || tile[idx(x, y)] !== GRASS || occ[idx(x, y)]) return false; }
+      if (ents.some((e) => isU(e) && !U[e.kind].naval && e.x > tx - .3 && e.x < tx + sz + .3 && e.y > ty - .3 && e.y < ty + sz + .3)) return false;
+      if (kind === "port") { for (let y = ty - 1; y <= ty + sz; y++) for (let x = tx - 1; x <= tx + sz; x++) if (inb(x, y) && tile[idx(x, y)] === WATER) water = true; return water; }
+      return true;
+    }
+    const canPay = (side, c) => res[side].g >= (c.g || 0) && res[side].w >= (c.w || 0) && res[side].o >= (c.o || 0);
+    const pay = (side, c) => { res[side].g -= c.g || 0; res[side].w -= c.w || 0; res[side].o -= c.o || 0; };
+    const costTxt = (c) => [c.g ? `🪙${c.g}` : "", c.w ? `🪵${c.w}` : "", c.o ? `🛢️${c.o}` : ""].filter(Boolean).join(" ");
+    function spawnSpot(b, naval) {
+      for (let r = 1; r < 6; r++) for (let y = b.ty - r; y < b.ty + b.h + r; y++) for (let x = b.tx - r; x < b.tx + b.w + r; x++) {
+        if (x > b.tx - r && x < b.tx + b.w + r - 1 && y > b.ty - r && y < b.ty + b.h + r - 1) continue;
+        if (pass(x, y, naval) && !ents.some((e) => isU(e) && Math.floor(e.x) === x && Math.floor(e.y) === y)) return [x + .5, y + .5];
+      }
+      return null;
+    }
+
+    // ---------- orders ----------
+    function order(u, task) { u.task = task; u.path = []; u.repath = 0; }
+    function nearestRes(u, type, maxD) {
+      const p = bfs(Math.floor(u.x), Math.floor(u.y), !!U[u.kind].naval, (x, y) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const a = x + dx, b = y + dy; if (inb(a, b) && tile[idx(a, b)] === type && amt[idx(a, b)] > 0) return Math.hypot(a - u.x, b - u.y) < maxD; } return false; });
+      if (!p) return null;
+      const [ex, ey] = p.length ? p[p.length - 1] : [Math.floor(u.x), Math.floor(u.y)];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const a = ex + dx, b = ey + dy; if (inb(a, b) && tile[idx(a, b)] === type && amt[idx(a, b)] > 0) return [a, b]; }
+      return null;
+    }
+    function dropFor(u, type) {
+      const kind = type === OIL ? "port" : "hall";
+      let best = null, bd = 1e9;
+      ents.forEach((b) => { if (b.side === u.side && b.kind === kind && b.prog >= 1) { const d = distTo(u.x, u.y, b); if (d < bd) { bd = d; best = b; } } });
+      return best;
+    }
+    function moveAlong(u, dt) {
+      if (!u.path.length) return true;
+      const [tx, ty] = u.path[0], gx = tx + .5, gy = ty + .5;
+      if (!pass(tx, ty, !!U[u.kind].naval)) { u.path = []; u.repath = 0; return true; }
+      const dx = gx - u.x, dy = gy - u.y, d = Math.hypot(dx, dy), st = U[u.kind].spd * dt;
+      if (d > .01) u.ang = Math.atan2(dy, dx);
+      if (d <= st) { u.x = gx; u.y = gy; u.path.shift(); } else { u.x += dx / d * st; u.y += dy / d * st; }
+      return !u.path.length;
+    }
+    function goTo(u, goal, dt) {
+      u.repath -= dt;
+      if (!u.path.length && u.repath <= 0) { u.repath = .6; const p = bfs(Math.floor(u.x), Math.floor(u.y), !!U[u.kind].naval, goal); if (p) u.path = p; else return "fail"; if (!p.length) return "here"; }
+      moveAlong(u, dt);
+      return u.path.length ? "go" : "here";
+    }
+    function hit(a, t, dmg) {
+      t.hp -= dmg;
+      if (isU(t) && t.task.t === "idle" && U[t.kind].dmg > 0 && t.kind !== "peasant") order(t, { t: "attack", id: a.id });
+      if (t.hp <= 0) removeEnt(t);
+    }
+    function shoot(a, t, col, dmg, big) { const [ax, ay] = center(a), [bx, by] = center(t); proj.push({ x0: ax, y0: ay, x1: bx, y1: by, t: 0, col, big }); hit(a, t, dmg); }
+
+    function updUnit(u, dt) {
+      const d = U[u.kind]; u.cd -= dt;
+      const tk = u.task;
+      if (tk.t === "idle") {
+        if (d.dmg > 0 && u.kind !== "peasant") {
+          let best = null, bd = d.rng + 3.5;
+          ents.forEach((e) => { if (e.side !== u.side) { const dd = distTo(u.x, u.y, e); if (dd < bd && (isU(e) || dd < d.rng + 1)) { bd = dd; best = e; } } });
+          if (best) order(u, { t: "attack", id: best.id, auto: true });
+        }
+        return;
+      }
+      if (tk.t === "move") { if (!u.path.length && u.repath <= 0) { u.repath = 99; u.path = bfs(Math.floor(u.x), Math.floor(u.y), !!d.naval, (x, y) => Math.abs(x - tk.x) <= (tk.near || 0) && Math.abs(y - tk.y) <= (tk.near || 0)) || bfs(Math.floor(u.x), Math.floor(u.y), !!d.naval, nearRect(tk.x, tk.y, 1, 1)) || []; } if (moveAlong(u, dt)) order(u, { t: "idle" }); return; }
+      if (tk.t === "attack") {
+        const t = byId(tk.id); if (!t) { order(u, { t: "idle" }); return; }
+        if (tk.auto && distTo(u.x, u.y, t) > d.rng + 7) { order(u, { t: "idle" }); return; }
+        if (distTo(u.x, u.y, t) <= d.rng + .2) { u.path = []; const [cx, cy] = center(t); u.ang = Math.atan2(cy - u.y, cx - u.x); if (u.cd <= 0) { u.cd = d.cd; if (d.rng > 2) shoot(u, t, u.kind === "archer" ? "#f4e2b0" : "#141419", d.dmg, u.kind === "destroyer"); else hit(u, t, d.dmg); } return; }
+        if (isU(t) && u.path.length && u.repath <= 0) u.path = [];
+        const r = goTo(u, (x, y) => distTo(x + .5, y + .5, t) <= d.rng, dt); if (r === "fail" && !u.path.length) u.repath = 1.5;
+        return;
+      }
+      if (tk.t === "gather") {
+        if (u.carry > 0 && (u.ctype !== tk.type || tk.full)) { order(u, { t: "return", back: tk }); return; }
+        const i = idx(tk.x, tk.y);
+        if (tile[i] !== tk.type || amt[i] <= 0) { const n = nearestRes(u, tk.type, 14); if (n) { tk.x = n[0]; tk.y = n[1]; u.path = []; } else { u.carry ? order(u, { t: "return", back: null }) : order(u, { t: "idle" }); } return; }
+        if (Math.abs(Math.floor(u.x) - tk.x) <= 1 && Math.abs(Math.floor(u.y) - tk.y) <= 1 && !u.path.length) {
+          tk.work = (tk.work || 0) + dt; u.ang = Math.atan2(tk.y + .5 - u.y, tk.x + .5 - u.x);
+          const need = tk.type === TREE ? 3 : tk.type === GOLD ? 2.6 : 3;
+          if (tk.work >= need) {
+            tk.work = 0; const take = Math.min(amt[i], tk.type === TREE ? 40 : tk.type === GOLD ? 50 : 100);
+            if (tk.type !== OIL) amt[i] -= take;
+            if (amt[i] <= 0) { tile[i] = GRASS; terrDirty = true; }
+            u.carry = take; u.ctype = tk.type; order(u, { t: "return", back: tk });
+          }
+          return;
+        }
+        if (goTo(u, nearRect(tk.x, tk.y, 1, 1), dt) === "fail") { const n = nearestRes(u, tk.type, 14); if (n && (n[0] !== tk.x || n[1] !== tk.y)) { tk.x = n[0]; tk.y = n[1]; } else order(u, { t: "idle" }); }
+        return;
+      }
+      if (tk.t === "return") {
+        const b = dropFor(u, u.ctype); if (!b) { order(u, { t: "idle" }); return; }
+        if (distTo(u.x, u.y, b) <= 1.3) {
+          const k = u.side === 1 ? DIFF[diff].mult : 1, add = Math.round(u.carry * k), key = u.ctype === TREE ? "w" : u.ctype === GOLD ? "g" : "o";
+          res[u.side][key] += add; if (u.side === 0) floats.push({ x: u.x, y: u.y - .5, s: `+${add}${key === "g" ? "🪙" : key === "w" ? "🪵" : "🛢️"}`, t: 1 });
+          u.carry = 0; tk.back ? order(u, Object.assign(tk.back, { work: 0, full: false })) : order(u, { t: "idle" });
+          return;
+        }
+        goTo(u, nearRect(b.tx, b.ty, b.w, b.h), dt);
+        return;
+      }
+      if (tk.t === "build") {
+        const b = byId(tk.id); if (!b || b.prog >= 1) { order(u, tk.after || { t: "idle" }); return; }
+        if (distTo(u.x, u.y, b) <= 1.3) { u.path = []; b.prog = Math.min(1, b.prog + dt / B[b.kind].time); b.hp = Math.min(b.max, b.hp + b.max * dt / B[b.kind].time); if (b.prog >= 1 && u.side === 0) { Hero.say("mine", "good", `${B[b.kind].n} построена!`); floats.push({ x: b.tx + b.w / 2, y: b.ty, s: "✅", t: 1.2 }); } return; }
+        goTo(u, nearRect(b.tx, b.ty, b.w, b.h), dt);
+      }
+    }
+    function updBuilding(b, dt) {
+      if (b.prog < 1) return;
+      if (b.queue.length) {
+        b.tp += dt;
+        const k = b.queue[0];
+        if (b.tp >= U[k].time) {
+          const sp = spawnSpot(b, !!U[k].naval);
+          if (sp) { b.queue.shift(); b.tp = 0; const u = addUnit(b.side, k, sp[0], sp[1]); if (b.side === 0) { Hero.say("mine", "good", `${U[k].n} готов!`); if (b.rally) order(u, { t: "move", x: b.rally[0], y: b.rally[1], near: 1 }); } }
+        }
+      }
+      if (b.kind === "tower") {
+        b.cd -= dt; if (b.cd > 0) return;
+        let best = null, bd = B.tower.rng;
+        ents.forEach((e) => { if (e.side !== b.side && isU(e)) { const dd = distTo(b.tx + 1, b.ty + 1, e); if (dd < bd) { bd = dd; best = e; } } });
+        if (best) { b.cd = B.tower.cd; shoot(b, best, "#ffd84d", B.tower.dmg, true); }
+      }
+    }
+
+    // ---------- AI (red side) ----------
+    function aiPlace(kind) {
+      const hall = ents.find((e) => e.side === 1 && e.kind === "hall") || ents.find((e) => e.side === 1 && isB(e)); if (!hall) return null;
+      const cx = hall.tx + 1, cy = hall.ty + 1, sz = B[kind].size, toward = kind === "tower" ? -1 : 0;
+      for (let r = 4; r < 14; r++) for (let k = 0; k < 40; k++) {
+        const a = Math.random() * Math.PI * 2, x = Math.round(cx + Math.cos(a) * r + toward * 2), y = Math.round(cy + Math.sin(a) * r + toward * 2);
+        if (canPlace(kind, x, y)) return [x, y];
+      }
+      return null;
+    }
+    function ai(dt) {
+      aiT -= dt; if (aiT > 0) return; aiT = 1;
+      const D = DIFF[diff], R = res[1];
+      const mine = ents.filter((e) => e.side === 1), peas = mine.filter((e) => e.kind === "peasant"), army = mine.filter((e) => e.kind === "rebel" || e.kind === "archer");
+      const hall = mine.find((e) => e.kind === "hall" && e.prog >= 1), bar = mine.find((e) => e.kind === "barracks"), towers = mine.filter((e) => e.kind === "tower");
+      // sites without builders
+      mine.filter((b) => isB(b) && b.prog < 1).forEach((b) => { if (!peas.some((p) => p.task.t === "build" && p.task.id === b.id)) { const p = peas.find((q) => q.task.t !== "build"); if (p) order(p, { t: "build", id: b.id, after: p.task.t === "gather" ? p.task : null }); } });
+      // idle peasants gather (more wood until the barracks exist)
+      peas.filter((p) => p.task.t === "idle").forEach((p, i) => { const type = (!bar && R.w < 500 && i % 2 === 0) || R.w < 200 ? TREE : GOLD; const n = nearestRes(p, type, 30) || nearestRes(p, type === TREE ? GOLD : TREE, 30); if (n) order(p, { t: "gather", type: tile[idx(n[0], n[1])], x: n[0], y: n[1] }); });
+      if (!hall && peas.length && canPay(1, B.hall.cost) && !mine.some((e) => e.kind === "hall")) { const at = aiPlace("hall"); if (at) { pay(1, B.hall.cost); addBuilding(1, "hall", at[0], at[1], false); } }
+      if (hall && peas.length < D.peas && !hall.queue.length && canPay(1, U.peasant.cost)) { pay(1, U.peasant.cost); hall.queue.push("peasant"); }
+      if (!bar && peas.length >= 3 && canPay(1, B.barracks.cost)) { const at = aiPlace("barracks"); if (at) { pay(1, B.barracks.cost); addBuilding(1, "barracks", at[0], at[1], false); } }
+      if (bar && bar.prog >= 1 && bar.queue.length < 2 && canPay(1, U.rebel.cost) && (peas.length >= D.peas - 1 || army.length < 2)) { const k = army.filter((a) => a.kind === "archer").length < army.length / 2 ? "archer" : "rebel"; pay(1, U[k].cost); bar.queue.push(k); }
+      if (bar && towers.length < (diff === 2 ? 2 : 1) && army.length >= 2 && canPay(1, { g: B.tower.cost.g + 600, w: B.tower.cost.w })) { const at = aiPlace("tower"); if (at) { pay(1, B.tower.cost); addBuilding(1, "tower", at[0], at[1], false); } }
+      // defend the base
+      const base = hall || mine.find((e) => isB(e));
+      if (base) { const intr = ents.find((e) => e.side === 0 && isU(e) && distTo(e.x, e.y, base) < 9); if (intr) army.filter((a) => a.task.t === "idle" || (a.task.t === "move")).forEach((a) => order(a, { t: "attack", id: intr.id })); }
+      // attack waves
+      if (army.length >= aiWave) {
+        const target = nearestEnemyBuilding(1, army[0]);
+        if (target) { army.forEach((a) => order(a, { t: "attack", id: target.id })); aiWave = Math.min(16, aiWave + 2); if (state === "run") Hero.say("mine", "bad", "Красные идут в атаку! Готовь оборону!"); }
+      }
+      // keep attackers going after a target falls
+      army.filter((a) => a.task.t === "idle" && a.wasAttacking).forEach((a) => { const t = nearestEnemyBuilding(1, a); if (t) order(a, { t: "attack", id: t.id }); });
+      army.forEach((a) => { a.wasAttacking = a.task.t === "attack" && !a.task.auto; });
+    }
+    function nearestEnemyBuilding(side, from) {
+      let best = null, bd = 1e9; ents.forEach((e) => { if (e.side !== side && isB(e)) { const d = distTo(from.x, from.y, e); if (d < bd) { bd = d; best = e; } } }); return best;
+    }
+
+    // ---------- game flow ----------
+    function newGame() {
+      ents = []; nid = 1; sel = []; placing = null; proj = []; floats = []; aiT = 2; aiWave = DIFF[diff].wave; gameT = 0;
+      res = [{ g: 1000, w: 300, o: 0 }, { g: 1000, w: 300, o: 0 }];
+      gen();
+      const h0 = addBuilding(0, "hall", 4, 24, true), h1 = addBuilding(1, "hall", MW - 4 - 3, MH - 24 - 3, true);
+      [h0, h1].forEach((h) => { for (let i = 0; i < 3; i++) { const sp = spawnSpot(h, false); if (sp) addUnit(h.side, "peasant", sp[0], sp[1]); } });
+      // your peasants start working: two on gold, one on wood
+      ents.filter((e) => e.side === 0 && e.kind === "peasant").forEach((u, i) => { const n = nearestRes(u, i < 2 ? GOLD : TREE, 30); if (n) order(u, { t: "gather", type: tile[idx(n[0], n[1])], x: n[0], y: n[1] }); });
+      centerOn(h0.tx + 1.5, h0.ty + 1.5);
+      state = "run"; $("#mmOverlay").hidden = true; ui(true);
+      Hero.say("mine", "start", "Миссия: уничтожь красных! Отправь крестьян за золотом и деревом.");
+    }
+    function centerOn(x, y) { cam.x = x * T - vw / 2; cam.y = y * T - vh / 2; clampCam(); }
+    function clampCam() { cam.x = Math.max(0, Math.min(MW * T - vw, cam.x)); cam.y = Math.max(0, Math.min(MH * T - vh, cam.y)); }
+    function checkEnd() {
+      const a = ents.some((e) => e.side === 0 && isB(e)), b = ents.some((e) => e.side === 1 && isB(e));
+      if (a && b) return;
+      state = "over"; const won = a && !b, D = DIFF[diff];
+      if (won) { wins++; store.set("mmWins", wins); Hero.earn(D.reward); updateHub(); }
+      $("#mmOvTitle").textContent = won ? "Победа! 🏆" : "Поражение";
+      $("#mmOvText").textContent = won ? `Все здания оппонента уничтожены за ${Math.round(gameT / 60)} мин. +${D.reward} монет (${D.n}).` : "Красные разрушили твои здания. Попробуй ещё раз — начни с казармы и башни!";
+      $("#mmStart").textContent = "Новая миссия"; $("#mmOverlay").hidden = false;
+      Hero.say("mine", won ? "win" : "bad", won ? "Оппонент уничтожен! Миссия выполнена!" : "База потеряна…");
+      $("#mmWins").textContent = wins;
+    }
+
+    // ---------- input ----------
+    let down = null;
+    const toWorld = (e) => { const r = cv.getBoundingClientRect(); return { sx: (e.clientX - r.left) * vw / r.width, sy: (e.clientY - r.top) * vh / r.height }; };
+    cv.addEventListener("pointerdown", (e) => { if (state !== "run") return; const p = toWorld(e); down = { sx: p.sx, sy: p.sy, cx: cam.x, cy: cam.y, moved: false, id: e.pointerId }; try { cv.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
+    cv.addEventListener("pointermove", (e) => {
+      const p = toWorld(e);
+      if (placing) ghost = { x: Math.floor((p.sx + cam.x) / T - (B[placing].size - 1) / 2), y: Math.floor((p.sy + cam.y) / T - (B[placing].size - 1) / 2) };
+      if (!down || e.pointerId !== down.id) return;
+      if (Math.hypot(p.sx - down.sx, p.sy - down.sy) > 8) down.moved = true;
+      if (down.moved) { cam.x = down.cx - (p.sx - down.sx); cam.y = down.cy - (p.sy - down.sy); clampCam(); }
+    });
+    cv.addEventListener("pointerup", (e) => { if (!down || e.pointerId !== down.id) return; const p = toWorld(e), mv = down.moved; down = null; if (!mv) tap(p.sx, p.sy); });
+    cv.addEventListener("pointercancel", () => { down = null; });
+    function tap(sx, sy) {
+      // minimap
+      const mm = miniRect();
+      if (sx >= mm.x && sx <= mm.x + mm.w && sy >= mm.y && sy <= mm.y + mm.h) { centerOn((sx - mm.x) / mm.w * MW, (sy - mm.y) / mm.h * MH); return; }
+      const wx = (sx + cam.x) / T, wy = (sy + cam.y) / T, tx = Math.floor(wx), ty = Math.floor(wy);
+      if (placing) {
+        const sz = B[placing].size, x0 = Math.floor(wx - (sz - 1) / 2), y0 = Math.floor(wy - (sz - 1) / 2);
+        ghost = { x: x0, y: y0 };
+        if (!canPay(0, B[placing].cost)) { Hero.say("mine", "bad", "Не хватает ресурсов!"); placing = null; ui(true); return; }
+        if (!canPlace(placing, x0, y0)) { Hero.say("mine", "bad", placing === "port" ? "Порт ставится на берегу, рядом с водой!" : "Здесь строить нельзя — нужно свободное место на траве."); return; }
+        pay(0, B[placing].cost); const b = addBuilding(0, placing, x0, y0, false);
+        selUnits().filter((u) => u.kind === "peasant").forEach((u) => order(u, { t: "build", id: b.id, after: u.task.t === "gather" ? u.task : null }));
+        Hero.say("mine", "good", `Строим: ${B[placing].n}!`); placing = null; ghost = null; ui(true); return;
+      }
+      const hitE = ents.filter((e) => isU(e) ? Math.hypot(e.x - wx, e.y - wy) < .6 : (wx >= e.tx && wx < e.tx + e.w && wy >= e.ty && wy < e.ty + e.h)).sort((a, b) => (isU(b) ? 1 : 0) - (isU(a) ? 1 : 0))[0];
+      const mineSel = selUnits();
+      if (hitE && hitE.side === 0) {
+        if (isB(hitE) && hitE.prog < 1 && mineSel.some((u) => u.kind === "peasant")) { mineSel.filter((u) => u.kind === "peasant").forEach((u) => order(u, { t: "build", id: hitE.id })); Hero.say("mine", "good", "Достраиваем!"); return; }
+        sel = [hitE.id]; ui(true); return;
+      }
+      if (hitE && hitE.side === 1) {
+        const fighters = mineSel.filter((u) => U[u.kind].dmg > 0);
+        if (fighters.length) { fighters.forEach((u) => order(u, { t: "attack", id: hitE.id })); floats.push({ x: wx, y: wy, s: "⚔️", t: .8 }); return; }
+        sel = [hitE.id]; ui(true); return;
+      }
+      if (!mineSel.length) { const b = selB(); if (b && b.side === 0 && B[b.kind].makes.length) { b.rally = [tx, ty]; floats.push({ x: wx, y: wy, s: "🚩", t: .8 }); return; } sel = []; ui(true); return; }
+      const t = inb(tx, ty) ? tile[idx(tx, ty)] : -1;
+      mineSel.forEach((u) => {
+        if ((t === TREE || t === GOLD) && u.kind === "peasant") order(u, { t: "gather", type: t, x: tx, y: ty });
+        else if (t === OIL && u.kind === "tanker") order(u, { t: "gather", type: OIL, x: tx, y: ty });
+        else order(u, { t: "move", x: tx, y: ty, near: mineSel.length > 1 ? 1 : 0 });
+      });
+      floats.push({ x: wx, y: wy, s: (t === TREE || t === GOLD || t === OIL) && mineSel.some((u) => u.kind === "peasant" || u.kind === "tanker") ? "⛏️" : "📍", t: .7 });
+    }
+    const selUnits = () => sel.map(byId).filter((e) => e && e.side === 0 && isU(e));
+    const selB = () => { const e = sel.length === 1 && byId(sel[0]); return e && isB(e) ? e : null; };
+
+    // ---------- UI panel ----------
+    function ui(force) {
+      if (!res) return;
+      $("#mmGold").textContent = res[0].g; $("#mmWood").textContent = res[0].w; $("#mmOil").textContent = res[0].o;
+      const army = ents.filter((e) => e.side === 0 && isU(e) && e.kind !== "peasant" && e.kind !== "tanker").length, foes = ents.filter((e) => e.side === 1 && isU(e)).length;
+      $("#mmPop").textContent = `${army}/${foes}`;
+      const info = $("#mmInfo"), acts = $("#mmActs");
+      sel = sel.filter((id) => byId(id));
+      const list = sel.map(byId);
+      let html = "", buttons = [];
+      if (placing) { html = `Нажми на карту, где поставить: <b>${B[placing].n}</b>${placing === "port" ? " (на берегу)" : ""}.`; buttons.push({ ico: "✖️", n: "Отмена", fn: () => { placing = null; ghost = null; ui(true); } }); }
+      else if (!list.length) html = "Нажми на своего юнита или здание. Двигай карту пальцем.";
+      else if (list.length > 1) html = `Выбрано: <b>${list.length}</b> (${[...new Set(list.map((e) => U[e.kind].n))].join(", ")}). Нажми на землю — идти, на врага — атаковать.`;
+      else {
+        const e = list[0], d = isU(e) ? U[e.kind] : B[e.kind], mine = e.side === 0;
+        const st = isU(e) ? { idle: "ждёт приказа", move: "идёт", attack: "атакует", gather: "добывает", return: "несёт ресурс", build: "строит" }[e.task.t] : e.prog < 1 ? `строится ${Math.round(e.prog * 100)}%` : e.queue.length ? `обучает: ${U[e.queue[0]].n} ${Math.round(e.tp / U[e.queue[0]].time * 100)}% (очередь ${e.queue.length})` : "готово";
+        html = `${d.ico} <b>${d.n}</b> ${mine ? "" : "· <span style='color:#ef4444'>враг</span>"} · ${st}<div class="hpbar"><i style="width:${Math.max(0, e.hp / e.max * 100)}%"></i></div>`;
+        if (mine && e.kind === "peasant") Object.keys(B).forEach((k) => buttons.push({ ico: B[k].ico, n: B[k].n, sm: costTxt(B[k].cost), dis: !canPay(0, B[k].cost), fn: () => { placing = k; ghost = null; ui(true); } }));
+        if (mine && isB(e) && e.prog >= 1) B[e.kind].makes.forEach((k) => buttons.push({ ico: U[k].ico, n: U[k].n, sm: costTxt(U[k].cost), dis: !canPay(0, U[k].cost) || e.queue.length >= 5, fn: () => { if (!canPay(0, U[k].cost)) return; pay(0, U[k].cost); e.queue.push(k); ui(true); } }));
+        if (mine && e.kind === "tower") html += `<div style="margin-top:4px;color:var(--muted)">Стреляет во врагов ближе 100 м.</div>`;
+        if (mine && e.kind === "tanker") html += `<div style="margin-top:4px;color:var(--muted)">Нажми на нефть (чёрное пятно в воде) — танкер повезёт её в порт.</div>`;
+        if (mine && isB(e) && B[e.kind].makes.length && e.prog >= 1) html += `<div style="margin-top:4px;color:var(--muted)">Нажми на карту, чтобы поставить флажок сбора 🚩.</div>`;
+      }
+      const key = html + "|" + buttons.map((b) => b.n + b.dis).join(",");
+      if (!force && key === ui.key) return; ui.key = key;
+      info.innerHTML = html; acts.innerHTML = "";
+      buttons.forEach((b) => { const el = document.createElement("button"); el.type = "button"; el.disabled = !!b.dis; el.innerHTML = `<i>${b.ico}</i><span><b>${b.n}</b>${b.sm ? `<small>${b.sm}</small>` : ""}</span>`; el.addEventListener("click", b.fn); acts.appendChild(el); });
+    }
+    $("#mmArmy").addEventListener("click", () => { sel = ents.filter((e) => e.side === 0 && isU(e) && U[e.kind].dmg > 0 && e.kind !== "peasant").map((e) => e.id); if (!sel.length) Hero.say("mine", "bad", "Воинов пока нет — построй казарму!"); ui(true); });
+    $("#mmAttack").addEventListener("click", () => {
+      const army = ents.filter((e) => e.side === 0 && isU(e) && U[e.kind].dmg > 0 && e.kind !== "peasant"); if (!army.length) { Hero.say("mine", "bad", "Некого отправлять — обучи повстанцев и лучников!"); return; }
+      const t = nearestEnemyBuilding(0, army[0]); if (!t) return;
+      army.forEach((a) => order(a, { t: "attack", id: t.id })); sel = army.map((a) => a.id); Hero.say("mine", "start", `В атаку на ${B[t.kind].n.toLowerCase()} красных!`); ui(true);
+    });
+    $("#mmHome").addEventListener("click", () => { const h = ents.find((e) => e.side === 0 && e.kind === "hall") || ents.find((e) => e.side === 0 && isB(e)); if (h) centerOn(h.tx + h.w / 2, h.ty + h.h / 2); });
+    $("#mmDiff").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; diff = +b.dataset.d; $$("#mmDiff button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
+    $("#mmStart").addEventListener("click", newGame);
+
+    // ---------- render ----------
+    const miniRect = () => ({ x: vw - 92, y: 6, w: 86, h: 86 * MH / MW });
+    function render(t) {
+      if (terrDirty) drawTerrain();
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.drawImage(terr, cam.x, cam.y, vw, vh, 0, 0, vw, vh);
+      ctx.save(); ctx.translate(-cam.x, -cam.y);
+      // water shimmer
+      ctx.fillStyle = "rgba(255,255,255,.08)";
+      for (let i = 0; i < 18; i++) { const x = (i * 97 + t * 20) % (MW * T), y = (i * 53) % (MH * T); const tx = Math.floor(x / T), ty = Math.floor(y / T); if (inb(tx, ty) && tile[idx(tx, ty)] === WATER) ctx.fillRect(x, y, 10, 2); }
+      const selSet = new Set(sel);
+      // buildings
+      ents.filter(isB).forEach((b) => {
+        const x = b.tx * T, y = b.ty * T, w = b.w * T, h = b.h * T, c = COL[b.side];
+        if (selSet.has(b.id)) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.strokeRect(x - 3, y - 3, w + 6, h + 6); }
+        if (b.kind === "tower" && (selSet.has(b.id) || b.side === 0 && placing === "tower")) { ctx.strokeStyle = "rgba(255,216,77,.6)"; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, B.tower.rng * T, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = "#ffd84d"; ctx.font = "800 10px Manrope, sans-serif"; ctx.textAlign = "center"; ctx.fillText("100 м", x + w / 2, y + h / 2 - B.tower.rng * T + 12); }
+        ctx.globalAlpha = b.prog < 1 ? .55 : 1;
+        ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(x + 3, y + 5, w, h);
+        ctx.fillStyle = b.kind === "port" ? "#a0785a" : "#b8b0a0"; ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+        ctx.fillStyle = c; ctx.fillRect(x + 1, y + 1, w - 2, b.kind === "tower" ? 8 : 12);
+        ctx.strokeStyle = "#5b4a3a"; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+        ctx.font = `${b.kind === "tower" ? 22 : 30}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(B[b.kind].ico, x + w / 2, y + h / 2 + 4);
+        ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x + w - 6, y - 10); ctx.lineTo(x + w - 6, y + 4); ctx.lineTo(x + w - 18, y - 6 + Math.sin(t * 4) * 2); ctx.closePath(); ctx.fill(); ctx.fillStyle = "#3a2a1a"; ctx.fillRect(x + w - 7, y - 12, 2, 18);
+        ctx.globalAlpha = 1;
+        if (b.prog < 1) { ctx.strokeStyle = "#8a5a2b"; ctx.lineWidth = 2; for (let i = 0; i < w; i += 10) { ctx.beginPath(); ctx.moveTo(x + i, y); ctx.lineTo(x + i + 10, y + h); ctx.stroke(); } bar(x, y + h + 2, w, b.prog, "#ffd84d"); }
+        if (b.hp < b.max && b.prog >= 1) bar(x, y - 6, w, b.hp / b.max, b.hp / b.max < .35 ? "#ef4444" : "#9be15d");
+        if (b.queue.length && b.prog >= 1) bar(x, y + h + 2, w, b.tp / U[b.queue[0]].time, "#5ce1e6");
+        if (b.rally && selSet.has(b.id)) { ctx.font = "14px sans-serif"; ctx.fillText("🚩", b.rally[0] * T + 12, b.rally[1] * T + 10); }
+      });
+      // units
+      ents.filter(isU).forEach((u) => {
+        const x = u.x * T, y = u.y * T, d = U[u.kind], c = COL[u.side];
+        if (selSet.has(u.id)) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y + 6, 12, 6, 0, 0, 7); ctx.stroke(); }
+        if (d.naval) {
+          ctx.save(); ctx.translate(x, y); ctx.rotate(u.ang);
+          ctx.fillStyle = u.kind === "tanker" ? "#3a3a46" : "#6a7686"; ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(6, -8); ctx.lineTo(-14, -8); ctx.lineTo(-14, 8); ctx.lineTo(6, 8); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = c; ctx.fillRect(-10, -5, 12, 10);
+          if (u.kind === "destroyer") { ctx.fillStyle = "#33384d"; ctx.fillRect(2, -2, 12, 4); }
+          ctx.restore();
+          ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.arc(x - Math.cos(u.ang) * 14, y - Math.sin(u.ang) * 14, 4 + Math.sin(t * 6) * 1.5, 0, 7); ctx.stroke();
+        } else {
+          ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(x, y + 7, 8, 3.5, 0, 0, 7); ctx.fill();
+          const bob = (u.path.length ? Math.abs(Math.sin(t * 10 + u.id)) * 2 : 0);
+          ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y - bob, 8, 0, 7); ctx.fill();
+          ctx.fillStyle = "#f0c8a8"; ctx.beginPath(); ctx.arc(x + Math.cos(u.ang) * 3, y - bob + Math.sin(u.ang) * 3, 4.5, 0, 7); ctx.fill();
+          ctx.font = '12px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          const working = u.task.t === "gather" && u.task.work > 0 ? Math.sin(t * 14) * .5 : 0;
+          ctx.save(); ctx.translate(x + Math.cos(u.ang) * 9, y - bob + Math.sin(u.ang) * 9); ctx.rotate(working); ctx.fillText(d.ico, 0, 0); ctx.restore();
+        }
+        if (u.carry) { ctx.fillStyle = u.ctype === GOLD ? "#ffd84d" : u.ctype === TREE ? "#8a5a2b" : "#0b0b10"; ctx.fillRect(x - 4, y - 16, 8, 6); }
+        if (u.hp < u.max) bar(x - 10, y - 20, 20, u.hp / u.max, u.hp / u.max < .35 ? "#ef4444" : "#9be15d");
+      });
+      // projectiles
+      proj = proj.filter((p) => (p.t += 1 / 60 * 4) < 1);
+      proj.forEach((p) => { const x = (p.x0 + (p.x1 - p.x0) * p.t) * T, y = (p.y0 + (p.y1 - p.y0) * p.t) * T - Math.sin(p.t * Math.PI) * 10; ctx.fillStyle = p.col; if (p.big) { ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fill(); } else { ctx.strokeStyle = p.col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - (p.x1 - p.x0) * 2, y - (p.y1 - p.y0) * 2); ctx.stroke(); } });
+      // placement ghost
+      if (placing && ghost) { const sz = B[placing].size, ok = canPlace(placing, ghost.x, ghost.y); ctx.fillStyle = ok ? "rgba(155,225,93,.45)" : "rgba(255,59,79,.45)"; ctx.fillRect(ghost.x * T, ghost.y * T, sz * T, sz * T); ctx.font = '22px sans-serif'; ctx.textAlign = "center"; ctx.fillText(B[placing].ico, ghost.x * T + sz * T / 2, ghost.y * T + sz * T / 2); }
+      // floating text
+      floats = floats.filter((f) => (f.t -= 1 / 60) > 0);
+      floats.forEach((f) => { ctx.globalAlpha = Math.min(1, f.t * 2); ctx.font = "800 12px Manrope, sans-serif"; ctx.textAlign = "center"; ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,.6)"; ctx.strokeText(f.s, f.x * T, f.y * T - (1 - f.t) * 14); ctx.fillStyle = "#fff"; ctx.fillText(f.s, f.x * T, f.y * T - (1 - f.t) * 14); ctx.globalAlpha = 1; });
+      ctx.restore();
+      // minimap
+      const m = miniRect(), k = m.w / MW;
+      ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(m.x - 2, m.y - 2, m.w + 4, m.h + 4);
+      ctx.drawImage(terr, 0, 0, MW * T, MH * T, m.x, m.y, m.w, m.h);
+      ents.forEach((e) => { ctx.fillStyle = COL[e.side]; if (isB(e)) ctx.fillRect(m.x + e.tx * k, m.y + e.ty * k, e.w * k, e.h * k); else ctx.fillRect(m.x + e.x * k - 1, m.y + e.y * k - 1, 2.5, 2.5); });
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1; ctx.strokeRect(m.x + cam.x / T * k, m.y + cam.y / T * k, vw / T * k, vh / T * k);
+    }
+    function bar(x, y, w, k, c) { ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(x, y, w, 4); ctx.fillStyle = c; ctx.fillRect(x, y, w * Math.max(0, Math.min(1, k)), 4); }
+
+    // ---------- loop ----------
+    function fit() {
+      const w = Math.min(wrapEl.clientWidth || 360, 440); vw = Math.round(w); vh = Math.round(w * 1.05);
+      dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = vw * dpr; cv.height = vh * dpr; cv.style.height = vh + "px"; clampCam();
+    }
+    function frame(now) {
+      raf = 0; if ($("#mine").hidden) return;
+      const dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
+      if (state === "run") {
+        gameT += dt;
+        ents.slice().forEach((e) => { if (!ents.includes(e)) return; isU(e) ? updUnit(e, dt) : updBuilding(e, dt); });
+        // soft separation so units don't stack
+        const us = ents.filter(isU);
+        for (let i = 0; i < us.length; i++) for (let j = i + 1; j < us.length; j++) { const a = us[i], b = us[j]; if (!!U[a.kind].naval !== !!U[b.kind].naval) continue; const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy); if (d > 0 && d < .55) { const push = (.55 - d) * .5, nx = dx / d * push, ny = dy / d * push; if (!a.path.length && pass(Math.floor(a.x - nx), Math.floor(a.y - ny), !!U[a.kind].naval)) { a.x -= nx; a.y -= ny; } if (!b.path.length && pass(Math.floor(b.x + nx), Math.floor(b.y + ny), !!U[b.kind].naval)) { b.x += nx; b.y += ny; } } }
+        ai(dt);
+        winT -= dt; if (winT <= 0) { winT = 1; checkEnd(); }
+        uiT -= dt; if (uiT <= 0) { uiT = .3; ui(); }
+      }
+      if (tile) render(now / 1000);
+      raf = requestAnimationFrame(frame);
+    }
+    window.addEventListener("resize", () => { if (!$("#mine").hidden) fit(); });
+    $("#mmWins").textContent = wins;
+    if (location.hash === "#mmdebug") window.__mm = { ents: () => ents, res: () => res, cam, T, tile: () => tile, MW, B, U };
+    return {
+      enter() { fit(); if (!tile) { gen(); res = [{ g: 1000, w: 300, o: 0 }, { g: 1000, w: 300, o: 0 }]; centerOn(6, 25); } last = 0; if (!raf) raf = requestAnimationFrame(frame); ui(true); },
+      leave() { if (raf) cancelAnimationFrame(raf); raf = 0; },
+      key() {},
+      best: () => String(wins),
     };
   })();
 
@@ -7904,8 +8459,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, mk: MK, dubai: Dubai };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -7923,6 +8478,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubSoda").textContent = Soda.best();
     $("#hubDress").textContent = Dress.best();
     $("#hubCook").textContent = Cook.best();
+    $("#hubMine").textContent = Mine.best();
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
   }
@@ -7939,7 +8495,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
