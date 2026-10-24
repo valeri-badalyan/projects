@@ -249,6 +249,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ghost-wrap:not(.full) .ghost-close { display: none; }
 .ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+/* ---------- Phone + V3 Snap ---------- */
+.phone-wrap { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(8,8,20,.72); padding: 12px; }
+.phone { position: relative; width: min(340px, 100%); height: min(700px, calc(100vh - 24px)); border-radius: 38px; background: #0b0b12; border: 3px solid #3a3a52; box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 0 6px #000; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
+.phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 92px; height: 22px; border-radius: 12px; background: #000; z-index: 3; }
+.phone-screen { position: relative; flex: 1; border-radius: 28px; overflow: hidden; background: #fffc00; display: flex; flex-direction: column; min-height: 0; color: #12132a; }
+.phone-bar { display: flex; justify-content: space-between; align-items: center; padding: 8px 18px 4px; font: 800 12px var(--mono); color: #12132a; }
+.phone-x { position: absolute; top: 8px; right: 8px; z-index: 4; width: 34px; height: 34px; border-radius: 50%; border: 0; background: rgba(0,0,0,.55); color: #fff; font-size: 15px; cursor: pointer; }
+.ph-home { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 30px 16px; background: linear-gradient(160deg, #6a3cff, #ff5ad1 60%, #ffb547); color: #fff; }
+.ph-clock { font: 900 54px var(--mono); letter-spacing: -2px; text-shadow: 0 3px 10px rgba(0,0,0,.25); }
+.ph-date { margin-top: -14px; font-weight: 800; font-size: 14px; opacity: .9; }
+.ph-apps { display: grid; grid-template-columns: repeat(3, 72px); gap: 16px; margin-top: 10px; }
+.ph-app { display: flex; flex-direction: column; align-items: center; gap: 5px; border: 0; background: none; color: #fff; font-weight: 800; font-size: 11.5px; cursor: pointer; }
+.ph-app i { width: 60px; height: 60px; border-radius: 16px; display: grid; place-items: center; font-style: normal; font-size: 30px; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.ph-app[disabled] { opacity: .55; cursor: default; }
+.snap { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #fffc00; }
+.snap-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 12px 6px; }
+.snap-top b { font: 900 17px var(--display); letter-spacing: 1px; }
+.snap-top button { border: 0; background: rgba(0,0,0,.08); border-radius: 999px; padding: 6px 10px; font-weight: 800; font-size: 12px; cursor: pointer; color: #12132a; }
+#snapCanvas { display: block; width: 100%; aspect-ratio: 1 / 1; background: #222; touch-action: manipulation; }
+.snap-lenses { display: flex; gap: 8px; overflow-x: auto; padding: 8px 10px 4px; scrollbar-width: none; }
+.snap-lenses button { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; font-size: 24px; display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.snap-lenses button[aria-pressed="true"] { border-color: #12132a; transform: scale(1.12); }
+.snap-food-l { padding: 2px 12px 0; font-size: 11.5px; font-weight: 800; }
+.snap-food { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding: 6px 10px; }
+.snap-food button { flex: none; position: relative; width: 44px; height: 44px; border-radius: 12px; border: 2px solid rgba(0,0,0,.15); background: #fff; font-size: 23px; cursor: pointer; }
+.snap-food button small { position: absolute; right: -4px; top: -6px; background: #ff3b6b; color: #fff; border-radius: 999px; font: 800 10px var(--mono); padding: 1px 5px; }
+.snap-bottom { display: flex; align-items: center; justify-content: space-between; padding: 4px 14px 10px; margin-top: auto; }
+.snap-shutter { width: 58px; height: 58px; border-radius: 50%; border: 5px solid #12132a; background: #fff; cursor: pointer; }
+.snap-bottom .snap-side { min-width: 84px; border: 0; background: rgba(0,0,0,.08); border-radius: 999px; padding: 8px 10px; font-weight: 800; font-size: 12px; cursor: pointer; color: #12132a; }
+.snap-mem { flex: 1; overflow-y: auto; padding: 8px 12px 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-content: start; }
+.snap-mem img { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; display: block; object-fit: cover; }
+.snap-mem p { grid-column: 1 / -1; text-align: center; font-weight: 700; font-size: 13px; }
 /* ---------- Just Dubai! ---------- */
 #dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1539,6 +1571,42 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <p class="shop-note">Всё, что купил в Deira City Center. Одежду можно надеть или дать другому персонажу, еду — съесть, остальное — взять в руки. Всё видно на персонаже во всех играх.</p>
     <div class="inv-grid" id="invGrid"></div>
     <p class="shop-toast" id="invToast" aria-live="polite"></p>
+  </div>
+</div>
+
+<!-- ===== Phone (from Мои вещи) ===== -->
+<div class="phone-wrap" id="phoneModal" hidden role="dialog" aria-modal="true" aria-label="Телефон">
+  <div class="phone">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <button class="phone-x" type="button" id="phoneClose" aria-label="Закрыть телефон">✕</button>
+      <div class="phone-bar"><span id="phTime">12:00</span><span>5G ▮▮▮ 🔋</span></div>
+      <div class="ph-home" id="phHome">
+        <div class="ph-clock" id="phClock">12:00</div>
+        <div class="ph-date" id="phDate"></div>
+        <div class="ph-apps">
+          <button class="ph-app" type="button" id="phSnapApp"><i style="background:#fffc00;color:#12132a">😋</i>V3 Snap</button>
+          <button class="ph-app" type="button" id="phMemApp"><i style="background:#fff">🖼️</i>Воспоминания</button>
+          <button class="ph-app" type="button" disabled><i style="background:#2fa84a">📞</i>Звонки</button>
+        </div>
+      </div>
+      <div class="snap" id="snapApp" hidden>
+        <div class="snap-top"><button type="button" id="snapHome">‹ Домой</button><b>V3 SNAP</b><span id="snapStreak">🔥 0</span></div>
+        <canvas id="snapCanvas" width="300" height="300" aria-label="Рожица"></canvas>
+        <div class="snap-lenses" id="snapLenses" aria-label="Рожицы"></div>
+        <div class="snap-food-l">Покорми — нажми на еду:</div>
+        <div class="snap-food" id="snapFood"></div>
+        <div class="snap-bottom">
+          <button class="snap-side" type="button" id="snapMemBtn">🖼️ 0</button>
+          <button class="snap-shutter" type="button" id="snapShot" aria-label="Сделать снап"></button>
+          <button class="snap-side" type="button" id="snapNext">Другая ›</button>
+        </div>
+      </div>
+      <div class="snap" id="snapMemView" hidden>
+        <div class="snap-top"><button type="button" id="snapMemBack">‹ Назад</button><b>ВОСПОМИНАНИЯ</b><span></span></div>
+        <div class="snap-mem" id="snapMem"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -4692,6 +4760,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (cloth) {
           b.textContent = onMe ? "Снять" : "Надеть"; if (!onMe) b.classList.add("ghost");
           b.addEventListener("click", () => wear(name));
+        } else if (name === "Телефон") {
+          b.textContent = "Посмотреть 📱";
+          b.addEventListener("click", () => { close(); Phone.open(); });
         } else {
           b.textContent = food ? "Съесть" : data.held === name ? "Убрать" : "Взять в руки";
           if (!food && data.held !== name) b.classList.add("ghost");
@@ -4738,7 +4809,223 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
     Hero.refresh(); badges(); setState("local");
-    return { add, count: () => Object.values(data.items).reduce((a, it) => a + it.n, 0) };
+    return {
+      add, count: () => Object.values(data.items).reduce((a, it) => a + it.n, 0),
+      foods: () => Object.entries(data.items).filter(([, it]) => FOOD.includes(it.shop)).map(([name, it]) => ({ name, ico: it.ico, n: it.n })),
+      eat(name) { const it = data.items[name]; if (!it || !FOOD.includes(it.shop)) return false; it.n--; if (!it.n) delete data.items[name]; commit(); return true; },
+    };
+  })();
+
+  // ---------- Phone with V3 Snap: feed the faces ----------
+  const Phone = (() => {
+    const modal = $("#phoneModal"), cv = $("#snapCanvas"), ctx = cv.getContext("2d");
+    const W = 300, H = 300, CX = 150, CY = 150;
+    const FACES = [
+      { id: "cat", name: "Котик", col: "#ffb547", ico: "🐱", fav: "Рыбка", yuck: "Брокколи" },
+      { id: "dog", name: "Пёсик", col: "#c9a26b", ico: "🐶", fav: "Косточка", yuck: "Мороженое" },
+      { id: "frog", name: "Лягушка", col: "#7bd65a", ico: "🐸", fav: "Муха", yuck: "Пицца" },
+      { id: "alien", name: "Пришелец", col: "#9be15d", ico: "👽", fav: "Мороженое", yuck: "Яблоко" },
+      { id: "robot", name: "Робот", col: "#9fb3cc", ico: "🤖", fav: "Гайка", yuck: "Мороженое" },
+      { id: "monkey", name: "Обезьянка", col: "#a0785a", ico: "🐵", fav: "Банан", yuck: "Гайка" },
+      { id: "bear", name: "Мишка", col: "#8a5a34", ico: "🐻", fav: "Мёд", yuck: "Муха" },
+      { id: "panda", name: "Панда", col: "#f4f4f4", ico: "🐼", fav: "Бамбук", yuck: "Рыбка" },
+      { id: "unicorn", name: "Единорог", col: "#ffc3f0", ico: "🦄", fav: "Печенье", yuck: "Косточка" },
+    ];
+    const FOODS = [["🍎", "Яблоко", 12], ["🍌", "Банан", 14], ["🍪", "Печенье", 16], ["🍕", "Пицца", 24], ["🐟", "Рыбка", 18], ["🦴", "Косточка", 18], ["🪰", "Муха", 8], ["🍯", "Мёд", 18], ["🔩", "Гайка", 14], ["🎋", "Бамбук", 14], ["🥦", "Брокколи", 10], ["🍦", "Мороженое", 16]];
+    let face = 0, raf = 0, last = 0, lastFocus = null;
+    let fly = null, mouth = 0, chew = 0, mood = "idle", moodT = 0, say = "", sayT = 0, blink = 0, flash = 0, shake = 0;
+    let parts = [];
+    let st = store.get("snapFaces", {}); if (!st || typeof st !== "object") st = {};
+    let mem = store.get("snapMem", []); if (!Array.isArray(mem)) mem = [];
+    const fs = (id) => { const o = st[id] || (st[id] = { full: 40, t: Date.now(), streak: 0, day: "" }); const dec = Math.floor((Date.now() - (o.t || Date.now())) / 90000); if (dec > 0) { o.full = Math.max(0, o.full - dec); o.t = Date.now(); } return o; };
+    const today = () => new Date().toISOString().slice(0, 10);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    function lenses() {
+      const box = $("#snapLenses"); box.innerHTML = "";
+      FACES.forEach((f, i) => {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = f.ico; b.style.background = f.col;
+        b.setAttribute("aria-label", f.name); b.setAttribute("aria-pressed", String(i === face));
+        b.addEventListener("click", () => pick(i)); box.appendChild(b);
+      });
+    }
+    function foods() {
+      const box = $("#snapFood"); box.innerHTML = "";
+      Inv.foods().forEach((f) => {
+        const b = document.createElement("button"); b.type = "button"; b.title = `${f.name} (из твоих вещей)`; b.setAttribute("aria-label", b.title);
+        b.textContent = f.ico; const sm = document.createElement("small"); sm.textContent = f.n; b.appendChild(sm);
+        b.addEventListener("click", (e) => feed({ ico: f.ico, name: f.name, val: 30, mine: true }, e.currentTarget)); box.appendChild(b);
+      });
+      FOODS.forEach(([ico, name, val]) => {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = ico; b.title = name; b.setAttribute("aria-label", name);
+        b.addEventListener("click", (e) => feed({ ico, name, val }, e.currentTarget)); box.appendChild(b);
+      });
+    }
+    function pick(i) {
+      face = (i + FACES.length) % FACES.length; fly = null; mood = "idle"; mouth = 0; chew = 0;
+      const f = FACES[face]; talk(`Привет! Я ${f.name}. Люблю: ${f.fav.toLowerCase()}`);
+      lenses(); top();
+    }
+    function top() { const o = fs(FACES[face].id); $("#snapStreak").textContent = `🔥 ${o.streak || 0}`; $("#snapMemBtn").textContent = `🖼️ ${mem.length}`; }
+    function talk(t) { say = t; sayT = 2.6; }
+    function feed(food, btn) {
+      if (fly) return;
+      const f = FACES[face], o = fs(f.id);
+      if (o.full >= 100 && food.name !== f.fav) { talk("Я сыт! Больше не влезет 😵"); shake = .5; mood = "full"; moodT = 1.2; return; }
+      if (food.mine && !Inv.eat(food.name)) return;
+      const r = btn.getBoundingClientRect(), c = cv.getBoundingClientRect();
+      const sx = ((r.left + r.width / 2) - c.left) * W / c.width, sy = Math.min(H + 30, ((r.top + r.height / 2) - c.top) * H / c.height);
+      fly = { ...food, x: sx, y: sy, sx, sy, t: 0 };
+      if (food.mine) foods();
+    }
+    function bite() {
+      const f = FACES[face], o = fs(f.id), food = fly; fly = null;
+      if (food.name === f.yuck) {
+        mood = "yuck"; moodT = 1.4; shake = .6; talk(`Фу! ${food.name} — не люблю!`);
+        for (let i = 0; i < 6; i++) parts.push({ x: CX, y: CY + 40, vx: rnd(-160, 160), vy: rnd(-200, -60), t: 1, e: food.ico, s: 14 });
+        return;
+      }
+      chew = 1.2; mood = food.name === f.fav ? "love" : "happy"; moodT = 1.6;
+      o.full = Math.min(100, o.full + food.val * (food.name === f.fav ? 2 : 1)); o.t = Date.now();
+      if (o.day !== today()) { const y = new Date(Date.now() - 864e5).toISOString().slice(0, 10); o.streak = o.day === y ? (o.streak || 0) + 1 : 1; o.day = today(); }
+      store.set("snapFaces", st);
+      if (food.name === f.fav) { talk(`Ммм! ${food.name} — моё любимое! ❤️`); for (let i = 0; i < 8; i++) parts.push({ x: CX + rnd(-60, 60), y: CY + rnd(-20, 30), vx: rnd(-30, 30), vy: rnd(-120, -60), t: 1.4, e: "❤️", s: 18 }); }
+      else talk(pickLine());
+      for (let i = 0; i < 5; i++) parts.push({ x: CX + rnd(-14, 14), y: CY + 52, vx: rnd(-70, 70), vy: rnd(-90, -20), t: .7, crumb: true });
+      if (o.full >= 100) { talk("Я наелся! Спасибо! +10 монет"); Hero.grant(10); mood = "love"; }
+      top();
+    }
+    const LINES = ["Ням-ням!", "Вкусно!", "Ещё!", "Хрум-хрум!", "Омном-ном!", "Класс!"];
+    const pickLine = () => LINES[(Math.random() * LINES.length) | 0];
+    function snap() {
+      flash = 1;
+      try {
+        const c = document.createElement("canvas"); c.width = 150; c.height = 150; c.getContext("2d").drawImage(cv, 0, 0, 150, 150);
+        mem.unshift({ src: c.toDataURL("image/jpeg", .7), t: Date.now(), name: FACES[face].name });
+        mem = mem.slice(0, 12); store.set("snapMem", mem);
+      } catch (e) { /* the photo still flashes even if it cannot be saved */ }
+      talk("Снап! Сохранено в Воспоминания 📸"); top();
+    }
+
+    // ---------- drawing ----------
+    function ell(x, y, rx, ry, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); }
+    function draw(t, dt) {
+      const f = FACES[face], o = fs(f.id);
+      // background: a "camera" room
+      const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#5ad1ff"); g.addColorStop(1, "#ff8ad1"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      for (let i = 0; i < 8; i++) ell((i * 53 + t * 12) % (W + 40) - 20, 30 + (i % 3) * 22, 3, 3, "rgba(255,255,255,.55)");
+      ctx.save();
+      const sx = shake > 0 ? Math.sin(t * 50) * 8 * shake : 0, bob = Math.sin(t * 2) * 3;
+      ctx.translate(sx, bob + (mood === "love" ? Math.sin(t * 10) * 2 : 0));
+      const R = 92, col = f.col;
+      // ears / extras behind the head
+      ctx.fillStyle = col; ctx.strokeStyle = "rgba(0,0,0,.18)"; ctx.lineWidth = 3;
+      const tri = (x1, y1, x2, y2, x3, y3, c) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.lineTo(x3, y3); ctx.closePath(); ctx.fill(); };
+      if (f.id === "cat") { tri(CX - 80, CY - 40, CX - 70, CY - 115, CX - 25, CY - 80, col); tri(CX + 80, CY - 40, CX + 70, CY - 115, CX + 25, CY - 80, col); tri(CX - 68, CY - 55, CX - 64, CY - 98, CX - 38, CY - 78, "#ff8ab0"); tri(CX + 68, CY - 55, CX + 64, CY - 98, CX + 38, CY - 78, "#ff8ab0"); }
+      if (f.id === "dog") { ctx.save(); ctx.translate(CX - 82, CY - 10); ctx.rotate(.25); ell(0, 0, 24, 52, "#8a5a34"); ctx.restore(); ctx.save(); ctx.translate(CX + 82, CY - 10); ctx.rotate(-.25); ell(0, 0, 24, 52, "#8a5a34"); ctx.restore(); }
+      if (f.id === "bear" || f.id === "panda") { const ec = f.id === "panda" ? "#222" : col; ell(CX - 66, CY - 70, 26, 26, ec); ell(CX + 66, CY - 70, 26, 26, ec); ell(CX - 66, CY - 70, 13, 13, f.id === "panda" ? "#444" : "#c9a26b"); ell(CX + 66, CY - 70, 13, 13, f.id === "panda" ? "#444" : "#c9a26b"); }
+      if (f.id === "monkey") { ell(CX - 94, CY, 24, 28, col); ell(CX + 94, CY, 24, 28, col); ell(CX - 94, CY, 13, 16, "#f0c9a0"); ell(CX + 94, CY, 13, 16, "#f0c9a0"); }
+      if (f.id === "alien") { ctx.strokeStyle = col; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(CX - 30, CY - 80); ctx.lineTo(CX - 50, CY - 125); ctx.moveTo(CX + 30, CY - 80); ctx.lineTo(CX + 50, CY - 125); ctx.stroke(); ell(CX - 50, CY - 125, 9, 9, "#ff5ad1"); ell(CX + 50, CY - 125, 9, 9, "#ff5ad1"); }
+      if (f.id === "robot") { ctx.strokeStyle = "#4a4a5a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(CX, CY - 92); ctx.lineTo(CX, CY - 122); ctx.stroke(); ell(CX, CY - 126, 9, 9, Math.sin(t * 6) > 0 ? "#ff3b3b" : "#ffd84d"); rect(CX - 104, CY - 22, 16, 44, "#4a4a5a"); rect(CX + 88, CY - 22, 16, 44, "#4a4a5a"); }
+      if (f.id === "unicorn") { tri(CX - 14, CY - 84, CX + 14, CY - 84, CX, CY - 140, "#ffd84d"); tri(CX - 70, CY - 50, CX - 60, CY - 105, CX - 30, CY - 80, col); tri(CX + 70, CY - 50, CX + 60, CY - 105, CX + 30, CY - 80, col); }
+      // head
+      if (f.id === "robot") { ctx.fillStyle = col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(CX - R, CY - R, R * 2, R * 2, 26); else ctx.rect(CX - R, CY - R, R * 2, R * 2); ctx.fill(); }
+      else if (f.id === "frog") { ell(CX, CY + 10, R + 6, R - 10, col); ell(CX - 42, CY - 62, 34, 34, col); ell(CX + 42, CY - 62, 34, 34, col); }
+      else if (f.id === "alien") { ell(CX, CY, R - 8, R + 4, col); }
+      else ell(CX, CY, R, R, col);
+      if (f.id === "panda") { ctx.save(); ctx.translate(CX - 36, CY - 12); ctx.rotate(-.5); ell(0, 0, 22, 28, "#222"); ctx.restore(); ctx.save(); ctx.translate(CX + 36, CY - 12); ctx.rotate(.5); ell(0, 0, 22, 28, "#222"); ctx.restore(); }
+      if (f.id === "monkey") ell(CX, CY + 26, 62, 50, "#f0c9a0");
+      if (f.id === "dog" || f.id === "bear") ell(CX, CY + 30, 44, 34, f.id === "dog" ? "#f2e2c4" : "#c9a26b");
+      if (f.id === "unicorn") { ell(CX - 70, CY - 60, 18, 10, "#ff5ad1"); ell(CX - 58, CY - 75, 16, 10, "#7b5cff"); ell(CX - 44, CY - 86, 14, 9, "#5ce1e6"); }
+      // eyes (follow the food)
+      blink -= dt; if (blink < -3.2) blink = .15;
+      const look = fly ? { x: (fly.x - CX) / 40, y: (fly.y - CY) / 40 } : { x: Math.sin(t * .7) * 1.5, y: 0 };
+      const lx = Math.max(-5, Math.min(5, look.x)), ly = Math.max(-5, Math.min(5, look.y));
+      const eyeY = f.id === "frog" ? CY - 62 : CY - 18, eyeX = f.id === "frog" ? 42 : 34;
+      [-1, 1].forEach((sgn) => {
+        const ex = CX + sgn * eyeX;
+        if (mood === "yuck") { ctx.strokeStyle = "#12132a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(ex - 12, eyeY - 8); ctx.lineTo(ex + 12, eyeY + 2); ctx.moveTo(ex - 12, eyeY + 2); ctx.lineTo(ex + 12, eyeY - 8); ctx.stroke(); return; }
+        if (mood === "love") { ctx.font = "30px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("❤️", ex, eyeY); return; }
+        if (blink > 0 || chew > 0 && Math.sin(t * 18) > .6) { ctx.strokeStyle = "#12132a"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(ex, eyeY, 12, .15 * Math.PI, .85 * Math.PI); ctx.stroke(); return; }
+        if (f.id === "alien") { ctx.save(); ctx.translate(ex, eyeY); ctx.rotate(sgn * .5); ell(0, 0, 16, 24, "#12132a"); ctx.restore(); ell(ex + lx, eyeY + ly - 6, 4, 5, "#fff"); return; }
+        if (f.id === "robot") { rect(ex - 16, eyeY - 12, 32, 24, "#12132a"); rect(ex - 8 + lx, eyeY - 6 + ly * .6, 16, 12, "#5ce1e6"); return; }
+        ell(ex, eyeY, 15, 17, "#fff"); ell(ex + lx, eyeY + ly, 8, 9, "#12132a"); ell(ex + lx + 3, eyeY + ly - 3, 2.6, 2.6, "#fff");
+      });
+      // cheeks + nose
+      if (f.id !== "robot") { ell(CX - 58, CY + 18, 12, 8, "rgba(255,90,140,.35)"); ell(CX + 58, CY + 18, 12, 8, "rgba(255,90,140,.35)"); }
+      if (["cat", "dog", "bear", "panda", "monkey"].includes(f.id)) ell(CX, CY + 8, 10, 7, f.id === "cat" ? "#ff6b9a" : "#2a1a14");
+      // mouth: opens wide as food approaches, chews after a bite
+      let open = 0;
+      if (fly) { const dd = Math.hypot(fly.x - CX, fly.y - (CY + 42)); open = Math.max(0, 1 - dd / 170); }
+      if (chew > 0) open = Math.abs(Math.sin(t * 14)) * .45;
+      if (mood === "full") open = .1;
+      mouth += (open - mouth) * Math.min(1, dt * 14);
+      const my = CY + 42, mw = 34 + mouth * 10, mh = 6 + mouth * 34;
+      if (mood === "yuck") { ctx.strokeStyle = "#5a2a2a"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(CX - 26, my + 8); for (let i = 0; i <= 6; i++) ctx.lineTo(CX - 26 + i * 8.6, my + (i % 2 ? 0 : 10)); ctx.stroke(); ell(CX + 18, my + 18, 9, 12, "#ff6b9a"); }
+      else if (mouth < .12 && chew <= 0) { ctx.strokeStyle = "#5a2a2a"; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath(); ctx.arc(CX, my - 10, 22, .15 * Math.PI, .85 * Math.PI); ctx.stroke(); }
+      else { ell(CX, my, mw, mh, "#5a1a2a"); ell(CX, my + mh * .45, mw * .6, mh * .4, "#ff6b8a"); if (f.id !== "frog") rect(CX - 12, my - mh + 1, 24, Math.min(8, mh * .3), "#fff"); }
+      ctx.restore();
+      // the flying food
+      if (fly) {
+        fly.t = Math.min(1, fly.t + dt * 1.9);
+        const k = fly.t, tx = CX, ty = CY + 42;
+        fly.x = fly.sx + (tx - fly.sx) * k; fly.y = fly.sy + (ty - fly.sy) * k - Math.sin(k * Math.PI) * 90;
+        ctx.font = `${Math.round(38 - k * 10)}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(fly.ico, fly.x, fly.y);
+        if (fly.t >= 1) bite();
+      }
+      // particles
+      parts = parts.filter((q) => (q.t -= dt) > 0);
+      parts.forEach((q) => { q.x += q.vx * dt; q.y += q.vy * dt; q.vy += 300 * dt;
+        if (q.crumb) ell(q.x, q.y, 3, 3, "#c98a3a"); else { ctx.globalAlpha = Math.min(1, q.t * 2); ctx.font = `${q.s}px sans-serif`; ctx.textAlign = "center"; ctx.fillText(q.e, q.x, q.y); ctx.globalAlpha = 1; } });
+      // hunger bar + name
+      rect(14, 12, 140, 30, "rgba(0,0,0,.35)");
+      ctx.font = "800 11px Manrope, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillStyle = "#fff"; ctx.fillText(`${f.name} · сытость`, 20, 21);
+      rect(20, 30, 128, 7, "rgba(255,255,255,.3)"); rect(20, 30, 128 * o.full / 100, 7, o.full >= 100 ? "#7bd65a" : o.full < 25 ? "#ff3b6b" : "#ffd84d");
+      // speech bubble
+      if (sayT > 0) {
+        sayT -= dt; ctx.font = "800 13px Manrope, sans-serif"; const w = Math.min(W - 24, ctx.measureText(say).width + 20);
+        ctx.globalAlpha = Math.min(1, sayT * 3); ctx.fillStyle = "#fff"; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(W / 2 - w / 2, H - 40, w, 28, 14); else ctx.rect(W / 2 - w / 2, H - 40, w, 28); ctx.fill();
+        ctx.fillStyle = "#12132a"; ctx.textAlign = "center"; ctx.fillText(say, W / 2, H - 26, W - 34); ctx.globalAlpha = 1;
+      }
+      if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash})`; ctx.fillRect(0, 0, W, H); flash = Math.max(0, flash - dt * 2.5); }
+      chew = Math.max(0, chew - dt); shake = Math.max(0, shake - dt); moodT -= dt; if (moodT <= 0 && mood !== "idle") mood = o.full >= 100 ? "full" : "idle";
+      if (mood === "full" && moodT <= 0 && o.full < 100) mood = "idle";
+    }
+    function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+    function loop(now) {
+      raf = 0; if (modal.hidden || $("#snapApp").hidden) return;
+      const dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
+      const ratio = Math.min(2, window.devicePixelRatio || 1);
+      if (cv.width !== 300 * ratio) { cv.width = 300 * ratio; cv.height = 300 * ratio; }
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      draw(now / 1000, dt); raf = requestAnimationFrame(loop);
+    }
+    function view(which) {
+      $("#phHome").hidden = which !== "home"; $("#snapApp").hidden = which !== "snap"; $("#snapMemView").hidden = which !== "mem";
+      if (which === "snap") { lenses(); foods(); top(); if (!say) pick(face); last = 0; if (!raf) raf = requestAnimationFrame(loop); }
+      if (which === "mem") {
+        const box = $("#snapMem"); box.innerHTML = "";
+        if (!mem.length) box.innerHTML = "<p>Пока пусто. Открой V3 Snap и нажми большую круглую кнопку.</p>";
+        mem.forEach((m) => { const im = document.createElement("img"); im.src = m.src; im.alt = `Снап: ${m.name}`; box.appendChild(im); });
+      }
+    }
+    function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
+    function open() { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view("home"); $("#phSnapApp").focus(); }
+    function close() { modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    $("#phoneClose").addEventListener("click", close);
+    modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
+    $("#phSnapApp").addEventListener("click", () => view("snap"));
+    $("#phMemApp").addEventListener("click", () => view("mem"));
+    $("#snapHome").addEventListener("click", () => view("home"));
+    $("#snapMemBtn").addEventListener("click", () => view("mem"));
+    $("#snapMemBack").addEventListener("click", () => view(raf || say ? "snap" : "home"));
+    $("#snapShot").addEventListener("click", snap);
+    $("#snapNext").addEventListener("click", () => pick(face + 1));
+    let sx0 = null;
+    cv.addEventListener("pointerdown", (e) => { sx0 = e.clientX; });
+    cv.addEventListener("pointerup", (e) => { if (sx0 !== null && Math.abs(e.clientX - sx0) > 50) pick(face + (e.clientX < sx0 ? 1 : -1)); sx0 = null; });
+    return { open, close };
   })();
 
   const Dubai = (() => {
