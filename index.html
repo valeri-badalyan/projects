@@ -313,6 +313,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- Soda factory ---------- */
+.fix-board.soda-board { background: linear-gradient(#cfe6f2 0 330px, #b9c3cf 330px), #b9c3cf; }
+.fix-board.soda-board::before { background: repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 36px), repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 36px); }
+.fix-board.soda-board::after { background: linear-gradient(#6b7686, #9aa6b5); }
+#soda .gtitle { font-size: clamp(12px, 3.6vw, 17px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.soda-plant { position: absolute; left: 0; top: 0; width: 360px; height: 330px; pointer-events: none; }
+.soda-plant svg { display: block; width: 100%; height: 100%; }
+.soda-done { position: absolute; left: 0; top: 0; width: 360px; height: 330px; z-index: 11; pointer-events: none; display: grid; place-items: center; }
+.soda-done b { font-family: var(--display); font-size: 34px; color: #fff; text-shadow: 3px 3px 0 #c43c4f, 6px 6px 0 #12132a; opacity: 0; animation: bootlogo .5s ease-out 1.6s forwards; background: rgba(18,19,42,.35); padding: 6px 14px; border-radius: 14px; }
+.soda-bub { position: absolute; z-index: 10; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.9); pointer-events: none; animation: sodabub 1.4s ease-out forwards; }
+@keyframes sodabub { to { transform: translate(var(--dx), -90px); opacity: 0; } }
 /* ---------- Just Dubai! ---------- */
 #dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -885,7 +896,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Тринадцать игр в одном кармане</span>
+        <span class="tag">Четырнадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -1034,6 +1045,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Файтинг: 7 бойцов, суперприёмы, блок и парирование. До двух побед.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubMk">0</span></span>
+      </button>
+      <button class="cart" data-go="soda" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#cfe6f2"/><rect y="44" width="64" height="20" fill="#9aa6b5"/><rect x="6" y="10" width="26" height="34" rx="6" fill="#c9d1dc" stroke="#7a8696" stroke-width="2"/><rect x="11" y="22" width="16" height="18" rx="2" fill="#5a2a14"/><path d="M42 50 h10 v-22 q0 -4 -3 -6 v-5 h-4 v5 q-3 2 -3 6z" fill="#3a1608" stroke="#fff" stroke-width="1.5"/><rect x="42" y="34" width="10" height="7" fill="#c43c4f"/><rect x="45" y="13" width="4" height="4" fill="#e3263a"/><circle cx="16" cy="27" r="1.5" fill="#fff"/><circle cx="21" cy="32" r="1.2" fill="#fff"/><path d="M58 10 q-3 4 0 8" stroke="#e05cff" stroke-width="2" fill="none"/><rect x="54" y="18" width="7" height="12" rx="2" fill="#7a1030"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Производство газировки</span>
+          <span class="cart-desc">Собери V3 Cola: вода, сахар, E150d, E338, ароматизаторы и CO₂ — нужное подсвечивается.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubSoda">—</span></span>
       </button>
       <button class="cart" data-go="dubai" type="button">
         <span class="cart-art" aria-hidden="true">
@@ -1465,6 +1486,35 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
     <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
+  </section>
+
+  <!-- ===== Soda factory ===== -->
+  <section id="soda" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Газировка</div>
+      <div class="chips">
+        <div class="chip"><span>Время</span><b id="sodaTime">0.0</b></div>
+        <div class="chip hi"><span>Рекорд</span><b id="sodaBest">—</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="fix-step" id="sodaStep" aria-live="polite"><b>0/9</b><span>Нажми «Запустить цех»</span></div>
+    <div class="fix-wrap" id="sodaWrap">
+      <div class="fix-board soda-board" id="sodaBoard">
+        <div class="soda-plant" id="sodaPlant"></div>
+      </div>
+      <div class="overlay" id="sodaOverlay">
+        <h2 id="sodaOvTitle">Производство газировки</h2>
+        <p id="sodaOvText">Цех V3 Cola готов к работе. Бери светящийся ингредиент со стола и неси в подсвеченное место.</p>
+        <button class="btn" type="button" id="sodaStart">Запустить цех</button>
+      </div>
+    </div>
+    <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: ингредиент мимо места возвращается на стол.</p>
   </section>
 
   <!-- ===== Link race ===== -->
@@ -4978,7 +5028,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -5190,7 +5240,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -6542,7 +6592,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -6774,6 +6824,219 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
     return {
       enter() { fit(); $("#fixBest").textContent = best === null ? "—" : fmt(best); if (state === "ready") { layoutTable(); } },
+      leave() { drag = null; },
+      key() {},
+      best: () => (best === null ? "—" : fmt(best) + " с"),
+    };
+  })();
+
+  /* ================= Soda factory (works like Почини Монитор) ================= */
+  const Soda = (() => {
+    const board = $("#sodaBoard"), wrap = $("#sodaWrap"), ov = $("#sodaOverlay"), plant = $("#sodaPlant");
+    const BW = 360, BH = 600;
+    const svg = (w, h, body) => `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+    const flask = (w, h, liquid, label, lc) => svg(w, h, `<path d="M${w * .38} 2 h${w * .24} v${h * .3} L${w - 3} ${h - 6} q0 4 -4 4 H7 q-4 0 -4 -4 L${w * .38} ${h * .32}Z" fill="rgba(230,245,255,.55)" stroke="#8aa0b5" stroke-width="1.6"/>
+        <path d="M${w * .2} ${h * .62} L${w - 6} ${h - 6} q0 2 -3 2 H9 q-3 0 -3 -2 L${w * .2} ${h * .62}Z" fill="${liquid}"/><path d="M${w * .17} ${h * .66} H${w * .83}" stroke="#fff" stroke-opacity=".35" stroke-width="2"/>
+        <rect x="${w * .34}" y="0" width="${w * .32}" height="5" rx="2" fill="#5b6378"/><rect x="${w * .14}" y="${h * .38}" width="${w * .72}" height="${h * .16}" rx="2" fill="#fff"/><text x="${w / 2}" y="${h * .5}" text-anchor="middle" font-family="Arial" font-weight="900" font-size="${Math.min(10, w * .2)}" fill="${lc}">${label}</text>`);
+    const ART = {
+      water: (w, h) => svg(w, h, `<path d="M8 14 q0 -6 6 -6 h${w - 28} q6 0 6 6 v${h - 18} q0 4 -4 4 H12 q-4 0 -4 -4Z" fill="#5ab4f0" stroke="#2f6fd6" stroke-width="2"/><rect x="${w - 26}" y="2" width="12" height="8" rx="2" fill="#2f6fd6"/><path d="M14 8 q-6 -6 6 -6 h10" fill="none" stroke="#2f6fd6" stroke-width="3"/><rect x="12" y="${h * .42}" width="${w - 24}" height="${h * .26}" rx="3" fill="#fff"/><text x="${w / 2}" y="${h * .6}" text-anchor="middle" font-family="Arial" font-weight="900" font-size="10" fill="#2f6fd6">ВОДА</text><path d="M14 20 v${h * .15}" stroke="#fff" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>`),
+      sugar: (w, h) => svg(w, h, `<path d="M6 10 L${w - 6} 10 L${w - 2} ${h - 4} H2Z" fill="#f4efe6" stroke="#b8ab96" stroke-width="2"/><path d="M6 10 l4 -7 h${w - 20} l4 7" fill="#e6dccb" stroke="#b8ab96" stroke-width="1.5"/><text x="${w / 2}" y="${h * .55}" text-anchor="middle" font-family="Arial" font-weight="900" font-size="10" fill="#c43c4f">САХАР</text>${[...Array(5)].map((_, i) => `<rect x="${10 + i * 7}" y="${h * .7}" width="4" height="4" fill="#fff" stroke="#d6cdbd" stroke-width=".6"/>`).join("")}`),
+      e150d: (w, h) => flask(w, h, "#d6232f", "E150d", "#d6232f"),
+      e338: (w, h) => flask(w, h, "#7a1030", "E338", "#7a1030"),
+      aroma: (w, h) => svg(w, h, `<rect x="${w * .32}" y="0" width="${w * .36}" height="${h * .22}" rx="3" fill="#2a1a10"/><rect x="${w * .42}" y="${h * .2}" width="${w * .16}" height="${h * .08}" fill="#6a4a30"/><rect x="3" y="${h * .27}" width="${w - 6}" height="${h * .7}" rx="6" fill="#c9862a" stroke="#8a5a14" stroke-width="1.6"/><rect x="6" y="${h * .45}" width="${w - 12}" height="${h * .34}" rx="2" fill="#fff8e6"/><path d="M${w * .5} ${h * .5} q${w * .18} ${h * .04} 0 ${h * .2} q-${w * .18} -${h * .1} 0 -${h * .2}Z" fill="#2fa84a"/><text x="${w / 2}" y="${h * .93}" text-anchor="middle" font-family="Arial" font-weight="800" font-size="6" fill="#fff">АРОМА</text>`),
+      co2: (w, h) => svg(w, h, `<path d="M${w * .36} 2 h${w * .28} v${h * .22} q${w * .3} ${h * .06} ${w * .3} ${h * .2} V${h - 6} q0 4 -4 4 H${w * .1} q-4 0 -4 -4 V${h * .44} q0 -${h * .14} ${w * .3} -${h * .2}Z" fill="rgba(232,211,168,.85)" stroke="#a88a5a" stroke-width="1.6"/><rect x="${w * .34}" y="0" width="${w * .32}" height="6" rx="2" fill="#8a7a5a"/><path d="M${w * .2} ${h * .5} V${h * .85}" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/><rect x="${w * .12}" y="${h * .55}" width="${w * .76}" height="${h * .2}" rx="2" fill="#fff"/><text x="${w / 2}" y="${h * .69}" text-anchor="middle" font-family="Arial" font-weight="900" font-size="9" fill="#8a6a3a">CO₂</text>`),
+      bottle: (w, h) => svg(w, h, `<path d="M${w * .38} 2 h${w * .24} v${h * .12} q${w * .34} ${h * .1} ${w * .34} ${h * .3} V${h - 6} q0 4 -4 4 H${w * .08} q-4 0 -4 -4 V${h * .44} q0 -${h * .2} ${w * .34} -${h * .3}Z" fill="rgba(230,245,255,.55)" stroke="#8aa0b5" stroke-width="1.6"/><path d="M${w * .2} ${h * .48} V${h * .9}" stroke="#fff" stroke-opacity=".7" stroke-width="2.5" stroke-linecap="round"/>`),
+      cap: (w, h) => svg(w, h, `<rect x="1" y="1" width="${w - 2}" height="${h - 2}" rx="3" fill="#e3263a" stroke="#9a1424" stroke-width="1"/>${[...Array(5)].map((_, i) => `<path d="M${3 + i * (w - 6) / 4} 2 V${h - 2}" stroke="#9a1424" stroke-width=".7"/>`).join("")}`),
+      label: (w, h) => svg(w, h, `<rect width="${w}" height="${h}" rx="2" fill="#c43c4f"/><path d="M0 ${h * .7} q${w / 2} -${h * .3} ${w} 0" fill="none" stroke="#fff" stroke-width="1.6"/><text x="${w / 2}" y="${h * .5}" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="9" fill="#fff">V3 Cola</text>`),
+      spoon: (w, h) => svg(w, h, `<ellipse cx="9" cy="${h / 2}" rx="8" ry="6" fill="#c9ccd6"/><rect x="15" y="${h / 2 - 2}" width="${w - 16}" height="4" rx="2" fill="#c9ccd6"/>`),
+      beaker: (w, h) => svg(w, h, `<path d="M3 3 h${w - 6} v${h - 8} q0 4 -4 4 H7 q-4 0 -4 -4Z" fill="rgba(230,245,255,.6)" stroke="#8aa0b5" stroke-width="1.5"/>${[1, 2, 3].map((i) => `<path d="M5 ${i * h / 4} h6" stroke="#8aa0b5"/>`).join("")}`),
+      gloves: (w, h) => svg(w, h, `<path d="M6 ${h - 2} V${h * .4} q0 -4 4 -4 V6 q0 -3 3 -3 q3 0 3 3 V${h * .3} V4 q0 -3 3 -3 q3 0 3 3 V${h * .3} q6 -2 6 4 V${h - 2}Z" fill="#5ce1e6" stroke="#2a9aa0" stroke-width="1.2"/>`),
+      pipette: (w, h) => svg(w, h, `<rect x="0" y="${h / 2 - 4}" width="12" height="8" rx="4" fill="#ff8a3d"/><path d="M12 ${h / 2 - 2} H${w - 4} L${w} ${h / 2} L${w - 4} ${h / 2 + 2} H12Z" fill="rgba(230,245,255,.8)" stroke="#8aa0b5"/>`),
+    };
+    const STEPS = [
+      { id: "water", name: "Вода", to: "люк бака-смесителя", x: 36, y: 6, w: 62, h: 60, ts: .7 },
+      { id: "sugar", name: "Сахар", to: "загрузочная воронка", x: 106, y: 8, w: 52, h: 58, ts: .7 },
+      { id: "e150d", name: "E150d (краситель, красная колба)", to: "дозатор 1", x: 196, y: 64, w: 32, h: 52, ts: .95 },
+      { id: "e338", name: "E338 (кислота, бордовая колба)", to: "дозатор 2", x: 234, y: 64, w: 32, h: 52, ts: .95 },
+      { id: "aroma", name: "Натуральные ароматизаторы", to: "дозатор 3", x: 272, y: 70, w: 26, h: 46, ts: 1 },
+      { id: "co2", name: "Диоксид углерода (стеклянная бутылка)", to: "сатуратор", x: 308, y: 136, w: 40, h: 86, ts: .75 },
+      { id: "bottle", name: "Пустая бутылка", to: "под кран розлива", x: 186, y: 202, w: 40, h: 86, ts: .75 },
+      { id: "cap", name: "Крышка", to: "горлышко бутылки", x: 197, y: 194, w: 18, h: 11, ts: 1.2 },
+      { id: "label", name: "Этикетка V3 Cola", to: "бутылку", x: 188, y: 246, w: 36, h: 24, ts: 1 },
+    ];
+    const DECOR = [["spoon", 44, 14], ["beaker", 30, 36], ["gloves", 32, 40], ["pipette", 46, 12]];
+    const LIQ = ["#bfe6ff", "#d9eef7", "#7a2a14", "#5a1a0c", "#4a1608", "#4a1608", "#4a1608", "#4a1608", "#4a1608"];
+    let parts = [], step = 0, state = "ready", t0 = 0, mistakes = 0, drag = null, timer = 0, scale = 1, level = 0;
+    let best = store.get("sodaBest", null);
+    const fmt = (x) => x.toFixed(1);
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    // the factory: mixing tank, three dosers, carbonator, filling tap and conveyor
+    function drawPlant(fill) {
+      const lv = Math.min(1, level), col = LIQ[Math.min(LIQ.length - 1, Math.max(0, step - 1))];
+      const bottleFill = fill || 0;
+      plant.innerHTML = svg(360, 330, `
+        <defs><linearGradient id="sdSteel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a96a6"/><stop offset=".45" stop-color="#e6ebf2"/><stop offset="1" stop-color="#7a8696"/></linearGradient></defs>
+        <text x="180" y="322" text-anchor="middle" font-family="monospace" font-weight="700" font-size="11" fill="#5b6378" letter-spacing="1.5">ЦЕХ V3 COLA</text>
+        <rect x="30" y="66" width="140" height="150" rx="22" fill="url(#sdSteel)" stroke="#5b6378" stroke-width="3"/>
+        <rect x="56" y="96" width="88" height="96" rx="10" fill="#e8f4fb" stroke="#5b6378" stroke-width="2"/>
+        <rect x="58" y="${190 - 92 * lv}" width="84" height="${92 * lv}" rx="8" fill="${col}"/>
+        ${lv > .55 ? [0, 1, 2, 3].map((i) => `<circle cx="${70 + i * 18}" cy="${180 - (i % 2) * 30}" r="2.4" fill="#fff" opacity=".7"><animate attributeName="cy" values="${186 - (i % 2) * 20};${110};${186 - (i % 2) * 20}" dur="${1.6 + i * .3}s" repeatCount="indefinite"/></circle>`).join("") : ""}
+        <text x="100" y="88" text-anchor="middle" font-family="monospace" font-weight="700" font-size="9" fill="#33384d">БАК-СМЕСИТЕЛЬ</text>
+        <rect x="42" y="58" width="50" height="10" rx="3" fill="#5b6378"/><path d="M114 66 L120 52 H146 L152 66Z" fill="#9aa6b5" stroke="#5b6378" stroke-width="2"/>
+        <path d="M100 216 V236 H148" fill="none" stroke="#7a8696" stroke-width="7"/><rect x="40" y="216" width="10" height="70" fill="#7a8696"/><rect x="150" y="216" width="10" height="70" fill="#7a8696"/>
+        <rect x="186" y="56" width="120" height="70" rx="8" fill="#dde4ec" stroke="#7a8696" stroke-width="2"/>
+        ${[212, 250, 285].map((x, i) => `<rect x="${x - 15}" y="118" width="30" height="6" rx="2" fill="#7a8696"/><text x="${x}" y="134" text-anchor="middle" font-family="monospace" font-size="7" fill="#33384d">Д${i + 1}</text>`).join("")}
+        <path d="M188 92 H170" stroke="#7a8696" stroke-width="5"/>
+        <rect x="300" y="128" width="54" height="104" rx="10" fill="#aab4c2" stroke="#5b6378" stroke-width="2"/><text x="327" y="244" text-anchor="middle" font-family="monospace" font-weight="700" font-size="8" fill="#33384d">САТУРАТОР</text>
+        <path d="M300 180 H262 V176" fill="none" stroke="#7a8696" stroke-width="5"/>
+        <path d="M148 236 H206 V184" fill="none" stroke="#7a8696" stroke-width="6"/><rect x="198" y="176" width="16" height="12" rx="2" fill="#5b6378"/><rect x="203" y="186" width="6" height="6" fill="#33384d"/>
+        ${bottleFill > 0 && bottleFill < 1 ? `<rect x="204" y="190" width="4" height="${12 + bottleFill * 80}" fill="${col}" opacity=".9"/>` : ""}
+        <rect x="160" y="288" width="196" height="10" rx="5" fill="#33384d"/>${[...Array(9)].map((_, i) => `<circle cx="${170 + i * 22}" cy="293" r="3" fill="#9aa6b5"/>`).join("")}
+        <rect x="236" y="190" width="56" height="34" rx="6" fill="#12132a"/><text x="264" y="204" text-anchor="middle" font-family="monospace" font-size="8" fill="#9be15d">ШАГ ${Math.min(step, STEPS.length)}/${STEPS.length}</text><text x="264" y="217" text-anchor="middle" font-family="monospace" font-size="7" fill="#5ce1e6">${state === "over" ? "ГОТОВО" : state === "run" ? "РАБОТА" : "ОЖИДАНИЕ"}</text>`);
+    }
+    function fit() {
+      const w = Math.min(wrap.clientWidth || 360, 440);
+      scale = w / BW; board.style.transform = `scale(${scale})`; wrap.style.height = Math.round(BH * scale) + "px";
+    }
+    function setBox(el, x, y, w, h) { el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = w + "px"; el.style.height = h + "px"; }
+    function layoutTable() {
+      const placed = [];
+      const items = [...parts.filter((p) => !p.done), ...board.querySelectorAll(".fix-part.decor")].map((x) => x.el ? x : { el: x, tw: +x.dataset.w, th: +x.dataset.h, decor: true });
+      items.forEach((it) => {
+        const tw = it.decor ? it.tw : it.s.w * it.s.ts, th = it.decor ? it.th : it.s.h * it.s.ts;
+        let x, y, ok = false;
+        for (let k = 0; k < 300 && !ok; k++) {
+          x = rnd(8, BW - tw - 8); y = rnd(345, BH - th - 10);
+          ok = placed.every((r) => x + tw + 6 < r.x || r.x + r.w + 6 < x || y + th + 6 < r.y || r.y + r.h + 6 < y);
+        }
+        placed.push({ x, y, w: tw, h: th });
+        if (it.decor) { setBox(it.el, x, y, tw, th); it.el.style.transform = `rotate(${rnd(-25, 25)}deg)`; }
+        else { it.home = { x, y, w: tw, h: th }; setBox(it.el, x, y, tw, th); }
+      });
+    }
+    function build() {
+      board.querySelectorAll(".fix-part, .fix-slot, .soda-done, .soda-bub").forEach((e) => e.remove());
+      parts = STEPS.map((s) => {
+        const el = document.createElement("div");
+        el.className = "fix-part"; el.innerHTML = ART[s.id](s.w, s.h); el.setAttribute("aria-label", s.name);
+        board.appendChild(el);
+        const p = { s, el, done: false, home: null };
+        el.addEventListener("pointerdown", (e) => grab(e, p));
+        return p;
+      });
+      DECOR.forEach(([id, w, h]) => {
+        const el = document.createElement("div");
+        el.className = "fix-part decor"; el.dataset.w = w; el.dataset.h = h; el.innerHTML = ART[id](w, h);
+        el.addEventListener("pointerdown", () => { el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope"); });
+        board.appendChild(el);
+      });
+      layoutTable(); drawPlant();
+    }
+    function highlight() {
+      board.querySelectorAll(".fix-slot").forEach((e) => e.remove());
+      parts.forEach((p) => p.el.classList.toggle("glow", state === "run" && p === parts[step]));
+      if (state !== "run" || step >= STEPS.length) return;
+      const s = STEPS[step], slot = document.createElement("div");
+      slot.className = "fix-slot"; setBox(slot, s.x - 3, s.y - 3, s.w + 6, s.h + 6);
+      board.appendChild(slot);
+      $("#sodaStep").innerHTML = `<b>${step + 1}/${STEPS.length}</b><span></span>`;
+      $("#sodaStep span").textContent = `${s.name} → ${s.to}`;
+    }
+    const toBoard = (e) => { const r = board.getBoundingClientRect(); return { x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale }; };
+    function grab(e, p) {
+      if (state !== "run" || p.done) return;
+      e.preventDefault();
+      if (p !== parts[step]) {
+        p.el.classList.remove("nope"); void p.el.offsetWidth; p.el.classList.add("nope");
+        Hero.say("soda", "bad", `Не то! Сейчас нужно: «${STEPS[step].name}».`);
+        return;
+      }
+      try { p.el.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+      const pt = toBoard(e);
+      drag = { p, id: e.pointerId };
+      p.el.classList.add("held");
+      setBox(p.el, pt.x - p.s.w / 2, pt.y - p.s.h / 2 - 20, p.s.w, p.s.h);
+    }
+    board.addEventListener("pointermove", (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const pt = toBoard(e), s = drag.p.s;
+      drag.p.el.style.left = (pt.x - s.w / 2) + "px"; drag.p.el.style.top = (pt.y - s.h / 2 - 20) + "px";
+    });
+    const drop = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const p = drag.p, s = p.s; drag = null;
+      p.el.classList.remove("held");
+      const x = parseFloat(p.el.style.left), y = parseFloat(p.el.style.top);
+      const dist = Math.hypot(x + s.w / 2 - (s.x + s.w / 2), y + s.h / 2 - (s.y + s.h / 2));
+      const tol = Math.max(24, Math.min(s.w, s.h) * .5);
+      if (dist < tol) place(p);
+      else {
+        mistakes++;
+        setBox(p.el, p.home.x, p.home.y, p.home.w, p.home.h);
+        if (mistakes % 3 === 1) Hero.say("soda", "bad", "Мимо! Неси прямо в зелёную рамку.");
+      }
+    };
+    board.addEventListener("pointerup", drop);
+    board.addEventListener("pointercancel", drop);
+    function bubbles(x, y, n) {
+      for (let i = 0; i < n; i++) {
+        const b = document.createElement("div"); b.className = "soda-bub";
+        b.style.left = (x + rnd(-14, 14)) + "px"; b.style.top = (y + rnd(-6, 6)) + "px";
+        b.style.setProperty("--dx", rnd(-20, 20) + "px"); b.style.animationDelay = (i * 40) + "ms";
+        board.appendChild(b); setTimeout(() => b.remove(), 1500 + i * 40);
+      }
+    }
+    const SAY = ["Вода залита — основа есть!", "Сахар пошёл — будет сладко.", "E150d — вот откуда цвет колы!", "E338 — кислинка готова.", "Аромат на весь цех!", "CO₂ подключён — будут пузырьки!", "Бутылка на месте, открываем кран…", "Крышка закручена — пшшш не уйдёт!", "Этикетка V3 Cola — красота!"];
+    function place(p) {
+      const s = p.s;
+      p.done = true; p.el.classList.add("placed"); p.el.classList.remove("glow");
+      setBox(p.el, s.x, s.y, s.w, s.h);
+      step++;
+      level = Math.min(1, [0, .45, .55, .65, .75, .8, .85, .85, .85, .85][step] || .85);
+      // ingredients disappear into the machine; bottle, cap and label stay visible
+      const st = step; if (st <= 6) setTimeout(() => { p.el.style.transition = "opacity .5s ease, transform .5s ease"; p.el.style.opacity = st <= 2 ? "0" : ".9"; if (st <= 2) p.el.style.transform = "translateY(30px) scale(.6)"; }, 250);
+      if (s.id === "bottle") { let k = 0; const fillT = setInterval(() => { k += .05; drawPlant(k); if (k >= 1) { clearInterval(fillT); p.el.innerHTML = ART.bottle(s.w, s.h).replace("</svg>", `<path d="M${s.w * .08} ${s.h * .44} H${s.w * .92} V${s.h - 6} q0 4 -4 4 H${s.w * .12} q-4 0 -4 -4Z" fill="#4a1608" opacity=".9"/></svg>`); drawPlant(); } }, 50); }
+      else drawPlant();
+      bubbles(s.x + s.w / 2, s.y + s.h / 2, 8);
+      Hero.say("soda", "good", SAY[step - 1]);
+      if (step >= STEPS.length) { win(); return; }
+      highlight();
+    }
+    function win() {
+      state = "over"; clearInterval(timer);
+      board.querySelectorAll(".fix-slot").forEach((e) => e.remove());
+      const sec = (performance.now() - t0) / 1000;
+      const reward = Math.max(40, 140 - Math.round(sec) - mistakes * 5);
+      const record = best === null || sec < best;
+      if (record) { best = sec; store.set("sodaBest", best); }
+      Hero.earn(reward); updateHub();
+      $("#sodaBest").textContent = fmt(best);
+      $("#sodaStep").innerHTML = `<b>${STEPS.length}/${STEPS.length}</b><span>V3 Cola разлита! Пшшш…</span>`;
+      drawPlant();
+      for (let i = 0; i < 4; i++) setTimeout(() => bubbles(206, 210, 10), i * 300);
+      const d = document.createElement("div"); d.className = "soda-done"; d.innerHTML = "<b>V3 COLA!</b>"; board.appendChild(d);
+      Hero.say("soda", "win", `Газировка готова! +${reward} монет`);
+      setTimeout(() => {
+        $("#sodaOvTitle").textContent = "V3 Cola готова!";
+        $("#sodaOvText").textContent = `Время ${fmt(sec)} с · ошибок ${mistakes} · +${reward} монет${record ? " · новый рекорд!" : ""}`;
+        $("#sodaStart").textContent = "Сварить ещё партию";
+        ov.hidden = false;
+      }, 2800);
+    }
+    function start() {
+      fit(); step = 0; level = 0; build();
+      mistakes = 0; state = "run"; t0 = performance.now(); ov.hidden = true; drawPlant();
+      clearInterval(timer);
+      timer = setInterval(() => { if (state === "run") $("#sodaTime").textContent = fmt((performance.now() - t0) / 1000); }, 100);
+      highlight();
+      Hero.say("soda", "start", "Цех запущен! Сначала — вода в бак.");
+    }
+    $("#sodaStart").addEventListener("click", start);
+    window.addEventListener("resize", () => { if (!$("#soda").hidden) fit(); });
+    build();
+    return {
+      enter() { fit(); $("#sodaBest").textContent = best === null ? "—" : fmt(best); if (state === "ready") layoutTable(); },
       leave() { drag = null; },
       key() {},
       best: () => (best === null ? "—" : fmt(best) + " с"),
@@ -7177,8 +7440,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, mk: MK, dubai: Dubai };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -7193,6 +7456,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubGeo").textContent = Geo.best();
     $("#hubLinks").textContent = Links.best();
     $("#hubFix").textContent = Fix.best();
+    $("#hubSoda").textContent = Soda.best();
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
   }
@@ -7209,7 +7473,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix";
+    $("#cop").hidden = name === "fix" || name === "soda";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
