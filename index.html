@@ -1365,7 +1365,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button type="button" data-place="burj"><i style="background:#9fb3cc">▲</i>Бурдж Халифа</button>
       <button type="button" data-place="deira"><i style="background:#ffb547">◆</i>Deira City Center</button>
       <button type="button" data-place="mall"><i style="background:#5ce1e6">●</i>Dubai Mall</button>
-      <button type="button" data-place="marina"><i style="background:#ff8a6b">≈</i>Dubai Marina beach</button>
+      <button type="button" data-place="marina"><i style="background:#ff8a6b">★</i>Marina Beach (отель)</button>
     </div>
     <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
       <span class="st" data-st="burj">BK</span><span class="st" data-st="deira">DC</span><span class="st" data-st="mall">DM</span><span class="st" data-st="marina">MB</span>
@@ -5159,7 +5159,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       burj: { name: "Бурдж Халифа", map: [.5, .46], stamp: "Фото со 148-го этажа" },
       deira: { name: "Deira City Center", map: [.8, .3], stamp: "Шопинг в Дейре" },
       mall: { name: "Dubai Mall", map: [.66, .62], stamp: "Фонтанное шоу" },
-      marina: { name: "Dubai Marina beach", map: [.22, .74], stamp: "Ракушки на пляже" },
+      marina: { name: "Marina Beach Hotel", map: [.22, .74], stamp: "Отдых в отеле" },
     };
     let place = null, scene = "map", travel = null, stamps = store.get("dxStamps", {});
     if (!stamps || typeof stamps !== "object") stamps = {};
@@ -5181,7 +5181,6 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { name: "Сувениры", col: "#9fb3cc", items: [["Мини-Бурдж", 45, "#9fb3cc", "🗼"], ["Магнит", 10, "#c43c4f", "🧲"], ["Верблюд", 60, "#c9a26b", "🐪"], ["Фонарь", 85, "#ffd84d", "🏮"], ["Песок в бутылке", 30, "#f6d7a6", "🏺"], ["Сокол", 120, "#8a5a34", "🦅"], ["Открытка", 5, "#5ce1e6", "💌"], ["Ковёр", 950, "#c43c4f", "🧶"]] },
       { name: "Мебель", col: "#a0785a", items: [["Диван", 2400, "#2f6fd6", "🛋️"], ["Кровать", 3100, "#e9e9f0", "🛏️"], ["Стул", 220, "#8a5a34", "🪑"], ["Лампа", 160, "#ffd84d", "💡"], ["Зеркало", 380, "#9fb3cc", "🪞"], ["Растение", 95, "#2fa84a", "🪴"], ["Часы-стена", 140, "#4a4a5a", "🕰️"], ["Шкаф", 1700, "#a0785a", "🚪"]] },
     ];
-    let shells = [], found = 0, sparkleT = 0;
     let fish = [];
     const rnd = (a, b) => a + Math.random() * (b - a);
 
@@ -5425,43 +5424,143 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       text(deiraMsg, W * .46, H * .9, 9, "#fff", "center", 700);
     }
 
-    function setupMarina() {
-      shells = []; found = 0;
-      for (let i = 0; i < 5; i++) shells.push({ x: rnd(.08, .92), y: rnd(.8, .96), found: false, p: rnd(0, 6) });
+    // ---------- Marina Beach Hotel: check in at the lobby, then relax in the room ----------
+    let hotel = { phase: "lobby", key: 0, fade: 0, done: {}, tv: false, curtains: false, bar: false, jump: 0, cart: -1, spots: [] };
+    const TASKS = { curtains: "Открыть шторы", tv: "Включить ТВ", bar: "Мини-бар", bed: "Попрыгать на кровати", service: "Room service" };
+    function setupMarina() { hotel = { phase: "lobby", key: 0, fade: 0, done: {}, tv: false, curtains: false, bar: false, jump: 0, cart: -1, spots: [] }; }
+    function checkIn() {
+      if (hotel.phase !== "lobby" || hotel.key > 0) return;
+      hotel.key = .001; ding();
+      Hero.say("dubai", "good", "Добро пожаловать! Ваш номер 1207, вот ключ-карта.");
+    }
+    function ding() { audio(); if (!AC) return; const t0 = AC.currentTime; [1318, 1046].forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, t0 + i * .18); g.gain.exponentialRampToValueAtTime(.15, t0 + i * .18 + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + i * .18 + .6); o.connect(g); g.connect(AC.destination); o.start(t0 + i * .18); o.stop(t0 + i * .18 + .65); }); }
+    function task(id) {
+      if (hotel.done[id]) return;
+      hotel.done[id] = true;
+      const n = Object.keys(hotel.done).length;
+      if (n === 5) { giveStamp("marina"); Hero.say("dubai", "win", "Лучший отдых в Marina Beach Hotel!"); }
+      else Hero.say("dubai", "good", `${TASKS[id]} — отлично! Ещё ${5 - n}.`);
+    }
+    function roomTap(x, y) {
+      const sp = hotel.spots.find((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h);
+      if (!sp) return;
+      if (sp.id === "curtains") hotel.curtains = !hotel.curtains;
+      if (sp.id === "tv") hotel.tv = !hotel.tv;
+      if (sp.id === "bar") hotel.bar = !hotel.bar;
+      if (sp.id === "bed") hotel.jump = 1.6;
+      task(sp.id);
+    }
+    function roomService() { if (hotel.phase === "room" && hotel.cart < 0) { hotel.cart = 0; ding(); } }
+    function drawLobby(t, dt) {
+      // marble walls and floor
+      sky("#f6ead2", "#e8d3ad");
+      for (let i = 0; i < 6; i++) rect(W * (i / 6), 0, 2, H * .62, "rgba(160,120,60,.15)");
+      rect(0, H * .62, W, H * .38, "#efe6da");
+      for (let r = 0; r < 4; r++) for (let c = 0; c < 10; c++) if ((r + c) % 2) rect(c * W / 10, H * .62 + r * H * .095, W / 10, H * .095, "#dccfbf");
+      // sign + stars
+      rect(W * .2, H * .06, W * .6, H * .13, "#2a2a3a");
+      text("MARINA BEACH HOTEL", W / 2, H * .105, 12, "#ffd84d");
+      text("★★★★★", W / 2, H * .16, 9, "#ffd84d");
+      // chandelier
+      const sw = Math.sin(t * 1.2) * 3 * U;
+      ctx.strokeStyle = "#b8741a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W * .5, 0); ctx.lineTo(W * .5 + sw, H * .05); ctx.stroke();
+      for (let i = -2; i <= 2; i++) { ctx.fillStyle = "rgba(255,240,170,.9)"; ctx.beginPath(); ctx.arc(W * .5 + sw + i * 8 * U, H * .23 + Math.abs(i) * -2 * U, 3.5 * U, 0, 7); ctx.fill(); }
+      // elevator doors
+      rect(W * .82, H * .28, W * .14, H * .34, "#b8b8c8"); rect(W * .888, H * .28, 2, H * .34, "#7a7a8a");
+      text("▲▼", W * .89, H * .25, 8, "#fff");
+      // plants
+      [W * .05, W * .74].forEach((px) => { rect(px, H * .5, 20 * U, 16 * U, "#8a5a34"); ctx.fillStyle = "#2fa84a"; for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(px + 10 * U + Math.cos(k * 1.3) * 8 * U, H * .46 - k * 3 * U, 8 * U, 4 * U, k, 0, 7); ctx.fill(); } });
+      // receptionist + desk
+      const rx = W * .5, ry = H * .38;
+      ctx.fillStyle = "#2a3a6a"; ctx.beginPath(); ctx.ellipse(rx, ry + 26 * U, 22 * U, 18 * U, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#e0b48a"; ctx.beginPath(); ctx.arc(rx, ry, 13 * U, 0, 7); ctx.fill();
+      ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.arc(rx, ry - 4 * U, 13 * U, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(rx - 4 * U, ry + 1 * U, 1.6 * U, 0, 7); ctx.arc(rx + 4 * U, ry + 1 * U, 1.6 * U, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#7a2a2a"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(rx, ry + 4 * U, 4 * U, .2, Math.PI - .2); ctx.stroke();
+      rect(W * .26, H * .5, W * .48, H * .17, "#6a4024"); rect(W * .24, H * .48, W * .52, H * .03, "#c9a26b");
+      text("RECEPTION", W / 2, H * .6, 9, "#ffd84d");
+      // bell
+      ctx.fillStyle = "#ffcc33"; ctx.beginPath(); ctx.arc(W * .66, H * .48, 7 * U, Math.PI, 0); ctx.fill(); rect(W * .66 - 9 * U, H * .48, 18 * U, 2 * U, "#b8741a");
+      hotel.spots = [{ id: "desk", x: W * .24, y: H * .3, w: W * .52, h: H * .38 }];
+      me(W * .2, H * .82, 36);
+      // key card flies to the player, then the elevator takes us up
+      if (hotel.key > 0) {
+        hotel.key = Math.min(1, hotel.key + dt * .9);
+        const k = Math.min(1, hotel.key * 1.6), kx = W * .5 + (W * .2 - W * .5) * k, ky = H * .46 + (H * .72 - H * .46) * k - Math.sin(k * Math.PI) * 30 * U;
+        ctx.save(); ctx.translate(kx, ky); ctx.rotate(k * 6.28);
+        rect(-12 * U, -8 * U, 24 * U, 16 * U, "#ffd84d"); rect(-12 * U, -3 * U, 24 * U, 4 * U, "#2a2a3a"); ctx.restore();
+        text("Номер 1207", W / 2, H * .9, 11, "#ffd84d");
+        if (hotel.key >= 1) { hotel.phase = "room"; hotel.fade = 1; ding(); updateAction(); Hero.say("dubai", "start", "Номер 1207. Нажимай на вещи и отдыхай!"); }
+      } else text("Нажми на ресепшен или «Заселиться»", W / 2, H * .93, 10.5, "#fff", "center", 700);
+    }
+    function drawRoom(t, dt) {
+      const sp = [];
+      rect(0, 0, W, H, "#f3e6d3");
+      for (let i = 0; i < W; i += 14 * U) rect(i, 0, 1, H * .62, "rgba(160,120,60,.12)");
+      rect(0, H * .62, W, H * .38, "#a0785a");
+      for (let i = 0; i < 6; i++) rect(0, H * .62 + i * H * .065, W, 1, "rgba(0,0,0,.12)");
+      // window with the marina towers at night (city view, no sea)
+      const wx = W * .05, wy = H * .1, ww = W * .36, wh = H * .44;
+      const g = ctx.createLinearGradient(0, wy, 0, wy + wh); g.addColorStop(0, "#141a40"); g.addColorStop(1, "#5a3a7a"); ctx.fillStyle = g; ctx.fillRect(wx, wy, ww, wh);
+      for (let i = 0; i < 7; i++) {
+        const bx = wx + i * ww / 7 + 2, bh = wh * (.35 + ((i * 37) % 50) / 100), by = wy + wh - bh;
+        rect(bx, by, ww / 7 - 4, bh, "#1d2246");
+        for (let yy = by + 4; yy < wy + wh - 4; yy += 6 * U) for (let xx = bx + 3; xx < bx + ww / 7 - 7; xx += 5 * U) if (((xx * 7 + yy * 3 + i) | 0) % 5 < 3) rect(xx, yy, 2 * U, 2.5 * U, Math.sin(t + xx + yy) > .9 ? "#fff3b0" : "#ffd27a");
+      }
+      ctx.fillStyle = "#fff8d0"; ctx.beginPath(); ctx.arc(wx + ww * .8, wy + wh * .15, 7 * U, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeRect(wx, wy, ww, wh); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh); ctx.stroke();
+      // curtains
+      const open = hotel.curtains ? 1 : 0; hotel.cOpen = (hotel.cOpen || 0) + (open - (hotel.cOpen || 0)) * Math.min(1, dt * 5);
+      const cw = ww / 2 * (1 - hotel.cOpen * .78);
+      rect(wx - 6, wy - 8, cw + 6, wh + 14, "#b8323f"); rect(wx + ww - cw, wy - 8, cw + 6, wh + 14, "#b8323f");
+      for (let k = 1; k < 4; k++) { rect(wx - 6 + k * cw / 4, wy - 8, 2, wh + 14, "rgba(0,0,0,.15)"); rect(wx + ww - cw + k * cw / 4, wy - 8, 2, wh + 14, "rgba(0,0,0,.15)"); }
+      rect(wx - 12, wy - 12, ww + 24, 5, "#7a5a3a");
+      sp.push({ id: "curtains", x: wx - 6, y: wy - 8, w: ww + 12, h: wh + 14 });
+      // TV
+      const tx = W * .6, ty = H * .1, tw = W * .3, th = H * .24;
+      rect(tx - 4, ty - 4, tw + 8, th + 8, "#12132a");
+      if (hotel.tv) {
+        const cols = ["#ff5ad1", "#ffd84d", "#5ce1e6", "#9be15d", "#7b5cff"];
+        cols.forEach((c, i) => rect(tx + i * tw / 5, ty, tw / 5 + 1, th, c));
+        const bx = tx + tw / 2 + Math.sin(t * 1.7) * tw * .3, by = ty + th / 2 + Math.cos(t * 2.3) * th * .25;
+        rect(bx - 22 * U, by - 10 * U, 44 * U, 20 * U, "#12132a"); text("V3 TV", bx, by, 9, "#fff");
+      } else { rect(tx, ty, tw, th, "#1d1f33"); rect(tx + tw * .1, ty + th * .12, tw * .25, 3, "rgba(255,255,255,.12)"); }
+      rect(tx + tw / 2 - 2, ty + th + 4, 4, 8 * U, "#12132a");
+      sp.push({ id: "tv", x: tx - 4, y: ty - 4, w: tw + 8, h: th + 8 });
+      // minibar
+      const mx = W * .86, my = H * .56, mw = W * .11, mh = H * .26;
+      rect(mx, my, mw, mh, "#e8e8f0");
+      if (hotel.bar) {
+        rect(mx + 3, my + 3, mw - 6, mh - 6, "#fffbe0");
+        ["#ff8a3d", "#2fa84a", "#c43c4f", "#5ce1e6"].forEach((c, i) => rect(mx + 5 + (i % 2) * mw * .42, my + 8 + Math.floor(i / 2) * mh * .42, mw * .3, mh * .3, c));
+        rect(mx - mw * .7, my, mw * .7, 3, "#c9c9d6");
+      } else { rect(mx + mw - 8, my + mh * .35, 3, mh * .3, "#9fa3b5"); text("BAR", mx + mw / 2, my + 12 * U, 7, "#6a6f85", "center", 800); }
+      sp.push({ id: "bar", x: mx, y: my, w: mw, h: mh });
+      // bed
+      const bx = W * .4, by = H * .6, bw = W * .42, bh = H * .22;
+      rect(bx - 6, by - H * .1, 10, bh + H * .1, "#6a4024");
+      rect(bx, by, bw, bh, "#fff"); rect(bx + bw * .3, by, bw * .7, bh, "#2f6fd6"); rect(bx + bw * .3, by, 4, bh, "#ffd84d");
+      ctx.fillStyle = "#fffdf5"; ctx.beginPath(); ctx.ellipse(bx + bw * .14, by + bh * .3, bw * .1, bh * .22, 0, 0, 7); ctx.ellipse(bx + bw * .14, by + bh * .72, bw * .1, bh * .22, 0, 0, 7); ctx.fill();
+      sp.push({ id: "bed", x: bx, y: by - H * .05, w: bw, h: bh + H * .05 });
+      hotel.spots = sp;
+      // player: bounces on the bed
+      if (hotel.jump > 0) { hotel.jump -= dt; me(bx + bw * .55, by - Math.abs(Math.sin(hotel.jump * 7)) * 40 * U - 6 * U, 36); }
+      else me(W * .2, H * .82, 36);
+      // room service cart
+      if (hotel.cart >= 0) {
+        hotel.cart = Math.min(1, hotel.cart + dt * .45);
+        const cx = -W * .2 + (W * .3) * Math.min(1, hotel.cart * 1.4), cy = H * .86;
+        rect(cx - 26 * U, cy - 6 * U, 52 * U, 5 * U, "#c9c9d6"); rect(cx - 22 * U, cy, 3, 14 * U, "#9fa3b5"); rect(cx + 20 * U, cy, 3, 14 * U, "#9fa3b5");
+        if (hotel.cart < .75) { ctx.fillStyle = "#d8d8e0"; ctx.beginPath(); ctx.arc(cx, cy - 6 * U, 16 * U, Math.PI, 0); ctx.fill(); }
+        else { ctx.font = `${Math.round(24 * U)}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🍔", cx, cy - 16 * U); if (!hotel.done.service) task("service"); }
+      }
+      const n = Object.keys(hotel.done).length;
+      rect(0, 0, W, 22 * U, "rgba(18,19,42,.55)");
+      text(n >= 5 ? "Номер 1207 · отдых удался! ★" : `Номер 1207 · отдых ${n}/5 — нажимай на вещи`, W / 2, 11 * U, 10, "#fff");
     }
     function drawMarina(t, dt) {
-      sky("#ff8a5a", "#ffd27a");
-      ctx.fillStyle = "rgba(255,243,176,.9)"; ctx.beginPath(); ctx.arc(W * .72, H * .38, 26 * U, 0, 7); ctx.fill();
-      // Marina towers (one twisted)
-      skyline(H * .58, "rgba(90,60,90,.55)", 11, 12, H * .38);
-      ctx.fillStyle = "rgba(70,45,80,.75)";
-      for (let i = 0; i < 9; i++) { const y = H * .58 - i * H * .045; ctx.fillRect(W * .2 + Math.sin(i * .5) * 4 * U, y - H * .045, 18 * U, H * .046); }
-      // sea and waves
-      const sea = ctx.createLinearGradient(0, H * .58, 0, H * .78); sea.addColorStop(0, "#2f8fd6"); sea.addColorStop(1, "#5ec4e8");
-      ctx.fillStyle = sea; ctx.fillRect(0, H * .58, W, H * .2);
-      ctx.fillStyle = "rgba(255,210,122,.35)"; ctx.fillRect(W * .65, H * .6, W * .14, H * .17);
-      // yachts
-      for (let i = 0; i < 3; i++) {
-        const x = ((t * (12 + i * 6) + i * 160) % (W + 120)) - 60, y = H * (.62 + i * .04);
-        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(x - 18 * U, y); ctx.lineTo(x + 20 * U, y); ctx.lineTo(x + 14 * U, y + 6 * U); ctx.lineTo(x - 14 * U, y + 6 * U); ctx.fill();
-        ctx.fillRect(x - 8 * U, y - 6 * U, 14 * U, 6 * U);
-      }
-      ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2;
-      for (let i = 0; i < 3; i++) { ctx.beginPath(); for (let x = 0; x <= W; x += 10) ctx.lineTo(x, H * (.74 + i * .015) + Math.sin(x * .05 + t * 2 + i) * 2); ctx.stroke(); }
-      // sand
-      rect(0, H * .77, W, H * .23, "#f2d29a");
-      palm(W * .06, H * .8, U, t); palm(W * .95, H * .82, U * .9, t);
-      // hidden shells: a sparkle hints at one now and then
-      sparkleT += dt;
-      shells.forEach((s, i) => {
-        const x = s.x * W, y = s.y * H;
-        if (s.found) {
-          ctx.fillStyle = "#ffd6e8"; ctx.beginPath(); ctx.moveTo(x, y + 6 * U); ctx.lineTo(x - 7 * U, y - 4 * U); ctx.quadraticCurveTo(x, y - 10 * U, x + 7 * U, y - 4 * U); ctx.closePath(); ctx.fill();
-          ctx.strokeStyle = "#e88aa8"; ctx.lineWidth = 1; for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(x, y + 6 * U); ctx.lineTo(x + k * 5 * U, y - 6 * U); ctx.stroke(); }
-        } else if (Math.sin(t * 2 + s.p) > .97) { ctx.fillStyle = "#fff"; ctx.fillRect(x - 1, y - 6, 2, 12); ctx.fillRect(x - 6, y - 1, 12, 2); }
-      });
-      me(W * .5, H * .88, 32);
-      text(`Ракушки: ${found}/5 — ищи блеск на песке`, W / 2, H * .07, 11, "#fff");
+      if (hotel.phase === "lobby") drawLobby(t, dt); else drawRoom(t, dt);
+      if (hotel.fade > 0) { hotel.fade = Math.max(0, hotel.fade - dt * 1.4); ctx.fillStyle = `rgba(18,19,42,${hotel.fade})`; ctx.fillRect(0, 0, W, H); if (hotel.fade > .4) text("Лифт · 12 этаж", W / 2, H / 2, 14, "#ffd84d"); }
     }
 
     // ---------- flow ----------
@@ -5482,7 +5581,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (scene === "burj") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 148-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
       else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : "Выйти к фонтану"; b.disabled = show > 0; }
       else if (scene === "deira") b.textContent = "Следующий магазин";
-      else if (scene === "marina") b.textContent = "Новые ракушки";
+      else if (scene === "marina") { b.textContent = hotel.phase === "lobby" ? "Заселиться 🛎️" : "Room service 🛎️"; b.disabled = (hotel.phase === "lobby" && hotel.key > 0) || (hotel.phase === "room" && hotel.cart >= 0); }
       else b.hidden = true;
       $("#dxShops").hidden = scene !== "deira";
     }
@@ -5499,7 +5598,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (id === "mall") { night = false; show = 0; fish = []; for (let i = 0; i < 12; i++) fish.push({ x: rnd(0, W), y: H * rnd(.16, .66), v: rnd(-40, 40) || 20, s: rnd(6, 12), w: rnd(1, 2), p: rnd(0, 6), c: ["#ffd84d", "#ff8a3d", "#5ce1e6", "#ff5ad1", "#9be15d"][i % 5], kind: "fish" }); fish.push({ x: W * .3, y: H * .4, v: 26, s: 26, w: .6, p: 0, c: "#8a97a8", kind: "shark" }); fish.push({ x: W * .7, y: H * .58, v: -18, s: 18, w: .8, p: 1, c: "#c9b49a", kind: "ray" }); }
       if (id === "deira") setupDeira();
       if (id === "marina") setupMarina();
-      const hello = { burj: "Бурдж Халифа — самое высокое здание в мире, 828 м!", mall: "Dubai Mall: огромный аквариум прямо в торговом центре!", deira: "Deira City Centre — пора за покупками!", marina: "Пляж Марины на закате. Ищи ракушки!" }[id];
+      const hello = { burj: "Бурдж Халифа — самое высокое здание в мире, 828 м!", mall: "Dubai Mall: огромный аквариум прямо в торговом центре!", deira: "Deira City Centre — пора за покупками!", marina: "Marina Beach Hotel — пять звёзд! Заселяемся." }[id];
       Hero.say("dubai", "start", hello);
       updateAction(); passport();
     }
@@ -5513,7 +5612,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (!night) night = true;
         else if (show <= 0) { show = 10; melody(); Hero.say("dubai", "good", "Музыка! Фонтан начинает танец!"); }
       } else if (scene === "deira") openShop(shop + 1);
-      else if (scene === "marina") setupMarina();
+      else if (scene === "marina") { if (hotel.phase === "lobby") checkIn(); else roomService(); }
       updateAction();
     });
     $("#dxMap").addEventListener("click", () => { travel = null; scene = "map"; updateAction(); passport(); });
@@ -5535,8 +5634,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         else if (bag.length % 10 === 0) Hero.say("dubai", "good", `Уже ${bag.length} покупок! Деньги не кончаются!`);
       }
       if (scene === "marina") {
-        const s = shells.find((q) => !q.found && Math.hypot(q.x * W - x, q.y * H - y) < 26 * U);
-        if (s) { s.found = true; found++; if (found === 5) { giveStamp("marina"); Hero.say("dubai", "win", "Все 5 ракушек найдены!"); } }
+        if (hotel.phase === "lobby") { if (hotel.spots.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h)) { checkIn(); updateAction(); } }
+        else roomTap(x, y);
       }
     });
 
