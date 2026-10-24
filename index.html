@@ -395,7 +395,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .dr-colors { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .dr-colors button { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--line); cursor: pointer; }
 .dr-colors button.on { border-color: #fff; transform: scale(1.12); }
-.dr-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.dr-acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.dr-paint { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; background: var(--panel); border: 2px solid var(--amber); }
+.dr-paint .row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.dr-paint .sw { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--line); cursor: pointer; }
+.dr-paint .sw.on { border-color: #fff; transform: scale(1.15); }
+.dr-paint .tool { padding: 7px 10px; border-radius: 999px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; }
+.dr-paint .tool.on { border-color: var(--amber); color: var(--amber); }
+.dr-stage.painting { outline: 3px dashed var(--amber); outline-offset: -3px; cursor: crosshair; }
+.dr-stage.painting svg { touch-action: none; }
+.dr-paint-hint { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 12px; font-weight: 800; color: var(--amber); pointer-events: none; }
 .dr-acts .btn { padding: 10px 6px; font-size: 13px; }
 .dr-looks { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-height: 10px; }
 .dr-looks button { flex: none; width: 54px; height: 76px; padding: 0; border-radius: 10px; border: 2px solid var(--line); background: #171433; cursor: pointer; }
@@ -1682,6 +1691,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
     <div class="dr-people" id="drPeople" aria-label="Личности"></div>
     <div class="dr-stage" id="drStage"><span class="dr-name" id="drName"></span><div id="drFig"></div></div>
+    <div class="dr-paint" id="drPaint" hidden>
+      <div class="row" id="drPaintColors" aria-label="Цвет кисти"></div>
+      <div class="row">
+        <button class="tool" type="button" data-size="3">Тонкая</button><button class="tool on" type="button" data-size="6">Средняя</button><button class="tool" type="button" data-size="11">Толстая</button><button class="tool" type="button" id="drEraser">🧽 Ластик</button>
+      </div>
+      <div class="row">
+        <button class="tool" type="button" id="drUndo">↩️ Отменить</button><button class="tool" type="button" id="drWipe">🗑️ Стереть всё</button><button class="btn" type="button" id="drPaintDone">✅ Готово</button>
+      </div>
+    </div>
     <div class="dr-tabs" id="drTabs"></div>
     <div class="dr-items" id="drItems"></div>
     <div class="dr-colors" id="drColors"></div>
@@ -1689,6 +1707,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn ghost" type="button" id="drRandom">🎲 Случайно</button>
       <button class="btn ghost" type="button" id="drSign">⭐ Фирменный</button>
       <button class="btn" type="button" id="drSave">📸 Сохранить</button>
+      <button class="btn ghost" type="button" id="drPaintBtn">🖌️ Нарисовать</button>
     </div>
     <div class="dr-looks" id="drLooks" aria-label="Сохранённые образы"></div>
     <p class="hint">Выбери личность, потом вкладку одежды. Цвет можно поменять у верха, низа и обуви. Новый сохранённый образ — +10 монет.</p>
@@ -7734,6 +7753,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let looks = store.get("dressLooks", []); if (!Array.isArray(looks)) looks = [];
     let who = store.get("dressWho", "valeriy"); if (!PEOPLE.some((q) => q.id === who)) who = "valeriy";
     let tab = "top", uid = 0;
+    let drawings = store.get("dressDraw", {}); if (!drawings || typeof drawings !== "object") drawings = {};
+    let painting = false, brush = { c: "#ff3b6b", w: 6 }, eraser = false, cur$ = null;
     const person = (id) => PEOPLE.find((q) => q.id === id);
     const outfit = (id) => { const p = person(id); const o = Object.assign({}, p.sign, cur[id] || {}); return o; };
 
@@ -7816,8 +7837,35 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (o.glasses === "hearts") d.push(`<path d="M88 74 l-10 -10 a5 5 0 0 1 10 -6 a5 5 0 0 1 10 6z M112 74 l-10 -10 a5 5 0 0 1 10 -6 a5 5 0 0 1 10 6z" fill="#ff3b6b"/>`);
       if (o.glasses === "stars") d.push(`<path d="M89 56 l3 7 h7 l-6 4 l2 7 l-6 -4 l-6 4 l2 -7 l-6 -4 h7z M111 56 l3 7 h7 l-6 4 l2 7 l-6 -4 l-6 4 l2 -7 l-6 -4 h7z" fill="#ffd84d" stroke="#b8741a"/>`);
       if (o.glasses === "visor") d.push(`<rect x="74" y="58" width="52" height="14" rx="7" fill="#5ce1e6" opacity=".85"/><rect x="78" y="61" width="20" height="3" rx="1.5" fill="#fff" opacity=".7"/>`);
+      // drawings: clipped to the clothing so paint stays on the clothes
+      const ink = (opts && opts.draw) || drawings[p.id] || [];
+      if (ink.length) d.push(`<clipPath id="${u}cl">${clothClip(o)}</clipPath><g clip-path="url(#${u}cl)">${ink.map(strokeSVG).join("")}</g>`);
       return `<svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${p.name}">${d.join("")}</svg>`;
     }
+    // clothing silhouettes (same geometry as the drawings above) used to clip the paint
+    function clothClip(o) {
+      const c = [], top = o.top;
+      const sl = (len) => `<rect x="44" y="112" width="20" height="${len}" rx="10"/><rect x="136" y="112" width="20" height="${len}" rx="10"/>`;
+      const torso = (h) => `<path d="M64 120 Q64 104 84 102 H116 Q136 104 136 120 V${h} H64Z"/>`;
+      if (top === "dress") c.push(sl(22), `<path d="M66 120 Q66 104 84 102 H116 Q134 104 134 120 V176 L156 262 H44 L66 176Z"/>`);
+      else if (top === "tshirt" || top === "jersey") c.push(sl(34), torso(200));
+      else c.push(sl(90), torso(204));
+      if (top === "hoodie") c.push(`<path d="M76 104 Q100 84 124 104Z"/>`);
+      if (top !== "dress") {
+        if (o.bottom === "jeans") c.push(`<path d="M68 192 H132 L130 302 H104 L100 214 L96 302 H70Z"/>`);
+        if (o.bottom === "mjpants") c.push(`<path d="M68 192 H132 L130 284 H104 L100 214 L96 284 H70Z"/>`);
+        if (o.bottom === "wide") c.push(`<path d="M66 192 H134 L142 304 H104 L100 220 L96 304 H58Z"/>`);
+        if (o.bottom === "shorts") c.push(`<path d="M68 192 H132 L132 240 H104 L100 214 L96 240 H68Z"/>`);
+        if (o.bottom === "skirt") c.push(`<path d="M70 192 H130 L146 252 H54Z"/>`);
+      }
+      [74, 104].forEach((x) => c.push(o.shoes === "boots" ? `<path d="M${x - 2} 284 h24 v18 q10 2 10 10 v4 h-36z"/>` : `<path d="M${x - 4} 300 h28 q8 0 8 8 v8 h-36z"/>`));
+      if (o.hat === "fedora") c.push(`<path d="M76 46 C76 20 124 20 124 46Z"/><path d="M56 48 Q100 36 144 48 Q100 56 56 48Z"/>`);
+      if (o.hat === "cap") c.push(`<path d="M70 50 C70 20 130 20 130 50Z"/><path d="M100 48 H154 Q156 48 154 54 H100Z"/>`);
+      if (o.hat === "beanie") c.push(`<path d="M68 54 C66 14 134 14 132 54Z"/><rect x="66" y="48" width="68" height="10" rx="5"/>`);
+      if (o.hat === "cowboy") c.push(`<path d="M78 44 C78 16 122 16 122 44Z"/><path d="M50 44 Q100 58 150 44 Q146 54 100 56 Q54 54 50 44Z"/>`);
+      return c.join("");
+    }
+    const strokeSVG = (k) => k.pts.length === 1 ? `<circle cx="${k.pts[0][0]}" cy="${k.pts[0][1]}" r="${k.w / 2}" fill="${k.c}"/>` : `<path d="M${k.pts.map((q) => q.join(" ")).join(" L")}" fill="none" stroke="${k.c}" stroke-width="${k.w}" stroke-linecap="round" stroke-linejoin="round"/>`;
     function face(p) { return figure(p, p.sign, { thumb: true }).replace('viewBox="0 0 200 340"', 'viewBox="55 15 90 90"'); }
 
     // ---------- UI ----------
@@ -7842,8 +7890,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const lb = $("#drLooks"); lb.innerHTML = "";
       looks.slice().reverse().forEach((l) => {
         const lp = person(l.p); if (!lp) return;
-        const b = document.createElement("button"); b.type = "button"; b.title = lp.name; b.innerHTML = figure(lp, Object.assign({}, lp.sign, l.o), { thumb: true });
-        b.addEventListener("click", () => { who = l.p; cur[who] = Object.assign({}, l.o); save(); render(); Hero.say("dress", "good", `Надели сохранённый образ: ${lp.name}`); });
+        const b = document.createElement("button"); b.type = "button"; b.title = lp.name; b.innerHTML = figure(lp, Object.assign({}, lp.sign, l.o), { thumb: true, draw: l.d || [] });
+        b.addEventListener("click", () => { who = l.p; cur[who] = Object.assign({}, l.o); drawings[who] = (l.d || []).slice(); store.set("dressDraw", drawings); save(); render(); Hero.say("dress", "good", `Надели сохранённый образ: ${lp.name}`); });
         lb.appendChild(b);
       });
     }
@@ -7863,14 +7911,54 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     });
     $("#drSign").addEventListener("click", () => { delete cur[who]; save(); render(); Hero.say("dress", "good", `Фирменный образ: ${person(who).name}`); });
     $("#drSave").addEventListener("click", () => {
-      const o = outfit(who), key = who + JSON.stringify(o);
+      const o = outfit(who), key = who + JSON.stringify(o) + JSON.stringify(drawings[who] || []);
       const fl = document.createElement("div"); fl.className = "dr-flash"; $("#drStage").appendChild(fl); setTimeout(() => fl.remove(), 600);
-      if (looks.some((l) => l.p + JSON.stringify(Object.assign({}, person(l.p).sign, l.o)) === key)) { Hero.say("dress", "bad", "Такой образ уже сохранён — попробуй что-то новое!"); return; }
-      looks.push({ p: who, o }); looks = looks.slice(-20); store.set("dressLooks", looks);
+      if (looks.some((l) => l.p + JSON.stringify(Object.assign({}, person(l.p).sign, l.o)) + JSON.stringify(l.d || []) === key)) { Hero.say("dress", "bad", "Такой образ уже сохранён — попробуй что-то новое!"); return; }
+      looks.push({ p: who, o, d: (drawings[who] || []).slice() }); looks = looks.slice(-20); store.set("dressLooks", looks);
       Hero.earn(10); updateHub(); render();
       Hero.say("dress", "win", `Образ сохранён! +10 монет · ${person(who).name}`);
     });
-    return { enter() { render(); }, leave() {}, key() {}, best: () => String(looks.length) };
+    // ---------- painting on the clothes ----------
+    const PAINT = ["#ff3b6b", "#ff8a3d", "#ffd84d", "#9be15d", "#2fa84a", "#5ce1e6", "#2f6fd6", "#7b5cff", "#ff5ad1", "#ffffff", "#8a5a34", "#141419"];
+    $("#drPaintColors").innerHTML = PAINT.map((c) => `<button type="button" class="sw${c === brush.c ? " on" : ""}" data-c="${c}" style="background:${c}" aria-label="Цвет ${c}"></button>`).join("");
+    function setPaint(on) {
+      painting = on; $("#drPaint").hidden = !on; $("#drStage").classList.toggle("painting", on);
+      $("#drPaintBtn").textContent = on ? "🖌️ Рисуем…" : "🖌️ Нарисовать";
+      let h = $("#drStage .dr-paint-hint"); if (on && !h) { h = document.createElement("div"); h.className = "dr-paint-hint"; h.textContent = "Рисуй пальцем по одежде"; $("#drStage").appendChild(h); } if (!on && h) h.remove();
+      if (on) Hero.say("dress", "start", "Выбери цвет и рисуй прямо на одежде!");
+    }
+    const saveDraw = () => store.set("dressDraw", drawings);
+    function figPt(e) {
+      const sv = $("#drFig svg"); if (!sv) return null; const r = sv.getBoundingClientRect();
+      return [Math.round((e.clientX - r.left) / r.width * 200 * 10) / 10, Math.round((e.clientY - r.top) / r.height * 340 * 10) / 10];
+    }
+    function eraseAt(pt) { const list = drawings[who] || []; const keep = list.filter((k) => !k.pts.some((q) => Math.hypot(q[0] - pt[0], q[1] - pt[1]) < k.w / 2 + 6)); if (keep.length !== list.length) { drawings[who] = keep; render(); } }
+    const stage = $("#drStage");
+    stage.addEventListener("pointerdown", (e) => {
+      if (!painting) return; const pt = figPt(e); if (!pt) return; e.preventDefault();
+      try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ }
+      if (eraser) { cur$ = { erase: true, id: e.pointerId }; eraseAt(pt); return; }
+      const list = drawings[who] || (drawings[who] = []);
+      if (list.length >= 80) list.shift();
+      cur$ = { id: e.pointerId, k: { c: brush.c, w: brush.w, pts: [pt] } }; list.push(cur$.k); render();
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!painting || !cur$ || e.pointerId !== cur$.id) return; const pt = figPt(e); if (!pt) return;
+      if (cur$.erase) { eraseAt(pt); return; }
+      const pts = cur$.k.pts, lp = pts[pts.length - 1];
+      if (Math.hypot(pt[0] - lp[0], pt[1] - lp[1]) < 1.5 || pts.length > 400) return;
+      pts.push(pt); render();
+    });
+    const endStroke = (e) => { if (cur$ && e.pointerId === cur$.id) { cur$ = null; saveDraw(); } };
+    stage.addEventListener("pointerup", endStroke); stage.addEventListener("pointercancel", endStroke);
+    $("#drPaintColors").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; brush.c = b.dataset.c; eraser = false; $("#drEraser").classList.remove("on"); $$("#drPaintColors .sw").forEach((x) => x.classList.toggle("on", x === b)); });
+    $$("#drPaint [data-size]").forEach((b) => b.addEventListener("click", () => { brush.w = +b.dataset.size; eraser = false; $("#drEraser").classList.remove("on"); $$("#drPaint [data-size]").forEach((x) => x.classList.toggle("on", x === b)); }));
+    $("#drEraser").addEventListener("click", () => { eraser = !eraser; $("#drEraser").classList.toggle("on", eraser); });
+    $("#drUndo").addEventListener("click", () => { const l = drawings[who]; if (l && l.length) { l.pop(); saveDraw(); render(); } });
+    $("#drWipe").addEventListener("click", () => { drawings[who] = []; saveDraw(); render(); Hero.say("dress", "good", "Рисунок стёрт — одежда снова чистая."); });
+    $("#drPaintDone").addEventListener("click", () => { setPaint(false); saveDraw(); if ((drawings[who] || []).length) Hero.say("dress", "win", "Красота! Нажми «Сохранить», чтобы оставить образ с рисунком."); });
+    $("#drPaintBtn").addEventListener("click", () => setPaint(!painting));
+    return { enter() { render(); }, leave() { if (painting) setPaint(false); }, key() {}, best: () => String(looks.length) };
   })();
 
   /* ================= Soda factory (works like Почини Монитор) ================= */
