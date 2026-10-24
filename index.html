@@ -249,6 +249,21 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ghost-wrap:not(.full) .ghost-close { display: none; }
 .ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+/* ---------- Just Dubai! ---------- */
+#dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
+.dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.dx-places button {
+  display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 14px; border: 2px solid var(--line);
+  background: var(--panel); color: var(--fg); font-weight: 800; font-size: 13px; line-height: 1.2; cursor: pointer; text-align: left;
+}
+.dx-places button i { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 14px; color: var(--bg); }
+.dx-places button[aria-pressed="true"] { border-color: var(--amber); background: var(--panel-2); }
+.dx-places button.stamped::after { content: "✓"; margin-left: auto; color: var(--lime); font-weight: 900; }
+.dx-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dx-pass { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: #2a2140; border: 2px dashed rgba(255,211,107,.5); font-size: 12px; font-weight: 700; }
+.dx-pass span.st { width: 30px; height: 30px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.25); display: grid; place-items: center; font-size: 10px; color: var(--muted); }
+.dx-pass span.st.on { border: 2px solid #e3263a; color: #e3263a; background: rgba(227,38,58,.12); transform: rotate(-12deg); font-weight: 900; }
+
 /* ---------- Mortal Kombat ---------- */
 #mkCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; background: #1a0c14; }
 #mk .gtitle { font-size: 15px; }
@@ -767,7 +782,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Двенадцать игр в одном кармане</span>
+        <span class="tag">Тринадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -915,6 +930,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Файтинг: 7 бойцов, суперприёмы, блок и парирование. До двух побед.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubMk">0</span></span>
+      </button>
+      <button class="cart" data-go="dubai" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="dxsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a5a"/><stop offset="1" stop-color="#ffd27a"/></linearGradient></defs><rect width="64" height="64" fill="url(#dxsky)"/><circle cx="48" cy="20" r="7" fill="#fff3b0"/><path d="M30 6 L31 6 L31.5 14 L33 14 L33.5 26 L35 26 L36 40 L38 40 L39 56 L22 56 L23 40 L25 40 L26 26 L27.5 26 L28 14 L29.5 14Z" fill="#9fb3cc"/><path d="M30.5 2 V8" stroke="#9fb3cc" stroke-width="1"/><g fill="#7a8aa8"><rect x="4" y="40" width="8" height="16"/><rect x="13" y="34" width="6" height="22"/><rect x="42" y="38" width="7" height="18"/><rect x="51" y="44" width="9" height="12"/></g><rect y="54" width="64" height="10" fill="#2f8fd6"/><path d="M0 58 q8 -3 16 0 t16 0 t16 0 t16 0" stroke="#bfe6ff" stroke-width="1.5" fill="none"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Just Dubai!</span>
+          <span class="cart-desc">Путешествуй по Дубаю: Бурдж Халифа, Dubai Mall, Deira City Center и пляж Марины.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubDubai">0/4</span></span>
       </button>
     </div>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1233,6 +1258,37 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
     <p class="shop-note" id="ideasNote">Идеи игроков видишь только ты. Новые подсвечены зелёным.</p>
     <div class="idea-list" id="ideaList"></div>
+  </section>
+
+  <!-- ===== Just Dubai! ===== -->
+  <section id="dubai" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Just Dubai!</div>
+      <div class="chips"><div class="chip hi"><span>Дирхамы</span><b id="dxAed">500</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="dxStage">
+      <canvas id="dxCanvas" width="440" height="330" aria-label="Дубай"></canvas>
+    </div>
+    <div class="dx-acts">
+      <button class="btn" type="button" id="dxAction" hidden>Действие</button>
+      <button class="btn ghost" type="button" id="dxMap">Карта</button>
+    </div>
+    <div class="dx-places" id="dxPlaces">
+      <button type="button" data-place="burj"><i style="background:#9fb3cc">▲</i>Бурдж Халифа</button>
+      <button type="button" data-place="deira"><i style="background:#ffb547">◆</i>Deira City Center</button>
+      <button type="button" data-place="mall"><i style="background:#5ce1e6">●</i>Dubai Mall</button>
+      <button type="button" data-place="marina"><i style="background:#ff8a6b">≈</i>Dubai Marina beach</button>
+    </div>
+    <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
+      <span class="st" data-st="burj">BK</span><span class="st" data-st="deira">DC</span><span class="st" data-st="mall">DM</span><span class="st" data-st="marina">MB</span>
+    </div>
+    <p class="hint">Выбери место — такси довезёт. В каждом месте есть своё занятие; за него ставится штамп и +50 монет. Все 4 штампа — бонус +200.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -4456,6 +4512,394 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Just Dubai! ================= */
+  const Dubai = (() => {
+    const cv = $("#dxCanvas"), ctx = cv.getContext("2d"), stage = $("#dxStage");
+    let W = 440, H = 330, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
+    const PLACES = {
+      burj: { name: "Бурдж Халифа", map: [.5, .46], stamp: "Фото со 148-го этажа" },
+      deira: { name: "Deira City Center", map: [.8, .3], stamp: "Шопинг в Дейре" },
+      mall: { name: "Dubai Mall", map: [.66, .62], stamp: "Фонтанное шоу" },
+      marina: { name: "Dubai Marina beach", map: [.22, .74], stamp: "Ракушки на пляже" },
+    };
+    let place = null, scene = "map", travel = null, stamps = store.get("dxStamps", {});
+    if (!stamps || typeof stamps !== "object") stamps = {};
+    // scene state
+    let ride = 0, riding = false, flashT = 0, photo = false;
+    let show = 0, night = false;
+    let aed = 500, bag = [], items = [], deiraMsg = "";
+    let shells = [], found = 0, sparkleT = 0;
+    let fish = [];
+    const rnd = (a, b) => a + Math.random() * (b - a);
+
+    // ---------- audio for the fountain show ----------
+    let AC = null, notes = [];
+    function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === "suspended") AC.resume(); }
+    function melody() {
+      if (!AC) return;
+      const scale = [293.7, 311.1, 370, 392, 440, 466.2, 554.4, 587.3]; // D hijaz
+      const seq = [0, 2, 3, 4, 3, 2, 1, 0, 4, 5, 6, 7, 6, 4, 3, 2, 0, 2, 4, 7, 6, 4, 2, 0];
+      const t0 = AC.currentTime + .05;
+      seq.forEach((n, i) => {
+        const t = t0 + i * .4, o = AC.createOscillator(), g = AC.createGain();
+        o.type = "triangle"; o.frequency.value = scale[n];
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.12, t + .03); g.gain.exponentialRampToValueAtTime(.0001, t + .38);
+        o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + .4);
+        if (i % 2 === 0) { const b = AC.createOscillator(), bg = AC.createGain(); b.type = "sine"; b.frequency.value = scale[0] / 2; bg.gain.setValueAtTime(.15, t); bg.gain.exponentialRampToValueAtTime(.0001, t + .3); b.connect(bg); bg.connect(AC.destination); b.start(t); b.stop(t + .32); }
+      });
+    }
+
+    // ---------- helpers ----------
+    function sky(c1, c2) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    function rect(x, y, w, h, col) { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); }
+    function text(t, x, y, size, col, align, weight) {
+      ctx.font = `${weight || 800} ${Math.round(size * U)}px Manrope, sans-serif`; ctx.textAlign = align || "center"; ctx.textBaseline = "middle";
+      const dark = /^#[0-3]/.test(col); ctx.lineJoin = "round"; ctx.miterLimit = 2; ctx.lineWidth = 3.5; ctx.strokeStyle = dark ? "rgba(255,255,255,.85)" : "rgba(18,19,42,.75)"; ctx.strokeText(t, x, y); ctx.fillStyle = col; ctx.fillText(t, x, y);
+    }
+    function me(x, y, s) {
+      const im = Hero.img(), z = s * U;
+      ctx.save(); ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.clip();
+      if (im.complete && im.naturalWidth) ctx.drawImage(im, x - z / 2, y - z / 2, z, z); else rect(x - z / 2, y - z / 2, z, z, Hero.accent());
+      ctx.restore(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.stroke();
+    }
+    function palm(x, y, s, t) {
+      ctx.strokeStyle = "#7a5a34"; ctx.lineWidth = 4 * s; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 6 * s, y - 25 * s, x + 4 * s, y - 50 * s); ctx.stroke();
+      ctx.fillStyle = "#2f8a3c";
+      for (let i = 0; i < 6; i++) {
+        ctx.save(); ctx.translate(x + 4 * s, y - 50 * s); ctx.rotate(i * 1.05 + Math.sin(t + i) * .05);
+        ctx.beginPath(); ctx.ellipse(16 * s, 0, 18 * s, 4.5 * s, .3, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      }
+    }
+    function burj(cx, baseY, h, lit) {
+      // stepped, tapering tower with setbacks and a spire
+      const w0 = h * .16, tiers = 14;
+      for (let i = 0; i < tiers; i++) {
+        const k = i / tiers, w = w0 * Math.pow(1 - k, 1.15) + h * .006, y = baseY - h * .86 * (i + 1) / tiers, hh = h * .86 / tiers + 1;
+        const g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
+        g.addColorStop(0, lit ? "#38507a" : "#7f93b2"); g.addColorStop(.5, lit ? "#9fd2ff" : "#e3ecf7"); g.addColorStop(1, lit ? "#2a3c5e" : "#8fa3c2");
+        ctx.fillStyle = g; ctx.fillRect(cx - w / 2 + (i % 2 ? w * .06 : 0), y, w * (i % 2 ? .88 : 1), hh);
+        if (lit && i % 2 === 0) { ctx.fillStyle = "rgba(255,240,180,.55)"; for (let j = 0; j < 3; j++) ctx.fillRect(cx - w * .35, y + hh * (j + 1) / 4, w * .7, 1); }
+      }
+      ctx.strokeStyle = lit ? "#9fd2ff" : "#c7d3e6"; ctx.lineWidth = Math.max(1, h * .004);
+      ctx.beginPath(); ctx.moveTo(cx, baseY - h * .86); ctx.lineTo(cx, baseY - h); ctx.stroke();
+      if (lit) { ctx.fillStyle = "#ff3b4f"; ctx.beginPath(); ctx.arc(cx, baseY - h, 2.5, 0, Math.PI * 2); ctx.fill(); }
+    }
+    function skyline(baseY, col, seed, n, maxH) {
+      ctx.fillStyle = col;
+      for (let i = 0; i < n; i++) {
+        const r = Math.sin(seed * 99 + i * 12.9898) * 43758.5453, f = r - Math.floor(r);
+        const w = W / n * (.6 + f * .35), x = i * W / n + f * 6, h = maxH * (.3 + f * .7);
+        ctx.fillRect(x, baseY - h, w, h);
+      }
+    }
+
+    // ---------- scenes ----------
+    function drawMap(t) {
+      sky("#e9d3a8", "#d9b97f");
+      // the Gulf to the north-west
+      ctx.fillStyle = "#3fa3d8";
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, H * .06);
+      for (let i = 0; i <= 20; i++) { const x = W - i * W / 20, y = H * (.06 + i * .03) + Math.sin(i * 1.7) * 4; ctx.lineTo(x, y); }
+      ctx.lineTo(0, H * .68); ctx.closePath(); ctx.fill();
+      // Palm Jumeirah
+      ctx.fillStyle = "#e9d3a8";
+      const px = W * .3, py = H * .5;
+      ctx.fillRect(px - 2, py - 4, 4, H * .08);
+      for (let i = 0; i < 9; i++) { ctx.save(); ctx.translate(px, py); ctx.rotate(-Math.PI / 2 + (i - 4) * .3); ctx.fillRect(0, -1.5, H * .1, 3); ctx.restore(); }
+      ctx.strokeStyle = "#e9d3a8"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(px, py, H * .12, Math.PI * .95, Math.PI * 2.05); ctx.stroke();
+      // Dubai Creek
+      ctx.strokeStyle = "#3fa3d8"; ctx.lineWidth = 7 * U; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(W * .7, H * .16); ctx.quadraticCurveTo(W * .74, H * .3, W * .9, H * .42); ctx.stroke();
+      // Sheikh Zayed Road
+      ctx.strokeStyle = "#8a6a44"; ctx.lineWidth = 3 * U; ctx.setLineDash([8, 6]);
+      ctx.beginPath(); ctx.moveTo(W * .1, H * .9); ctx.lineTo(W * .5, H * .58); ctx.lineTo(W * .75, H * .38); ctx.stroke(); ctx.setLineDash([]);
+      text("Персидский залив", W * .22, H * .14, 11, "#e9fffb", "center", 700);
+      text("Пальма", px, py - H * .17, 9, "#fff", "center", 700);
+      text("Дубай-Крик", W * .86, H * .5, 9, "#1a4a6a", "center", 700);
+      // pins
+      Object.entries(PLACES).forEach(([id, p]) => {
+        const x = p.map[0] * W, y = p.map[1] * H, on = id === place;
+        ctx.fillStyle = stamps[id] ? "#2fa84a" : "#e3263a";
+        ctx.beginPath(); ctx.arc(x, y - 12 * U, 8 * U, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - 6 * U, y - 8 * U); ctx.lineTo(x, y); ctx.lineTo(x + 6 * U, y - 8 * U); ctx.fill();
+        circleW(x, y - 12 * U, 3 * U);
+        text(p.name, x, y + 9 * U, 9, on ? "#ffd84d" : "#fff", "center", 800);
+      });
+      if (travel) {
+        const k = Math.min(1, travel.t / travel.dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const x = travel.from[0] * W + (travel.to[0] - travel.from[0]) * W * e, y = travel.from[1] * H + (travel.to[1] - travel.from[1]) * H * e;
+        ctx.strokeStyle = "rgba(255,216,77,.8)"; ctx.lineWidth = 3; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(travel.from[0] * W, travel.from[1] * H); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        // taxi
+        ctx.save(); ctx.translate(x, y - 6 * U);
+        rect(-10 * U, -5 * U, 20 * U, 9 * U, "#ffd84d"); rect(-5 * U, -9 * U, 10 * U, 5 * U, "#ffd84d"); rect(-3 * U, -11 * U, 6 * U, 2 * U, "#e3263a");
+        ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(-6 * U, 4 * U, 2.5 * U, 0, 7); ctx.arc(6 * U, 4 * U, 2.5 * U, 0, 7); ctx.fill();
+        ctx.restore();
+        text("В пути…", W / 2, H - 16 * U, 12, "#fff");
+      } else text("Выбери место внизу", W / 2, H - 16 * U, 12, "#fff");
+    }
+    function circleW(x, y, r) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+
+    function drawBurj(t, dt) {
+      if (riding) { ride = Math.min(1, ride + dt / 6); if (ride >= 1) { riding = false; Hero.say("dubai", "good", "148-й этаж! Сделай фото!"); updateAction(); } }
+      const h = H * 3.4, off = ride * (h - H * .55);
+      sky(ride > .5 ? "#7fc4ff" : "#9fd6ff", "#ffe6b8");
+      ctx.save(); ctx.translate(0, off);
+      // ground and city
+      const base = H * .92;
+      skyline(base, "rgba(127,147,178,.55)", 3, 14, H * .3);
+      skyline(base, "rgba(90,110,140,.8)", 7, 10, H * .18);
+      rect(0, base, W, H * 2, "#d9b97f");
+      palm(W * .12, base, U * .9, t); palm(W * .9, base, U, t);
+      burj(W / 2, base, h, false);
+      // the elevator
+      const ey = base - h * .86 * ride;
+      ctx.fillStyle = "#ffd84d"; ctx.fillRect(W / 2 - 4 * U, ey - 8 * U, 8 * U, 8 * U);
+      ctx.restore();
+      // clouds near the top
+      if (ride > .55) { ctx.globalAlpha = (ride - .55) * 2; for (let i = 0; i < 5; i++) { const x = ((i * 120 + t * 12) % (W + 160)) - 80; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(x, H * (.55 + (i % 3) * .1), 50 * U, 14 * U, 0, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
+      const floor = Math.round(ride * 148);
+      rect(10, 10, 120 * U, 42 * U, "rgba(18,19,42,.7)");
+      text(`Этаж ${floor}`, 10 + 60 * U, 10 + 15 * U, 14, "#ffd84d");
+      text(`${Math.round(ride * 555)} м`, 10 + 60 * U, 10 + 33 * U, 10, "#fff", "center", 700);
+      if (ride >= 1) text("At the Top · 555 м", W / 2, H * .12, 13, "#fff");
+      me(W - 30 * U, H - 30 * U, 36);
+      if (flashT > 0) { ctx.fillStyle = `rgba(255,255,255,${flashT * 2})`; ctx.fillRect(0, 0, W, H); }
+    }
+
+    function drawMall(t, dt) {
+      if (!night) {
+        // aquarium inside the mall
+        sky("#f0e6d8", "#d8c8b4");
+        rect(0, H * .82, W, H * .18, "#c9b49a");
+        const ax = W * .08, ay = H * .08, aw = W * .84, ah = H * .66;
+        const wg = ctx.createLinearGradient(0, ay, 0, ay + ah); wg.addColorStop(0, "#1fa0d8"); wg.addColorStop(1, "#0a3c6e");
+        ctx.fillStyle = wg; ctx.fillRect(ax, ay, aw, ah);
+        ctx.save(); ctx.beginPath(); ctx.rect(ax, ay, aw, ah); ctx.clip();
+        for (let i = 0; i < 6; i++) { ctx.fillStyle = "rgba(255,255,255,.06)"; ctx.fillRect(ax + ((i * 70 + t * 10) % aw), ay, 18 * U, ah); }
+        fish.forEach((f) => {
+          f.x += f.v * dt * U; if (f.x > ax + aw + 40) f.x = ax - 40; if (f.x < ax - 40) f.x = ax + aw + 40;
+          const y = f.y + Math.sin(t * f.w + f.p) * 6 * U, s = f.s * U, dir = Math.sign(f.v);
+          ctx.save(); ctx.translate(f.x, y); ctx.scale(dir, 1);
+          ctx.fillStyle = f.c; ctx.beginPath(); ctx.ellipse(0, 0, s, s * (f.kind === "ray" ? .7 : .38), 0, 0, 7); ctx.fill();
+          ctx.beginPath(); ctx.moveTo(-s * .8, 0); ctx.lineTo(-s * 1.4, -s * .4); ctx.lineTo(-s * 1.4, s * .4); ctx.fill();
+          if (f.kind === "shark") { ctx.beginPath(); ctx.moveTo(-s * .1, -s * .3); ctx.lineTo(s * .1, -s * .8); ctx.lineTo(s * .3, -s * .3); ctx.fill(); }
+          ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(s * .55, -s * .08, Math.max(1, s * .07), 0, 7); ctx.fill();
+          ctx.restore();
+        });
+        for (let i = 0; i < 12; i++) { const bx = ax + (i * 53 % aw), by = ay + ah - ((t * 30 + i * 40) % ah); ctx.strokeStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(bx, by, 2 * U, 0, 7); ctx.stroke(); }
+        ctx.restore();
+        ctx.strokeStyle = "#8a7a6a"; ctx.lineWidth = 6; ctx.strokeRect(ax, ay, aw, ah);
+        text("DUBAI MALL · Аквариум", W / 2, H * .04 + 4, 11, "#3a2a20", "center", 800);
+        me(W * .15, H * .9, 34);
+        text("Вечером — фонтанное шоу!", W * .62, H * .9, 11, "#fff");
+      } else {
+        // the fountain at night with Burj Khalifa behind
+        sky("#0b0f2a", "#2a1a4a");
+        for (let i = 0; i < 30; i++) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect((i * 97) % W, (i * 53) % (H * .4), 1.5, 1.5); }
+        skyline(H * .66, "#1a1f3a", 5, 16, H * .3);
+        burj(W * .5, H * .66, H * 1.05, true);
+        const lake = ctx.createLinearGradient(0, H * .66, 0, H); lake.addColorStop(0, "#1a2a5a"); lake.addColorStop(1, "#0a1030");
+        ctx.fillStyle = lake; ctx.fillRect(0, H * .66, W, H * .34);
+        if (show > 0) {
+          show = Math.max(0, show - dt);
+          const k = 1 - show / 10;
+          for (let i = 0; i < 15; i++) {
+            const x = W * (.06 + i * .063), beat = Math.abs(Math.sin(t * 2.5 + i * .55 + Math.sin(t * .7) * 2));
+            const hgt = H * (.12 + .38 * beat * Math.min(1, k * 4) * Math.min(1, show));
+            const g = ctx.createLinearGradient(0, H * .78 - hgt, 0, H * .78);
+            g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(.25, "rgba(220,240,255,.9)"); g.addColorStop(1, "rgba(160,210,255,.6)");
+            ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 3 * U, H * .78); ctx.quadraticCurveTo(x, H * .78 - hgt * 1.1, x + 3 * U, H * .78); ctx.fill();
+            ctx.fillStyle = "rgba(220,240,255,.7)"; for (let j = 0; j < 3; j++) ctx.fillRect(x + Math.sin(t * 9 + i + j) * 8 * U, H * .78 - hgt + j * 6, 2, 2);
+          }
+          if (show === 0) finishShow();
+        } else text("Нажми «Фонтанное шоу»", W / 2, H * .9, 12, "#ffd84d");
+        ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.fillRect(0, H * .78, W, 2);
+        me(W * .1, H * .92, 30);
+      }
+    }
+    function finishShow() {
+      giveStamp("mall");
+      Hero.say("dubai", "win", "Вот это шоу! Фонтан танцевал под музыку!");
+      updateAction();
+    }
+
+    function setupDeira() {
+      const list = [["Сумка", 180, "#c43c4f"], ["Кроссовки", 220, "#2f6fd6"], ["Духи", 150, "#ff5ad1"], ["Финики", 30, "#8a5a34"], ["Часы", 260, "#ffd84d"], ["Сувенир-Бурдж", 45, "#9fb3cc"], ["Футболка", 60, "#2fa84a"], ["Сладости", 25, "#ff8a3d"]];
+      items = list.map(([name, price, col], i) => ({ name, price, col, i, x: 0, y: 0, fly: 0, bought: false }));
+      aed = 500; bag = []; deiraMsg = "Купи 4 вещи и уложись в 500 дирхамов";
+      $("#dxAed").textContent = aed;
+    }
+    function drawDeira(t, dt) {
+      sky("#f7efe2", "#e6d6c0");
+      rect(0, 0, W, H * .14, "#2a5a7a");
+      text("DEIRA CITY CENTRE", W / 2, H * .07, 14, "#ffd84d");
+      // shelves
+      for (let r = 0; r < 2; r++) rect(W * .05, H * (.42 + r * .3), W * .9, 6 * U, "#8a6a44");
+      items.forEach((it, idx) => {
+        const col = idx % 4, row = Math.floor(idx / 4);
+        it.x = W * (.16 + col * .225); it.y = H * (.32 + row * .3);
+        if (it.bought) { it.fly = Math.min(1, it.fly + dt * 2.5); if (it.fly >= 1) return; }
+        const x = it.bought ? it.x + (W * .88 - it.x) * it.fly : it.x, y = it.bought ? it.y + (H * .9 - it.y) * it.fly : it.y;
+        const sz = 22 * U * (it.bought ? 1 - it.fly * .6 : 1);
+        ctx.fillStyle = it.col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - sz / 2, y - sz / 2, sz, sz, 5); else ctx.rect(x - sz / 2, y - sz / 2, sz, sz); ctx.fill();
+        if (!it.bought) { text(it.name, x, y + 21 * U, 9.5, "#3a2a20", "center", 800); text(`${it.price} AED`, x, y - 21 * U, 9.5, "#1f5fc6", "center", 800); }
+      });
+      // shopping bag
+      rect(W * .82, H * .82, W * .12, H * .14, "#c43c4f"); ctx.strokeStyle = "#c43c4f"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(W * .88, H * .82, W * .03, Math.PI, 0); ctx.stroke();
+      text(String(bag.length), W * .88, H * .89, 13, "#fff");
+      me(W * .08, H * .9, 32);
+      text(deiraMsg, W * .48, H * .9, 10, "#fff", "center", 700);
+    }
+
+    function setupMarina() {
+      shells = []; found = 0;
+      for (let i = 0; i < 5; i++) shells.push({ x: rnd(.08, .92), y: rnd(.8, .96), found: false, p: rnd(0, 6) });
+    }
+    function drawMarina(t, dt) {
+      sky("#ff8a5a", "#ffd27a");
+      ctx.fillStyle = "rgba(255,243,176,.9)"; ctx.beginPath(); ctx.arc(W * .72, H * .38, 26 * U, 0, 7); ctx.fill();
+      // Marina towers (one twisted)
+      skyline(H * .58, "rgba(90,60,90,.55)", 11, 12, H * .38);
+      ctx.fillStyle = "rgba(70,45,80,.75)";
+      for (let i = 0; i < 9; i++) { const y = H * .58 - i * H * .045; ctx.fillRect(W * .2 + Math.sin(i * .5) * 4 * U, y - H * .045, 18 * U, H * .046); }
+      // sea and waves
+      const sea = ctx.createLinearGradient(0, H * .58, 0, H * .78); sea.addColorStop(0, "#2f8fd6"); sea.addColorStop(1, "#5ec4e8");
+      ctx.fillStyle = sea; ctx.fillRect(0, H * .58, W, H * .2);
+      ctx.fillStyle = "rgba(255,210,122,.35)"; ctx.fillRect(W * .65, H * .6, W * .14, H * .17);
+      // yachts
+      for (let i = 0; i < 3; i++) {
+        const x = ((t * (12 + i * 6) + i * 160) % (W + 120)) - 60, y = H * (.62 + i * .04);
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(x - 18 * U, y); ctx.lineTo(x + 20 * U, y); ctx.lineTo(x + 14 * U, y + 6 * U); ctx.lineTo(x - 14 * U, y + 6 * U); ctx.fill();
+        ctx.fillRect(x - 8 * U, y - 6 * U, 14 * U, 6 * U);
+      }
+      ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2;
+      for (let i = 0; i < 3; i++) { ctx.beginPath(); for (let x = 0; x <= W; x += 10) ctx.lineTo(x, H * (.74 + i * .015) + Math.sin(x * .05 + t * 2 + i) * 2); ctx.stroke(); }
+      // sand
+      rect(0, H * .77, W, H * .23, "#f2d29a");
+      palm(W * .06, H * .8, U, t); palm(W * .95, H * .82, U * .9, t);
+      // hidden shells: a sparkle hints at one now and then
+      sparkleT += dt;
+      shells.forEach((s, i) => {
+        const x = s.x * W, y = s.y * H;
+        if (s.found) {
+          ctx.fillStyle = "#ffd6e8"; ctx.beginPath(); ctx.moveTo(x, y + 6 * U); ctx.lineTo(x - 7 * U, y - 4 * U); ctx.quadraticCurveTo(x, y - 10 * U, x + 7 * U, y - 4 * U); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle = "#e88aa8"; ctx.lineWidth = 1; for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(x, y + 6 * U); ctx.lineTo(x + k * 5 * U, y - 6 * U); ctx.stroke(); }
+        } else if (Math.sin(t * 2 + s.p) > .97) { ctx.fillStyle = "#fff"; ctx.fillRect(x - 1, y - 6, 2, 12); ctx.fillRect(x - 6, y - 1, 12, 2); }
+      });
+      me(W * .5, H * .88, 32);
+      text(`Ракушки: ${found}/5 — ищи блеск на песке`, W / 2, H * .07, 11, "#fff");
+    }
+
+    // ---------- flow ----------
+    function giveStamp(id) {
+      if (stamps[id]) return;
+      stamps[id] = Date.now(); store.set("dxStamps", stamps);
+      Hero.grant(50);
+      const n = Object.keys(stamps).length;
+      if (n === 4) { Hero.grant(200); Hero.say("dubai", "win", "Паспорт заполнен! Бонус +200 монет!"); }
+      passport(); updateHub();
+    }
+    function passport() {
+      $$(".dx-pass .st").forEach((e) => e.classList.toggle("on", !!stamps[e.dataset.st]));
+      $$("#dxPlaces button").forEach((b) => { b.classList.toggle("stamped", !!stamps[b.dataset.place]); b.setAttribute("aria-pressed", String(b.dataset.place === place && scene !== "map")); });
+    }
+    function updateAction() {
+      const b = $("#dxAction"); b.hidden = false; b.disabled = false;
+      if (scene === "burj") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 148-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
+      else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : "Выйти к фонтану"; b.disabled = show > 0; }
+      else if (scene === "deira") b.textContent = "Вернуть покупки";
+      else if (scene === "marina") b.textContent = "Новые ракушки";
+      else b.hidden = true;
+    }
+    function go(id) {
+      if (travel) return;
+      audio();
+      const from = place ? PLACES[place].map : [.45, .9];
+      travel = { from, to: PLACES[id].map, t: 0, dur: place === id ? .2 : 1.6, id };
+      scene = "map"; place = id; updateAction(); passport();
+    }
+    function arrive(id) {
+      travel = null; scene = id;
+      if (id === "burj") { ride = 0; riding = false; photo = false; }
+      if (id === "mall") { night = false; show = 0; fish = []; for (let i = 0; i < 12; i++) fish.push({ x: rnd(0, W), y: H * rnd(.16, .66), v: rnd(-40, 40) || 20, s: rnd(6, 12), w: rnd(1, 2), p: rnd(0, 6), c: ["#ffd84d", "#ff8a3d", "#5ce1e6", "#ff5ad1", "#9be15d"][i % 5], kind: "fish" }); fish.push({ x: W * .3, y: H * .4, v: 26, s: 26, w: .6, p: 0, c: "#8a97a8", kind: "shark" }); fish.push({ x: W * .7, y: H * .58, v: -18, s: 18, w: .8, p: 1, c: "#c9b49a", kind: "ray" }); }
+      if (id === "deira") setupDeira();
+      if (id === "marina") setupMarina();
+      const hello = { burj: "Бурдж Халифа — самое высокое здание в мире, 828 м!", mall: "Dubai Mall: огромный аквариум прямо в торговом центре!", deira: "Deira City Centre — пора за покупками!", marina: "Пляж Марины на закате. Ищи ракушки!" }[id];
+      Hero.say("dubai", "start", hello);
+      updateAction(); passport();
+    }
+    $("#dxAction").addEventListener("click", () => {
+      audio();
+      if (scene === "burj") {
+        if (ride < 1 && !riding) { riding = true; }
+        else if (ride >= 1 && !photo) { photo = true; flashT = .5; giveStamp("burj"); Hero.say("dubai", "win", "Фото с высоты 555 метров готово!"); }
+        else if (photo) { ride = 0; photo = false; }
+      } else if (scene === "mall") {
+        if (!night) night = true;
+        else if (show <= 0) { show = 10; melody(); Hero.say("dubai", "good", "Музыка! Фонтан начинает танец!"); }
+      } else if (scene === "deira") setupDeira();
+      else if (scene === "marina") setupMarina();
+      updateAction();
+    });
+    $("#dxMap").addEventListener("click", () => { travel = null; scene = "map"; updateAction(); passport(); });
+    $("#dxPlaces").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) go(b.dataset.place); });
+    cv.addEventListener("pointerdown", (e) => {
+      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+      if (scene === "map") {
+        const hitId = Object.keys(PLACES).find((id) => Math.hypot(PLACES[id].map[0] * W - x, PLACES[id].map[1] * H - 12 * U - y) < 18 * U);
+        if (hitId) go(hitId);
+      }
+      if (scene === "deira") {
+        const it = items.find((i) => !i.bought && Math.abs(i.x - x) < 18 * U && Math.abs(i.y - y) < 18 * U);
+        if (!it) return;
+        if (bag.length >= 4) { deiraMsg = "Пакет полон — 4 покупки уже есть!"; return; }
+        if (it.price > aed) { deiraMsg = `Не хватает дирхамов: осталось ${aed} AED`; return; }
+        it.bought = true; aed -= it.price; bag.push(it.name); $("#dxAed").textContent = aed;
+        deiraMsg = `Куплено: ${it.name}. Осталось ${aed} AED`;
+        if (bag.length === 4) { deiraMsg = "Шопинг удался! 4 покупки в пакете"; giveStamp("deira"); Hero.say("dubai", "win", `Купили: ${bag.join(", ")}!`); }
+      }
+      if (scene === "marina") {
+        const s = shells.find((q) => !q.found && Math.hypot(q.x * W - x, q.y * H - y) < 26 * U);
+        if (s) { s.found = true; found++; if (found === 5) { giveStamp("marina"); Hero.say("dubai", "win", "Все 5 ракушек найдены!"); } }
+      }
+    });
+
+    function frame(now) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(.05, (now - lastT) / 1000) : 1 / 60; lastT = now;
+      const t = (now - T0) / 1000;
+      flashT = Math.max(0, flashT - dt);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (travel) { travel.t += dt; if (travel.t >= travel.dur) arrive(travel.id); }
+      if (scene === "map" || travel) drawMap(t);
+      else if (scene === "burj") drawBurj(t, dt);
+      else if (scene === "mall") drawMall(t, dt);
+      else if (scene === "deira") drawDeira(t, dt);
+      else if (scene === "marina") drawMarina(t, dt);
+      if (scene === "burj" && riding) updateAction();
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .75); U = W / 360;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    }
+    window.addEventListener("resize", () => { if (visible) fit(); });
+    passport();
+
+    return {
+      enter() { visible = true; fit(); passport(); updateAction(); if (scene === "map" && !place) Hero.say("dubai", "start", "Добро пожаловать в Дубай! Куда поедем?"); loop(); },
+      leave() { visible = false; riding = false; },
+      key() {},
+      best: () => `${Object.keys(stamps).length}/4`,
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -5681,8 +6125,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, mk: MK };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "mk", "ideas", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, mk: MK, dubai: Dubai };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -5698,6 +6142,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubLinks").textContent = Links.best();
     $("#hubFix").textContent = Fix.best();
     $("#hubMk").textContent = MK.best();
+    $("#hubDubai").textContent = Dubai.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -6364,6 +6809,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (document.hidden && current === "sonic") Sonic.leave();
     if (document.hidden && current === "geo") Geo.leave();
     if (document.hidden && current === "mk") MK.leave();
+    if (document.hidden && current === "dubai") Dubai.leave();
     if (!document.hidden && current === "vr") VR.enter();
   });
 
