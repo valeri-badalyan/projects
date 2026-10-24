@@ -259,6 +259,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .dx-places button i { flex: none; width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-style: normal; font-size: 14px; color: var(--bg); }
 .dx-places button[aria-pressed="true"] { border-color: var(--amber); background: var(--panel-2); }
 .dx-places button.stamped::after { content: "✓"; margin-left: auto; color: var(--lime); font-weight: 900; }
+.dx-shops { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.dx-shops button { flex: none; padding: 8px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.dx-shops button[aria-pressed="true"] { border-color: var(--amber); background: var(--panel-2); color: var(--amber); }
 .dx-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .dx-pass { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: #2a2140; border: 2px dashed rgba(255,211,107,.5); font-size: 12px; font-weight: 700; }
 .dx-pass span.st { width: 30px; height: 30px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.25); display: grid; place-items: center; font-size: 10px; color: var(--muted); }
@@ -1265,7 +1268,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <div class="topbar">
       <button class="back" type="button" data-go="hub">← Меню</button>
       <div class="gtitle">Just Dubai!</div>
-      <div class="chips"><div class="chip hi"><span>Дирхамы</span><b id="dxAed">500</b></div></div>
+      <div class="chips"><div class="chip hi"><span>Дирхамы</span><b id="dxAed">∞</b></div></div>
     </div>
     <div class="buddy">
       <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
@@ -1279,6 +1282,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn" type="button" id="dxAction" hidden>Действие</button>
       <button class="btn ghost" type="button" id="dxMap">Карта</button>
     </div>
+    <div class="dx-shops" id="dxShops" hidden aria-label="Магазины Deira City Centre"></div>
     <div class="dx-places" id="dxPlaces">
       <button type="button" data-place="burj"><i style="background:#9fb3cc">▲</i>Бурдж Халифа</button>
       <button type="button" data-place="deira"><i style="background:#ffb547">◆</i>Deira City Center</button>
@@ -4527,7 +4531,21 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     // scene state
     let ride = 0, riding = false, flashT = 0, photo = false;
     let show = 0, night = false;
-    let aed = 500, bag = [], items = [], deiraMsg = "";
+    let bag = [], items = [], deiraMsg = "", shop = 0, flyers = [];
+    const SHOPS = [
+      { name: "Мода", col: "#c43c4f", items: [["Сумка", 180, "#c43c4f", "👜"], ["Кроссовки", 220, "#2f6fd6", "👟"], ["Футболка", 60, "#2fa84a", "👕"], ["Кепка", 45, "#ff8a3d", "🧢"], ["Джинсы", 150, "#3b5aa8", "👖"], ["Платье", 240, "#ff5ad1", "👗"], ["Очки", 300, "#4a4a5a", "🕶️"], ["Шарф", 70, "#ffd84d", "🧣"]] },
+      { name: "Электроника", col: "#2f6fd6", items: [["Телефон", 3500, "#4a4a5a", "📱"], ["Ноутбук", 5200, "#9fb3cc", "💻"], ["Наушники", 600, "#2f6fd6", "🎧"], ["Часы", 1400, "#ffd84d", "⌚"], ["Камера", 2800, "#3a2a20", "📷"], ["Телевизор", 4100, "#12132a", "📺"], ["Колонка", 450, "#ff5ad1", "🔊"], ["Планшет", 2200, "#5ce1e6", "📲"]] },
+      { name: "Игрушки", col: "#ff8a3d", items: [["Мишка", 90, "#8a5a34", "🧸"], ["Машинка", 120, "#c43c4f", "🚗"], ["Робот", 340, "#9fb3cc", "🤖"], ["Мяч", 40, "#ff8a3d", "⚽"], ["Конструктор", 260, "#ffd84d", "🧱"], ["Кукла", 150, "#ff5ad1", "🪆"], ["Воздушный змей", 75, "#5ce1e6", "🪁"], ["Пазл", 55, "#2fa84a", "🧩"]] },
+      { name: "Игры", col: "#7b5cff", items: [["Приставка", 2100, "#12132a", "🎮"], ["Джойстик", 260, "#7b5cff", "🕹️"], ["Игра-диск", 230, "#2f6fd6", "💿"], ["VR-шлем", 1800, "#4a4a5a", "🥽"], ["Кубик Рубика", 35, "#ffd84d", "🎲"], ["Карты", 25, "#c43c4f", "🃏"], ["Шахматы", 140, "#8a5a34", "♟️"], ["Гарнитура", 390, "#2fa84a", "🎧"]] },
+      { name: "Спорт", col: "#2fa84a", items: [["Мяч футбольный", 110, "#e9e9f0", "⚽"], ["Баскетбольный мяч", 95, "#ff8a3d", "🏀"], ["Ракетка", 210, "#2f6fd6", "🎾"], ["Гантели", 180, "#4a4a5a", "🏋️"], ["Скейт", 320, "#c43c4f", "🛹"], ["Форма", 250, "#2fa84a", "🎽"], ["Бутсы", 380, "#ffd84d", "👟"], ["Перчатки", 130, "#c43c4f", "🥊"]] },
+      { name: "Золотой рынок", col: "#d9a520", items: [["Золотое кольцо", 2500, "#ffd84d", "💍"], ["Цепочка", 3200, "#ffcc33", "📿"], ["Корона", 9900, "#ffd84d", "👑"], ["Бриллиант", 15000, "#5ce1e6", "💎"], ["Браслет", 1900, "#ffcc33", "⭕"], ["Серьги", 1300, "#ff5ad1", "✨"], ["Золотой слиток", 22000, "#d9a520", "🟨"], ["Медаль", 800, "#ffd84d", "🏅"]] },
+      { name: "Парфюм", col: "#ff5ad1", items: [["Духи", 150, "#ff5ad1", "🌸"], ["Уд", 480, "#8a5a34", "🪵"], ["Бахур", 90, "#3a2a20", "🔥"], ["Мускус", 220, "#e9e9f0", "🫧"], ["Роза", 170, "#c43c4f", "🌹"], ["Жасмин", 140, "#fff7c2", "🌼"], ["Амбра", 360, "#ffb547", "🟠"], ["Набор", 600, "#7b5cff", "🎁"]] },
+      { name: "Сладости", col: "#8a5a34", items: [["Финики", 30, "#8a5a34", "🌴"], ["Пахлава", 45, "#ffb547", "🥮"], ["Шоколад", 25, "#5a3a20", "🍫"], ["Мороженое", 15, "#ff8ad1", "🍦"], ["Пончик", 12, "#ff5ad1", "🍩"], ["Леденец", 8, "#ff8a3d", "🍭"], ["Торт", 120, "#fff7c2", "🎂"], ["Лукумат", 20, "#ffd84d", "🍯"]] },
+      { name: "Книги", col: "#3b5aa8", items: [["Комикс", 35, "#c43c4f", "📕"], ["Энциклопедия", 160, "#2f6fd6", "📘"], ["Атлас", 90, "#2fa84a", "🗺️"], ["Раскраска", 20, "#ffd84d", "🖍️"], ["Блокнот", 15, "#ff8a3d", "📒"], ["Ручки", 10, "#4a4a5a", "🖊️"], ["Глобус", 140, "#5ce1e6", "🌍"], ["Манга", 40, "#ff5ad1", "📗"]] },
+      { name: "Супермаркет", col: "#12a39a", items: [["Арбуз", 18, "#2fa84a", "🍉"], ["Бананы", 9, "#ffd84d", "🍌"], ["Сок", 7, "#ff8a3d", "🧃"], ["Хлеб", 5, "#c9a26b", "🍞"], ["Сыр", 22, "#ffd84d", "🧀"], ["Манго", 12, "#ffb547", "🥭"], ["Вода", 2, "#5ce1e6", "💧"], ["Пицца", 35, "#c43c4f", "🍕"]] },
+      { name: "Сувениры", col: "#9fb3cc", items: [["Мини-Бурдж", 45, "#9fb3cc", "🗼"], ["Магнит", 10, "#c43c4f", "🧲"], ["Верблюд", 60, "#c9a26b", "🐪"], ["Фонарь", 85, "#ffd84d", "🏮"], ["Песок в бутылке", 30, "#f6d7a6", "🏺"], ["Сокол", 120, "#8a5a34", "🦅"], ["Открытка", 5, "#5ce1e6", "💌"], ["Ковёр", 950, "#c43c4f", "🧶"]] },
+      { name: "Мебель", col: "#a0785a", items: [["Диван", 2400, "#2f6fd6", "🛋️"], ["Кровать", 3100, "#e9e9f0", "🛏️"], ["Стул", 220, "#8a5a34", "🪑"], ["Лампа", 160, "#ffd84d", "💡"], ["Зеркало", 380, "#9fb3cc", "🪞"], ["Растение", 95, "#2fa84a", "🪴"], ["Часы-стена", 140, "#4a4a5a", "🕰️"], ["Шкаф", 1700, "#a0785a", "🚪"]] },
+    ];
     let shells = [], found = 0, sparkleT = 0;
     let fish = [];
     const rnd = (a, b) => a + Math.random() * (b - a);
@@ -4725,32 +4743,48 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       updateAction();
     }
 
-    function setupDeira() {
-      const list = [["Сумка", 180, "#c43c4f"], ["Кроссовки", 220, "#2f6fd6"], ["Духи", 150, "#ff5ad1"], ["Финики", 30, "#8a5a34"], ["Часы", 260, "#ffd84d"], ["Сувенир-Бурдж", 45, "#9fb3cc"], ["Футболка", 60, "#2fa84a"], ["Сладости", 25, "#ff8a3d"]];
-      items = list.map(([name, price, col], i) => ({ name, price, col, i, x: 0, y: 0, fly: 0, bought: false }));
-      aed = 500; bag = []; deiraMsg = "Купи 4 вещи и уложись в 500 дирхамов";
-      $("#dxAed").textContent = aed;
+    function openShop(i) {
+      shop = (i + SHOPS.length) % SHOPS.length; flyers = [];
+      items = SHOPS[shop].items.map(([name, price, col, ico], k) => ({ name, price, col, ico, i: k, x: 0, y: 0, pop: 0 }));
+      deiraMsg = `Магазин «${SHOPS[shop].name}» — денег бесконечно!`;
+      $$("#dxShops button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.store === shop)));
+      const cur = $(`#dxShops button[data-store="${shop}"]`); if (cur) { const box = $("#dxShops"); box.scrollLeft = cur.offsetLeft - box.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2; }
     }
+    function setupDeira(keepBag) {
+      if (!keepBag) bag = [];
+      openShop(shop);
+      deiraMsg = keepBag ? deiraMsg : "Денег бесконечно — покупай что хочешь!";
+    }
+    $("#dxShops").innerHTML = SHOPS.map((sh, i) => `<button type="button" data-store="${i}" aria-pressed="false">${sh.name}</button>`).join("");
+    $("#dxShops").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && scene === "deira") openShop(+b.dataset.store); });
     function drawDeira(t, dt) {
       sky("#f7efe2", "#e6d6c0");
-      rect(0, 0, W, H * .14, "#2a5a7a");
-      text("DEIRA CITY CENTRE", W / 2, H * .07, 14, "#ffd84d");
+      const SH = SHOPS[shop];
+      rect(0, 0, W, H * .14, SH.col);
+      text(`◀  ${SH.name.toUpperCase()}  ▶`, W / 2, H * .055, 13, "#fff");
+      text(`Deira City Centre · магазин ${shop + 1} из ${SHOPS.length}`, W / 2, H * .115, 8.5, "#fff7c2", "center", 700);
       // shelves
       for (let r = 0; r < 2; r++) rect(W * .05, H * (.42 + r * .3), W * .9, 6 * U, "#8a6a44");
       items.forEach((it, idx) => {
         const col = idx % 4, row = Math.floor(idx / 4);
         it.x = W * (.16 + col * .225); it.y = H * (.32 + row * .3);
-        if (it.bought) { it.fly = Math.min(1, it.fly + dt * 2.5); if (it.fly >= 1) return; }
-        const x = it.bought ? it.x + (W * .88 - it.x) * it.fly : it.x, y = it.bought ? it.y + (H * .9 - it.y) * it.fly : it.y;
-        const sz = 22 * U * (it.bought ? 1 - it.fly * .6 : 1);
-        ctx.fillStyle = it.col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - sz / 2, y - sz / 2, sz, sz, 5); else ctx.rect(x - sz / 2, y - sz / 2, sz, sz); ctx.fill();
-        if (!it.bought) { text(it.name, x, y + 21 * U, 9.5, "#3a2a20", "center", 800); text(`${it.price} AED`, x, y - 21 * U, 9.5, "#1f5fc6", "center", 800); }
+        it.pop = Math.max(0, it.pop - dt * 3);
+        const x = it.x, y = it.y, sz = 24 * U * (1 + it.pop * .25);
+        ctx.fillStyle = it.col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - sz / 2, y - sz / 2, sz, sz, 6); else ctx.rect(x - sz / 2, y - sz / 2, sz, sz); ctx.fill();
+        ctx.font = `${Math.round(15 * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(it.ico, x, y + 1);
+        text(it.name.length > 13 ? it.name.slice(0, 12) + "…" : it.name, x, y + 22 * U, 9, "#3a2a20", "center", 800);
+        text(`${it.price.toLocaleString("ru-RU")} AED`, x, y - 22 * U, 9, "#1f5fc6", "center", 800);
+      });
+      flyers = flyers.filter((f) => (f.t += dt * 2.5) < 1);
+      flyers.forEach((f) => {
+        const x = f.x + (W * .88 - f.x) * f.t, y = f.y + (H * .9 - f.y) * f.t - Math.sin(f.t * Math.PI) * 30 * U, sz = 22 * U * (1 - f.t * .6);
+        ctx.fillStyle = f.col; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - sz / 2, y - sz / 2, sz, sz, 5); else ctx.rect(x - sz / 2, y - sz / 2, sz, sz); ctx.fill();
       });
       // shopping bag
       rect(W * .82, H * .82, W * .12, H * .14, "#c43c4f"); ctx.strokeStyle = "#c43c4f"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(W * .88, H * .82, W * .03, Math.PI, 0); ctx.stroke();
       text(String(bag.length), W * .88, H * .89, 13, "#fff");
       me(W * .08, H * .9, 32);
-      text(deiraMsg, W * .48, H * .9, 10, "#fff", "center", 700);
+      text(deiraMsg, W * .46, H * .9, 9, "#fff", "center", 700);
     }
 
     function setupMarina() {
@@ -4809,9 +4843,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const b = $("#dxAction"); b.hidden = false; b.disabled = false;
       if (scene === "burj") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 148-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
       else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : "Выйти к фонтану"; b.disabled = show > 0; }
-      else if (scene === "deira") b.textContent = "Вернуть покупки";
+      else if (scene === "deira") b.textContent = "Следующий магазин";
       else if (scene === "marina") b.textContent = "Новые ракушки";
       else b.hidden = true;
+      $("#dxShops").hidden = scene !== "deira";
     }
     function go(id) {
       if (travel) return;
@@ -4839,7 +4874,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       } else if (scene === "mall") {
         if (!night) night = true;
         else if (show <= 0) { show = 10; melody(); Hero.say("dubai", "good", "Музыка! Фонтан начинает танец!"); }
-      } else if (scene === "deira") setupDeira();
+      } else if (scene === "deira") openShop(shop + 1);
       else if (scene === "marina") setupMarina();
       updateAction();
     });
@@ -4852,13 +4887,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (hitId) go(hitId);
       }
       if (scene === "deira") {
-        const it = items.find((i) => !i.bought && Math.abs(i.x - x) < 18 * U && Math.abs(i.y - y) < 18 * U);
+        if (y < H * .14) { openShop(shop + (x < W / 2 ? -1 : 1)); return; }
+        const it = items.find((i) => Math.abs(i.x - x) < 20 * U && Math.abs(i.y - y) < 20 * U);
         if (!it) return;
-        if (bag.length >= 4) { deiraMsg = "Пакет полон — 4 покупки уже есть!"; return; }
-        if (it.price > aed) { deiraMsg = `Не хватает дирхамов: осталось ${aed} AED`; return; }
-        it.bought = true; aed -= it.price; bag.push(it.name); $("#dxAed").textContent = aed;
-        deiraMsg = `Куплено: ${it.name}. Осталось ${aed} AED`;
-        if (bag.length === 4) { deiraMsg = "Шопинг удался! 4 покупки в пакете"; giveStamp("deira"); Hero.say("dubai", "win", `Купили: ${bag.join(", ")}!`); }
+        it.pop = 1; flyers.push({ x: it.x, y: it.y, col: it.col, t: 0 }); bag.push(it.name);
+        deiraMsg = `Куплено: ${it.name} за ${it.price.toLocaleString("ru-RU")} AED. Деньги: ∞`;
+        if (bag.length === 4 && !stamps.deira) { giveStamp("deira"); Hero.say("dubai", "win", `Купили: ${bag.slice(0, 4).join(", ")}!`); }
+        else if (bag.length % 10 === 0) Hero.say("dubai", "good", `Уже ${bag.length} покупок! Деньги не кончаются!`);
       }
       if (scene === "marina") {
         const s = shells.find((q) => !q.found && Math.hypot(q.x * W - x, q.y * H - y) < 26 * U);
