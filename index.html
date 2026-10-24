@@ -305,6 +305,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .call-form { display: flex; gap: 6px; }
 .call-form input { flex: 1; min-width: 0; border-radius: 999px; border: 0; padding: 9px 14px; font: inherit; font-size: 14px; }
 .call-end { align-self: center; width: 60px; height: 60px; border-radius: 50%; border: 0; background: #ff3b4f; font-size: 26px; transform: rotate(135deg); cursor: pointer; flex: none; }
+.rs-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rs-tabs button { padding: 9px 6px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; line-height: 1.2; }
+.rs-tabs button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.rs-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; max-height: 44vh; overflow-y: auto; }
+.rs-grid button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px; border-radius: 12px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 700; font-size: 11.5px; cursor: pointer; }
+.rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
+.rs-grid button.on { border-color: var(--lime); }
+.rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
 /* ---------- Just Dubai! ---------- */
 #dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1642,6 +1650,27 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <div class="snap-mem" id="snapMem"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ===== Room service (Marina Beach Hotel) ===== -->
+<div class="shop" id="rsModal" hidden role="dialog" aria-modal="true" aria-labelledby="rsTitle">
+  <div class="shop-card">
+    <div class="shop-head">
+      <h2 id="rsTitle">Room service</h2>
+      <button class="shop-x" type="button" id="rsClose" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="rs-tabs" id="rsTabs">
+      <button type="button" data-tab="food">🍽️ Еда</button>
+      <button type="button" data-tab="sheet">🛏️ Постельное бельё</button>
+      <button type="button" data-tab="blanket">🧣 Одеяло</button>
+      <button type="button" data-tab="games">🎮 Игры</button>
+      <button type="button" data-tab="fun">🎉 Развлечения</button>
+      <button type="button" data-tab="furn">🛋️ Больше мебели</button>
+    </div>
+    <p class="shop-note" id="rsNote"></p>
+    <div class="rs-grid" id="rsGrid"></div>
+    <p class="shop-toast" id="rsToast" aria-live="polite"></p>
   </div>
 </div>
 
@@ -5450,7 +5479,64 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (sp.id === "bed") hotel.jump = 1.6;
       task(sp.id);
     }
-    function roomService() { if (hotel.phase === "room" && hotel.cart < 0) { hotel.cart = 0; ding(); } }
+    // room look, kept between visits
+    const RS = {
+      food: [["🍔", "Бургер"], ["🍕", "Пицца"], ["🍣", "Суши"], ["🥗", "Салат"], ["🍰", "Торт"], ["🍝", "Паста"], ["🥞", "Блинчики"], ["🍦", "Мороженое"], ["🥤", "Лимонад"]],
+      sheet: [["#ffffff", "Белое"], ["#ffd6e8", "Розовое"], ["#d6ecff", "Голубое"], ["#fff3b0", "Жёлтое"], ["#d9f7c9", "Мятное"], ["#e2d6ff", "Лавандовое"], ["#3a3a52", "Чёрное"], ["#ffcf99", "Персик"], ["#c9f2f0", "Бирюза"]],
+      blanket: [["plain", "#2f6fd6", "Синее"], ["stripes", "#c43c4f", "Полоски"], ["stars", "#12132a", "Звёзды"], ["hearts", "#ff5ad1", "Сердечки"], ["dots", "#2fa84a", "Горошек"], ["gold", "#d9a520", "Золотое"], ["check", "#7b5cff", "Клетка"], ["plain", "#ff8a3d", "Оранжевое"]],
+      games: [["console", "🎮", "Приставка"], ["chess", "♟️", "Шахматы"], ["dice", "🎲", "Настолка"], ["cards", "🃏", "Карты"], ["puzzle", "🧩", "Пазл"], ["ball", "⚽", "Мяч"]],
+      fun: [["karaoke", "🎤", "Караоке"], ["disco", "🪩", "Диско-шар"], ["balloons", "🎈", "Шарики"], ["fireworks", "🎆", "Салют за окном"], ["bubbles", "🫧", "Мыльные пузыри"], ["confetti", "🎊", "Конфетти"]],
+      furn: [["🛋️", "Диван", 40], ["🪑", "Стул", 28], ["💡", "Лампа", 26], ["🪴", "Растение", 30], ["🖼️", "Картина", 28], ["🧸", "Мишка", 24], ["🎹", "Синтезатор", 34], ["🐠", "Аквариум", 30], ["🕰️", "Часы", 26], ["🪞", "Зеркало", 30], ["🛁", "Ванна", 42], ["🎸", "Гитара", 30], ["📚", "Книги", 24], ["🏆", "Кубок", 24], ["🧺", "Корзина", 24]],
+    };
+    let room = store.get("dxRoom", null);
+    const roomDefault = () => ({ sheet: "#ffffff", blanket: ["plain", "#2f6fd6"], games: [], fun: [], furn: [], dish: "🍔" });
+    if (!room || typeof room !== "object" || !Array.isArray(room.furn)) room = roomDefault();
+    ["games", "fun"].forEach((k) => { if (!Array.isArray(room[k])) room[k] = []; });
+    room.furn = room.furn.filter((f) => f && typeof f.e === "string" && isFinite(f.x) && isFinite(f.y)).slice(0, 40);
+    const saveRoom = () => store.set("dxRoom", room);
+    let rsTab = "food", placing = null, drag = null, pointer = null, fx = [];
+    function roomService() { if (hotel.phase === "room") openRS(); }
+    function openRS(tab) {
+      if (tab) rsTab = tab;
+      $("#rsToast").textContent = ""; $("#cop").hidden = true; $("#rsModal").hidden = false; rsRender();
+    }
+    function closeRS() { $("#rsModal").hidden = true; $("#cop").hidden = false; }
+    function order(what) { if (!hotel.done.service) task("service"); ding(); $("#rsToast").textContent = what; }
+    function rsRender() {
+      $$("#rsTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === rsTab)));
+      const g = $("#rsGrid"); g.innerHTML = "";
+      const btn = (ico, label, on, fn, bg) => { const b = document.createElement("button"); b.type = "button"; b.innerHTML = "<i></i><span></span>"; b.querySelector("i").textContent = ico; if (bg) b.querySelector("i").style.background = bg; b.querySelector("span").textContent = label; if (on) b.classList.add("on"); b.addEventListener("click", fn); g.appendChild(b); return b; };
+      const note = { food: "Выбери блюдо — официант привезёт его на тележке.", sheet: "Цвет простыни и подушек на кровати.", blanket: "Какое одеяло постелить?", games: "Игры приносят в номер. Нажми ещё раз — унесут.", fun: "Включай сколько хочешь — нажми ещё раз, чтобы выключить.", furn: "Выбери мебель, потом нажми в номере, куда её поставить. Мебель можно двигать пальцем, а чтобы убрать — перетащи в корзину 🗑." }[rsTab];
+      $("#rsNote").textContent = note;
+      if (rsTab === "food") RS.food.forEach(([e, n]) => btn(e, n, false, () => { room.dish = e; saveRoom(); hotel.cart = 0; order(`${n} уже едет в номер 1207!`); setTimeout(closeRS, 500); }));
+      if (rsTab === "sheet") RS.sheet.forEach(([c, n]) => btn("", n, room.sheet === c, () => { room.sheet = c; saveRoom(); order(`Постелили ${n.toLowerCase()} бельё`); rsRender(); }, c));
+      if (rsTab === "blanket") RS.blanket.forEach(([pat, c, n]) => btn({ plain: "", stripes: "≡", stars: "★", hearts: "♥", dots: "•", gold: "✦", check: "▦" }[pat], n, room.blanket[0] === pat && room.blanket[1] === c, () => { room.blanket = [pat, c]; saveRoom(); order(`Одеяло «${n}» на кровати`); rsRender(); }, c));
+      if (rsTab === "games" || rsTab === "fun") RS[rsTab].forEach(([id, e, n]) => { const list = room[rsTab], on = list.includes(id); btn(e, n, on, () => { if (on) list.splice(list.indexOf(id), 1); else list.push(id); if (id === "fireworks" && !on) hotel.curtains = true; if (id === "console" && !on) hotel.tv = true; saveRoom(); order(on ? `${n} — выключено` : `${n} — уже в номере!`); rsRender(); }); });
+      if (rsTab === "furn") {
+        RS.furn.forEach(([e, n, sz]) => btn(e, n, false, () => { placing = { e, n, sz }; closeRS(); Hero.say("dubai", "good", `Куда поставить: ${n}? Нажми в номере.`); }));
+        const clr = btn("🗑", `Убрать всю мебель (${room.furn.length})`, false, () => { room.furn = []; saveRoom(); rsRender(); $("#rsToast").textContent = "Номер снова как новый"; });
+        clr.classList.add("wide");
+      }
+    }
+    $("#rsTabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { rsTab = b.dataset.tab; $("#rsToast").textContent = ""; rsRender(); } });
+    $("#rsClose").addEventListener("click", closeRS);
+    $("#rsModal").addEventListener("click", (e) => { if (e.target.id === "rsModal") closeRS(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#rsModal").hidden) closeRS(); });
+    const furnAt = (x, y) => { for (let i = room.furn.length - 1; i >= 0; i--) { const f = room.furn[i], r = f.sz * 1.5 * U * .7; if (Math.abs(f.x * W - x) < r && Math.abs(f.y * H - y) < r) return i; } return -1; };
+    const TRASH = () => ({ x: W - 44 * U, y: H - 44 * U, w: 38 * U, h: 38 * U });
+    function roomDown(x, y) {
+      if (placing) { room.furn.push({ e: placing.e, sz: placing.sz, x: x / W, y: Math.max(.25, y / H) }); saveRoom(); Hero.say("dubai", "good", `${placing.n} на месте!`); placing = null; return true; }
+      const i = furnAt(x, y);
+      if (i >= 0) { const f = room.furn.splice(i, 1)[0]; room.furn.push(f); drag = { f, moved: false }; return true; }
+      return false;
+    }
+    function roomMove(x, y) { pointer = { x, y }; if (drag) { drag.f.x = Math.max(0, Math.min(1, x / W)); drag.f.y = Math.max(.1, Math.min(1, y / H)); drag.moved = true; } }
+    function roomUp(x, y) {
+      if (!drag) return;
+      const tr = TRASH();
+      if (x >= tr.x - 6 && y >= tr.y - 6) { room.furn.splice(room.furn.indexOf(drag.f), 1); Hero.say("dubai", "good", "Убрали мебель из номера"); }
+      saveRoom(); drag = null;
+    }
     function drawLobby(t, dt) {
       // marble walls and floor
       sky("#f6ead2", "#e8d3ad");
@@ -5509,6 +5595,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       }
       ctx.fillStyle = "#fff8d0"; ctx.beginPath(); ctx.arc(wx + ww * .8, wy + wh * .15, 7 * U, 0, 7); ctx.fill();
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 4; ctx.strokeRect(wx, wy, ww, wh); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh); ctx.stroke();
+      if (room.fun.includes("fireworks")) for (let i = 0; i < 3; i++) {
+        const ph = (t * .6 + i * .33) % 1, fxx = wx + ww * (.2 + i * .3), fyy = wy + wh * (.6 - ph * .45);
+        if (ph < .5) rect(fxx - 1, fyy, 2, 6 * U, "#fff3b0");
+        else { const rr = (ph - .5) * 50 * U; ctx.strokeStyle = ["#ff5ad1", "#ffd84d", "#5ce1e6"][i]; ctx.lineWidth = 2; for (let k = 0; k < 10; k++) { const a = k * .628; ctx.beginPath(); ctx.moveTo(fxx + Math.cos(a) * rr * .6, wy + wh * .38 + Math.sin(a) * rr * .6); ctx.lineTo(fxx + Math.cos(a) * rr, wy + wh * .38 + Math.sin(a) * rr); ctx.stroke(); } }
+      }
       // curtains
       const open = hotel.curtains ? 1 : 0; hotel.cOpen = (hotel.cOpen || 0) + (open - (hotel.cOpen || 0)) * Math.min(1, dt * 5);
       const cw = ww / 2 * (1 - hotel.cOpen * .78);
@@ -5519,7 +5610,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       // TV
       const tx = W * .6, ty = H * .1, tw = W * .3, th = H * .24;
       rect(tx - 4, ty - 4, tw + 8, th + 8, "#12132a");
-      if (hotel.tv) {
+      if (room.fun.includes("karaoke")) {
+        rect(tx, ty, tw, th, "#1d1046");
+        const words = ["Ла-ла-ла, Дубай!", "Марина, огни,", "V3 — мы одни!", "Пой со мной!"], li = Math.floor(t / 1.6) % words.length;
+        text("🎤 КАРАОКЕ", tx + tw / 2, ty + th * .22, 8, "#ffd84d"); text(words[li], tx + tw / 2, ty + th * .6, 9, "#fff");
+        for (let i = 0; i < 3; i++) text("♪", tx + tw * (.2 + i * .3), ty + th * (.95 - ((t * .5 + i * .3) % 1) * .6), 9, "#5ce1e6");
+      } else if (room.games.includes("console") && hotel.tv) {
+        rect(tx, ty, tw, th, "#5ad1ff"); rect(tx, ty + th * .78, tw, th * .22, "#2fa84a");
+        const px = tx + ((t * 40) % tw), py = ty + th * .78 - 8 * U - Math.abs(Math.sin(t * 4)) * 14 * U;
+        rect(px - 4 * U, py, 8 * U, 8 * U, "#c43c4f"); rect(tx + tw * .6, ty + th * .55, 12 * U, 6 * U, "#a0785a");
+        text("1UP", tx + 14 * U, ty + 8 * U, 7, "#fff");
+      } else if (hotel.tv) {
         const cols = ["#ff5ad1", "#ffd84d", "#5ce1e6", "#9be15d", "#7b5cff"];
         cols.forEach((c, i) => rect(tx + i * tw / 5, ty, tw / 5 + 1, th, c));
         const bx = tx + tw / 2 + Math.sin(t * 1.7) * tw * .3, by = ty + th / 2 + Math.cos(t * 2.3) * th * .25;
@@ -5539,10 +5640,26 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       // bed
       const bx = W * .4, by = H * .6, bw = W * .42, bh = H * .22;
       rect(bx - 6, by - H * .1, 10, bh + H * .1, "#6a4024");
-      rect(bx, by, bw, bh, "#fff"); rect(bx + bw * .3, by, bw * .7, bh, "#2f6fd6"); rect(bx + bw * .3, by, 4, bh, "#ffd84d");
-      ctx.fillStyle = "#fffdf5"; ctx.beginPath(); ctx.ellipse(bx + bw * .14, by + bh * .3, bw * .1, bh * .22, 0, 0, 7); ctx.ellipse(bx + bw * .14, by + bh * .72, bw * .1, bh * .22, 0, 0, 7); ctx.fill();
+      rect(bx, by, bw, bh, room.sheet);
+      const [pat, bc] = room.blanket, kx = bx + bw * .3, kw = bw * .7;
+      rect(kx, by, kw, bh, bc);
+      ctx.save(); ctx.beginPath(); ctx.rect(kx, by, kw, bh); ctx.clip();
+      if (pat === "stripes") for (let i = 0; i < kw; i += 12 * U) rect(kx + i, by, 5 * U, bh, "rgba(255,255,255,.55)");
+      if (pat === "check") { for (let i = 0; i < kw; i += 14 * U) rect(kx + i, by, 4 * U, bh, "rgba(255,255,255,.35)"); for (let j = 0; j < bh; j += 14 * U) rect(kx, by + j, kw, 4 * U, "rgba(255,255,255,.35)"); }
+      if (pat === "gold") { const gg = ctx.createLinearGradient(kx, by, kx + kw, by + bh); gg.addColorStop(0, "#fff3b0"); gg.addColorStop(.5, "#ffc83d"); gg.addColorStop(1, "#b8741a"); ctx.fillStyle = gg; ctx.fillRect(kx, by, kw, bh); }
+      if (["stars", "hearts", "dots"].includes(pat)) { ctx.fillStyle = pat === "stars" ? "#ffd84d" : "#fff"; ctx.font = `${Math.round(9 * U)}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { const px = kx + (i + .5 + (j % 2) * .4) * kw / 4.3, py = by + (j + .5) * bh / 3; if (pat === "dots") { ctx.beginPath(); ctx.arc(px, py, 2.6 * U, 0, 7); ctx.fill(); } else ctx.fillText(pat === "stars" ? "★" : "♥", px, py); } }
+      ctx.restore();
+      rect(kx, by, 4, bh, "rgba(255,255,255,.7)");
+      ctx.fillStyle = room.sheet === "#ffffff" ? "#f4f0e6" : "#fffdf5"; ctx.strokeStyle = "rgba(0,0,0,.12)"; ctx.lineWidth = 1;
+      [.3, .72].forEach((k) => { ctx.beginPath(); ctx.ellipse(bx + bw * .14, by + bh * k, bw * .1, bh * .22, 0, 0, 7); ctx.fill(); ctx.stroke(); });
       sp.push({ id: "bed", x: bx, y: by - H * .05, w: bw, h: bh + H * .05 });
       hotel.spots = sp;
+      // games brought to the room
+      const emo = (e, x, y, sz) => { ctx.font = `${Math.round(sz * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, x, y); };
+      const GPOS = { console: [.64, .55], chess: [.12, .74], dice: [.2, .95], cards: [.33, .92], puzzle: [.1, .92], ball: [.9, .94] };
+      room.games.forEach((id) => { const [gx, gy] = GPOS[id] || [.5, .9]; const e = (RS.games.find((q) => q[0] === id) || [])[1]; if (e) emo(e, W * gx + (id === "ball" ? Math.sin(t * 3) * 6 * U : 0), H * gy, id === "console" ? 18 : 20); });
+      // furniture placed by the player
+      room.furn.forEach((f) => { ctx.fillStyle = "rgba(0,0,0,.15)"; ctx.beginPath(); ctx.ellipse(f.x * W, f.y * H + f.sz * 1.5 * U * .45, f.sz * 1.5 * U * .45, 4 * U, 0, 0, 7); ctx.fill(); emo(f.e, f.x * W, f.y * H, f.sz * 1.5 * (drag && drag.f === f ? 1.15 : 1)); });
       // player: bounces on the bed
       if (hotel.jump > 0) { hotel.jump -= dt; me(bx + bw * .55, by - Math.abs(Math.sin(hotel.jump * 7)) * 40 * U - 6 * U, 36); }
       else me(W * .2, H * .82, 36);
@@ -5552,8 +5669,27 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         const cx = -W * .2 + (W * .3) * Math.min(1, hotel.cart * 1.4), cy = H * .86;
         rect(cx - 26 * U, cy - 6 * U, 52 * U, 5 * U, "#c9c9d6"); rect(cx - 22 * U, cy, 3, 14 * U, "#9fa3b5"); rect(cx + 20 * U, cy, 3, 14 * U, "#9fa3b5");
         if (hotel.cart < .75) { ctx.fillStyle = "#d8d8e0"; ctx.beginPath(); ctx.arc(cx, cy - 6 * U, 16 * U, Math.PI, 0); ctx.fill(); }
-        else { ctx.font = `${Math.round(24 * U)}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🍔", cx, cy - 16 * U); if (!hotel.done.service) task("service"); }
+        else emo(room.dish || "🍔", cx, cy - 16 * U, 24);
       }
+      // entertainment
+      const fun = (id) => room.fun.includes(id);
+      if (fun("disco")) {
+        ctx.strokeStyle = "#9fa3b5"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W * .5, 0); ctx.lineTo(W * .5, H * .1); ctx.stroke();
+        emo("🪩", W * .5, H * .14, 22);
+        ["#ff5ad1", "#5ce1e6", "#ffd84d", "#9be15d", "#7b5cff"].forEach((c, i) => { const a = t * 1.5 + i * 1.26; ctx.fillStyle = c + "55"; ctx.beginPath(); ctx.ellipse(W * .5 + Math.cos(a) * W * .38, H * .55 + Math.sin(a * 1.3) * H * .3, 22 * U, 12 * U, 0, 0, 7); ctx.fill(); });
+      }
+      if (fun("balloons")) [["#ff3b6b", .3], ["#ffd84d", .45], ["#5ce1e6", .58], ["#9be15d", .75]].forEach(([c, x], i) => { const yy = H * (.3 + Math.sin(t * 1.2 + i) * .03); ctx.strokeStyle = "rgba(0,0,0,.3)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(W * x, yy + 12 * U); ctx.lineTo(W * x + 3, yy + 40 * U); ctx.stroke(); ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(W * x, yy, 9 * U, 12 * U, 0, 0, 7); ctx.fill(); });
+      if (fun("bubbles") || fun("confetti")) {
+        if (Math.random() < dt * 14) fx.push(fun("bubbles") && (!fun("confetti") || Math.random() < .5) ? { k: "b", x: Math.random() * W, y: H, v: -40 - Math.random() * 30, r: (4 + Math.random() * 6) * U, l: 4 } : { k: "c", x: Math.random() * W, y: -5, v: 50 + Math.random() * 40, r: 3 * U, c: ["#ff5ad1", "#ffd84d", "#5ce1e6", "#9be15d"][(Math.random() * 4) | 0], l: 4 });
+      }
+      fx = fx.filter((q) => (q.l -= dt) > 0 && q.y > -20 && q.y < H + 20).slice(-80);
+      fx.forEach((q) => { q.y += q.v * dt; q.x += Math.sin(t * 3 + q.r) * 12 * dt; if (q.k === "b") { ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(q.x, q.y, q.r, 0, 7); ctx.stroke(); } else { ctx.save(); ctx.translate(q.x, q.y); ctx.rotate(t * 5 + q.x); rect(-q.r, -q.r / 2, q.r * 2, q.r, q.c); ctx.restore(); } });
+      // furniture placement + trash zone
+      if (placing) {
+        rect(0, H - 22 * U, W, 22 * U, "rgba(18,19,42,.65)"); text(`Нажми, куда поставить: ${placing.n}`, W / 2, H - 11 * U, 10, "#ffd84d");
+        if (pointer) { ctx.globalAlpha = .55; emo(placing.e, pointer.x, pointer.y, placing.sz * 1.5); ctx.globalAlpha = 1; }
+      }
+      if (drag) { const tr = TRASH(); rect(tr.x, tr.y, tr.w, tr.h, "rgba(255,59,79,.85)"); emo("🗑", tr.x + tr.w / 2, tr.y + tr.h / 2, 20); }
       const n = Object.keys(hotel.done).length;
       rect(0, 0, W, 22 * U, "rgba(18,19,42,.55)");
       text(n >= 5 ? "Номер 1207 · отдых удался! ★" : `Номер 1207 · отдых ${n}/5 — нажимай на вещи`, W / 2, 11 * U, 10, "#fff");
@@ -5581,9 +5717,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (scene === "burj") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 148-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
       else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : "Выйти к фонтану"; b.disabled = show > 0; }
       else if (scene === "deira") b.textContent = "Следующий магазин";
-      else if (scene === "marina") { b.textContent = hotel.phase === "lobby" ? "Заселиться 🛎️" : "Room service 🛎️"; b.disabled = (hotel.phase === "lobby" && hotel.key > 0) || (hotel.phase === "room" && hotel.cart >= 0); }
+      else if (scene === "marina") { b.textContent = hotel.phase === "lobby" ? "Заселиться 🛎️" : "Room service 🛎️"; b.disabled = hotel.phase === "lobby" && hotel.key > 0; }
       else b.hidden = true;
       $("#dxShops").hidden = scene !== "deira";
+      cv.style.touchAction = scene === "marina" && hotel.phase === "room" ? "none" : "manipulation";
     }
     function go(id) {
       if (travel) return;
@@ -5635,9 +5772,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       }
       if (scene === "marina") {
         if (hotel.phase === "lobby") { if (hotel.spots.some((q) => x >= q.x && x <= q.x + q.w && y >= q.y && y <= q.y + q.h)) { checkIn(); updateAction(); } }
-        else roomTap(x, y);
+        else if (!roomDown(x, y)) roomTap(x, y);
       }
     });
+    const dxXY = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
+    cv.addEventListener("pointermove", (e) => { if (scene === "marina" && hotel.phase === "room") { const [x, y] = dxXY(e); roomMove(x, y); if (drag) e.preventDefault(); } });
+    cv.addEventListener("pointerup", (e) => { if (scene === "marina") { const [x, y] = dxXY(e); roomUp(x, y); } });
+    cv.addEventListener("pointercancel", () => { if (drag) { saveRoom(); drag = null; } });
 
     function frame(now) {
       raf = 0;
