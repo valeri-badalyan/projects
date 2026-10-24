@@ -1634,6 +1634,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn" type="button" id="mmAttack">⚔️ В атаку!</button>
       <button class="btn ghost" type="button" id="mmHome">🏛️ К базе</button>
     </div>
+    <button class="btn ghost wide" type="button" id="mmInf" hidden>♾️ Бесконечные ресурсы: вкл</button>
     <p class="hint">Карту двигай пальцем. Нажми на юнита — выбрать; на землю — идти; на врага — атаковать; крестьянином на дерево или золото — добывать. Танкеры возят нефть к порту. 1 клетка = 20 м.</p>
   </section>
 
@@ -7149,8 +7150,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (kind === "port") { for (let y = ty - 1; y <= ty + sz; y++) for (let x = tx - 1; x <= tx + sz; x++) if (inb(x, y) && tile[idx(x, y)] === WATER) water = true; return water; }
       return true;
     }
-    const canPay = (side, c) => res[side].g >= (c.g || 0) && res[side].w >= (c.w || 0) && res[side].o >= (c.o || 0);
-    const pay = (side, c) => { res[side].g -= c.g || 0; res[side].w -= c.w || 0; res[side].o -= c.o || 0; };
+    // infinite resources: only for the owner of the page (checked through the artifact runtime)
+    let owner = false, infinite = store.get("mmInfinite", true) !== false;
+    const inf = (side) => side === 0 && owner && infinite;
+    const canPay = (side, c) => inf(side) || (res[side].g >= (c.g || 0) && res[side].w >= (c.w || 0) && res[side].o >= (c.o || 0));
+    const pay = (side, c) => { if (inf(side)) return; res[side].g -= c.g || 0; res[side].w -= c.w || 0; res[side].o -= c.o || 0; };
+    function infBtn() { const b = $("#mmInf"); b.hidden = !owner; b.textContent = `♾️ Бесконечные ресурсы: ${infinite ? "вкл" : "выкл"}`; b.setAttribute("aria-pressed", String(infinite)); }
+    (async () => {
+      try { const user = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; owner = !!(user && await user.isOwner()); } catch (e) { owner = false; }
+      infBtn(); if (owner && infinite && state === "run") Hero.say("mine", "good", "Режим владельца: ресурсы бесконечные ♾️");
+      ui(true);
+    })();
     const costTxt = (c) => [c.g ? `🪙${c.g}` : "", c.w ? `🪵${c.w}` : "", c.o ? `🛢️${c.o}` : ""].filter(Boolean).join(" ");
     function spawnSpot(b, naval) {
       for (let r = 1; r < 6; r++) for (let y = b.ty - r; y < b.ty + b.h + r; y++) for (let x = b.tx - r; x < b.tx + b.w + r; x++) {
@@ -7333,7 +7343,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       ents.filter((e) => e.side === 0 && e.kind === "peasant").forEach((u, i) => { const n = nearestRes(u, i < 2 ? GOLD : TREE, 30); if (n) order(u, { t: "gather", type: tile[idx(n[0], n[1])], x: n[0], y: n[1] }); });
       centerOn(h0.tx + 1.5, h0.ty + 1.5);
       state = "run"; $("#mmOverlay").hidden = true; ui(true);
-      Hero.say("mine", "start", "Миссия: уничтожь красных! Отправь крестьян за золотом и деревом.");
+      Hero.say("mine", "start", inf(0) ? "Миссия: уничтожь красных! У тебя бесконечные ресурсы ♾️" : "Миссия: уничтожь красных! Отправь крестьян за золотом и деревом.");
     }
     function centerOn(x, y) { cam.x = x * T - vw / 2; cam.y = y * T - vh / 2; clampCam(); }
     function clampCam() { cam.x = Math.max(0, Math.min(MW * T - vw, cam.x)); cam.y = Math.max(0, Math.min(MH * T - vh, cam.y)); }
@@ -7402,7 +7412,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     // ---------- UI panel ----------
     function ui(force) {
       if (!res) return;
-      $("#mmGold").textContent = res[0].g; $("#mmWood").textContent = res[0].w; $("#mmOil").textContent = res[0].o;
+      if (inf(0)) { $("#mmGold").textContent = "∞"; $("#mmWood").textContent = "∞"; $("#mmOil").textContent = "∞"; }
+      else { $("#mmGold").textContent = res[0].g; $("#mmWood").textContent = res[0].w; $("#mmOil").textContent = res[0].o; }
       const army = ents.filter((e) => e.side === 0 && isU(e) && e.kind !== "peasant" && e.kind !== "tanker").length, foes = ents.filter((e) => e.side === 1 && isU(e)).length;
       $("#mmPop").textContent = `${army}/${foes}`;
       const info = $("#mmInfo"), acts = $("#mmActs");
@@ -7436,6 +7447,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#mmHome").addEventListener("click", () => { const h = ents.find((e) => e.side === 0 && e.kind === "hall") || ents.find((e) => e.side === 0 && isB(e)); if (h) centerOn(h.tx + h.w / 2, h.ty + h.h / 2); });
     $("#mmDiff").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; diff = +b.dataset.d; $$("#mmDiff button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
     $("#mmStart").addEventListener("click", newGame);
+    $("#mmInf").addEventListener("click", () => { if (!owner) return; infinite = !infinite; store.set("mmInfinite", infinite); infBtn(); ui(true); Hero.say("mine", "good", infinite ? "Ресурсы бесконечные ♾️" : "Обычные ресурсы — добывай сам!"); });
 
     // ---------- render ----------
     const miniRect = () => ({ x: vw - 92, y: 6, w: 86, h: 86 * MH / MW });
