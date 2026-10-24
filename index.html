@@ -771,6 +771,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .inv-item b { font-size: 13px; line-height: 1.2; overflow-wrap: anywhere; }
 .inv-item small { color: var(--muted); font-size: 11.5px; }
 .inv-item .btn { padding: 7px 10px; font-size: 12.5px; width: 100%; }
+.inv-item.giving { grid-column: 1 / -1; }
+.inv-give { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; width: 100%; padding-top: 6px; border-top: 1px dashed var(--line); margin-top: 4px; }
+.inv-give > span { width: 100%; font-size: 12px; font-weight: 800; color: var(--amber); }
+.inv-give button { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 64px; padding: 6px 4px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-size: 11px; font-weight: 800; cursor: pointer; }
+.inv-give button .av { width: 40px; height: 40px; }
+.inv-give button .av svg { width: 100%; height: 100%; display: block; border-radius: 10px; }
 .inv-empty { grid-column: 1 / -1; color: var(--muted); font-size: 13px; text-align: center; padding: 16px 4px; }
 .held-badge { position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; background: var(--panel-2); border: 2px solid var(--amber); pointer-events: none; z-index: 2; }
 .player { position: relative; }
@@ -1530,7 +1536,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="shop-x" type="button" id="invClose" aria-label="Закрыть">✕</button>
     </div>
     <div class="inv-sync" id="invSync" aria-live="polite"><i></i><span>Сохранено на этом устройстве</span></div>
-    <p class="shop-note">Всё, что купил в Deira City Center. Еду можно съесть, остальное — взять в руки: вещь будет видна у персонажа во всех играх.</p>
+    <p class="shop-note">Всё, что купил в Deira City Center. Одежду можно надеть или дать другому персонажу, еду — съесть, остальное — взять в руки. Всё видно на персонаже во всех играх.</p>
     <div class="inv-grid" id="invGrid"></div>
     <p class="shop-toast" id="invToast" aria-live="polite"></p>
   </div>
@@ -1740,6 +1746,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   function avatarSVG(c, gear, build) {
     gear = gear || {};
     build = build || (window.__builds && window.__builds[c.id]) || "normal";
+    const cl = (window.__clothes && window.__clothes[c.id]) || {};
+    const cc = (slot) => (cl[slot] && /^#[0-9a-f]{3,8}$/i.test(cl[slot].col) ? cl[slot].col : "#9fb3cc");
+    const shirt = cl.body ? cc("body") : c.shirt;
     const u = "av" + (avUid++);
     const defs = [], d = [];
     let bgFill = c.bg[0];
@@ -1774,22 +1783,32 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     // body, shaped by the build; the head group is shifted/scaled to match
     let headT = "";
     if (build === "thin") {
-      d.push(`<path d="M27 100 C27 82 38 76 50 76 C62 76 73 82 73 100Z" fill="${c.shirt}"/>`);
+      d.push(`<path d="M27 100 C27 82 38 76 50 76 C62 76 73 82 73 100Z" fill="${shirt}"/>`);
       d.push(`<rect x="45.5" y="50" width="9" height="28" rx="4" fill="${c.skin}"/>`);
       headT = "translate(50 39) scale(.94 1.04) translate(-50 -45)";
     } else if (build === "fat") {
-      d.push(`<path d="M3 100 C1 76 28 70 50 70 C72 70 99 76 97 100Z" fill="${c.shirt}"/>`);
-      d.push(`<ellipse cx="50" cy="96" rx="40" ry="24" fill="${c.shirt}"/><ellipse cx="44" cy="90" rx="22" ry="10" fill="#fff" opacity=".14"/><circle cx="50" cy="94" r="1.6" fill="#000" opacity=".3"/>`);
+      d.push(`<path d="M3 100 C1 76 28 70 50 70 C72 70 99 76 97 100Z" fill="${shirt}"/>`);
+      d.push(`<ellipse cx="50" cy="96" rx="40" ry="24" fill="${shirt}"/><ellipse cx="44" cy="90" rx="22" ry="10" fill="#fff" opacity=".14"/><circle cx="50" cy="94" r="1.6" fill="#000" opacity=".3"/>`);
       headT = "translate(50 52) scale(1.2 1.02) translate(-50 -45)";
     } else if (build === "muscle") {
       d.push(`<rect x="39" y="56" width="22" height="18" rx="6" fill="${c.skin}"/>`);
-      d.push(`<path d="M0 100 C0 74 20 64 50 66 C80 64 100 74 100 100Z" fill="${c.shirt}"/>`);
-      d.push(`<circle cx="14" cy="80" r="13" fill="${c.shirt}"/><circle cx="86" cy="80" r="13" fill="${c.shirt}"/>`);
+      d.push(`<path d="M0 100 C0 74 20 64 50 66 C80 64 100 74 100 100Z" fill="${shirt}"/>`);
+      d.push(`<circle cx="14" cy="80" r="13" fill="${shirt}"/><circle cx="86" cy="80" r="13" fill="${shirt}"/>`);
       d.push(`<path d="M34 80 Q42 86 50 80 Q58 86 66 80" fill="none" stroke="#000" stroke-opacity=".22" stroke-width="2.2"/><path d="M50 82 V96" stroke="#000" stroke-opacity=".15" stroke-width="1.8"/>`);
       headT = "translate(50 47) scale(.9) translate(-50 -45)";
     } else {
-      d.push(`<path d="M16 100 C16 78 32 70 50 70 C68 70 84 78 84 100Z" fill="${c.shirt}"/>`);
+      d.push(`<path d="M16 100 C16 78 32 70 50 70 C68 70 84 78 84 100Z" fill="${shirt}"/>`);
     }
+    if (cl.body) {
+      const n = cl.body.name;
+      if (n === "Платье") d.push(`<path d="M38 72 Q50 80 62 72" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="2 2.5"/><path d="M30 92 Q50 86 70 92" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>`);
+      else if (n === "Форма") d.push(`<path d="M24 80 l8 0 M68 80 l8 0" stroke="#fff" stroke-width="3"/><text x="50" y="96" font-family="Arial" font-weight="900" font-size="15" text-anchor="middle" fill="#fff">10</text>`);
+      else d.push(`<text x="50" y="95" font-family="Arial" font-weight="900" font-size="11" text-anchor="middle" fill="#fff" fill-opacity=".9">V3</text>`);
+    }
+    if (cl.bag) d.push(`<path d="M30 74 L74 100" stroke="#3a2a20" stroke-width="3"/><rect x="66" y="86" width="20" height="14" rx="3" fill="${cc("bag")}" stroke="#000" stroke-opacity=".25"/><rect x="72" y="88" width="8" height="3" rx="1.5" fill="#fff" opacity=".6"/>`);
+    if (cl.hands) d.push(`<circle cx="10" cy="92" r="9" fill="${cc("hands")}"/><circle cx="90" cy="92" r="9" fill="${cc("hands")}"/><path d="M5 88 q5 -3 10 0 M85 88 q5 -3 10 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" fill="none"/>`);
+    const tags = ["legs", "feet"].filter((k) => cl[k]).map((k, i) => `<circle cx="${9 + i * 15}" cy="91" r="7" fill="#fff" opacity=".85"/><text x="${9 + i * 15}" y="94.5" font-size="9" text-anchor="middle">${k === "legs" ? "👖" : "👟"}</text>`).join("");
+    if (tags) d.push(tags);
     if (has("jacket")) d.push(`<path d="M16 100 C16 80 28 72 42 70 L50 92 L58 70 C72 72 84 80 84 100Z" fill="#7a3cff"/><path d="M42 70 L50 92 L58 70" fill="none" stroke="#7cf8ff" stroke-width="2"/>`);
     else d.push(`<path d="M42 71 L50 80 L58 71" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>`);
     if (c.tier !== "free") d.push(`<path d="M24 90 h52" stroke="#fff" stroke-opacity=".25" stroke-width="3"/>`);
@@ -1831,7 +1850,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     d.push(`<path d="M44 56 Q50 61.5 56 56" fill="none" stroke="#5a2a2a" stroke-width="2.2" stroke-linecap="round"/>`);
     if (has("glasses")) d.push(`<g fill="none" stroke="#1a1726" stroke-width="2"><circle cx="42" cy="47" r="6"/><circle cx="58" cy="47" r="6"/><path d="M48 47 h4 M36 46 l-7 -2 M64 46 l7 -2"/></g>`);
     if (has("shades")) d.push(`<path d="M33 42.5 h14 v5 q-1 5.5 -7 5.5 q-6 0 -7 -5.5z M53 42.5 h14 v5 q-1 5.5 -7 5.5 q-6 0 -7 -5.5z" fill="#0d0b12"/><path d="M47 44.5 h6" stroke="#0d0b12" stroke-width="2"/><path d="M36 45 l4 4 M56 45 l4 4" stroke="#fff" stroke-opacity=".6" stroke-width="1.4"/>`);
-    d.push(gsvg("eyes"), gsvg("neck"), "</g>");
+    d.push(gsvg("eyes"), gsvg("neck"));
+    if (cl.eyes) d.push(`<path d="M33 42.5 h14 v5 q-1 5.5 -7 5.5 q-6 0 -7 -5.5z M53 42.5 h14 v5 q-1 5.5 -7 5.5 q-6 0 -7 -5.5z" fill="${cc("eyes")}" stroke="#0d0b12" stroke-width="1.2"/><path d="M47 44.5 h6" stroke="#0d0b12" stroke-width="2"/><path d="M36 45 l4 4 M56 45 l4 4" stroke="#fff" stroke-opacity=".6" stroke-width="1.4"/>`);
+    if (cl.head) d.push(`<path d="M27 38 C27 18 73 18 73 38Z" fill="${cc("head")}"/><path d="M48 36 H83 Q85 36 84 40 H48Z" fill="${cc("head")}" stroke="#000" stroke-opacity=".3"/><circle cx="50" cy="20" r="2.4" fill="#fff"/><text x="50" y="33" font-family="Arial" font-weight="900" font-size="8" text-anchor="middle" fill="#fff">V3</text>`);
+    if (cl.neck) d.push(`<path d="M38 64 Q50 72 62 64 L63 70 Q50 78 37 70Z" fill="${cc("neck")}"/><path d="M56 70 l3 12 l5 -1 l-3 -12Z" fill="${cc("neck")}" stroke="#000" stroke-opacity=".2"/>`);
+    d.push("</g>");
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="${c.name}"><defs>${defs.join("")}</defs>${d.join("")}</svg>`;
   }
 
@@ -1872,7 +1895,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let builds = store.get("builds", {});
     if (!builds || typeof builds !== "object") builds = {};
     window.__builds = builds;
-    const key = () => act() + "|" + (builds[act()] || "normal") + "|" + Object.keys(SLOTS).map((k) => gear[k] || "").join(",");
+    const key = () => act() + "|" + (builds[act()] || "normal") + "|" + Object.keys(SLOTS).map((k) => gear[k] || "").join(",") + "|" + JSON.stringify((window.__clothes || {})[act()] || {});
     function setBuild(b) {
       if (!BUILDS[b]) return;
       builds[sel] = b; store.set("builds", builds); window.__builds = builds;
@@ -1917,7 +1940,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $$(".bubble [data-hero-name]").forEach((el) => { el.textContent = m ? `${c.name} + ${m.name}` : c.name; });
       $$("[data-mate-av]").forEach((el) => {
         el.hidden = !m;
-        if (m && el.dataset.mateId !== m.id) { el.innerHTML = avatarSVG(m); el.dataset.mateId = m.id; }
+        const mk = m ? m.id + JSON.stringify((window.__clothes || {})[m.id] || {}) : "";
+        if (m && el.dataset.mateId !== mk) { el.innerHTML = avatarSVG(m); el.dataset.mateId = mk; }
       });
       $$("[data-team]").forEach((el) => { el.hidden = !m; if (m) el.textContent = `Тимворк с ${m.name} · монеты ×2`; });
       $$("[data-hero-tier]").forEach((el) => { el.textContent = TIER_NAME[c.tier]; el.className = "tier-badge " + c.tier; });
@@ -4550,6 +4574,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   // ---------- Inventory: saved on the device, synced to the account when online ----------
   const Inv = (() => {
     const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет"];
+    // clothing → where it sits on the character
+    const WEAR = { "Футболка": "body", "Платье": "body", "Форма": "body", "Кепка": "head", "Очки": "eyes", "Шарф": "neck", "Сумка": "bag", "Перчатки": "hands", "Джинсы": "legs", "Кроссовки": "feet", "Бутсы": "feet" };
+    const charIds = CHARS.map((c) => c.id);
+    let giving = null;
     const clean = (o) => {
       const items = {};
       if (o && o.items && typeof o.items === "object") Object.entries(o.items).slice(0, 300).forEach(([k, v]) => {
@@ -4558,9 +4586,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (n) items[String(k).slice(0, 40)] = { n, col: /^#[0-9a-f]{3,8}$/i.test(v.col) ? v.col : "#9fb3cc", ico: String(v.ico || "🎁").slice(0, 4), shop: String(v.shop || "").slice(0, 30) };
       });
       const held = o && typeof o.held === "string" && items[o.held] ? o.held : null;
-      return { items, held, t: Math.max(0, +(o && o.t) || 0) };
+      const clothes = {};
+      if (o && o.clothes && typeof o.clothes === "object") Object.entries(o.clothes).forEach(([id, slots]) => {
+        if (!charIds.includes(id) || !slots || typeof slots !== "object") return;
+        const out = {};
+        Object.entries(slots).forEach(([slot, v]) => { if (v && WEAR[v.name] === slot) out[slot] = { name: v.name, col: /^#[0-9a-f]{3,8}$/i.test(v.col) ? v.col : "#9fb3cc" }; });
+        if (Object.keys(out).length) clothes[id] = out;
+      });
+      return { items, held, clothes, t: Math.max(0, +(o && o.t) || 0) };
     };
     let data = clean(store.get("inv", null));
+    window.__clothes = data.clothes;
     let ref = null, state = "local", lastFocus = null;
 
     function setState(st) {
@@ -4578,10 +4614,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) return;
       if (navigator.onLine === false) { setState("offline"); return; }
       setState("saving");
-      try { await ref.set({ items: data.items, held: data.held, t: data.t }); setState("synced"); }
+      try { await ref.set({ items: data.items, held: data.held, clothes: data.clothes, t: data.t }); setState("synced"); }
       catch (e) { setState(navigator.onLine === false ? "offline" : "error"); }
     }
-    function commit() { data.t = Date.now(); store.set("inv", data); badges(); if (!modal.hidden) render(); push(); }
+    function applyClothes() { window.__clothes = data.clothes; Hero.refresh(); }
+    function commit() { data.t = Date.now(); store.set("inv", data); applyClothes(); badges(); if (!modal.hidden) render(); push(); }
 
     (async () => {
       if (!(window.claude && typeof window.claude.use === "function")) return;
@@ -4592,7 +4629,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       ref = db.doc("data/users/" + uid + "/inventory");
       ref.onSnapshot((snap) => {
         const r = snap.exists ? snap.data() : null;
-        if (r && (+r.t || 0) > data.t) { data = clean(r); store.set("inv", data); badges(); if (!modal.hidden) render(); setState("synced"); }
+        if (r && (+r.t || 0) > data.t) { data = clean(r); store.set("inv", data); applyClothes(); badges(); if (!modal.hidden) render(); setState("synced"); }
         else if (!r || (+r.t || 0) < data.t) push();
         else if (state !== "saving") setState("synced");
       }, () => { ref = null; setState("local"); });
@@ -4603,6 +4640,28 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function add(it, shop) {
       const cur = data.items[it.name] || { n: 0, col: it.col, ico: it.ico, shop };
       cur.n = Math.min(9999, cur.n + 1); data.items[it.name] = cur;
+      commit();
+    }
+    const wornBy = (name) => CHARS.filter((c) => { const sl = data.clothes[c.id]; return sl && sl[WEAR[name]] && sl[WEAR[name]].name === name; });
+    function wear(name) {
+      const it = data.items[name], slot = WEAR[name]; if (!it || !slot) return;
+      const id = Hero.activeId(), who = CHARS.find((c) => c.id === id), sl = data.clothes[id] || (data.clothes[id] = {});
+      if (sl[slot] && sl[slot].name === name) { delete sl[slot]; $("#invToast").textContent = `${who.name} снял: ${name}`; }
+      else { sl[slot] = { name, col: it.col }; $("#invToast").textContent = `${who.name} надел: ${name}. Видно во всех играх!`; }
+      if (!Object.keys(sl).length) delete data.clothes[id];
+      commit();
+    }
+    function give(name, toId) {
+      const it = data.items[name], slot = WEAR[name], to = CHARS.find((c) => c.id === toId); if (!it || !to) return;
+      it.n--;
+      if (!it.n) {
+        delete data.items[name]; if (data.held === name) data.held = null;
+        const mine = data.clothes[Hero.activeId()];
+        if (mine && slot && mine[slot] && mine[slot].name === name) delete mine[slot];
+      }
+      if (slot) { (data.clothes[toId] || (data.clothes[toId] = {}))[slot] = { name, col: it.col }; }
+      giving = null;
+      $("#invToast").textContent = slot ? `${to.name}: «Вот это подарок! ${name} — супер, сразу надеваю!»` : `${to.name}: «Спасибо за подарок! ${name} — то, что надо!»`;
       commit();
     }
     function use(name) {
@@ -4621,15 +4680,41 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!list.length) { g.innerHTML = `<p class="inv-empty">Пока пусто. Загляни в Just Dubai! → Deira City Center — там деньги бесконечные.</p>`; return; }
       list.forEach(([name, it]) => {
         const c = document.createElement("div"); c.className = "inv-item" + (data.held === name ? " held" : "");
-        const food = FOOD.includes(it.shop);
+        const food = FOOD.includes(it.shop), cloth = !!WEAR[name];
+        const onMe = cloth && wornBy(name).some((w) => w.id === Hero.activeId());
+        if (onMe) c.classList.add("held");
         c.innerHTML = `<span class="ico"></span><b></b><small></small><button class="btn small" type="button"></button>`;
         c.querySelector(".ico").textContent = it.ico; c.querySelector(".ico").style.background = it.col;
         c.querySelector("b").textContent = name;
-        c.querySelector("small").textContent = `×${it.n}${it.shop ? " · " + it.shop : ""}`;
+        const on = cloth ? wornBy(name).map((w) => w.name) : [];
+        c.querySelector("small").textContent = `×${it.n}${it.shop ? " · " + it.shop : ""}${on.length ? " · надето: " + on.join(", ") : ""}`;
         const b = c.querySelector("button");
-        b.textContent = food ? "Съесть" : data.held === name ? "Убрать" : "Взять в руки";
-        if (!food && data.held !== name) b.classList.add("ghost");
-        b.addEventListener("click", () => use(name));
+        if (cloth) {
+          b.textContent = onMe ? "Снять" : "Надеть"; if (!onMe) b.classList.add("ghost");
+          b.addEventListener("click", () => wear(name));
+        } else {
+          b.textContent = food ? "Съесть" : data.held === name ? "Убрать" : "Взять в руки";
+          if (!food && data.held !== name) b.classList.add("ghost");
+          b.addEventListener("click", () => use(name));
+        }
+        if (!food) {
+          const gb = document.createElement("button"); gb.type = "button"; gb.className = "btn ghost small"; gb.textContent = giving === name ? "Отмена" : "Дать другому";
+          gb.addEventListener("click", () => { giving = giving === name ? null : name; render(); });
+          c.appendChild(gb);
+          if (giving === name) {
+            const pick = document.createElement("div"); pick.className = "inv-give";
+            pick.innerHTML = `<span>Кому подарить?</span>`;
+            CHARS.filter((ch) => ch.id !== Hero.activeId()).forEach((ch) => {
+              const pb = document.createElement("button"); pb.type = "button"; pb.dataset.to = ch.id;
+              pb.innerHTML = `<span class="av"></span>`; pb.querySelector(".av").innerHTML = avatarSVG(ch);
+              pb.appendChild(document.createTextNode(ch.name));
+              pb.addEventListener("click", () => give(name, ch.id));
+              pick.appendChild(pb);
+            });
+            c.appendChild(pick); c.classList.add("giving");
+            requestAnimationFrame(() => { const gr = $("#invGrid"); gr.scrollTop = Math.max(0, c.offsetTop - gr.offsetTop - 4); });
+          }
+        }
         g.appendChild(c);
       });
     }
@@ -4652,7 +4737,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
-    badges(); setState("local");
+    Hero.refresh(); badges(); setState("local");
     return { add, count: () => Object.values(data.items).reduce((a, it) => a + it.n, 0) };
   })();
 
