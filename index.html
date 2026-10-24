@@ -7210,7 +7210,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       }
       if (tk.t === "move") { if (!u.path.length && u.repath <= 0) { u.repath = 99; u.path = bfs(Math.floor(u.x), Math.floor(u.y), !!d.naval, (x, y) => Math.abs(x - tk.x) <= (tk.near || 0) && Math.abs(y - tk.y) <= (tk.near || 0)) || bfs(Math.floor(u.x), Math.floor(u.y), !!d.naval, nearRect(tk.x, tk.y, 1, 1)) || []; } if (moveAlong(u, dt)) order(u, { t: "idle" }); return; }
       if (tk.t === "attack") {
-        const t = byId(tk.id); if (!t) { order(u, { t: "idle" }); return; }
+        const t = byId(tk.id);
+        if (!t) { const next = tk.chain && nearestEnemyBuilding(u.side, u); order(u, next ? { t: "attack", id: next.id, chain: true } : { t: "idle" }); return; }
         if (tk.auto && distTo(u.x, u.y, t) > d.rng + 7) { order(u, { t: "idle" }); return; }
         if (distTo(u.x, u.y, t) <= d.rng + .2) { u.path = []; const [cx, cy] = center(t); u.ang = Math.atan2(cy - u.y, cx - u.x); if (u.cd <= 0) { u.cd = d.cd; if (d.rng > 2) shoot(u, t, u.kind === "archer" ? "#f4e2b0" : "#141419", d.dmg, u.kind === "destroyer"); else hit(u, t, d.dmg); } return; }
         if (isU(t) && u.path.length && u.repath <= 0) u.path = [];
@@ -7247,7 +7248,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         return;
       }
       if (tk.t === "build") {
-        const b = byId(tk.id); if (!b || b.prog >= 1) { order(u, tk.after || { t: "idle" }); return; }
+        const b = byId(tk.id);
+        if (!b || b.prog >= 1) {
+          // help with another unfinished building nearby before going back to work
+          const next = ents.find((q) => q.side === u.side && isB(q) && q.prog < 1 && distTo(u.x, u.y, q) < 14);
+          if (next) { order(u, { t: "build", id: next.id, after: tk.after }); return; }
+          order(u, tk.after || { t: "idle" }); return;
+        }
         if (distTo(u.x, u.y, b) <= 1.3) { u.path = []; b.prog = Math.min(1, b.prog + dt / B[b.kind].time); b.hp = Math.min(b.max, b.hp + b.max * dt / B[b.kind].time); if (b.prog >= 1 && u.side === 0) { Hero.say("mine", "good", `${B[b.kind].n} построена!`); floats.push({ x: b.tx + b.w / 2, y: b.ty, s: "✅", t: 1.2 }); } return; }
         goTo(u, nearRect(b.tx, b.ty, b.w, b.h), dt);
       }
@@ -7289,6 +7296,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       mine.filter((b) => isB(b) && b.prog < 1).forEach((b) => { if (!peas.some((p) => p.task.t === "build" && p.task.id === b.id)) { const p = peas.find((q) => q.task.t !== "build"); if (p) order(p, { t: "build", id: b.id, after: p.task.t === "gather" ? p.task : null }); } });
       // idle peasants gather (more wood until the barracks exist)
       peas.filter((p) => p.task.t === "idle").forEach((p, i) => { const type = (!bar && R.w < 500 && i % 2 === 0) || R.w < 200 ? TREE : GOLD; const n = nearestRes(p, type, 30) || nearestRes(p, type === TREE ? GOLD : TREE, 30); if (n) order(p, { t: "gather", type: tile[idx(n[0], n[1])], x: n[0], y: n[1] }); });
+      // rebalance gold/wood workers so neither resource piles up
+      const onGold = peas.filter((q) => q.task.t === "gather" && q.task.type === GOLD), onWood = peas.filter((q) => q.task.t === "gather" && q.task.type === TREE);
+      const wantWood = !bar ? 500 : towers.length < 1 ? 500 : 200;
+      if (R.w > wantWood + 300 && onWood.length > 1) { const q = onWood[0], n = nearestRes(q, GOLD, 40); if (n) order(q, { t: "gather", type: GOLD, x: n[0], y: n[1] }); }
+      else if (R.w < wantWood && onGold.length > 2 && onWood.length < 2) { const q = onGold[0], n = nearestRes(q, TREE, 40); if (n) order(q, { t: "gather", type: TREE, x: n[0], y: n[1] }); }
       if (!hall && peas.length && canPay(1, B.hall.cost) && !mine.some((e) => e.kind === "hall")) { const at = aiPlace("hall"); if (at) { pay(1, B.hall.cost); addBuilding(1, "hall", at[0], at[1], false); } }
       if (hall && peas.length < D.peas && !hall.queue.length && canPay(1, U.peasant.cost)) { pay(1, U.peasant.cost); hall.queue.push("peasant"); }
       if (!bar && peas.length >= 3 && canPay(1, B.barracks.cost)) { const at = aiPlace("barracks"); if (at) { pay(1, B.barracks.cost); addBuilding(1, "barracks", at[0], at[1], false); } }
@@ -7300,7 +7312,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       // attack waves
       if (army.length >= aiWave) {
         const target = nearestEnemyBuilding(1, army[0]);
-        if (target) { army.forEach((a) => order(a, { t: "attack", id: target.id })); aiWave = Math.min(16, aiWave + 2); if (state === "run") Hero.say("mine", "bad", "Красные идут в атаку! Готовь оборону!"); }
+        if (target) { army.forEach((a) => order(a, { t: "attack", id: target.id, chain: true })); aiWave = Math.min(16, aiWave + 2); if (state === "run") Hero.say("mine", "bad", "Красные идут в атаку! Готовь оборону!"); }
       }
       // keep attackers going after a target falls
       army.filter((a) => a.task.t === "idle" && a.wasAttacking).forEach((a) => { const t = nearestEnemyBuilding(1, a); if (t) order(a, { t: "attack", id: t.id }); });
@@ -7419,7 +7431,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#mmAttack").addEventListener("click", () => {
       const army = ents.filter((e) => e.side === 0 && isU(e) && U[e.kind].dmg > 0 && e.kind !== "peasant"); if (!army.length) { Hero.say("mine", "bad", "Некого отправлять — обучи повстанцев и лучников!"); return; }
       const t = nearestEnemyBuilding(0, army[0]); if (!t) return;
-      army.forEach((a) => order(a, { t: "attack", id: t.id })); sel = army.map((a) => a.id); Hero.say("mine", "start", `В атаку на ${B[t.kind].n.toLowerCase()} красных!`); ui(true);
+      army.forEach((a) => order(a, { t: "attack", id: t.id, chain: true })); sel = army.map((a) => a.id); Hero.say("mine", "start", `В атаку на ${B[t.kind].n.toLowerCase()} красных!`); ui(true);
     });
     $("#mmHome").addEventListener("click", () => { const h = ents.find((e) => e.side === 0 && e.kind === "hall") || ents.find((e) => e.side === 0 && isB(e)); if (h) centerOn(h.tx + h.w / 2, h.ty + h.h / 2); });
     $("#mmDiff").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; diff = +b.dataset.d; $$("#mmDiff button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
@@ -7518,7 +7530,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     window.addEventListener("resize", () => { if (!$("#mine").hidden) fit(); });
     $("#mmWins").textContent = wins;
-    if (location.hash === "#mmdebug") window.__mm = { ents: () => ents, res: () => res, cam, T, tile: () => tile, MW, B, U };
+    if (location.hash === "#mmdebug") window.__mm = { ents: () => ents, res: () => res, cam, T, tile: () => tile, MW, B, U, canPlace };
     return {
       enter() { fit(); if (!tile) { gen(); res = [{ g: 1000, w: 300, o: 0 }, { g: 1000, w: 300, o: 0 }]; centerOn(6, 25); } last = 0; if (!raf) raf = requestAnimationFrame(frame); ui(true); },
       leave() { if (raf) cancelAnimationFrame(raf); raf = 0; },
