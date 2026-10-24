@@ -529,6 +529,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .av svg { display: block; width: 100%; height: 100%; }
 .av.tier-paid { box-shadow: 0 0 0 2px var(--amber); }
 .av.tier-ultra { box-shadow: 0 0 0 2px #ffe08a, 0 0 18px rgba(255, 181, 71, .6); animation: ultra 2.4s ease-in-out infinite; }
+.av.tier-giga { box-shadow: 0 0 0 2px #b84dff, 0 0 22px rgba(184, 77, 255, .75); animation: giga 2s ease-in-out infinite; }
+@keyframes giga { 50% { box-shadow: 0 0 0 3px #e3b3ff, 0 0 34px rgba(184, 77, 255, .95); } }
 @keyframes ultra { 50% { box-shadow: 0 0 0 2px var(--coral), 0 0 26px rgba(255, 107, 122, .7); } }
 .tier-badge {
   display: inline-block; align-self: flex-start;
@@ -536,6 +538,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   padding: 2px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted);
 }
 .tier-badge.paid { background: rgba(255, 181, 71, .16); color: var(--amber); }
+.tier-badge.giga { background: linear-gradient(90deg, #12062e, #b84dff, #12062e); color: #fff; box-shadow: 0 0 10px rgba(184, 77, 255, .6); }
 .tier-badge.ultra { background: linear-gradient(90deg, var(--amber), var(--coral)); color: var(--bg); }
 .coins { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-weight: 700; color: var(--amber); font-variant-numeric: tabular-nums; }
 .player {
@@ -574,6 +577,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   background: linear-gradient(var(--panel), var(--panel)) padding-box,
               conic-gradient(from var(--ang), var(--amber), var(--coral), var(--cyan), var(--amber)) border-box;
   animation: spin 4s linear infinite;
+}
+.hero-card.tier-giga {
+  border-color: transparent;
+  background: linear-gradient(#140a24, #0b0714) padding-box,
+              conic-gradient(from var(--ang), #b84dff, #12062e, #e3b3ff, #12062e, #b84dff) border-box;
+  animation: spin 2.5s linear infinite; box-shadow: 0 0 22px rgba(184, 77, 255, .35);
 }
 @keyframes spin { to { --ang: 360deg; } }
 .hero-card.selected { box-shadow: 0 0 0 3px var(--cyan); }
@@ -856,7 +865,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
 @media (prefers-reduced-motion: reduce) {
   .cop-btn, .cop-say.shout, .siren, .stage.shake { animation: none; }
-  .shop-card, .av.tier-ultra, .hero-card.tier-ultra, .buddy-say.talk { animation: none; }
+  .shop-card, .av.tier-ultra, .hero-card.tier-ultra, .av.tier-giga, .hero-card.tier-giga, .buddy-say.talk { animation: none; }
   .cart, .tile.pop, .tile.merge { transition: none; animation: none; }
 }
 @media (max-width: 380px) {
@@ -1821,8 +1830,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   };
 
   /* ================= Characters ================= */
-  const PRICE = { free: 0, paid: 2000, ultra: 5000 };
-  const TIER_NAME = { free: "Бесплатный", paid: "Платный", ultra: "Ультра" };
+  const PRICE = { free: 0, paid: 2000, ultra: 5000, giga: 10000 };
+  const TIER_NAME = { free: "Бесплатный", paid: "Платный", ultra: "Ультра", giga: "Гига Ультра" };
   const CHARS = [
     { id: "hyuking",   name: "Хьюкинг",   tier: "free",  skin: "#f1c7a3", hair: "short", hairC: "#6b4226", shirt: "#4a6cf7", accent: "#5ce1e6", bg: ["#2b3170"], acc: [], motto: "Спокойно, я всё посчитал." },
     { id: "rodriguez", name: "Родригуес", tier: "free",  skin: "#c98e62", hair: "curly", hairC: "#1d1b22", shirt: "#2fb47c", accent: "#9be15d", bg: ["#1f4a3e"], acc: [], motto: "Вамос! Играем!" },
@@ -1833,6 +1842,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     { id: "maremed",   name: "Маремед",   tier: "paid",  skin: "#8d5a3b", hair: "buzz",  hairC: "#16121a", shirt: "#ff8a3d", accent: "#ffa45c", bg: ["#ffc27a", "#6b2f12"], acc: ["beard", "earring"], motto: "Работаем чётко." },
     { id: "khabich",   name: "Хабич",     tier: "ultra", skin: "#e2b48f", hair: "slick", hairC: "#121014", shirt: "#1d1a2b", accent: "#ffd36b", bg: ["#ffe08a", "#b8741a", "#2a1a06"], acc: ["chain", "crown", "shades"], motto: "Король поля на месте." },
     { id: "emir",      name: "Эмир",      tier: "ultra", skin: "#c8916b", hair: "flame", hairC: "#ff5ad1", shirt: "#2d1b5e", accent: "#ff5ad1", bg: ["#7cf8ff", "#7a3cff", "#12062e"], acc: ["jacket", "glow"], motto: "Горю на максимум!" },
+    { id: "valeriy",   name: "Валерий",   tier: "giga",  skin: "#141419", hair: "buzz",  hairC: "#141419", shirt: "#141419", accent: "#c77dff", bg: ["#3a0f6e", "#12062e", "#000"], acc: [], motto: "V3 — моя система." },
   ];
   const SLOTS = { head: "Голова", eyes: "Глаза", neck: "Шея", fx: "Эффекты" };
   const GEAR = [
@@ -1882,7 +1892,58 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     fat: { name: "Толстый — низкий" },
     muscle: { name: "Мускулистый — огромный" },
   };
+  // Валерий (Гига Ультра): a black glossy helmet robot with a crown of steel cubes and violet energy
+  function valeriySVG(u, cl) {
+    cl = cl || {};
+    const d = [];
+    d.push(`<defs>
+      <radialGradient id="${u}vb" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#5a1fa0"/><stop offset=".45" stop-color="#1c0838"/><stop offset="1" stop-color="#000"/></radialGradient>
+      <radialGradient id="${u}vh" cx=".38" cy=".25" r=".85"><stop offset="0" stop-color="#4a4a58"/><stop offset=".35" stop-color="#16161c"/><stop offset="1" stop-color="#030305"/></radialGradient>
+      <linearGradient id="${u}vc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9ccd6"/><stop offset="1" stop-color="#8a8e9c"/></linearGradient>
+      <radialGradient id="${u}ve" cx=".45" cy=".4" r=".7"><stop offset="0" stop-color="#ffd6ff"/><stop offset=".4" stop-color="#e05cff"/><stop offset="1" stop-color="#8a1fd6"/></radialGradient>
+      <filter id="${u}vs" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+      <filter id="${u}vg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.4"/></filter>
+    </defs>`);
+    d.push(`<rect width="100" height="100" fill="url(#${u}vb)"/>`);
+    let rays = ""; for (let i = 0; i < 12; i++) rays += `<path d="M50 46 L47 -20 L53 -20Z" fill="#c77dff" fill-opacity=".12" transform="rotate(${i * 30} 50 46)"/>`;
+    d.push(`<g>${rays}<animateTransform attributeName="transform" type="rotate" from="0 50 46" to="-360 50 46" dur="18s" repeatCount="indefinite"/></g>`);
+    // shoulders with violet stripes
+    [[10, 1], [90, -1]].forEach(([x, k]) => {
+      d.push(`<ellipse cx="${x}" cy="96" rx="20" ry="17" fill="url(#${u}vh)"/><ellipse cx="${x - k * 5}" cy="86" rx="6" ry="3" fill="#fff" opacity=".25"/>`);
+      d.push(`<path d="M${x - 19} 92 Q${x} 86 ${x + 19} 92 M${x - 19} 99 Q${x} 93 ${x + 19} 99" fill="none" stroke="#d58cff" stroke-width="1.6"/>`);
+    });
+    d.push(`<path d="M30 100 L36 80 L50 92 L64 80 L70 100Z" fill="#0c0c10"/><path d="M38 82 L50 96 L62 82" fill="none" stroke="#2a2a33" stroke-width="1" stroke-dasharray="1.5 1.5"/>`);
+    if (cl.body) d.push(`<path d="M30 100 L36 80 L50 92 L64 80 L70 100Z" fill="${cl.body.col}" opacity=".85"/>`);
+    // ear pods
+    d.push(`<rect x="15" y="44" width="9" height="20" rx="4" fill="#0e0e12"/><rect x="76" y="44" width="9" height="20" rx="4" fill="#0e0e12"/>`);
+    // helmet
+    d.push(`<ellipse cx="50" cy="47" rx="29" ry="37" fill="url(#${u}vh)"/>`);
+    d.push(`<ellipse cx="40" cy="22" rx="7" ry="4" fill="#fff" opacity=".28"/><ellipse cx="62" cy="34" rx="3" ry="5" fill="#fff" opacity=".12"/>`);
+    d.push(`<path d="M50 14 V46" stroke="#b84dff" stroke-width="1.4"/>`);
+    // violet smoke from the eyes
+    d.push(`<g filter="url(#${u}vs)" opacity=".85"><path d="M30 55 C20 50 16 40 6 42" fill="none" stroke="#9b3dff" stroke-width="4"><animate attributeName="d" values="M30 55 C20 50 16 40 6 42;M30 55 C22 46 12 44 4 36;M30 55 C20 50 16 40 6 42" dur="3s" repeatCount="indefinite"/></path><path d="M70 55 C80 50 84 40 94 42" fill="none" stroke="#9b3dff" stroke-width="4"><animate attributeName="d" values="M70 55 C80 50 84 40 94 42;M70 55 C78 46 88 44 96 36;M70 55 C80 50 84 40 94 42" dur="3.4s" repeatCount="indefinite"/></path></g>`);
+    // visor + glowing eyes
+    d.push(`<path d="M26 52 Q50 44 74 52 L72 62 Q62 57 50 63 Q38 57 28 62Z" fill="#0a0a0d" stroke="#2c2c36" stroke-width="1"/>`);
+    d.push(`<path d="M26 52 Q50 44 74 52" fill="none" stroke="#b84dff" stroke-width=".9" opacity=".8"/>`);
+    d.push(`<g filter="url(#${u}vg)"><ellipse cx="40" cy="56" rx="7" ry="3.6" fill="#e05cff"/><ellipse cx="60" cy="56" rx="7" ry="3.6" fill="#e05cff"/></g>`);
+    d.push(`<path d="M33 56 Q40 51 47 56 Q40 60 33 56Z M53 56 Q60 51 67 56 Q60 60 53 56Z" fill="url(#${u}ve)"><animate attributeName="opacity" values="1;.65;1" dur="1.8s" repeatCount="indefinite"/></path>`);
+    d.push(`<ellipse cx="39" cy="55" rx="2.2" ry=".9" fill="#fff" opacity=".8"/><ellipse cx="59" cy="55" rx="2.2" ry=".9" fill="#fff" opacity=".8"/>`);
+    if (cl.eyes) d.push(`<path d="M31 51 h17 v5 q-1 5 -8.5 5 q-7.5 0 -8.5 -5z M52 51 h17 v5 q-1 5 -8.5 5 q-7.5 0 -8.5 -5z" fill="${cl.eyes.col}" opacity=".9"/>`);
+    // face plate: centre line and three violet bars
+    d.push(`<path d="M50 64 V84" stroke="#b84dff" stroke-width="1.1"/><path d="M33 68 Q35 80 44 84 M67 68 Q65 80 56 84" fill="none" stroke="#b84dff" stroke-width=".9" opacity=".7"/>`);
+    d.push(`<g fill="#c77dff"><rect x="41" y="70" width="18" height="1.8" rx=".9"/><rect x="42.5" y="73.3" width="15" height="1.8" rx=".9"/><rect x="44" y="76.6" width="12" height="1.8" rx=".9"/></g>`);
+    if (cl.neck) d.push(`<path d="M34 84 Q50 92 66 84 L67 90 Q50 98 33 90Z" fill="${cl.neck.col}"/>`);
+    // crown of steel cubes with the V3 badge
+    for (let i = 0; i < 8; i++) {
+      const k = i < 4 ? i - 4 : i - 3, a = (k * 17) * Math.PI / 180, x = 50 + Math.sin(a) * 27, y = 47 - Math.cos(a) * 33.5;
+      d.push(`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(k * 12).toFixed(0)})"><rect x="-3.4" y="-3.4" width="6.8" height="6.8" rx=".6" fill="url(#${u}vc)" stroke="#6b6f7c" stroke-width=".4"/><path d="M-3.4 -3.4 l1.6 -1.5 h6.8 l-1.6 1.5z" fill="#f4f5f8"/><circle cx="-2.2" cy="-2.2" r=".45" fill="#7a7e8a"/><circle cx="2.2" cy="2.2" r=".45" fill="#7a7e8a"/></g>`);
+    }
+    d.push(`<path d="M50 8.5 L55 11.2 V16.8 L50 19.5 L45 16.8 V11.2Z" fill="#2a0a4a" stroke="#c77dff" stroke-width="1"/><text x="50" y="16.3" font-family="Arial Black, Arial" font-weight="900" font-size="5" text-anchor="middle" fill="#e3b3ff">V3</text>`);
+    if (cl.head) d.push(`<path d="M24 30 C26 6 74 6 76 30Z" fill="${cl.head.col}" opacity=".9"/>`);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Валерий">${d.join("")}</svg>`;
+  }
   function avatarSVG(c, gear, build) {
+    if (c.id === "valeriy") return valeriySVG("av" + (avUid++), window.__clothes && window.__clothes.valeriy);
     gear = gear || {};
     build = build || (window.__builds && window.__builds[c.id]) || "normal";
     const cl = (window.__clothes && window.__clothes[c.id]) || {};
@@ -2087,7 +2148,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $$("[data-hero-av]").forEach((el) => {
         const k = key();
         if (el.dataset.heroKey !== k) { el.innerHTML = avatarSVG(c, gear); el.dataset.heroKey = k; }
-        el.classList.remove("tier-free", "tier-paid", "tier-ultra");
+        el.classList.remove("tier-free", "tier-paid", "tier-ultra", "tier-giga");
         el.classList.add("tier-" + c.tier);
       });
       if (!$("#chars").hidden) { roster(); buildUI(); }
@@ -2253,7 +2314,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       grant(n) { coins += n; store.set("coins", coins); refresh(); }, // fixed amount, no multipliers
       name: () => get().name, coins: () => coins, char: () => get(),
       accent: () => get().accent,
-      tierColor: () => ({ free: "#eef0ff", paid: "#ffb547", ultra: "#ffe08a" })[get().tier],
+      tierColor: () => ({ free: "#eef0ff", paid: "#ffb547", ultra: "#ffe08a", giga: "#c77dff" })[get().tier],
       onChange: (f) => listeners.push(f),
     };
   })();
@@ -7452,6 +7513,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       alexander: { p: "вежливый тактик-интеллектуал в очках, любит план и порядок", lines: ["Позволь предложить тактику.", "Всё идёт по плану.", "Тактика важнее силы.", "Интересный ход. Обдумаю.", "Сначала план, потом действие."] },
       maremed:   { p: "спокойный и чёткий, говорит мало и по делу", lines: ["Работаем чётко.", "Принял.", "Без лишних слов.", "Сделаем.", "Чётко и спокойно."] },
       khabich:   { p: "пафосный король поля (ультра-персонаж), иногда говорит о себе в третьем лице", lines: ["Король поля на месте.", "Хабич не проигрывает. Хабич побеждает.", "Склонись перед короной.", "Это было по-королевски.", "Лучший? Очевидно, Хабич."] },
+      valeriy:   { p: "загадочный Гига Ультра робот в чёрном шлеме с короной из стальных кубиков и фиолетовой энергией в глазах; создатель системы V3, говорит спокойно, мощно и немного таинственно", lines: ["Фиолетовая энергия заряжена.", "V3 — моя система. Я всё вижу.", "Гига Ультра на связи.", "Кубики на короне не для красоты.", "Спокойно. Всё под контролем V3."] },
       emir:      { p: "огненный и очень энергичный ультра-персонаж, всё «горит» и «на максимум»", lines: ["Горю на максимум!", "Это было огненно!", "Включаю режим пламени!", "Жара пошла!", "Огонь, огонь, огонь!"] },
     };
     const TIPS = ["В 2048 держи самую большую плитку в углу.", "В Змейке не прижимайся к стенам.", "В крестиках-ноликах первым ходом занимай центр.", "Монеты копятся быстрее в 2048 — каждое слияние приносит монеты."];
