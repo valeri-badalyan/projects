@@ -313,6 +313,29 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- Dress-up ---------- */
+.dr-people { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.dr-people button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 2px; border-radius: 14px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 11.5px; cursor: pointer; line-height: 1.15; }
+.dr-people button svg { width: 44px; height: 44px; border-radius: 12px; background: var(--bg); }
+.dr-people button[aria-pressed="true"] { border-color: var(--amber); background: var(--panel-2); }
+.dr-stage { position: relative; border-radius: 16px; overflow: hidden; background: radial-gradient(circle at 50% 30%, #3a2f7a, #171433 70%); display: grid; place-items: center; padding: 6px 0 0; }
+.dr-stage svg { display: block; width: min(250px, 66vw); height: auto; }
+.dr-stage .dr-name { position: absolute; left: 10px; top: 8px; font-family: var(--display); font-size: 13px; color: var(--amber); }
+.dr-flash { position: absolute; inset: 0; background: #fff; pointer-events: none; animation: bootflash .5s ease-out forwards; }
+.dr-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.dr-tabs button { flex: none; padding: 8px 11px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; }
+.dr-tabs button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.dr-items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.dr-items button { padding: 9px 4px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 700; font-size: 12px; cursor: pointer; line-height: 1.2; }
+.dr-items button.on { border-color: var(--lime); background: var(--panel-2); }
+.dr-colors { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.dr-colors button { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--line); cursor: pointer; }
+.dr-colors button.on { border-color: #fff; transform: scale(1.12); }
+.dr-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.dr-acts .btn { padding: 10px 6px; font-size: 13px; }
+.dr-looks { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; min-height: 10px; }
+.dr-looks button { flex: none; width: 54px; height: 76px; padding: 0; border-radius: 10px; border: 2px solid var(--line); background: #171433; cursor: pointer; }
+.dr-looks button svg { width: 100%; height: 100%; }
 /* ---------- Soda factory ---------- */
 .fix-board.soda-board { background: linear-gradient(#cfe6f2 0 330px, #b9c3cf 330px), #b9c3cf; }
 .fix-board.soda-board::before { background: repeating-linear-gradient(90deg, rgba(0,0,0,.06) 0 2px, transparent 2px 36px), repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 36px); }
@@ -896,7 +919,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Четырнадцать игр в одном кармане</span>
+        <span class="tag">Пятнадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -1045,6 +1068,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Файтинг: 7 бойцов, суперприёмы, блок и парирование. До двух побед.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubMk">0</span></span>
+      </button>
+      <button class="cart" data-go="dress" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#2a2360"/><circle cx="32" cy="17" r="9" fill="#f0c8a8"/><path d="M23 15 q2 -10 12 -8 q6 1 6 8 q-5 -4 -11 -2z" fill="#3a2416"/><rect x="22" y="27" width="20" height="18" rx="4" fill="#e3263a"/><rect x="16" y="28" width="6" height="14" rx="3" fill="#e3263a"/><rect x="42" y="28" width="6" height="14" rx="3" fill="#e3263a"/><rect x="23" y="45" width="8" height="13" fill="#2f5aa8"/><rect x="33" y="45" width="8" height="13" fill="#2f5aa8"/><path d="M8 10 l6 0 l-1 8 l-4 0z M50 44 h8 v8 h-8z" fill="#ffd84d"/><path d="M52 12 q4 -4 8 0 v10 h-8z" fill="#c4a8ff"/><path d="M6 46 q6 -6 10 0 v10 h-10z" fill="#5ce1e6"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Переодень личность</span>
+          <span class="cart-desc">MJ, Оливер Три, Валерий и Милана Хаметова: шляпы, очки, куртки, обувь и фирменные образы.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Образы</span><span class="stat-val" id="hubDress">0</span></span>
       </button>
       <button class="cart" data-go="soda" type="button">
         <span class="cart-art" aria-hidden="true">
@@ -1486,6 +1519,32 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
     <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
+  </section>
+
+  <!-- ===== Dress-up ===== -->
+  <section id="dress" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Переодень</div>
+      <div class="chips"><div class="chip hi"><span>Образы</span><b id="drCount">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="dr-people" id="drPeople" aria-label="Личности"></div>
+    <div class="dr-stage" id="drStage"><span class="dr-name" id="drName"></span><div id="drFig"></div></div>
+    <div class="dr-tabs" id="drTabs"></div>
+    <div class="dr-items" id="drItems"></div>
+    <div class="dr-colors" id="drColors"></div>
+    <div class="dr-acts">
+      <button class="btn ghost" type="button" id="drRandom">🎲 Случайно</button>
+      <button class="btn ghost" type="button" id="drSign">⭐ Фирменный</button>
+      <button class="btn" type="button" id="drSave">📸 Сохранить</button>
+    </div>
+    <div class="dr-looks" id="drLooks" aria-label="Сохранённые образы"></div>
+    <p class="hint">Выбери личность, потом вкладку одежды. Цвет можно поменять у верха, низа и обуви. Новый сохранённый образ — +10 монет.</p>
   </section>
 
   <!-- ===== Soda factory ===== -->
@@ -6830,6 +6889,166 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Dress-up: «Переодень личность» ================= */
+  const Dress = (() => {
+    const PEOPLE = [
+      { id: "mj", name: "MJ", skin: "#e2b38c", hair: "mjcurl", hairC: "#141014", sign: { hat: "fedora", glasses: "none", top: "mjjacket", bottom: "mjpants", shoes: "loafers", extra: "glove", topC: "#d6232f", bottomC: "#141419", shoesC: "#141419" } },
+      { id: "oliver", name: "Оливер Три", skin: "#f3d2b8", hair: "bowl", hairC: "#e8b04a", stache: true, sign: { hat: "none", glasses: "round", top: "windbreaker", bottom: "wide", shoes: "boots", extra: "scooter", topC: "#7b5cff", bottomC: "#5ce1e6", shoesC: "#6a4024" } },
+      { id: "valeriy", name: "Валерий (я)", skin: "#f0c8a8", hair: "swept", hairC: "#3a2416", sign: { hat: "none", glasses: "none", top: "tshirt", bottom: "jeans", shoes: "sneakers", extra: "none", topC: "#e3263a", bottomC: "#2f5aa8", shoesC: "#ffffff" } },
+      { id: "milana", name: "Милана Хаметова", skin: "#f6d5c0", hair: "long", hairC: "#c89a5a", sign: { hat: "bow", glasses: "none", top: "dress", bottom: "none", shoes: "sneakers", extra: "mic", topC: "#ff8ad1", bottomC: "#ffffff", shoesC: "#ff8ad1" } },
+    ];
+    const SLOTS = [
+      { id: "hat", name: "🎩 Головной убор", items: [["none", "Без"], ["fedora", "Федора"], ["cap", "Кепка V3"], ["crown", "Корона"], ["beanie", "Шапка"], ["bow", "Бантик"], ["cowboy", "Ковбойская"]] },
+      { id: "glasses", name: "🕶️ Очки", items: [["none", "Без"], ["aviator", "Авиаторы"], ["round", "Круглые"], ["hearts", "Сердечки"], ["stars", "Звёзды"], ["visor", "Визор"]] },
+      { id: "top", name: "👕 Верх", color: "topC", items: [["tshirt", "Футболка"], ["mjjacket", "Куртка MJ"], ["sequin", "Блёстки"], ["windbreaker", "Ветровка"], ["hoodie", "Худи"], ["suit", "Пиджак"], ["jersey", "Футбольная"], ["dress", "Платье"]] },
+      { id: "bottom", name: "👖 Низ", color: "bottomC", items: [["jeans", "Джинсы"], ["mjpants", "Брюки MJ"], ["wide", "Широкие"], ["shorts", "Шорты"], ["skirt", "Юбка"]] },
+      { id: "shoes", name: "👟 Обувь", color: "shoesC", items: [["sneakers", "Кроссовки"], ["loafers", "Лоферы"], ["boots", "Ботинки"], ["slippers", "Шлёпанцы"]] },
+      { id: "extra", name: "✨ Аксессуар", items: [["none", "Без"], ["glove", "Перчатка MJ"], ["mic", "Микрофон"], ["scooter", "Самокат"], ["guitar", "Гитара"], ["chain", "Цепь"], ["backpack", "Рюкзак"]] },
+    ];
+    const COLORS = ["#e3263a", "#ff8ad1", "#ffd84d", "#2fa84a", "#5ce1e6", "#2f5aa8", "#7b5cff", "#141419", "#ffffff", "#c0c4cc"];
+    let cur = store.get("dressCur", {}); if (!cur || typeof cur !== "object") cur = {};
+    let looks = store.get("dressLooks", []); if (!Array.isArray(looks)) looks = [];
+    let who = store.get("dressWho", "valeriy"); if (!PEOPLE.some((q) => q.id === who)) who = "valeriy";
+    let tab = "top", uid = 0;
+    const person = (id) => PEOPLE.find((q) => q.id === id);
+    const outfit = (id) => { const p = person(id); const o = Object.assign({}, p.sign, cur[id] || {}); return o; };
+
+    // ---------- drawing (viewBox 200 x 340) ----------
+    function figure(p, o, opts) {
+      const u = "dr" + (uid++), d = [], sk = p.skin, top = o.top, dress = top === "dress";
+      const tc = o.topC, bc = o.bottomC, sc = o.shoesC;
+      const shade = (c) => `url(#${u}sh)`;
+      d.push(`<defs><linearGradient id="${u}sq" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f5f8"/><stop offset=".5" stop-color="#9aa0ad"/><stop offset="1" stop-color="#e6e8ee"/></linearGradient><linearGradient id="${u}gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#b8741a"/></linearGradient></defs>`);
+      if (!opts || !opts.thumb) d.push(`<ellipse cx="100" cy="326" rx="62" ry="8" fill="#000" opacity=".25"/>`);
+      // scooter goes under the feet
+      if (o.extra === "scooter") d.push(`<rect x="48" y="314" width="112" height="7" rx="3" fill="#2a2a3a"/><circle cx="56" cy="326" r="8" fill="#141419"/><circle cx="152" cy="326" r="8" fill="#141419"/><circle cx="56" cy="326" r="3" fill="#c0c4cc"/><circle cx="152" cy="326" r="3" fill="#c0c4cc"/><path d="M52 316 L40 170" stroke="#c0c4cc" stroke-width="5"/><path d="M26 170 h28" stroke="#141419" stroke-width="7" stroke-linecap="round"/>`);
+      // long hair behind
+      if (p.hair === "long") d.push(`<path d="M66 70 C62 30 138 30 134 70 L140 160 Q120 150 100 152 Q80 150 60 160Z" fill="${p.hairC}"/>`);
+      if (p.hair === "mjcurl") d.push(`<path d="M68 66 C60 26 140 26 132 66 L138 118 Q126 112 118 118 L82 118 Q74 112 62 118Z" fill="${p.hairC}"/>`);
+      if (o.extra === "backpack") d.push(`<rect x="64" y="118" width="72" height="76" rx="14" fill="#2f6fd6"/>`);
+      if (o.extra === "guitar") d.push(`<g transform="rotate(-30 100 190)"><rect x="96" y="96" width="8" height="70" fill="#6a4024"/><ellipse cx="100" cy="200" rx="26" ry="30" fill="#c9862a" stroke="#6a4024" stroke-width="3"/><circle cx="100" cy="196" r="7" fill="#3a2010"/></g>`);
+      // legs
+      d.push(`<rect x="74" y="196" width="22" height="108" rx="9" fill="${sk}"/><rect x="104" y="196" width="22" height="108" rx="9" fill="${sk}"/>`);
+      // bottoms
+      if (!dress) {
+        if (o.bottom === "jeans") d.push(`<path d="M68 192 H132 L130 302 H104 L100 214 L96 302 H70Z" fill="${bc}"/><path d="M100 196 V214" stroke="#000" stroke-opacity=".25"/><path d="M78 200 q6 6 14 0 M108 200 q6 6 14 0" stroke="#ffd84d" stroke-opacity=".6" fill="none"/>`);
+        if (o.bottom === "mjpants") d.push(`<path d="M68 192 H132 L130 284 H104 L100 214 L96 284 H70Z" fill="${bc}"/><rect x="72" y="284" width="24" height="16" fill="#fff"/><rect x="104" y="284" width="24" height="16" fill="#fff"/>`);
+        if (o.bottom === "wide") d.push(`<path d="M66 192 H134 L142 304 H104 L100 220 L96 304 H58Z" fill="${bc}"/><path d="M80 210 L74 300 M120 210 L126 300" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>`);
+        if (o.bottom === "shorts") d.push(`<path d="M68 192 H132 L132 240 H104 L100 214 L96 240 H68Z" fill="${bc}"/>`);
+        if (o.bottom === "skirt") d.push(`<path d="M70 192 H130 L146 252 H54Z" fill="${bc}"/>${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${74 + i * 10} 196 L${60 + i * 16} 250" stroke="#000" stroke-opacity=".18"/>`).join("")}`);
+      }
+      // shoes
+      const shoe = (x, flip) => {
+        if (o.shoes === "sneakers") return `<path d="M${x - 4} 300 h28 q8 0 8 8 v6 h-36z" fill="${sc}" stroke="#2a2a3a" stroke-width="1.5"/><path d="M${x - 4} 312 h36" stroke="#e3263a" stroke-width="2"/>`;
+        if (o.shoes === "loafers") return `<path d="M${x - 4} 302 h26 q10 0 10 8 v4 h-36z" fill="${sc}"/><path d="M${x + 2} 304 q8 -3 16 0" stroke="#fff" stroke-opacity=".6" fill="none"/>`;
+        if (o.shoes === "boots") return `<path d="M${x - 2} 284 h24 v18 q10 2 10 10 v4 h-36z" fill="${sc}"/><path d="M${x} 290 h20" stroke="#000" stroke-opacity=".3"/>`;
+        return `<path d="M${x - 4} 308 h34 v6 h-34z" fill="${sc}"/><path d="M${x + 2} 308 l9 -6 l9 6" stroke="${sc}" stroke-width="3" fill="none"/>`;
+      };
+      d.push(shoe(74), shoe(104));
+      // body + arms
+      d.push(`<rect x="66" y="106" width="68" height="94" rx="16" fill="${sk}"/>`);
+      d.push(`<rect x="44" y="112" width="20" height="92" rx="10" fill="${sk}"/><rect x="136" y="112" width="20" height="92" rx="10" fill="${sk}"/>`);
+      const sleeves = (len, col) => `<rect x="44" y="112" width="20" height="${len}" rx="10" fill="${col}"/><rect x="136" y="112" width="20" height="${len}" rx="10" fill="${col}"/>`;
+      const torso = (col, h) => `<path d="M64 120 Q64 104 84 102 H116 Q136 104 136 120 V${h} H64Z" fill="${col}"/>`;
+      if (top === "tshirt") d.push(sleeves(34, tc), torso(tc, 200), `<path d="M88 104 Q100 116 112 104" fill="none" stroke="#000" stroke-opacity=".2" stroke-width="2"/>`);
+      if (top === "mjjacket") d.push(sleeves(90, tc), torso(tc, 202), `<path d="M100 104 V200" stroke="#141419" stroke-width="3"/><path d="M74 130 L96 140 M126 130 L104 140 M72 150 L94 158 M128 150 L106 158" stroke="#141419" stroke-width="2.5"/><path d="M44 150 h20 M136 150 h20" stroke="#141419" stroke-width="3"/><path d="M84 102 L100 122 L116 102" fill="none" stroke="#141419" stroke-width="3"/>`);
+      if (top === "sequin") d.push(sleeves(90, `url(#${u}sq)`), torso(`url(#${u}sq)`, 202), [...Array(26)].map((_, i) => `<circle cx="${70 + (i * 37) % 62}" cy="${110 + (i * 23) % 88}" r="1.8" fill="#fff"/>`).join(""), `<path d="M100 104 V200" stroke="#5b6378" stroke-width="2"/>`);
+      if (top === "windbreaker") d.push(sleeves(90, tc), torso(tc, 202), `<path d="M64 140 H136 V166 H64Z" fill="#5ce1e6"/><path d="M64 166 H136 V182 H64Z" fill="#ff8ad1"/><path d="M44 140 h20 v26 h-20z M136 140 h20 v26 h-20z" fill="#5ce1e6"/><path d="M100 104 V200" stroke="#fff" stroke-width="2"/><path d="M84 102 Q100 96 116 102" stroke="#fff" stroke-width="5" fill="none"/>`);
+      if (top === "hoodie") d.push(`<path d="M76 104 Q100 84 124 104" fill="${tc}" stroke="#000" stroke-opacity=".2"/>`, sleeves(90, tc), torso(tc, 204), `<rect x="80" y="166" width="40" height="22" rx="6" fill="#000" opacity=".15"/><path d="M94 106 V126 M106 106 V126" stroke="#fff" stroke-width="2"/>`);
+      if (top === "suit") d.push(sleeves(90, tc), torso(tc, 204), `<path d="M86 102 L100 160 L114 102Z" fill="#fff"/><path d="M98 108 h4 l3 30 l-5 8 l-5 -8z" fill="#e3263a"/><path d="M86 102 L96 150 M114 102 L104 150" stroke="#000" stroke-opacity=".3" stroke-width="2"/><circle cx="100" cy="176" r="2.5" fill="#000" opacity=".4"/>`);
+      if (top === "jersey") d.push(sleeves(34, tc), torso(tc, 200), `<path d="M44 140 h20 M136 140 h20" stroke="#fff" stroke-width="4"/><text x="100" y="168" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="34" fill="#fff">10</text>`);
+      if (dress) d.push(sleeves(22, tc), `<path d="M66 120 Q66 104 84 102 H116 Q134 104 134 120 V176 L156 262 H44 L66 176Z" fill="${tc}"/><path d="M66 176 H134" stroke="#fff" stroke-width="5"/><path d="M50 248 Q100 262 150 248" stroke="#fff" stroke-opacity=".5" stroke-width="3" fill="none"/>${[0, 1, 2].map((i) => `<circle cx="${84 + i * 16}" cy="140" r="3" fill="#fff" opacity=".8"/>`).join("")}`);
+      // hands
+      d.push(`<circle cx="54" cy="206" r="9" fill="${sk}"/><circle cx="146" cy="206" r="9" fill="${sk}"/>`);
+      if (o.extra === "glove") d.push(`<circle cx="146" cy="206" r="10" fill="#f4f5f8"/>${[...Array(8)].map((_, i) => `<circle cx="${140 + (i * 5) % 12}" cy="${200 + (i * 7) % 12}" r="1.4" fill="#9aa0ad"/>`).join("")}<path d="M139 196 l3 -3 M150 193 l2 -4" stroke="#ffd84d" stroke-width="1.5"/>`);
+      if (o.extra === "mic") d.push(`<rect x="50" y="188" width="8" height="26" rx="3" fill="#2a2a3a"/><circle cx="54" cy="184" r="8" fill="#9aa0ad"/><path d="M48 182 h12 M48 186 h12" stroke="#5b6378"/>`);
+      if (o.extra === "scooter") d.push(`<circle cx="54" cy="206" r="9" fill="${sk}"/>`);
+      if (o.extra === "chain") d.push(`<path d="M82 104 Q100 140 118 104" fill="none" stroke="url(#${u}gd)" stroke-width="4"/><circle cx="100" cy="128" r="6" fill="url(#${u}gd)"/>`);
+      if (o.extra === "backpack") d.push(`<path d="M74 104 V170 M126 104 V170" stroke="#1d4aa0" stroke-width="6"/>`);
+      // neck + head
+      d.push(`<rect x="91" y="88" width="18" height="18" rx="6" fill="${sk}"/>`);
+      d.push(`<circle cx="70" cy="68" r="6" fill="${sk}"/><circle cx="130" cy="68" r="6" fill="${sk}"/><ellipse cx="100" cy="64" rx="30" ry="33" fill="${sk}"/>`);
+      // face
+      d.push(`<path d="M84 56 l10 -1 M106 55 l10 1" stroke="${p.hair === "bowl" ? "#c08a30" : "#3a2416"}" stroke-width="2.6" stroke-linecap="round"/>`);
+      d.push(`<ellipse cx="89" cy="66" rx="3.4" ry="4" fill="#2a1a14"/><ellipse cx="111" cy="66" rx="3.4" ry="4" fill="#2a1a14"/><circle cx="90" cy="65" r="1.1" fill="#fff"/><circle cx="112" cy="65" r="1.1" fill="#fff"/>`);
+      d.push(`<path d="M100 68 q-3 8 0 10" stroke="#000" stroke-opacity=".25" stroke-width="2" fill="none"/><circle cx="82" cy="78" r="4.5" fill="#ff6b7a" opacity=".22"/><circle cx="118" cy="78" r="4.5" fill="#ff6b7a" opacity=".22"/>`);
+      if (p.stache) d.push(`<path d="M90 82 q10 -5 20 0" stroke="#c08a30" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+      d.push(`<path d="M91 86 Q100 ${p.id === "oliver" ? 88 : 92} 109 86" stroke="#9a3a3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>`);
+      // front hair
+      if (p.hair === "swept") d.push(`<path d="M70 62 C66 26 132 22 132 58 C128 46 118 40 104 42 C110 48 112 56 110 62 C102 50 90 46 80 48 C76 52 72 56 70 62Z" fill="${p.hairC}"/><path d="M104 42 C112 50 116 58 114 66" stroke="${p.hairC}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M84 36 Q100 30 116 36" stroke="#fff" stroke-opacity=".18" stroke-width="2" fill="none"/>`);
+      if (p.hair === "bowl") d.push(`<path d="M68 64 C64 22 136 22 132 64 L132 54 Q100 46 68 54Z" fill="${p.hairC}"/><path d="M68 54 Q100 46 132 54 L132 58 Q100 50 68 58Z" fill="#c08a30" opacity=".5"/>`);
+      if (p.hair === "long") d.push(`<path d="M70 66 C64 26 136 26 130 66 C124 46 112 38 100 40 C88 38 76 46 70 66Z" fill="${p.hairC}"/>`);
+      if (p.hair === "mjcurl") d.push(`<path d="M70 58 C66 26 134 26 130 58 C122 42 78 42 70 58Z" fill="${p.hairC}"/><path d="M96 44 q-8 10 -2 18" stroke="${p.hairC}" stroke-width="4" fill="none" stroke-linecap="round"/>${[[66, 80], [134, 80], [64, 96], [136, 96]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="${p.hairC}"/>`).join("")}`);
+      // hats
+      if (o.hat === "fedora") d.push(`<path d="M76 46 C76 20 124 20 124 46Z" fill="#141419"/><rect x="76" y="38" width="48" height="7" fill="#f4f5f8"/><path d="M56 48 Q100 36 144 48 Q100 56 56 48Z" fill="#141419"/>`);
+      if (o.hat === "cap") d.push(`<path d="M70 50 C70 20 130 20 130 50Z" fill="#e3263a"/><path d="M100 48 H154 Q156 48 154 54 H100Z" fill="#a8121f"/><text x="100" y="44" text-anchor="middle" font-family="Arial Black, Arial" font-weight="900" font-size="12" fill="#fff">V3</text>`);
+      if (o.hat === "crown") d.push(`<path d="M74 40 L78 14 L90 28 L100 8 L110 28 L122 14 L126 40Z" fill="url(#${u}gd)" stroke="#7a4a00"/><circle cx="100" cy="28" r="3.5" fill="#e3263a"/>`);
+      if (o.hat === "beanie") d.push(`<path d="M68 54 C66 14 134 14 132 54Z" fill="#2fa84a"/><rect x="66" y="48" width="68" height="10" rx="5" fill="#1f7a3a"/><circle cx="100" cy="18" r="7" fill="#fff"/>`);
+      if (o.hat === "bow") d.push(`<path d="M114 30 l-14 -10 v20z M114 30 l14 -10 v20z" fill="#ff5ad1"/><circle cx="114" cy="30" r="4" fill="#ff8ad1"/>`);
+      if (o.hat === "cowboy") d.push(`<path d="M78 44 C78 16 122 16 122 44Z" fill="#a8703a"/><rect x="78" y="36" width="44" height="6" fill="#3b2412"/><path d="M50 44 Q100 58 150 44 Q146 54 100 56 Q54 54 50 44Z" fill="#8a5a2b"/>`);
+      // glasses
+      if (o.glasses === "aviator") d.push(`<path d="M78 60 h20 v6 q-2 8 -10 8 q-8 0 -10 -8z M102 60 h20 v6 q-2 8 -10 8 q-8 0 -10 -8z" fill="#7a5a14" opacity=".85" stroke="#ffd84d" stroke-width="1.5"/><path d="M98 62 h4" stroke="#ffd84d" stroke-width="2"/>`);
+      if (o.glasses === "round") d.push(`<g fill="#141419" stroke="#5b6378" stroke-width="2"><circle cx="88" cy="66" r="10"/><circle cx="112" cy="66" r="10"/></g><path d="M98 66 h4 M78 64 l-8 -2 M122 64 l8 -2" stroke="#5b6378" stroke-width="2"/><circle cx="85" cy="62" r="2" fill="#fff" opacity=".6"/><circle cx="109" cy="62" r="2" fill="#fff" opacity=".6"/>`);
+      if (o.glasses === "hearts") d.push(`<path d="M88 74 l-10 -10 a5 5 0 0 1 10 -6 a5 5 0 0 1 10 6z M112 74 l-10 -10 a5 5 0 0 1 10 -6 a5 5 0 0 1 10 6z" fill="#ff3b6b"/>`);
+      if (o.glasses === "stars") d.push(`<path d="M89 56 l3 7 h7 l-6 4 l2 7 l-6 -4 l-6 4 l2 -7 l-6 -4 h7z M111 56 l3 7 h7 l-6 4 l2 7 l-6 -4 l-6 4 l2 -7 l-6 -4 h7z" fill="#ffd84d" stroke="#b8741a"/>`);
+      if (o.glasses === "visor") d.push(`<rect x="74" y="58" width="52" height="14" rx="7" fill="#5ce1e6" opacity=".85"/><rect x="78" y="61" width="20" height="3" rx="1.5" fill="#fff" opacity=".7"/>`);
+      return `<svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${p.name}">${d.join("")}</svg>`;
+    }
+    function face(p) { return figure(p, p.sign, { thumb: true }).replace('viewBox="0 0 200 340"', 'viewBox="55 15 90 90"'); }
+
+    // ---------- UI ----------
+    function render() {
+      const p = person(who), o = outfit(who);
+      $("#drName").textContent = p.name;
+      $("#drFig").innerHTML = figure(p, o);
+      $$("#drPeople button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === who)));
+      $$("#drTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.t === tab)));
+      const sl = SLOTS.find((q) => q.id === tab), box = $("#drItems"); box.innerHTML = "";
+      sl.items.forEach(([id, n]) => {
+        const b = document.createElement("button"); b.type = "button"; b.textContent = n; if (o[tab] === id) b.classList.add("on");
+        if (tab === "bottom" && o.top === "dress") b.disabled = true;
+        b.addEventListener("click", () => set(tab, id)); box.appendChild(b);
+      });
+      const cb = $("#drColors"); cb.innerHTML = "";
+      if (sl.color && !(tab === "bottom" && o.top === "dress")) COLORS.forEach((c) => {
+        const b = document.createElement("button"); b.type = "button"; b.style.background = c; b.setAttribute("aria-label", "Цвет " + c); if (o[sl.color] === c) b.classList.add("on");
+        b.addEventListener("click", () => set(sl.color, c)); cb.appendChild(b);
+      });
+      $("#drCount").textContent = looks.length;
+      const lb = $("#drLooks"); lb.innerHTML = "";
+      looks.slice().reverse().forEach((l) => {
+        const lp = person(l.p); if (!lp) return;
+        const b = document.createElement("button"); b.type = "button"; b.title = lp.name; b.innerHTML = figure(lp, Object.assign({}, lp.sign, l.o), { thumb: true });
+        b.addEventListener("click", () => { who = l.p; cur[who] = Object.assign({}, l.o); save(); render(); Hero.say("dress", "good", `Надели сохранённый образ: ${lp.name}`); });
+        lb.appendChild(b);
+      });
+    }
+    function save() { store.set("dressCur", cur); store.set("dressWho", who); }
+    function set(k, v) { cur[who] = Object.assign(outfit(who), { [k]: v }); save(); render(); }
+    const LINES = { mj: ["Hee-hee! Шамон!", "Лунная походка — готова!", "Этот образ — легенда!"], oliver: ["Самокат и ветровка — мой стиль.", "Причёска горшком — навсегда!", "Это очень странно… мне нравится!"], valeriy: ["Это я! Выгляжу круто.", "Валерий в деле!", "Новый стиль — новый уровень."], milana: ["Блогерский образ готов!", "Сейчас сниму видео!", "Розовый — это любовь!"] };
+    const pick = (a) => a[(Math.random() * a.length) | 0];
+    $("#drPeople").innerHTML = PEOPLE.map((q) => `<button type="button" data-p="${q.id}">${face(q)}<span>${q.name}</span></button>`).join("");
+    $("#drPeople").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; who = b.dataset.p; save(); render(); Hero.say("dress", "start", `${person(who).name}: ${pick(LINES[who])}`); });
+    $("#drTabs").innerHTML = SLOTS.map((q) => `<button type="button" data-t="${q.id}">${q.name}</button>`).join("");
+    $("#drTabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { tab = b.dataset.t; render(); } });
+    $("#drRandom").addEventListener("click", () => {
+      const o = {}; SLOTS.forEach((q) => { o[q.id] = pick(q.items)[0]; if (q.color) o[q.color] = pick(COLORS); });
+      if (o.top === "dress") o.bottom = "none";
+      else if (o.bottom === "none") o.bottom = "jeans";
+      cur[who] = o; save(); render(); Hero.say("dress", "good", `${person(who).name}: ${pick(LINES[who])}`);
+    });
+    $("#drSign").addEventListener("click", () => { delete cur[who]; save(); render(); Hero.say("dress", "good", `Фирменный образ: ${person(who).name}`); });
+    $("#drSave").addEventListener("click", () => {
+      const o = outfit(who), key = who + JSON.stringify(o);
+      const fl = document.createElement("div"); fl.className = "dr-flash"; $("#drStage").appendChild(fl); setTimeout(() => fl.remove(), 600);
+      if (looks.some((l) => l.p + JSON.stringify(Object.assign({}, person(l.p).sign, l.o)) === key)) { Hero.say("dress", "bad", "Такой образ уже сохранён — попробуй что-то новое!"); return; }
+      looks.push({ p: who, o }); looks = looks.slice(-20); store.set("dressLooks", looks);
+      Hero.earn(10); updateHub(); render();
+      Hero.say("dress", "win", `Образ сохранён! +10 монет · ${person(who).name}`);
+    });
+    return { enter() { render(); }, leave() {}, key() {}, best: () => String(looks.length) };
+  })();
+
   /* ================= Soda factory (works like Почини Монитор) ================= */
   const Soda = (() => {
     const board = $("#sodaBoard"), wrap = $("#sodaWrap"), ov = $("#sodaOverlay"), plant = $("#sodaPlant");
@@ -7440,8 +7659,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, mk: MK, dubai: Dubai };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -7457,6 +7676,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubLinks").textContent = Links.best();
     $("#hubFix").textContent = Fix.best();
     $("#hubSoda").textContent = Soda.best();
+    $("#hubDress").textContent = Dress.best();
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
   }
