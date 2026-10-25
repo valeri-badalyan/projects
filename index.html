@@ -1702,14 +1702,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="vc-toast" id="vcToast" style="opacity:0"></div>
       <div class="vc-mp" id="vcMP" hidden>
         <div class="row" style="justify-content:space-between;align-items:center"><h3>👥 Мультиплеер</h3><button class="btn ghost" type="button" id="vcMPClose">✕</button></div>
-        <p id="vcMPStatus">Подключаюсь…</p>
-        <div class="code" id="vcMPCode">—</div>
-        <textarea id="vcMPInvite" readonly aria-label="Приглашение"></textarea>
-        <div class="row"><button class="btn" type="button" id="vcMPCopy">📋 Скопировать ссылку</button><button class="btn ghost" type="button" id="vcMPNew">🔄 Новая комната</button></div>
-        <p>Есть код от друга? Введи его:</p>
-        <div class="row"><input id="vcMPInput" inputmode="numeric" maxlength="4" placeholder="1234" aria-label="Код комнаты"><button class="btn" type="button" id="vcMPJoin">Войти</button></div>
+        <p id="vcMPStatus">Ссылка скопирована! Кто её откроет — сразу окажется в твоём мире.</p>
+        <textarea id="vcMPInvite" readonly aria-label="Ссылка"></textarea>
+        <button class="btn" type="button" id="vcMPCopy">📋 Скопировать ссылку</button>
+        <p>Сейчас в мире:</p>
         <div class="who" id="vcMPWho"></div>
-        <button class="btn ghost" type="button" id="vcMPLeave" hidden>🚪 Выйти из комнаты</button>
       </div>
       <div class="vc-inv" id="vcInv" hidden>
         <div class="tabs" id="vcInvTabs"><button type="button" data-tab="inv" aria-pressed="true">🎒 Инвентарь</button><button type="button" data-tab="craft">🛠️ Крафт</button><button type="button" data-tab="smelt">🔥 Печь</button><button type="button" data-tab="cat">📚 Каталог</button><button type="button" class="x" id="vcInvClose">✕</button></div>
@@ -7381,15 +7378,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function setBlock(x, y, z, t, remote) {
       if (x < 0 || z < 0 || x >= SX || z >= SZ || y < 1 || y >= SY) return false;
-      world[wi(x, y, z)] = t; mods[x + "," + y + "," + z] = t; saveSoon();
-      if (!remote && mp.room) mpEdit([x, y, z, t]);
+      world[wi(x, y, z)] = t; const key = x + "," + y + "," + z; mods[key] = t; saveSoon();
+      if (remote !== undefined && remote !== true && typeof remote === "number") modsT[key] = remote; else if (!remote) { modsT[key] = Math.floor(Date.now() / 1000); if (mp.room) mpEdit([x, y, z, t, modsT[key]]); }
       const cx = Math.floor(x / CH), cz = Math.floor(z / CH); rebuild(cx, cz);
       if (x % CH === 0 && cx > 0) rebuild(cx - 1, cz); if (x % CH === CH - 1 && cx < SX / CH - 1) rebuild(cx + 1, cz);
       if (z % CH === 0 && cz > 0) rebuild(cx, cz - 1); if (z % CH === CH - 1 && cz < SZ / CH - 1) rebuild(cx, cz + 1);
       return true;
     }
-    let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); if (mp.room) store.set("vcMP_" + mp.code, mods); else { store.set("vcMods", mods); store.set("vcSeed", seed); } } catch (e) { /* storage full is fine */ } }, 800); }
-    const mp = { room: null, code: "", seq: 0, edits: [], seen: {}, avatars: new Map(), sendT: 0, joining: false };
+    let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); if (mp.guest) store.set("vcW_" + seed, mods); else { store.set("vcMods", mods); store.set("vcSeed", seed); } } catch (e) { /* storage full is fine */ } }, 800); }
+    const mp = { room: null, seq: 0, edits: [], seen: {}, avatars: new Map(), sendT: 0, guest: false, owner: false, wi: 0, auto: false };
+    let modsT = {};
     // ---------- player ----------
     const P = { x: SX / 2 + .5, y: 30, z: SZ / 2 + .5, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: -.2, fly: false, ground: false };
     let mv = { x: 0, z: 0 }, keys = {}, raf = 0, last = 0, playing = false, lights = null;
@@ -7437,12 +7435,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let AC = null;
     function snd(f, d, type) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "square"; o.frequency.value = f; g.gain.setValueAtTime(.08, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) { /* no sound */ } }
     function explode(x0, y0, z0, remote) {
-      if (!remote && mp.room) mpEdit(["boom", x0, y0, z0]);
+      if (!remote && mp.room) mpEdit(["boom", x0, y0, z0, 0]);
       const rad = 3.2; const touched = new Set();
       for (let y = y0 - 4; y <= y0 + 4; y++) for (let z = z0 - 4; z <= z0 + 4; z++) for (let x = x0 - 4; x <= x0 + 4; x++) {
         if (Math.hypot(x - x0, y - y0, z - z0) > rad || y < 1 || x < 0 || z < 0 || x >= SX || z >= SZ || y >= SY) continue;
         const t = world[wi(x, y, z)]; if (!t || t === BEDROCK) continue;
-        world[wi(x, y, z)] = 0; mods[x + "," + y + "," + z] = 0; touched.add(Math.floor(x / CH) + "," + Math.floor(z / CH));
+        world[wi(x, y, z)] = 0; mods[x + "," + y + "," + z] = 0; modsT[x + "," + y + "," + z] = Math.floor(Date.now() / 1000); touched.add(Math.floor(x / CH) + "," + Math.floor(z / CH));
       }
       touched.forEach((k) => { const [a, b] = k.split(",").map(Number); rebuild(a, b); }); saveSoon();
       snd(60, .6, "sawtooth"); shake = .5;
@@ -7594,58 +7592,82 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function setMode(m) { mode = m; $("#vcMode").textContent = mode === "creative" ? "✨ Творчество" : "⚔️ Выживание"; $("#vcFly").hidden = mode !== "creative"; if (mode !== "creative") { P.fly = false; $("#vcFly").classList.remove("on"); } hearts(); saveInv(); if (!$("#vcInv").hidden) renderInv(); }
     $("#vcMode").addEventListener("click", () => { setMode(mode === "creative" ? "survival" : "creative"); toast(mode === "creative" ? "Творчество: всё бесконечно, мобы не страшны" : "Выживание: добывай, крафти, берегись мобов"); });
 
-    // ================= multiplayer (artifact room) =================
+    // ================= multiplayer: open the link → you are in the same world =================
+    // Everyone who has V3 Craft open on this page shares one world. The page owner's world is the
+    // shared one; anyone else adopts it while the owner is here (or the first player if not).
     const ART_URL = "https://claude.ai/artifact/Y2tbWL525tX88PofC6v8N2";
     const COLORS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     const myColor = COLORS[(Math.random() * COLORS.length) | 0];
-    function mpEdit(e) { mp.seq++; mp.edits.push([mp.seq, ...e]); if (mp.edits.length > 70) mp.edits.shift(); }
-    function inviteText() { return `Играем вместе в V3 Craft! Открой ${ART_URL} → V3 Craft → 👥 Мультиплеер → введи код ${mp.code}`; }
+    function mpEdit(e) { mp.seq++; mp.edits.push([mp.seq, ...e]); if (mp.edits.length > 40) mp.edits.shift(); }
     async function copyText(t) {
       try { await navigator.clipboard.writeText(t); return true; } catch (e) { /* fall back below */ }
       try { const ta = $("#vcMPInvite"); ta.value = t; ta.focus(); ta.select(); return document.execCommand("copy"); } catch (e) { return false; }
     }
-    function mpStatus(t, err) { const el = $("#vcMPStatus"); el.textContent = t; el.classList.toggle("err", !!err); }
+    const crafters = () => (mp.room ? mp.room.peers().filter((pr) => pr.presence && pr.presence.g === "craft") : []);
+    function hostPeer() { const list = crafters(); return list.find((pr) => pr.presence.o) || list.slice().sort((a2, b2) => String(a2.presence.since || 0).localeCompare(String(b2.presence.since || 0)) || a2.peer.localeCompare(b2.peer))[0]; }
+    function useWorld(newSeed, guest) {
+      mp.guest = guest; seed = newSeed; mods = guest ? store.get("vcW_" + newSeed, {}) || {} : store.get("vcMods", {}) || {}; modsT = {};
+      generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz);
+      mobs.slice().forEach(removeMob); spawn(); mp.seen = {}; mp.wi = 0;
+    }
     function mpUI() {
-      $("#vcMPCode").textContent = mp.room ? mp.code : "—"; $("#vcMPInvite").value = mp.room ? inviteText() : "";
-      $("#vcMPLeave").hidden = !mp.room; $("#vcMPCopy").disabled = !mp.room;
-      $("#vcMPBtn").textContent = mp.room ? `👥 Комната ${mp.code}` : "👥 Мультиплеер";
-      const who = $("#vcMPWho"); who.innerHTML = "";
-      if (mp.room) mp.room.peers().forEach((pr) => { const sp = document.createElement("span"); sp.style.background = (pr.presence && pr.presence.c) || "#ccc"; sp.textContent = (pr.isMe ? "Ты: " : "") + ((pr.presence && pr.presence.n) || "Игрок"); who.appendChild(sp); });
+      $("#vcMPInvite").value = ART_URL;
+      const list = crafters(), who = $("#vcMPWho"); who.innerHTML = "";
+      list.forEach((pr) => { const sp = document.createElement("span"); sp.style.background = /^#[0-9a-f]{6}$/i.test(pr.presence.c) ? pr.presence.c : "#ccc"; sp.textContent = (pr.isMe ? "Ты: " : "") + (pr.presence.n || "Игрок") + (pr.presence.o ? " 👑" : ""); who.appendChild(sp); });
+      if (!list.length) who.innerHTML = `<span style="background:${myColor}">Ты: ${Hero.name()}</span>`;
+      const others = list.filter((pr) => !pr.isMe).length;
+      $("#vcMPBtn").textContent = others ? `👥 Мультиплеер · ${others + 1}` : "👥 Мультиплеер";
     }
-    async function mpJoin(code, copy) {
-      if (mp.joining) return; mp.joining = true;
-      code = String(code).replace(/\D/g, "").slice(0, 4);
-      if (code.length !== 4) { mpStatus("Код — это 4 цифры.", true); mp.joining = false; return; }
-      mpStatus("Подключаюсь к комнате " + code + "…");
-      let api = null;
-      try { api = window.claude && typeof window.claude.use === "function" ? await window.claude.use("room") : null; } catch (e) { api = null; }
-      if (!api) { mpStatus("Мультиплеер работает только на опубликованной странице V3 Games для тех, у кого есть доступ к ней по приглашению. По открытой ссылке войти в комнату нельзя — так устроена платформа.", true); mp.joining = false; return; }
+    // connect once; the page itself stays usable without it
+    (async () => {
       try {
-        if (mp.room) await mpLeave(true);
-        const nr = await api.join("v3craft-" + code);
-        mp.room = nr; mp.code = code; mp.seq = 0; mp.edits = []; mp.seen = {};
-        // everyone in the same room plays the same freshly generated world
-        seed = 700000 + (+code) * 37; mods = store.get("vcMP_" + code, {}) || {}; generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz);
-        mobs.slice().forEach(removeMob); spawn();
-        nr.onPeers(() => mpUI(), () => { mpStatus("Связь с комнатой потеряна. Попробуй войти снова.", true); mpLeave(true); });
-        mpStatus("Ты в комнате! Отправь другу ссылку и код. Мир у всех в комнате общий.");
-        if (copy) { const ok = await copyText(inviteText()); mpStatus(ok ? "✅ Ссылка с кодом скопирована! Отправь её другу." : "Скопируй приглашение ниже и отправь другу.", false); }
-        Hero.say("craft", "good", `Комната ${code}: зови друзей!`);
-      } catch (e) {
-        const c = e && e.code;
-        mpStatus(c === "not_permitted" || c === "not_granted" ? "Тебе нельзя в комнаты на этой странице. Мультиплеер работает для тех, кого владелец пригласил в страницу по почте (кнопка «Поделиться»)." : c === "limit_reached" ? "Сейчас нельзя открыть ещё одну комнату. Попробуй позже." : "Не получилось подключиться. Попробуй ещё раз.", true);
+        const api = window.claude && typeof window.claude.use === "function" ? window.claude : null; if (!api) return;
+        const [room, user] = await Promise.all([api.use("room"), api.use("user")]);
+        try { mp.owner = !!(user && await user.isOwner()); } catch (e) { mp.owner = false; }
+        if (!room) return; mp.room = room; mp.since = Date.now();
+        room.onPeers((ch) => {
+          mpUI();
+          // opened the link while a friend is building? jump straight into their world
+          if (!mp.auto && current === "hub" && ch.peers.some((pr) => !pr.isMe && pr.presence && pr.presence.g === "craft")) { mp.auto = true; autoStart = true; show("craft"); }
+        }, () => { mp.room = null; mpUI(); });
+        lobbyPresence();
+      } catch (e) { mp.room = null; }
+    })();
+    function lobbyPresence() { if (mp.room && current !== "craft") mp.room.presence({ g: current, p: null, e: null, w: null }).catch(() => {}); }
+    let autoStart = false;
+    function mpTick(dt, t) {
+      if (!mp.room) return;
+      // pick whose world we are in
+      const host = hostPeer();
+      if (host && !host.isMe && typeof host.presence.s === "number" && host.presence.s !== seed) { useWorld(host.presence.s, true); toast(`Ты в мире игрока ${host.presence.n || "друга"}!`); Hero.say("craft", "good", `Ты в мире: ${host.presence.n || "друг"}. Стройте вместе!`); }
+      if (mp.guest && (!host || host.isMe) && !crafters().some((pr) => !pr.isMe)) { /* alone again: keep playing this world */ }
+      mp.sendT -= dt;
+      if (mp.sendT <= 0) {
+        mp.sendT = .15; const h2 = held();
+        // rotate through the whole world's changes so late joiners receive every building
+        const keys = Object.keys(mods), chunk = [];
+        for (let k = 0; k < 90 && keys.length; k++) { mp.wi = (mp.wi + 1) % keys.length; const key = keys[mp.wi], [x, y, z] = key.split(",").map(Number); chunk.push([x, y, z, mods[key], modsT[key] || 0]); }
+        mp.room.presence({ g: "craft", o: mp.owner && !mp.guest, since: mp.since, n: (Hero.name() || "Игрок").slice(0, 14), c: myColor, s: seed, p: [+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), +P.yaw.toFixed(2)], q: mp.seq, e: mp.edits, w: chunk, h: h2 ? String(h2.id) : "" }).catch(() => {});
       }
-      mp.joining = false; mpUI();
-    }
-    async function mpLeave(silent) {
-      const nr = mp.room; mp.room = null;
-      mp.avatars.forEach((a2) => { scene && scene.remove(a2.g); }); mp.avatars.clear();
-      if (nr) { try { await nr.leave(); } catch (e) { /* already gone */ } }
-      if (!silent) {
-        seed = store.get("vcSeed", seed); mods = store.get("vcMods", {}) || {}; generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); spawn();
-        mpStatus("Ты вышел из комнаты — снова твой собственный мир."); Hero.say("craft", "start", "Вернулись в твой мир.");
-      }
-      mpUI();
+      const live = new Set();
+      crafters().forEach((pr) => {
+        if (pr.isMe) return; const ps = pr.presence; if (ps.s !== seed) return; live.add(pr.peer);
+        const fromHost = host && pr.peer === host.peer;
+        const applyCell = (x, y, z, tt, ts) => { if (!(tt >= 0 && tt < BL.length)) return; const key = x + "," + y + "," + z, mine = modsT[key] || 0, cur2 = key in mods ? mods[key] : null; if (cur2 === tt) return; if (ts > mine || (fromHost && ts >= mine)) setBlock(x | 0, y | 0, z | 0, tt, ts); };
+        const seen = mp.seen[pr.peer] || 0;
+        (Array.isArray(ps.e) ? ps.e : []).forEach((e) => { if (!Array.isArray(e) || !(e[0] > seen)) return; if (e[1] === "boom") explode(e[2] | 0, e[3] | 0, e[4] | 0, true); else applyCell(e[1], e[2], e[3], e[4] | 0, e[5] || 0); });
+        if (typeof ps.q === "number") mp.seen[pr.peer] = Math.max(seen, ps.q);
+        (Array.isArray(ps.w) ? ps.w : []).forEach((c) => { if (Array.isArray(c)) applyCell(c[0], c[1], c[2], c[3] | 0, c[4] || 0); });
+        if (!Array.isArray(ps.p)) return;
+        let av = mp.avatars.get(pr.peer);
+        const nm = String(ps.n || "Игрок"), cl = /^#[0-9a-f]{6}$/i.test(ps.c) ? ps.c : "#cccccc";
+        if (!av || av.name !== nm) { if (av) scene.remove(av.g); av = avatar(cl, nm); av.x = ps.p[0]; av.y = ps.p[1]; av.z = ps.p[2]; scene.add(av.g); mp.avatars.set(pr.peer, av); }
+        const tx = +ps.p[0] || 0, ty = +ps.p[1] || 0, tz = +ps.p[2] || 0, k = Math.min(1, dt * 10), moving = Math.hypot(tx - av.x, tz - av.z) > .02;
+        av.x += (tx - av.x) * k; av.y += (ty - av.y) * k; av.z += (tz - av.z) * k;
+        av.g.position.set(av.x, av.y, av.z); av.g.rotation.y = (+ps.p[3] || 0) + Math.PI;
+        const sw = moving ? Math.sin(t * 9) * .6 : 0; av.legs[0].rotation.x = sw; av.legs[1].rotation.x = -sw; av.arms[0].rotation.x = -sw * .6; av.arms[1].rotation.x = sw * .6;
+      });
+      mp.avatars.forEach((av, peer) => { if (!live.has(peer)) { scene.remove(av.g); mp.avatars.delete(peer); } });
     }
     function nameSprite(text, color) {
       const c = document.createElement("canvas"); c.width = 256; c.height = 64; const g = c.getContext("2d");
@@ -7662,37 +7684,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const label = nameSprite(name, color); label.position.y = 2.25; g.add(label);
       return { g, arms, legs, label, name, x: 0, y: 0, z: 0 };
     }
-    function mpTick(dt, t) {
-      if (!mp.room) return;
-      mp.sendT -= dt;
-      if (mp.sendT <= 0) {
-        mp.sendT = .1; const h2 = held();
-        mp.room.presence({ n: (Hero.name() || "Игрок").slice(0, 14), c: myColor, p: [+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), +P.yaw.toFixed(2)], s: mp.seq, e: mp.edits, h: h2 ? String(h2.id) : "" }).catch(() => {});
-      }
-      const live = new Set();
-      mp.room.peers().forEach((pr) => {
-        if (pr.isMe) return; const ps = pr.presence || {}; live.add(pr.peer);
-        // apply this player's block changes we haven't seen yet
-        const seen = mp.seen[pr.peer] || 0, edits = Array.isArray(ps.e) ? ps.e : [];
-        edits.forEach((e) => { if (!Array.isArray(e) || !(e[0] > seen)) return; if (e[1] === "boom") explode(e[2] | 0, e[3] | 0, e[4] | 0, true); else { const tt = e[4] | 0; if (tt >= 0 && tt < BL.length) setBlock(e[1] | 0, e[2] | 0, e[3] | 0, tt, true); } });
-        if (typeof ps.s === "number") mp.seen[pr.peer] = Math.max(seen, ps.s);
-        if (!Array.isArray(ps.p)) return;
-        let av = mp.avatars.get(pr.peer);
-        const nm = String(ps.n || "Игрок"), cl = /^#[0-9a-f]{6}$/i.test(ps.c) ? ps.c : "#cccccc";
-        if (!av || av.name !== nm) { if (av) scene.remove(av.g); av = avatar(cl, nm); av.x = ps.p[0]; av.y = ps.p[1]; av.z = ps.p[2]; scene.add(av.g); mp.avatars.set(pr.peer, av); }
-        const tx = +ps.p[0] || 0, ty = +ps.p[1] || 0, tz = +ps.p[2] || 0, k = Math.min(1, dt * 10), moving = Math.hypot(tx - av.x, tz - av.z) > .02;
-        av.x += (tx - av.x) * k; av.y += (ty - av.y) * k; av.z += (tz - av.z) * k;
-        av.g.position.set(av.x, av.y, av.z); av.g.rotation.y = (+ps.p[3] || 0) + Math.PI;
-        const sw = moving ? Math.sin(t * 9) * .6 : 0; av.legs[0].rotation.x = sw; av.legs[1].rotation.x = -sw; av.arms[0].rotation.x = -sw * .6; av.arms[1].rotation.x = sw * .6;
-      });
-      mp.avatars.forEach((av, peer) => { if (!live.has(peer)) { scene.remove(av.g); mp.avatars.delete(peer); } });
-    }
-    $("#vcMPBtn").addEventListener("click", () => { $("#vcMP").hidden = false; closeInv(); mpUI(); if (!mp.room) mpJoin(String(1000 + ((Math.random() * 9000) | 0)), true); else copyText(inviteText()).then((ok) => mpStatus(ok ? "✅ Ссылка с кодом скопирована!" : "Скопируй приглашение ниже.")); });
+    $("#vcMPBtn").addEventListener("click", async () => {
+      closeInv(); $("#vcMP").hidden = false; mpUI();
+      const ok = await copyText(ART_URL);
+      $("#vcMPStatus").textContent = ok ? "✅ Ссылка скопирована! Кто её откроет — сразу окажется в твоём мире." : "Скопируй ссылку ниже и отправь другу — по ней он сразу окажется в твоём мире.";
+    });
     $("#vcMPClose").addEventListener("click", () => { $("#vcMP").hidden = true; });
-    $("#vcMPCopy").addEventListener("click", () => copyText(inviteText()).then((ok) => mpStatus(ok ? "✅ Ссылка с кодом скопирована!" : "Скопируй приглашение ниже.")));
-    $("#vcMPNew").addEventListener("click", () => mpJoin(String(1000 + ((Math.random() * 9000) | 0)), true));
-    $("#vcMPJoin").addEventListener("click", () => mpJoin($("#vcMPInput").value, false));
-    $("#vcMPLeave").addEventListener("click", () => mpLeave(false));
+    $("#vcMPCopy").addEventListener("click", () => copyText(ART_URL).then((ok) => { $("#vcMPStatus").textContent = ok ? "✅ Ссылка скопирована!" : "Скопируй ссылку ниже."; }));
     // ================= breaking, placing, using =================
     let brk = null; // {x,y,z,t,prog}
     function breakTime(t) {
@@ -7945,8 +7943,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#vcPlaced").textContent = placed; setMode(mode); hearts();
     if (location.hash === "#vcdebug") window.__vc = { P, get: (x, y, z) => get(x, y, z), set: (x, y, z, t) => setBlock(x, y, z, t), boom: (x, y, z) => explode(x, y, z), mobs: () => mobs, spawn: (t, d) => spawnMob(t, P.x - Math.sin(P.yaw) * (d || 4), P.y + .5, P.z - Math.cos(P.yaw) * (d || 4)), inv: () => inv };
     return {
-      enter() { init(); resize(); last = 0; if (!raf) raf = requestAnimationFrame(frame); setTimeout(resize, 50); },
-      leave() { playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; breaking = false; brk = null; closeInv(); saveInv(); clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
+      enter() {
+        init(); resize(); last = 0; if (!raf) raf = requestAnimationFrame(frame); setTimeout(resize, 50);
+        if (autoStart) { autoStart = false; const go = () => { if (ready) { ov.hidden = true; playing = true; hearts(); hotbar(); } else if (!failed) setTimeout(go, 300); }; go(); }
+      },
+      leave() { setTimeout(lobbyPresence, 50); playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; breaking = false; brk = null; closeInv(); saveInv(); clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
       key() {},
       best: () => String(placed),
     };
