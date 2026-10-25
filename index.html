@@ -313,6 +313,25 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- V3 Craft ---------- */
+.vc-stage { position: relative; width: 100%; max-width: 480px; margin: 0 auto; aspect-ratio: 3 / 4; max-height: 62vh; border-radius: 14px; overflow: hidden; background: #8fcbe8; touch-action: none; user-select: none; -webkit-user-select: none; }
+.vc-stage canvas { display: block; width: 100%; height: 100%; }
+.vc-cross { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; margin: -11px 0 0 -11px; pointer-events: none; }
+.vc-cross::before, .vc-cross::after { content: ""; position: absolute; background: rgba(255,255,255,.9); box-shadow: 0 0 2px #000; }
+.vc-cross::before { left: 10px; top: 0; width: 2px; height: 22px; } .vc-cross::after { top: 10px; left: 0; height: 2px; width: 22px; }
+.vc-joy { position: absolute; left: 14px; bottom: 14px; width: 112px; height: 112px; border-radius: 50%; background: rgba(255,255,255,.16); border: 2px solid rgba(255,255,255,.35); touch-action: none; }
+.vc-joy i { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255,255,255,.55); }
+.vc-btns { position: absolute; right: 10px; bottom: 12px; display: grid; grid-template-columns: repeat(2, 58px); gap: 8px; }
+.vc-btns button { width: 58px; height: 58px; border-radius: 50%; border: 2px solid rgba(255,255,255,.5); background: rgba(18,19,42,.45); color: #fff; font-size: 24px; cursor: pointer; touch-action: none; }
+.vc-btns button.on { background: rgba(255,181,71,.7); }
+.vc-top { position: absolute; left: 8px; top: 8px; right: 8px; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
+.vc-top span { background: rgba(18,19,42,.55); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 999px; }
+.vc-hot { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; scrollbar-width: thin; }
+.vc-hot button { flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-size: 9px; font-weight: 700; cursor: pointer; line-height: 1.1; }
+.vc-hot button canvas { width: 32px; height: 32px; image-rendering: pixelated; }
+.vc-hot button.on { border-color: var(--amber); background: var(--panel-2); }
+.vc-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.vc-acts .btn { padding: 9px 4px; font-size: 12.5px; }
 /* ---------- My Mine (RTS) ---------- */
 .mm-res { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .mm-res span { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 4px; border-radius: 10px; background: var(--panel); font-size: 13px; }
@@ -994,7 +1013,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="logo" aria-label="V3">V3</div>
       <div class="brand-sub">
         <span class="word">GAMES</span>
-        <span class="tag">Семнадцать игр в одном кармане</span>
+        <span class="tag">Восемнадцать игр в одном кармане</span>
       </div>
     </header>
     <div class="player">
@@ -1143,6 +1162,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <span class="cart-desc">Файтинг: 7 бойцов, суперприёмы, блок и парирование. До двух побед.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubMk">0</span></span>
+      </button>
+      <button class="cart" data-go="craft" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#8fcbe8"/><rect y="38" width="64" height="26" fill="#7a5a3a"/><rect y="34" width="64" height="6" fill="#5aa83a"/><rect x="8" y="22" width="12" height="12" fill="#7a5a3a"/><rect x="8" y="22" width="12" height="4" fill="#5aa83a"/><rect x="40" y="12" width="6" height="22" fill="#6a4a2a"/><rect x="32" y="4" width="22" height="14" fill="#2e7a36"/><rect x="24" y="44" width="8" height="8" fill="#8a8f9e"/><rect x="26" y="46" width="2" height="2" fill="#5ce1e6"/><rect x="28" y="49" width="2" height="2" fill="#5ce1e6"/><rect x="46" y="48" width="10" height="10" fill="#7b5cff"/><text x="51" y="56" text-anchor="middle" font-family="Arial Black,Arial" font-size="6" fill="#fff">V3</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">V3 Craft</span>
+          <span class="cart-desc">Мир из блоков: ломай и строй! Мир поменьше, а блоков больше — 40 видов.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Построено</span><span class="stat-val" id="hubCraft">0</span></span>
       </button>
       <button class="cart" data-go="mine" type="button">
         <span class="cart-art" aria-hidden="true">
@@ -1614,6 +1643,41 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
     <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
+  </section>
+
+  <!-- ===== V3 Craft ===== -->
+  <section id="craft" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3 Craft</div>
+      <div class="chips"><div class="chip hi"><span>Построено</span><b id="vcPlaced">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="vc-stage" id="vcStage">
+      <div class="vc-cross"></div>
+      <div class="vc-top"><span id="vcBlockName">Трава</span><span id="vcPos">x 0 · y 0</span></div>
+      <div class="vc-joy" id="vcJoy"><i></i></div>
+      <div class="vc-btns">
+        <button type="button" id="vcFly" aria-label="Полёт">🕊️</button><button type="button" id="vcJump" aria-label="Прыжок">⬆️</button>
+        <button type="button" id="vcBreak" aria-label="Ломать">⛏️</button><button type="button" id="vcPlace" aria-label="Ставить">🧱</button>
+      </div>
+      <div class="overlay" id="vcOverlay">
+        <h2>V3 Craft</h2>
+        <p id="vcOvText">Левый круг — ходить, свайп по экрану — смотреть. ⛏️ — ломать, 🧱 — ставить блок, ⬆️ — прыжок, 🕊️ — полёт.</p>
+        <button class="btn" type="button" id="vcStart">Играть</button>
+      </div>
+    </div>
+    <div class="vc-hot" id="vcHot" aria-label="Блоки"></div>
+    <div class="vc-acts">
+      <button class="btn ghost" type="button" id="vcDay">🌙 Ночь</button>
+      <button class="btn ghost" type="button" id="vcSpawn">🏠 На спавн</button>
+      <button class="btn ghost" type="button" id="vcReset">🌍 Новый мир</button>
+    </div>
+    <p class="hint">На компьютере: WASD — ходить, пробел — прыжок, мышь — смотреть, ЛКМ — ломать, ПКМ — ставить, F — полёт. TNT взрывается, если его сломать!</p>
   </section>
 
   <!-- ===== My Mine ===== -->
@@ -5256,7 +5320,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -5468,7 +5532,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -6820,7 +6884,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -7055,6 +7119,346 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       leave() { drag = null; },
       key() {},
       best: () => (best === null ? "—" : fmt(best) + " с"),
+    };
+  })();
+
+  /* ================= V3 Craft: voxel sandbox (Three.js r128) ================= */
+  const Craft = (() => {
+    const stage = $("#vcStage"), ov = $("#vcOverlay");
+    const SX = 64, SZ = 64, SY = 36, CH = 16, WATER_Y = 9;
+    // ---------- blocks: [name, top, side, bottom, kind] (kind: s solid, c cutout, w water, l light) ----------
+    const BL = [null,
+      ["Трава", "grass", "grass_side", "dirt"], ["Земля", "dirt"], ["Камень", "stone"], ["Булыжник", "cobble"], ["Песок", "sand"], ["Гравий", "gravel"],
+      ["Дуб", "log_top", "log"], ["Листва", "leaves", "leaves", "leaves", "c"], ["Доски", "planks"], ["Стекло", "glass", "glass", "glass", "c"], ["Кирпич", "bricks"],
+      ["Уголь", "coal"], ["Железо", "iron"], ["Золото", "gold"], ["Алмаз", "diamond"], ["Снег", "snow", "snow_side", "dirt"], ["Лёд", "ice", "ice", "ice", "c"],
+      ["Вода", "water", "water", "water", "w"], ["Кактус", "cactus_top", "cactus"], ["Тыква", "pumpkin_top", "pumpkin"], ["Обсидиан", "obsidian"], ["Книжная полка", "planks", "books"],
+      ["Светокамень", "glow", "glow", "glow", "l"], ["TNT", "tnt_top", "tnt", "tnt_bottom"], ["Глина", "clay"], ["Песчаник", "sandstone_top", "sandstone"], ["Берёза", "birch_top", "birch"],
+      ["Красная шерсть", "wool_red"], ["Синяя шерсть", "wool_blue"], ["Жёлтая шерсть", "wool_yellow"], ["Белая шерсть", "wool_white"], ["Чёрная шерсть", "wool_black"],
+      ["V3 блок", "v3_top", "v3"], ["Золотой блок", "gold_block"], ["Алмазный блок", "diamond_block"], ["Арбуз", "melon_top", "melon"], ["Сено", "hay_top", "hay"],
+      ["Мшистый камень", "mossy"], ["Лава", "lava", "lava", "lava", "l"], ["Коренная порода", "bedrock"], ["Розовая шерсть", "wool_pink"],
+    ];
+    const ID = {}; BL.forEach((b, i) => { if (b) ID[b[0]] = i; });
+    const BEDROCK = ID["Коренная порода"], WATER = ID["Вода"], LAVA = ID["Лава"], TNT = ID["TNT"];
+    const kind = (t) => (BL[t] && BL[t][4]) || "s";
+    const solid = (t) => t && t !== WATER && t !== LAVA;
+    const HOTBAR = BL.map((b, i) => i).filter((i) => i && i !== BEDROCK);
+    // ---------- pixel textures (procedural 16x16) ----------
+    const TILE_NAMES = [...new Set(BL.filter(Boolean).flatMap((b) => [b[1], b[2] || b[1], b[3] || b[2] || b[1]]))];
+    const TI = {}; TILE_NAMES.forEach((n, i) => { TI[n] = i; });
+    const COLS = 8, ROWS = Math.ceil(TILE_NAMES.length / COLS), PX = 16;
+    let atlas = null;
+    function rnd(seed) { let s = seed | 0; return () => { s = (s * 1664525 + 1013904223) | 0; return ((s >>> 8) & 0xffff) / 65536; }; }
+    function paint(g, name, ox, oy) {
+      const r = rnd(name.split("").reduce((a, c) => a * 31 + c.charCodeAt(0), 7));
+      const px = (x, y, c) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, 1, 1); };
+      const noise = (base, vary) => { for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const k = 1 + (r() - .5) * vary; px(x, y, shadeC(base, k)); } };
+      const spots = (c, n, size) => { for (let i = 0; i < n; i++) { const x = (r() * (16 - size)) | 0, y = (r() * (16 - size)) | 0; for (let a = 0; a < size; a++) for (let b = 0; b < size; b++) if (r() > .25) px(x + a, y + b, c); } };
+      const bricks = (c, mortar) => { noise(c, .15); for (let y = 0; y < 16; y += 4) { for (let x = 0; x < 16; x++) px(x, y, mortar); const off = (y / 4) % 2 ? 4 : 0; for (let yy = y; yy < y + 4; yy++) { px((off + 0) % 16, yy, mortar); px((off + 8) % 16, yy, mortar); } } };
+      const ore = (c) => { noise("#8a8f9e", .2); spots(c, 6, 2); };
+      const wool = (c) => { noise(c, .12); for (let y = 0; y < 16; y += 3) for (let x = 0; x < 16; x++) if ((x + y) % 4 === 0) px(x, y, shadeC(c, .85)); };
+      switch (name) {
+        case "grass": noise("#5aa83a", .3); break;
+        case "grass_side": noise("#866043", .25); for (let x = 0; x < 16; x++) { const h = 3 + ((r() * 3) | 0); for (let y = 0; y < h; y++) px(x, y, shadeC("#5aa83a", 1 + (r() - .5) * .3)); } break;
+        case "dirt": noise("#866043", .3); spots("#6a4a30", 5, 1); break;
+        case "stone": noise("#8a8f9e", .2); spots("#70747f", 6, 2); break;
+        case "cobble": noise("#7a7e8a", .35); for (let i = 0; i < 14; i++) { const x = (r() * 14) | 0, y = (r() * 14) | 0; px(x, y, "#4a4e5a"); px(x + 1, y, "#4a4e5a"); } break;
+        case "sand": noise("#e6d39a", .12); break;
+        case "gravel": noise("#8a8580", .4); spots("#5a5550", 8, 2); break;
+        case "log": for (let x = 0; x < 16; x++) for (let y = 0; y < 16; y++) px(x, y, shadeC(x % 4 === 0 ? "#4a3420" : "#6a4a2a", 1 + (r() - .5) * .2)); break;
+        case "log_top": noise("#b08a5a", .1); for (let k = 2; k < 8; k += 2) for (let a = 0; a < 16; a++) for (let b = 0; b < 16; b++) if (Math.abs(Math.max(Math.abs(a - 7.5), Math.abs(b - 7.5)) - k) < .5) px(a, b, "#8a6a3a"); for (let i = 0; i < 16; i++) { px(i, 0, "#5a3a20"); px(i, 15, "#5a3a20"); px(0, i, "#5a3a20"); px(15, i, "#5a3a20"); } break;
+        case "birch": noise("#e8e4da", .08); spots("#2a2a2a", 6, 1); for (let y = 0; y < 16; y += 5) for (let x = (r() * 8) | 0; x < 16; x += 9) { px(x, y, "#1a1a1a"); px(x + 1, y, "#1a1a1a"); } break;
+        case "birch_top": noise("#d8c8a0", .1); for (let i = 0; i < 16; i++) { px(i, 0, "#e8e4da"); px(i, 15, "#e8e4da"); px(0, i, "#e8e4da"); px(15, i, "#e8e4da"); } break;
+        case "leaves": for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { if (r() < .16) continue; px(x, y, shadeC("#2e7a36", 1 + (r() - .5) * .5)); } break;
+        case "planks": noise("#b08a5a", .15); for (let y = 0; y < 16; y += 4) for (let x = 0; x < 16; x++) px(x, y, "#7a5a32"); for (let y = 0; y < 16; y++) px(((y / 4) | 0) % 2 ? 4 : 11, y, "#8a6a3a"); break;
+        case "glass": for (let i = 0; i < 16; i++) { px(i, 0, "#dff4ff"); px(i, 15, "#a8d8ee"); px(0, i, "#dff4ff"); px(15, i, "#a8d8ee"); } px(4, 3, "#fff"); px(5, 4, "#fff"); px(6, 5, "#fff"); px(10, 9, "#fff"); px(11, 10, "#fff"); break;
+        case "bricks": bricks("#a8483a", "#d8c8b0"); break;
+        case "coal": ore("#1a1a1a"); break; case "iron": ore("#d8a888"); break; case "gold": ore("#ffd84d"); break; case "diamond": ore("#5ce1e6"); break;
+        case "snow": noise("#f4f8ff", .05); break;
+        case "snow_side": noise("#866043", .25); for (let x = 0; x < 16; x++) { const h = 3 + ((r() * 2) | 0); for (let y = 0; y < h; y++) px(x, y, "#f4f8ff"); } break;
+        case "ice": noise("#a8d8f4", .1); for (let i = 0; i < 6; i++) px((r() * 16) | 0, (r() * 16) | 0, "#e8f8ff"); break;
+        case "water": noise("#3a7fd6", .15); break;
+        case "cactus": noise("#3a8a3a", .15); for (let y = 1; y < 16; y += 3) { px(0, y, "#1a3a1a"); px(15, y + 1, "#1a3a1a"); px(7, y, "#e8f0c0"); } break;
+        case "cactus_top": noise("#4a9a4a", .15); for (let i = 3; i < 13; i++) { px(i, 3, "#2a6a2a"); px(i, 12, "#2a6a2a"); px(3, i, "#2a6a2a"); px(12, i, "#2a6a2a"); } break;
+        case "pumpkin": noise("#e0802a", .12); for (let y = 0; y < 16; y++) { px(3, y, "#b8601a"); px(8, y, "#b8601a"); px(12, y, "#b8601a"); } break;
+        case "pumpkin_top": noise("#d8782a", .12); for (let y = 6; y < 10; y++) for (let x = 6; x < 10; x++) px(x, y, "#4a6a2a"); break;
+        case "obsidian": noise("#1a1028", .3); spots("#3a2a5a", 5, 2); break;
+        case "books": noise("#b08a5a", .1); for (let row = 0; row < 2; row++) { const y0 = 2 + row * 7; for (let x = 1; x < 15; x++) { const c = ["#a83a3a", "#3a5aa8", "#3a8a4a", "#d8a83a", "#7a3a8a"][(x + row * 3) % 5]; for (let y = y0; y < y0 + 5; y++) px(x, y, c); } for (let x = 0; x < 16; x++) px(x, y0 + 5, "#6a4a2a"); } break;
+        case "glow": noise("#ffd86a", .25); spots("#fff4b0", 6, 2); break;
+        case "tnt": noise("#d83a3a", .1); for (let y = 6; y < 10; y++) for (let x = 0; x < 16; x++) px(x, y, "#f4f0e0"); g.fillStyle = "#111"; g.font = "bold 5px monospace"; g.fillText("TNT", ox + 3, oy + 10); break;
+        case "tnt_top": noise("#d83a3a", .1); for (let i = 4; i < 12; i += 3) for (let j = 4; j < 12; j += 3) px(i, j, "#2a2a2a"); break;
+        case "tnt_bottom": noise("#c83030", .1); break;
+        case "clay": noise("#a8acc0", .1); break;
+        case "sandstone": noise("#e0cc8a", .08); for (let x = 0; x < 16; x++) { px(x, 3, "#c8b070"); px(x, 12, "#c8b070"); } break;
+        case "sandstone_top": noise("#e8d49a", .06); break;
+        case "wool_red": wool("#d8323a"); break; case "wool_blue": wool("#2f5ad6"); break; case "wool_yellow": wool("#f4d83a"); break; case "wool_white": wool("#f0f0f0"); break; case "wool_black": wool("#222228"); break; case "wool_pink": wool("#ff8ad1"); break;
+        case "v3": noise("#7b5cff", .1); g.fillStyle = "#fff"; g.font = "bold 8px Arial"; g.fillText("V3", ox + 2, oy + 11); for (let i = 0; i < 16; i++) { px(i, 0, "#c4a8ff"); px(i, 15, "#4a2aa8"); } break;
+        case "v3_top": noise("#7b5cff", .1); for (let i = 2; i < 14; i++) { px(i, 2, "#ffd84d"); px(i, 13, "#ffd84d"); px(2, i, "#ffd84d"); px(13, i, "#ffd84d"); } break;
+        case "gold_block": noise("#ffd84d", .1); for (let i = 0; i < 16; i++) { px(i, 0, "#fff3b0"); px(0, i, "#fff3b0"); px(i, 15, "#b8741a"); px(15, i, "#b8741a"); } break;
+        case "diamond_block": noise("#5ce1e6", .1); for (let i = 0; i < 16; i++) { px(i, 0, "#c8f8ff"); px(0, i, "#c8f8ff"); px(i, 15, "#2a9aa0"); px(15, i, "#2a9aa0"); } break;
+        case "melon": for (let x = 0; x < 16; x++) for (let y = 0; y < 16; y++) px(x, y, shadeC(x % 3 === 0 ? "#2a6a1a" : "#4aa02a", 1 + (r() - .5) * .15)); break;
+        case "melon_top": noise("#4aa02a", .15); px(7, 7, "#3a5a1a"); px(8, 8, "#3a5a1a"); break;
+        case "hay": noise("#d8b03a", .15); for (let y = 3; y < 16; y += 6) for (let x = 0; x < 16; x++) px(x, y, "#8a5a1a"); break;
+        case "hay_top": noise("#e0c050", .2); break;
+        case "mossy": noise("#7a7e8a", .3); spots("#4a8a3a", 7, 2); break;
+        case "lava": noise("#ff6a1a", .3); spots("#ffd84d", 6, 2); break;
+        case "bedrock": noise("#4a4a50", .5); break;
+        default: noise("#ff00ff", 0);
+      }
+    }
+    function shadeC(hex, k) { const n = parseInt(hex.slice(1), 16); const f = (v) => Math.max(0, Math.min(255, Math.round(v * k))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; }
+    function makeAtlas() {
+      atlas = document.createElement("canvas"); atlas.width = COLS * PX; atlas.height = ROWS * PX;
+      const g = atlas.getContext("2d"); g.imageSmoothingEnabled = false;
+      TILE_NAMES.forEach((n, i) => paint(g, n, (i % COLS) * PX, Math.floor(i / COLS) * PX));
+    }
+    const faceTile = (t, f) => { const b = BL[t]; return TI[f === "top" ? b[1] : f === "bottom" ? (b[3] || b[2] || b[1]) : (b[2] || b[1])]; };
+    // ---------- world ----------
+    let world = new Uint8Array(SX * SY * SZ), mods = {}, placed = store.get("vcPlaced", 0) | 0;
+    const wi = (x, y, z) => (y * SZ + z) * SX + x;
+    const get = (x, y, z) => (x < 0 || z < 0 || x >= SX || z >= SZ || y < 0) ? BEDROCK : y >= SY ? 0 : world[wi(x, y, z)];
+    function hash2(x, z, s) { let h = (x * 374761393 + z * 668265263 + s * 1442695041) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+    function vnoise(x, z, s) { const xi = Math.floor(x), zi = Math.floor(z), xf = x - xi, zf = z - zi, u = xf * xf * (3 - 2 * xf), v = zf * zf * (3 - 2 * zf); const a = hash2(xi, zi, s), b = hash2(xi + 1, zi, s), c = hash2(xi, zi + 1, s), d = hash2(xi + 1, zi + 1, s); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v; }
+    const fbm = (x, z, s) => vnoise(x / 24, z / 24, s) * .55 + vnoise(x / 11, z / 11, s + 1) * .3 + vnoise(x / 5, z / 5, s + 2) * .15;
+    let seed = store.get("vcSeed", 0) || ((Math.random() * 1e6) | 0);
+    function generate() {
+      world = new Uint8Array(SX * SY * SZ);
+      const R = rnd(seed);
+      for (let x = 0; x < SX; x++) for (let z = 0; z < SZ; z++) {
+        const edge = Math.min(x, z, SX - 1 - x, SZ - 1 - z), isl = Math.min(1, edge / 10);
+        let h = Math.floor(5 + fbm(x, z, seed) * 15 * (.45 + .55 * isl) + 4 * isl + (fbm(x + 99, z + 99, seed + 5) > .62 ? (fbm(x + 99, z + 99, seed + 5) - .62) * 40 : 0) * isl);
+        h = Math.max(2, Math.min(SY - 6, h));
+        for (let y = 0; y <= h; y++) {
+          let t;
+          if (y === 0) t = BEDROCK;
+          else if (y < h - 3) { const o = R(); t = o < .012 ? ID["Уголь"] : o < .018 ? ID["Железо"] : o < .021 && y < 8 ? ID["Золото"] : o < .023 && y < 5 ? ID["Алмаз"] : o < .03 ? ID["Гравий"] : ID["Камень"]; }
+          else if (y < h) t = h <= WATER_Y + 1 ? ID["Песок"] : h > 22 ? ID["Камень"] : ID["Земля"];
+          else t = h <= WATER_Y + 1 ? ID["Песок"] : h > 24 ? ID["Снег"] : h > 21 ? ID["Камень"] : ID["Трава"];
+          world[wi(x, y, z)] = t;
+        }
+        for (let y = h + 1; y <= WATER_Y; y++) world[wi(x, y, z)] = y === WATER_Y && fbm(x, z, seed + 9) > .72 ? ID["Лёд"] : WATER;
+      }
+      // trees, cacti, pumpkins, melons
+      for (let i = 0; i < 90; i++) {
+        const x = 3 + ((R() * (SX - 6)) | 0), z = 3 + ((R() * (SZ - 6)) | 0); let y = SY - 1; while (y > 0 && !get(x, y, z)) y--;
+        const top = get(x, y, z);
+        if (top === ID["Трава"] && R() < .85) {
+          const birch = R() < .35, logT = birch ? ID["Берёза"] : ID["Дуб"], hgt = 4 + ((R() * 2) | 0);
+          for (let k = 1; k <= hgt; k++) world[wi(x, y + k, z)] = logT;
+          for (let dy = hgt - 2; dy <= hgt + 1; dy++) { const rad = dy > hgt ? 1 : 2; for (let dx = -rad; dx <= rad; dx++) for (let dz = -rad; dz <= rad; dz++) { if (Math.abs(dx) === rad && Math.abs(dz) === rad && R() < .6) continue; const yy = y + dy; if (yy < SY && !get(x + dx, yy, z + dz)) world[wi(x + dx, yy, z + dz)] = ID["Листва"]; } }
+        } else if (top === ID["Песок"] && y > WATER_Y && R() < .5) { for (let k = 1; k <= 2 + ((R() * 2) | 0); k++) world[wi(x, y + k, z)] = ID["Кактус"]; }
+        else if (top === ID["Трава"]) world[wi(x, y + 1, z)] = R() < .5 ? ID["Тыква"] : ID["Арбуз"];
+      }
+      for (const k in mods) { const [x, y, z] = k.split(",").map(Number); if (x >= 0 && y >= 0 && z >= 0 && x < SX && y < SY && z < SZ) world[wi(x, y, z)] = mods[k]; }
+    }
+    // ---------- three.js ----------
+    let THREE = null, r3 = null, scene, cam, matSolid, matWater, chunks = {}, hl = null, sun, hemi, ready = false, loading = false, failed = false, night = false;
+    const FACES = [
+      { d: [-1, 0, 0], c: [[0, 1, 0], [0, 0, 0], [0, 1, 1], [0, 0, 1]], uv: [[0, 1], [0, 0], [1, 1], [1, 0]], f: "side", sh: .8 },
+      { d: [1, 0, 0], c: [[1, 1, 1], [1, 0, 1], [1, 1, 0], [1, 0, 0]], uv: [[0, 1], [0, 0], [1, 1], [1, 0]], f: "side", sh: .8 },
+      { d: [0, -1, 0], c: [[1, 0, 1], [0, 0, 1], [1, 0, 0], [0, 0, 0]], uv: [[1, 0], [0, 0], [1, 1], [0, 1]], f: "bottom", sh: .55 },
+      { d: [0, 1, 0], c: [[0, 1, 1], [1, 1, 1], [0, 1, 0], [1, 1, 0]], uv: [[1, 1], [0, 1], [1, 0], [0, 0]], f: "top", sh: 1 },
+      { d: [0, 0, -1], c: [[1, 0, 0], [0, 0, 0], [1, 1, 0], [0, 1, 0]], uv: [[0, 0], [1, 0], [0, 1], [1, 1]], f: "side", sh: .7 },
+      { d: [0, 0, 1], c: [[0, 0, 1], [1, 0, 1], [0, 1, 1], [1, 1, 1]], uv: [[0, 0], [1, 0], [0, 1], [1, 1]], f: "side", sh: .9 },
+    ];
+    function load3() {
+      if (window.THREE) return Promise.resolve(window.THREE);
+      return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; sc.async = true; sc.onload = () => (window.THREE ? res(window.THREE) : rej()); sc.onerror = rej; document.head.appendChild(sc); });
+    }
+    function init() {
+      if (ready || loading) return; loading = true;
+      $("#vcOvText").textContent = "Загружаю мир…";
+      load3().then((T3) => {
+        THREE = T3; loading = false;
+        try { build(); ready = true; $("#vcOvText").textContent = "Левый круг — ходить, свайп по экрану — смотреть. ⛏️ — ломать, 🧱 — ставить блок, ⬆️ — прыжок, 🕊️ — полёт."; }
+        catch (e) { failed = true; $("#vcOvText").textContent = "Не получилось запустить 3D на этом устройстве."; }
+      }).catch(() => { loading = false; failed = true; $("#vcOvText").textContent = "Не удалось загрузить 3D. Проверь интернет и зайди ещё раз."; });
+    }
+    function build() {
+      makeAtlas(); hotbar();
+      const tex = new THREE.CanvasTexture(atlas); tex.magFilter = THREE.NearestFilter; tex.minFilter = THREE.NearestFilter; tex.generateMipmaps = false;
+      matSolid = new THREE.MeshBasicMaterial({ map: tex, vertexColors: true, alphaTest: .5 });
+      matWater = new THREE.MeshBasicMaterial({ map: tex, vertexColors: true, transparent: true, opacity: .72, depthWrite: false });
+      const canvas = document.createElement("canvas"); stage.insertBefore(canvas, stage.firstChild);
+      r3 = new THREE.WebGLRenderer({ canvas, antialias: false }); r3.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      scene = new THREE.Scene(); scene.background = new THREE.Color(0x8fcbe8); scene.fog = new THREE.Fog(0x8fcbe8, 28, 60);
+      cam = new THREE.PerspectiveCamera(72, 1, .08, 120);
+      hl = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.004, 1.004, 1.004)), new THREE.LineBasicMaterial({ color: 0x111111 })); scene.add(hl);
+      // sun and clouds
+      sun = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshBasicMaterial({ color: 0xfff4b0, fog: false })); scene.add(sun);
+      const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .85 });
+      for (let i = 0; i < 14; i++) { const c = new THREE.Mesh(new THREE.BoxGeometry(4 + Math.random() * 6, 1, 3 + Math.random() * 4), cloudMat); c.position.set(Math.random() * 90 - 13, SY + 6, Math.random() * 90 - 13); c.userData.cloud = true; scene.add(c); }
+      for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz);
+      resize();
+    }
+    function rebuild(cx, cz) {
+      const key = cx + "," + cz, old = chunks[key];
+      if (old) { old.forEach((m) => { scene.remove(m); m.geometry.dispose(); }); }
+      const out = [[], []]; // solid, water
+      const atlW = COLS * PX, atlH = ROWS * PX, eps = .5 / atlW, epsV = .5 / atlH;
+      for (let y = 0; y < SY; y++) for (let z = cz * CH; z < cz * CH + CH; z++) for (let x = cx * CH; x < cx * CH + CH; x++) {
+        const t = world[wi(x, y, z)]; if (!t) continue;
+        const k = kind(t), W = k === "w" ? 1 : 0, A = out[W];
+        for (const F of FACES) {
+          const n = get(x + F.d[0], y + F.d[1], z + F.d[2]);
+          if (n) { const nk = kind(n); if (nk === "s" || nk === "l") continue; if (n === t && (k === "w" || k === "c" && t !== ID["Листва"])) continue; if (k === "w" && nk !== "w" && n !== 0 && solid(n) && nk !== "c") continue; }
+          if (k === "w" && F.d[1] === -1) continue;
+          const ti = faceTile(t, F.f), tu = (ti % COLS) * PX / atlW, tv = Math.floor(ti / COLS) * PX / atlH, du = PX / atlW, dv = PX / atlH;
+          const lit = k === "l" ? 1.15 : F.sh * (y < 4 ? .8 : 1);
+          const base = A.length ? A[A.length - 1].i + 4 : 0;
+          const q = { p: [], u: [], c: [], i: base };
+          const topDrop = k === "w" && F.d[1] === 1 && get(x, y + 1, z) !== WATER ? .12 : 0;
+          F.c.forEach((cn, j) => { q.p.push(x + cn[0], y + cn[1] - (cn[1] === 1 ? topDrop : 0), z + cn[2]); q.u.push(tu + (F.uv[j][0] ? du - eps : eps), 1 - (tv + (F.uv[j][1] ? eps : dv - epsV))); q.c.push(lit, lit, lit); });
+          A.push(q);
+        }
+      }
+      const meshes = out.map((A, W) => {
+        const pos = new Float32Array(A.length * 12), uv = new Float32Array(A.length * 8), col = new Float32Array(A.length * 12), ind = new Uint32Array(A.length * 6);
+        A.forEach((q, n) => { pos.set(q.p, n * 12); uv.set(q.u, n * 8); col.set(q.c, n * 12); const b = n * 4; ind.set([b, b + 1, b + 2, b + 2, b + 1, b + 3], n * 6); });
+        const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); g.setAttribute("color", new THREE.BufferAttribute(col, 3)); g.setIndex(new THREE.BufferAttribute(ind, 1));
+        g.computeBoundingSphere();
+        const m = new THREE.Mesh(g, W ? matWater : matSolid); if (W) m.renderOrder = 2; scene.add(m); return m;
+      });
+      chunks[key] = meshes;
+    }
+    function setBlock(x, y, z, t) {
+      if (x < 0 || z < 0 || x >= SX || z >= SZ || y < 1 || y >= SY) return false;
+      world[wi(x, y, z)] = t; mods[x + "," + y + "," + z] = t; saveSoon();
+      const cx = Math.floor(x / CH), cz = Math.floor(z / CH); rebuild(cx, cz);
+      if (x % CH === 0 && cx > 0) rebuild(cx - 1, cz); if (x % CH === CH - 1 && cx < SX / CH - 1) rebuild(cx + 1, cz);
+      if (z % CH === 0 && cz > 0) rebuild(cx, cz - 1); if (z % CH === CH - 1 && cz < SZ / CH - 1) rebuild(cx, cz + 1);
+      return true;
+    }
+    let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); store.set("vcMods", mods); store.set("vcSeed", seed); } catch (e) { /* storage full is fine */ } }, 800); }
+    // ---------- player ----------
+    const P = { x: SX / 2 + .5, y: 30, z: SZ / 2 + .5, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: -.2, fly: false, ground: false };
+    let cur = ID["Трава"], mv = { x: 0, z: 0 }, keys = {}, raf = 0, last = 0, playing = false;
+    function spawn() {
+      // nearest grass column to the centre of the world, with room to stand
+      let best = [SX / 2, SZ / 2], bd = 1e9;
+      for (let z = 4; z < SZ - 4; z++) for (let x = 4; x < SX - 4; x++) { let y = SY - 1; while (y > 0 && !get(x, y, z)) y--; if (get(x, y, z) !== ID["Трава"]) continue; const d = Math.hypot(x - SX / 2, z - SZ / 2); if (d < bd) { bd = d; best = [x, z]; } }
+      const [x, z] = best; let y = SY - 1; while (y > 0 && !solid(get(x, y, z))) y--; P.x = x + .5; P.z = z + .5; P.y = y + 1.01; P.vx = P.vy = P.vz = 0;
+    }
+    const HW = .3, PH = 1.7, EYE = 1.55;
+    function collide(nx, ny, nz) { for (let y = Math.floor(ny); y <= Math.floor(ny + PH - .01); y++) for (let z = Math.floor(nz - HW); z <= Math.floor(nz + HW); z++) for (let x = Math.floor(nx - HW); x <= Math.floor(nx + HW); x++) if (solid(get(x, y, z))) return true; return false; }
+    function physics(dt) {
+      const inWater = get(Math.floor(P.x), Math.floor(P.y + .4), Math.floor(P.z)) === WATER;
+      const f = { x: -Math.sin(P.yaw), z: -Math.cos(P.yaw) }, rt = { x: Math.cos(P.yaw), z: -Math.sin(P.yaw) };
+      let ix = mv.x + (keys.d ? 1 : 0) - (keys.a ? 1 : 0), iz = mv.z + (keys.w ? 1 : 0) - (keys.s ? 1 : 0); const len = Math.hypot(ix, iz); if (len > 1) { ix /= len; iz /= len; }
+      const sp = P.fly ? 9 : inWater ? 2.6 : 4.4;
+      P.vx = (f.x * iz + rt.x * ix) * sp; P.vz = (f.z * iz + rt.z * ix) * sp;
+      if (P.fly) { P.vy = (jumpHeld || keys[" "] ? 7 : 0) - (keys.shift ? 7 : 0); }
+      else if (inWater) { P.vy = Math.max(P.vy - 9 * dt, -2.5); if (jumpHeld || keys[" "]) P.vy = 3; }
+      else { P.vy -= 26 * dt; if ((jumpHeld || keys[" "]) && P.ground) { P.vy = 8.4; P.ground = false; } }
+      P.vy = Math.max(P.vy, -40);
+      const step = (axis, dv) => { const n = { x: P.x, y: P.y, z: P.z }; n[axis] += dv; if (!collide(n.x, n.y, n.z)) { P[axis] = n[axis]; return false; } return true; };
+      step("x", P.vx * dt); step("z", P.vz * dt);
+      const hitY = step("y", P.vy * dt); if (hitY) { if (P.vy < 0) P.ground = true; P.vy = 0; } else P.ground = false;
+      if (P.y < -10) spawn();
+      P.x = Math.max(.4, Math.min(SX - .4, P.x)); P.z = Math.max(.4, Math.min(SZ - .4, P.z));
+    }
+    // voxel ray (DDA) from the eye along the view direction
+    function pick() {
+      const ox = P.x, oy = P.y + EYE, oz = P.z, dx = -Math.sin(P.yaw) * Math.cos(P.pitch), dy = Math.sin(P.pitch), dz = -Math.cos(P.yaw) * Math.cos(P.pitch);
+      let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz); const sx = Math.sign(dx), sy = Math.sign(dy), sz = Math.sign(dz);
+      const tdx = Math.abs(1 / dx), tdy = Math.abs(1 / dy), tdz = Math.abs(1 / dz);
+      let tx = (sx > 0 ? x + 1 - ox : ox - x) * tdx, ty = (sy > 0 ? y + 1 - oy : oy - y) * tdy, tz = (sz > 0 ? z + 1 - oz : oz - z) * tdz;
+      let prev = null;
+      for (let i = 0; i < 40; i++) {
+        const t = get(x, y, z);
+        if (t && t !== WATER && y >= 0 && y < SY) return { x, y, z, t, prev };
+        prev = [x, y, z];
+        if (tx < ty && tx < tz) { if (tx > 7) break; x += sx; tx += tdx; } else if (ty < tz) { if (ty > 7) break; y += sy; ty += tdy; } else { if (tz > 7) break; z += sz; tz += tdz; }
+      }
+      return null;
+    }
+    let AC = null;
+    function snd(f, d, type) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "square"; o.frequency.value = f; g.gain.setValueAtTime(.08, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) { /* no sound */ } }
+    function doBreak() {
+      const h = pick(); if (!h || h.t === BEDROCK) { if (h) Hero.say("craft", "bad", "Коренную породу не сломать!"); return; }
+      if (h.t === TNT) { explode(h.x, h.y, h.z); return; }
+      setBlock(h.x, h.y, h.z, 0); snd(180 + Math.random() * 60, .08);
+    }
+    function explode(x0, y0, z0) {
+      const rad = 3.2; const touched = new Set();
+      for (let y = y0 - 4; y <= y0 + 4; y++) for (let z = z0 - 4; z <= z0 + 4; z++) for (let x = x0 - 4; x <= x0 + 4; x++) {
+        if (Math.hypot(x - x0, y - y0, z - z0) > rad || y < 1 || x < 0 || z < 0 || x >= SX || z >= SZ || y >= SY) continue;
+        const t = world[wi(x, y, z)]; if (!t || t === BEDROCK) continue;
+        world[wi(x, y, z)] = 0; mods[x + "," + y + "," + z] = 0; touched.add(Math.floor(x / CH) + "," + Math.floor(z / CH));
+      }
+      touched.forEach((k) => { const [a, b] = k.split(",").map(Number); rebuild(a, b); }); saveSoon();
+      snd(60, .6, "sawtooth"); shake = .5; Hero.say("craft", "good", "БУМ! 💥 TNT взорвался!");
+    }
+    function doPlace() {
+      const h = pick(); if (!h || !h.prev) return;
+      const [x, y, z] = h.prev;
+      // don't place inside yourself
+      if (solid(cur) && x + 1 > P.x - HW && x < P.x + HW && z + 1 > P.z - HW && z < P.z + HW && y + 1 > P.y && y < P.y + PH) return;
+      if (setBlock(x, y, z, cur)) { placed++; store.set("vcPlaced", placed); $("#vcPlaced").textContent = placed; snd(420, .06); if (placed % 50 === 0) { Hero.earn(10); Hero.say("craft", "win", `${placed} блоков поставлено! +10 монет`); } }
+    }
+    let shake = 0;
+    // ---------- controls ----------
+    let jumpHeld = false, look = null, joy = null;
+    const joyEl = $("#vcJoy"), knob = joyEl.querySelector("i");
+    joyEl.addEventListener("pointerdown", (e) => { e.stopPropagation(); joy = { id: e.pointerId }; try { joyEl.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } moveJoy(e); });
+    joyEl.addEventListener("pointermove", (e) => { if (joy && e.pointerId === joy.id) moveJoy(e); });
+    const endJoy = (e) => { if (joy && e.pointerId === joy.id) { joy = null; mv.x = mv.z = 0; knob.style.transform = ""; } };
+    joyEl.addEventListener("pointerup", endJoy); joyEl.addEventListener("pointercancel", endJoy);
+    function moveJoy(e) { const r = joyEl.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const m = r.width / 2 - 10, l = Math.hypot(dx, dy); if (l > m) { dx *= m / l; dy *= m / l; } knob.style.transform = `translate(${dx}px, ${dy}px)`; mv.x = dx / m; mv.z = -dy / m; }
+    stage.addEventListener("pointerdown", (e) => { if (!playing || e.target.closest(".vc-btns, .vc-joy, .overlay")) return; look = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, btn: e.button }; try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
+    stage.addEventListener("pointermove", (e) => { if (!look || e.pointerId !== look.id) return; const dx = e.clientX - look.x, dy = e.clientY - look.y; if (Math.abs(dx) + Math.abs(dy) > 3) look.moved = true; look.x = e.clientX; look.y = e.clientY; P.yaw -= dx * .006; P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch - dy * .006)); });
+    stage.addEventListener("pointerup", (e) => { if (!look || e.pointerId !== look.id) return; const l = look; look = null; if (!l.moved && e.pointerType === "mouse") { if (l.btn === 2) doPlace(); else doBreak(); } });
+    stage.addEventListener("contextmenu", (e) => e.preventDefault());
+    const hold = (el, down, up) => { el.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); down(); }); if (up) { el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("pointerleave", up); } };
+    hold($("#vcJump"), () => { jumpHeld = true; }, () => { jumpHeld = false; });
+    let breakRep = 0, placeRep = 0;
+    hold($("#vcBreak"), () => { doBreak(); clearInterval(breakRep); breakRep = setInterval(doBreak, 260); }, () => clearInterval(breakRep));
+    hold($("#vcPlace"), () => { doPlace(); clearInterval(placeRep); placeRep = setInterval(doPlace, 300); }, () => clearInterval(placeRep));
+    hold($("#vcFly"), () => { P.fly = !P.fly; $("#vcFly").classList.toggle("on", P.fly); Hero.say("craft", "start", P.fly ? "Режим полёта! ⬆️ — вверх" : "Полёт выключен"); });
+    window.addEventListener("keydown", (e) => { if (current !== "craft" || (e.target && e.target.closest && e.target.closest("input,textarea"))) return; const k = e.key.toLowerCase(); const map = { ц: "w", ф: "a", ы: "s", в: "d" }; keys[map[k] || k] = true; if (k === "f" || k === "а") { P.fly = !P.fly; $("#vcFly").classList.toggle("on", P.fly); } if (k === " ") e.preventDefault(); const n = parseInt(k, 10); if (n >= 1 && n <= 9) selectBlock(HOTBAR[n - 1]); });
+    window.addEventListener("keyup", (e) => { const k = e.key.toLowerCase(); const map = { ц: "w", ф: "a", ы: "s", в: "d" }; keys[map[k] || k] = false; });
+    // ---------- hotbar ----------
+    function hotbar() {
+      const box = $("#vcHot"); box.innerHTML = "";
+      HOTBAR.forEach((t) => {
+        const b = document.createElement("button"); b.type = "button"; b.dataset.t = t; b.title = BL[t][0];
+        const c = document.createElement("canvas"); c.width = 16; c.height = 16; const g = c.getContext("2d"); const ti = faceTile(t, "side"); g.drawImage(atlas, (ti % COLS) * PX, Math.floor(ti / COLS) * PX, PX, PX, 0, 0, 16, 16);
+        b.appendChild(c); b.appendChild(document.createTextNode(BL[t][0].length > 9 ? BL[t][0].slice(0, 8) + "…" : BL[t][0]));
+        b.addEventListener("click", () => selectBlock(t)); box.appendChild(b);
+      });
+      selectBlock(cur);
+    }
+    function selectBlock(t) { if (!t) return; cur = t; $("#vcBlockName").textContent = "🧱 " + BL[t][0]; $$("#vcHot button").forEach((b) => b.classList.toggle("on", +b.dataset.t === t)); }
+    $("#vcStart").addEventListener("click", () => { if (!ready) { init(); return; } ov.hidden = true; playing = true; Hero.say("craft", "start", "Добро пожаловать в V3 Craft! Ломай и строй."); });
+    $("#vcSpawn").addEventListener("click", spawn);
+    $("#vcReset").addEventListener("click", () => { if (!confirm("Создать новый мир? Все постройки пропадут.")) return; mods = {}; seed = (Math.random() * 1e6) | 0; store.set("vcMods", mods); store.set("vcSeed", seed); generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); spawn(); Hero.say("craft", "good", "Новый мир создан! 🌍"); });
+    $("#vcDay").addEventListener("click", () => { night = !night; $("#vcDay").textContent = night ? "☀️ День" : "🌙 Ночь"; });
+    function resize() { if (!r3) return; const w = stage.clientWidth || 360, h = stage.clientHeight || 480; r3.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+    window.addEventListener("resize", () => { if (current === "craft") resize(); });
+    function frame(now) {
+      raf = 0; if (current !== "craft") return;
+      const dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
+      if (ready) {
+        if (playing) physics(dt);
+        const sk = shake > 0 ? (shake -= dt, (Math.random() - .5) * shake * .3) : 0;
+        cam.position.set(P.x + sk, P.y + EYE + sk, P.z); cam.rotation.order = "YXZ"; cam.rotation.set(P.pitch, P.yaw, 0);
+        const sky = night ? 0x0d1430 : 0x8fcbe8; scene.background.setHex(sky); scene.fog.color.setHex(sky);
+        matSolid.color.setScalar(night ? .45 : 1); matWater.color.setScalar(night ? .45 : 1);
+        sun.material.color.setHex(night ? 0xe8eeff : 0xfff4b0); sun.position.set(P.x + 30, P.y + 40, P.z - 20); sun.lookAt(cam.position);
+        scene.children.forEach((c) => { if (c.userData.cloud) { c.position.x += dt * .6; if (c.position.x > SX + 20) c.position.x = -20; } });
+        const h = playing ? pick() : null; hl.visible = !!h; if (h) hl.position.set(h.x + .5, h.y + .5, h.z + .5);
+        $("#vcPos").textContent = `x ${Math.floor(P.x)} · y ${Math.floor(P.y)} · z ${Math.floor(P.z)}`;
+        r3.render(scene, cam);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    mods = store.get("vcMods", {}); if (!mods || typeof mods !== "object") mods = {};
+    generate(); spawn();
+    $("#vcPlaced").textContent = placed;
+    return {
+      enter() { init(); resize(); last = 0; if (!raf) raf = requestAnimationFrame(frame); setTimeout(resize, 50); },
+      leave() { playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
+      key() {},
+      best: () => String(placed),
     };
   })();
 
@@ -8999,8 +9403,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
   let current = "hub";
 
   function updateHub() {
@@ -9019,6 +9423,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubDress").textContent = Dress.best();
     $("#hubCook").textContent = Cook.best();
     $("#hubMine").textContent = Mine.best();
+    $("#hubCraft").textContent = Craft.best();
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
   }
@@ -9035,7 +9440,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
