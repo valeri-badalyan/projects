@@ -356,6 +356,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .vc-rec small { display: block; color: var(--muted); font-size: 11px; }
 .vc-rec b { font-size: 13px; }
 .vc-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.vc-mp { position: absolute; inset: 0; z-index: 7; background: rgba(10,10,20,.9); display: flex; flex-direction: column; gap: 10px; padding: 14px; overflow-y: auto; color: #fff; }
+.vc-mp[hidden] { display: none; }
+.vc-mp h3 { margin: 0; font-family: var(--display); color: var(--amber); font-size: 18px; }
+.vc-mp .code { font: 900 34px var(--mono); letter-spacing: 6px; text-align: center; color: #5ce1e6; }
+.vc-mp p { margin: 0; font-size: 13px; line-height: 1.4; color: #dfe2f0; }
+.vc-mp .row { display: flex; gap: 6px; }
+.vc-mp input { flex: 1; min-width: 0; padding: 9px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font: 800 15px var(--mono); }
+.vc-mp textarea { width: 100%; min-height: 70px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-size: 12px; padding: 8px; resize: none; }
+.vc-mp .who { display: flex; flex-wrap: wrap; gap: 6px; }
+.vc-mp .who span { padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #12132a; }
+.vc-mp .err { color: #ff8a8a; }
 .vc-acts .btn { padding: 9px 4px; font-size: 12.5px; }
 /* ---------- My Mine (RTS) ---------- */
 .mm-res { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
@@ -1689,6 +1700,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="vc-prog" id="vcProg"></div>
       <div class="vc-hurt" id="vcHurt"></div>
       <div class="vc-toast" id="vcToast" style="opacity:0"></div>
+      <div class="vc-mp" id="vcMP" hidden>
+        <div class="row" style="justify-content:space-between;align-items:center"><h3>👥 Мультиплеер</h3><button class="btn ghost" type="button" id="vcMPClose">✕</button></div>
+        <p id="vcMPStatus">Подключаюсь…</p>
+        <div class="code" id="vcMPCode">—</div>
+        <textarea id="vcMPInvite" readonly aria-label="Приглашение"></textarea>
+        <div class="row"><button class="btn" type="button" id="vcMPCopy">📋 Скопировать ссылку</button><button class="btn ghost" type="button" id="vcMPNew">🔄 Новая комната</button></div>
+        <p>Есть код от друга? Введи его:</p>
+        <div class="row"><input id="vcMPInput" inputmode="numeric" maxlength="4" placeholder="1234" aria-label="Код комнаты"><button class="btn" type="button" id="vcMPJoin">Войти</button></div>
+        <div class="who" id="vcMPWho"></div>
+        <button class="btn ghost" type="button" id="vcMPLeave" hidden>🚪 Выйти из комнаты</button>
+      </div>
       <div class="vc-inv" id="vcInv" hidden>
         <div class="tabs" id="vcInvTabs"><button type="button" data-tab="inv" aria-pressed="true">🎒 Инвентарь</button><button type="button" data-tab="craft">🛠️ Крафт</button><button type="button" data-tab="smelt">🔥 Печь</button><button type="button" data-tab="cat">📚 Каталог</button><button type="button" class="x" id="vcInvClose">✕</button></div>
         <div id="vcInvBody"></div>
@@ -1708,6 +1730,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <div class="vc-acts">
       <button class="btn" type="button" id="vcInvBtn">🎒 Инвентарь</button>
       <button class="btn ghost" type="button" id="vcMode">⚔️ Выживание</button>
+      <button class="btn" type="button" id="vcMPBtn">👥 Мультиплеер</button>
       <button class="btn ghost" type="button" id="vcDay">🌙 Ночь</button>
       <button class="btn ghost" type="button" id="vcSpawn">🏠 На спавн</button>
       <button class="btn ghost" type="button" id="vcReset">🌍 Новый мир</button>
@@ -7356,15 +7379,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       });
       chunks[key] = meshes;
     }
-    function setBlock(x, y, z, t) {
+    function setBlock(x, y, z, t, remote) {
       if (x < 0 || z < 0 || x >= SX || z >= SZ || y < 1 || y >= SY) return false;
       world[wi(x, y, z)] = t; mods[x + "," + y + "," + z] = t; saveSoon();
+      if (!remote && mp.room) mpEdit([x, y, z, t]);
       const cx = Math.floor(x / CH), cz = Math.floor(z / CH); rebuild(cx, cz);
       if (x % CH === 0 && cx > 0) rebuild(cx - 1, cz); if (x % CH === CH - 1 && cx < SX / CH - 1) rebuild(cx + 1, cz);
       if (z % CH === 0 && cz > 0) rebuild(cx, cz - 1); if (z % CH === CH - 1 && cz < SZ / CH - 1) rebuild(cx, cz + 1);
       return true;
     }
-    let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); store.set("vcMods", mods); store.set("vcSeed", seed); } catch (e) { /* storage full is fine */ } }, 800); }
+    let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); if (mp.room) store.set("vcMP_" + mp.code, mods); else { store.set("vcMods", mods); store.set("vcSeed", seed); } } catch (e) { /* storage full is fine */ } }, 800); }
+    const mp = { room: null, code: "", seq: 0, edits: [], seen: {}, avatars: new Map(), sendT: 0, joining: false };
     // ---------- player ----------
     const P = { x: SX / 2 + .5, y: 30, z: SZ / 2 + .5, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: -.2, fly: false, ground: false };
     let mv = { x: 0, z: 0 }, keys = {}, raf = 0, last = 0, playing = false, lights = null;
@@ -7411,7 +7436,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     let AC = null;
     function snd(f, d, type) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "square"; o.frequency.value = f; g.gain.setValueAtTime(.08, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) { /* no sound */ } }
-    function explode(x0, y0, z0) {
+    function explode(x0, y0, z0, remote) {
+      if (!remote && mp.room) mpEdit(["boom", x0, y0, z0]);
       const rad = 3.2; const touched = new Set();
       for (let y = y0 - 4; y <= y0 + 4; y++) for (let z = z0 - 4; z <= z0 + 4; z++) for (let x = x0 - 4; x <= x0 + 4; x++) {
         if (Math.hypot(x - x0, y - y0, z - z0) > rad || y < 1 || x < 0 || z < 0 || x >= SX || z >= SZ || y >= SY) continue;
@@ -7568,6 +7594,105 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function setMode(m) { mode = m; $("#vcMode").textContent = mode === "creative" ? "✨ Творчество" : "⚔️ Выживание"; $("#vcFly").hidden = mode !== "creative"; if (mode !== "creative") { P.fly = false; $("#vcFly").classList.remove("on"); } hearts(); saveInv(); if (!$("#vcInv").hidden) renderInv(); }
     $("#vcMode").addEventListener("click", () => { setMode(mode === "creative" ? "survival" : "creative"); toast(mode === "creative" ? "Творчество: всё бесконечно, мобы не страшны" : "Выживание: добывай, крафти, берегись мобов"); });
 
+    // ================= multiplayer (artifact room) =================
+    const ART_URL = "https://claude.ai/artifact/Y2tbWL525tX88PofC6v8N2";
+    const COLORS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
+    const myColor = COLORS[(Math.random() * COLORS.length) | 0];
+    function mpEdit(e) { mp.seq++; mp.edits.push([mp.seq, ...e]); if (mp.edits.length > 70) mp.edits.shift(); }
+    function inviteText() { return `Играем вместе в V3 Craft! Открой ${ART_URL} → V3 Craft → 👥 Мультиплеер → введи код ${mp.code}`; }
+    async function copyText(t) {
+      try { await navigator.clipboard.writeText(t); return true; } catch (e) { /* fall back below */ }
+      try { const ta = $("#vcMPInvite"); ta.value = t; ta.focus(); ta.select(); return document.execCommand("copy"); } catch (e) { return false; }
+    }
+    function mpStatus(t, err) { const el = $("#vcMPStatus"); el.textContent = t; el.classList.toggle("err", !!err); }
+    function mpUI() {
+      $("#vcMPCode").textContent = mp.room ? mp.code : "—"; $("#vcMPInvite").value = mp.room ? inviteText() : "";
+      $("#vcMPLeave").hidden = !mp.room; $("#vcMPCopy").disabled = !mp.room;
+      $("#vcMPBtn").textContent = mp.room ? `👥 Комната ${mp.code}` : "👥 Мультиплеер";
+      const who = $("#vcMPWho"); who.innerHTML = "";
+      if (mp.room) mp.room.peers().forEach((pr) => { const sp = document.createElement("span"); sp.style.background = (pr.presence && pr.presence.c) || "#ccc"; sp.textContent = (pr.isMe ? "Ты: " : "") + ((pr.presence && pr.presence.n) || "Игрок"); who.appendChild(sp); });
+    }
+    async function mpJoin(code, copy) {
+      if (mp.joining) return; mp.joining = true;
+      code = String(code).replace(/\D/g, "").slice(0, 4);
+      if (code.length !== 4) { mpStatus("Код — это 4 цифры.", true); mp.joining = false; return; }
+      mpStatus("Подключаюсь к комнате " + code + "…");
+      let api = null;
+      try { api = window.claude && typeof window.claude.use === "function" ? await window.claude.use("room") : null; } catch (e) { api = null; }
+      if (!api) { mpStatus("Мультиплеер работает только на опубликованной странице V3 Games для тех, у кого есть доступ к ней по приглашению. По открытой ссылке войти в комнату нельзя — так устроена платформа.", true); mp.joining = false; return; }
+      try {
+        if (mp.room) await mpLeave(true);
+        const nr = await api.join("v3craft-" + code);
+        mp.room = nr; mp.code = code; mp.seq = 0; mp.edits = []; mp.seen = {};
+        // everyone in the same room plays the same freshly generated world
+        seed = 700000 + (+code) * 37; mods = store.get("vcMP_" + code, {}) || {}; generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz);
+        mobs.slice().forEach(removeMob); spawn();
+        nr.onPeers(() => mpUI(), () => { mpStatus("Связь с комнатой потеряна. Попробуй войти снова.", true); mpLeave(true); });
+        mpStatus("Ты в комнате! Отправь другу ссылку и код. Мир у всех в комнате общий.");
+        if (copy) { const ok = await copyText(inviteText()); mpStatus(ok ? "✅ Ссылка с кодом скопирована! Отправь её другу." : "Скопируй приглашение ниже и отправь другу.", false); }
+        Hero.say("craft", "good", `Комната ${code}: зови друзей!`);
+      } catch (e) {
+        const c = e && e.code;
+        mpStatus(c === "not_permitted" || c === "not_granted" ? "Тебе нельзя в комнаты на этой странице. Мультиплеер работает для тех, кого владелец пригласил в страницу по почте (кнопка «Поделиться»)." : c === "limit_reached" ? "Сейчас нельзя открыть ещё одну комнату. Попробуй позже." : "Не получилось подключиться. Попробуй ещё раз.", true);
+      }
+      mp.joining = false; mpUI();
+    }
+    async function mpLeave(silent) {
+      const nr = mp.room; mp.room = null;
+      mp.avatars.forEach((a2) => { scene && scene.remove(a2.g); }); mp.avatars.clear();
+      if (nr) { try { await nr.leave(); } catch (e) { /* already gone */ } }
+      if (!silent) {
+        seed = store.get("vcSeed", seed); mods = store.get("vcMods", {}) || {}; generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); spawn();
+        mpStatus("Ты вышел из комнаты — снова твой собственный мир."); Hero.say("craft", "start", "Вернулись в твой мир.");
+      }
+      mpUI();
+    }
+    function nameSprite(text, color) {
+      const c = document.createElement("canvas"); c.width = 256; c.height = 64; const g = c.getContext("2d");
+      g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(0, 8, 256, 48); g.font = "bold 32px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = color; g.fillText(text.slice(0, 14), 128, 33);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), depthTest: false })); sp.scale.set(1.6, .4, 1); return sp;
+    }
+    function avatar(color, name) {
+      const g = new THREE.Group(), col = new THREE.Color(color).getHex();
+      box(g, .5, .5, .5, 0, 1.65, 0, 0xf0c8a8); box(g, .52, .18, .52, 0, 1.86, 0, 0x3a2416);
+      box(g, .1, .08, .02, -.12, 1.68, .26, 0x2a2a6a, true); box(g, .1, .08, .02, .12, 1.68, .26, 0x2a2a6a, true);
+      box(g, .5, .7, .26, 0, 1.05, 0, col);
+      const arms = [-.36, .36].map((x) => { const a2 = new THREE.Group(); a2.position.set(x, 1.38, 0); box(a2, .2, .66, .2, 0, -.3, 0, col); g.add(a2); return a2; });
+      const legs = [-.13, .13].map((x) => { const l = new THREE.Group(); l.position.set(x, .7, 0); box(l, .22, .7, .22, 0, -.35, 0, 0x2f5aa8); g.add(l); return l; });
+      const label = nameSprite(name, color); label.position.y = 2.25; g.add(label);
+      return { g, arms, legs, label, name, x: 0, y: 0, z: 0 };
+    }
+    function mpTick(dt, t) {
+      if (!mp.room) return;
+      mp.sendT -= dt;
+      if (mp.sendT <= 0) {
+        mp.sendT = .1; const h2 = held();
+        mp.room.presence({ n: (Hero.name() || "Игрок").slice(0, 14), c: myColor, p: [+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), +P.yaw.toFixed(2)], s: mp.seq, e: mp.edits, h: h2 ? String(h2.id) : "" }).catch(() => {});
+      }
+      const live = new Set();
+      mp.room.peers().forEach((pr) => {
+        if (pr.isMe) return; const ps = pr.presence || {}; live.add(pr.peer);
+        // apply this player's block changes we haven't seen yet
+        const seen = mp.seen[pr.peer] || 0, edits = Array.isArray(ps.e) ? ps.e : [];
+        edits.forEach((e) => { if (!Array.isArray(e) || !(e[0] > seen)) return; if (e[1] === "boom") explode(e[2] | 0, e[3] | 0, e[4] | 0, true); else { const tt = e[4] | 0; if (tt >= 0 && tt < BL.length) setBlock(e[1] | 0, e[2] | 0, e[3] | 0, tt, true); } });
+        if (typeof ps.s === "number") mp.seen[pr.peer] = Math.max(seen, ps.s);
+        if (!Array.isArray(ps.p)) return;
+        let av = mp.avatars.get(pr.peer);
+        const nm = String(ps.n || "Игрок"), cl = /^#[0-9a-f]{6}$/i.test(ps.c) ? ps.c : "#cccccc";
+        if (!av || av.name !== nm) { if (av) scene.remove(av.g); av = avatar(cl, nm); av.x = ps.p[0]; av.y = ps.p[1]; av.z = ps.p[2]; scene.add(av.g); mp.avatars.set(pr.peer, av); }
+        const tx = +ps.p[0] || 0, ty = +ps.p[1] || 0, tz = +ps.p[2] || 0, k = Math.min(1, dt * 10), moving = Math.hypot(tx - av.x, tz - av.z) > .02;
+        av.x += (tx - av.x) * k; av.y += (ty - av.y) * k; av.z += (tz - av.z) * k;
+        av.g.position.set(av.x, av.y, av.z); av.g.rotation.y = (+ps.p[3] || 0) + Math.PI;
+        const sw = moving ? Math.sin(t * 9) * .6 : 0; av.legs[0].rotation.x = sw; av.legs[1].rotation.x = -sw; av.arms[0].rotation.x = -sw * .6; av.arms[1].rotation.x = sw * .6;
+      });
+      mp.avatars.forEach((av, peer) => { if (!live.has(peer)) { scene.remove(av.g); mp.avatars.delete(peer); } });
+    }
+    $("#vcMPBtn").addEventListener("click", () => { $("#vcMP").hidden = false; closeInv(); mpUI(); if (!mp.room) mpJoin(String(1000 + ((Math.random() * 9000) | 0)), true); else copyText(inviteText()).then((ok) => mpStatus(ok ? "✅ Ссылка с кодом скопирована!" : "Скопируй приглашение ниже.")); });
+    $("#vcMPClose").addEventListener("click", () => { $("#vcMP").hidden = true; });
+    $("#vcMPCopy").addEventListener("click", () => copyText(inviteText()).then((ok) => mpStatus(ok ? "✅ Ссылка с кодом скопирована!" : "Скопируй приглашение ниже.")));
+    $("#vcMPNew").addEventListener("click", () => mpJoin(String(1000 + ((Math.random() * 9000) | 0)), true));
+    $("#vcMPJoin").addEventListener("click", () => mpJoin($("#vcMPInput").value, false));
+    $("#vcMPLeave").addEventListener("click", () => mpLeave(false));
     // ================= breaking, placing, using =================
     let brk = null; // {x,y,z,t,prog}
     function breakTime(t) {
@@ -7774,10 +7899,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const endJoy = (e) => { if (joy && e.pointerId === joy.id) { joy = null; mv.x = mv.z = 0; knob.style.transform = ""; } };
     joyEl.addEventListener("pointerup", endJoy); joyEl.addEventListener("pointercancel", endJoy);
     function moveJoy(e) { const r = joyEl.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const m = r.width / 2 - 10, l = Math.hypot(dx, dy); if (l > m) { dx *= m / l; dy *= m / l; } knob.style.transform = `translate(${dx}px, ${dy}px)`; mv.x = dx / m; mv.z = -dy / m; }
-    stage.addEventListener("pointerdown", (e) => { if (!playing || e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv")) return; look = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, btn: e.button }; try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
+    stage.addEventListener("pointerdown", (e) => { if (!playing || e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv, .vc-mp")) return; look = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, btn: e.button }; try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
     stage.addEventListener("pointermove", (e) => { if (!look || e.pointerId !== look.id) return; const dx = e.clientX - look.x, dy = e.clientY - look.y; if (Math.abs(dx) + Math.abs(dy) > 3) look.moved = true; look.x = e.clientX; look.y = e.clientY; P.yaw -= dx * .006; P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch - dy * .006)); });
     stage.addEventListener("pointerup", (e) => { if (!look || e.pointerId !== look.id) return; const l = look; look = null; breaking = false; if (!l.moved && e.pointerType === "mouse" && l.btn === 2) doUse(); });
-    stage.addEventListener("pointerdown", (e) => { if (playing && e.pointerType === "mouse" && e.button === 0 && !e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv")) { breaking = true; attackOrBreak(0, true); } });
+    stage.addEventListener("pointerdown", (e) => { if (playing && e.pointerType === "mouse" && e.button === 0 && !e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv, .vc-mp")) { breaking = true; attackOrBreak(0, true); } });
     stage.addEventListener("contextmenu", (e) => e.preventDefault());
     const hold = (el, down, up) => { el.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); down(); }); if (up) { el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("pointerleave", up); } };
     hold($("#vcJump"), () => { jumpHeld = true; }, () => { jumpHeld = false; });
@@ -7797,7 +7922,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       raf = 0; if (current !== "craft") return;
       const dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
       if (ready) {
-        if (playing && $("#vcInv").hidden) { physics(dt); updMobs(dt, now / 1000); if (breaking) attackOrBreak(dt, false); }
+        if (playing && $("#vcInv").hidden && $("#vcMP").hidden) { physics(dt); updMobs(dt, now / 1000); if (breaking) attackOrBreak(dt, false); }
+        mpTick(dt, now / 1000);
         atkCd = Math.max(0, atkCd - dt); hurtCd = Math.max(0, hurtCd - dt);
         if (playing) { dayT += dt; if (Math.floor(dayT) % 5 === 0) store.set("vcDayT", Math.floor(dayT)); P.regen = (P.regen || 0) + dt; if (P.regen > 3) { P.regen = 0; if (hp < 20 && mode !== "creative") { hp++; hearts(); } } }
         night = isNight(); $("#vcDay").textContent = night ? "☀️ День" : "🌙 Ночь";
@@ -7817,7 +7943,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     mods = store.get("vcMods", {}); if (!mods || typeof mods !== "object") mods = {};
     generate(); spawn();
     $("#vcPlaced").textContent = placed; setMode(mode); hearts();
-    if (location.hash === "#vcdebug") window.__vc = { P, mobs: () => mobs, spawn: (t, d) => spawnMob(t, P.x - Math.sin(P.yaw) * (d || 4), P.y + .5, P.z - Math.cos(P.yaw) * (d || 4)), inv: () => inv };
+    if (location.hash === "#vcdebug") window.__vc = { P, get: (x, y, z) => get(x, y, z), set: (x, y, z, t) => setBlock(x, y, z, t), boom: (x, y, z) => explode(x, y, z), mobs: () => mobs, spawn: (t, d) => spawnMob(t, P.x - Math.sin(P.yaw) * (d || 4), P.y + .5, P.z - Math.cos(P.yaw) * (d || 4)), inv: () => inv };
     return {
       enter() { init(); resize(); last = 0; if (!raf) raf = requestAnimationFrame(frame); setTimeout(resize, 50); },
       leave() { playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; breaking = false; brk = null; closeInv(); saveInv(); clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
