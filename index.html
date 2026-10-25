@@ -326,10 +326,35 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .vc-btns button.on { background: rgba(255,181,71,.7); }
 .vc-top { position: absolute; left: 8px; top: 8px; right: 8px; display: flex; justify-content: space-between; gap: 6px; pointer-events: none; }
 .vc-top span { background: rgba(18,19,42,.55); color: #fff; font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 999px; }
-.vc-hot { display: flex; gap: 6px; overflow-x: auto; padding: 4px 2px; scrollbar-width: thin; }
-.vc-hot button { flex: none; width: 52px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-size: 9px; font-weight: 700; cursor: pointer; line-height: 1.1; }
-.vc-hot button canvas { width: 32px; height: 32px; image-rendering: pixelated; }
-.vc-hot button.on { border-color: var(--amber); background: var(--panel-2); }
+.vc-hot { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 3px; padding: 4px; border-radius: 10px; background: #2a2a33; border: 2px solid #12121a; }
+.vc-slot { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 4px; border: 2px solid #4a4a55; background: #8b8b96; padding: 0; cursor: pointer; min-width: 0; }
+.vc-slot canvas, .vc-slot img { width: 78%; height: 78%; image-rendering: pixelated; }
+.vc-slot .em { font-size: clamp(14px, 4.6vw, 22px); line-height: 1; }
+.vc-slot b { position: absolute; right: 2px; bottom: 0; font: 900 11px var(--mono); color: #fff; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; }
+.vc-slot.on { border-color: #fff; box-shadow: 0 0 0 2px #ffd84d; }
+.vc-slot .dur { position: absolute; left: 10%; right: 10%; bottom: 2px; height: 3px; background: #000; }
+.vc-slot .dur i { display: block; height: 100%; background: #6aff5a; }
+.vc-hearts { position: absolute; left: 8px; top: 34px; display: flex; gap: 1px; font-size: 13px; pointer-events: none; filter: drop-shadow(0 1px 1px #000); }
+.vc-toast { position: absolute; left: 50%; bottom: 140px; transform: translateX(-50%); background: rgba(18,19,42,.7); color: #fff; font-size: 13px; font-weight: 800; padding: 5px 10px; border-radius: 999px; pointer-events: none; white-space: nowrap; transition: opacity .3s; }
+.vc-hurt { position: absolute; inset: 0; background: rgba(255,0,0,.35); pointer-events: none; opacity: 0; transition: opacity .25s; }
+.vc-prog { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; pointer-events: none; opacity: 0; }
+.vc-inv { position: absolute; inset: 0; z-index: 6; background: rgba(10,10,20,.88); display: flex; flex-direction: column; gap: 8px; padding: 10px; overflow-y: auto; }
+.vc-inv[hidden] { display: none; }
+.vc-inv .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.vc-inv .tabs button { padding: 7px 11px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; }
+.vc-inv .tabs button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.vc-inv .tabs .x { margin-left: auto; }
+.vc-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 3px; padding: 4px; border-radius: 8px; background: #c6c6c6; border: 2px solid #555; }
+.vc-grid .vc-slot { background: #8b8b8b; border-color: #373737 #fff #fff #373737; border-radius: 0; }
+.vc-grid .vc-slot.sel { box-shadow: inset 0 0 0 3px #ffd84d; }
+.vc-inv h3 { margin: 0; color: #fff; font-size: 13px; }
+.vc-inv .note { color: #c9cbd9; font-size: 12px; margin: 0; }
+.vc-recipes { display: flex; flex-direction: column; gap: 6px; }
+.vc-rec { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--panel); border: 2px solid var(--line); color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.vc-rec[disabled] { opacity: .45; cursor: default; }
+.vc-rec .out { width: 34px; height: 34px; flex: none; }
+.vc-rec small { display: block; color: var(--muted); font-size: 11px; }
+.vc-rec b { font-size: 13px; }
 .vc-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .vc-acts .btn { padding: 9px 4px; font-size: 12.5px; }
 /* ---------- My Mine (RTS) ---------- */
@@ -1660,6 +1685,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <div class="vc-stage" id="vcStage">
       <div class="vc-cross"></div>
       <div class="vc-top"><span id="vcBlockName">Трава</span><span id="vcPos">x 0 · y 0</span></div>
+      <div class="vc-hearts" id="vcHearts"></div>
+      <div class="vc-prog" id="vcProg"></div>
+      <div class="vc-hurt" id="vcHurt"></div>
+      <div class="vc-toast" id="vcToast" style="opacity:0"></div>
+      <div class="vc-inv" id="vcInv" hidden>
+        <div class="tabs" id="vcInvTabs"><button type="button" data-tab="inv" aria-pressed="true">🎒 Инвентарь</button><button type="button" data-tab="craft">🛠️ Крафт</button><button type="button" data-tab="smelt">🔥 Печь</button><button type="button" data-tab="cat">📚 Каталог</button><button type="button" class="x" id="vcInvClose">✕</button></div>
+        <div id="vcInvBody"></div>
+      </div>
       <div class="vc-joy" id="vcJoy"><i></i></div>
       <div class="vc-btns">
         <button type="button" id="vcFly" aria-label="Полёт">🕊️</button><button type="button" id="vcJump" aria-label="Прыжок">⬆️</button>
@@ -1671,13 +1704,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <button class="btn" type="button" id="vcStart">Играть</button>
       </div>
     </div>
-    <div class="vc-hot" id="vcHot" aria-label="Блоки"></div>
+    <div class="vc-hot" id="vcHot" aria-label="Хотбар"></div>
     <div class="vc-acts">
+      <button class="btn" type="button" id="vcInvBtn">🎒 Инвентарь</button>
+      <button class="btn ghost" type="button" id="vcMode">⚔️ Выживание</button>
       <button class="btn ghost" type="button" id="vcDay">🌙 Ночь</button>
       <button class="btn ghost" type="button" id="vcSpawn">🏠 На спавн</button>
       <button class="btn ghost" type="button" id="vcReset">🌍 Новый мир</button>
     </div>
-    <p class="hint">На компьютере: WASD — ходить, пробел — прыжок, мышь — смотреть, ЛКМ — ломать, ПКМ — ставить, F — полёт. TNT взрывается, если его сломать!</p>
+    <p class="hint">В выживании держи ⛏️, чтобы ломать: руды нужно копать киркой. Ломанные блоки и добыча с мобов попадают в инвентарь; в «Крафте» делай доски, палки, кирки, мечи, а в «Печи» плавь руду. 🧱 — поставить блок, съесть еду или выстрелить из лука. Ночью появляются зомби, скелеты, пауки и криперы! Компьютер: WASD, пробел, мышь, E — инвентарь, 1–9 — слоты.</p>
   </section>
 
   <!-- ===== My Mine ===== -->
@@ -7130,7 +7165,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const BL = [null,
       ["Трава", "grass", "grass_side", "dirt"], ["Земля", "dirt"], ["Камень", "stone"], ["Булыжник", "cobble"], ["Песок", "sand"], ["Гравий", "gravel"],
       ["Дуб", "log_top", "log"], ["Листва", "leaves", "leaves", "leaves", "c"], ["Доски", "planks"], ["Стекло", "glass", "glass", "glass", "c"], ["Кирпич", "bricks"],
-      ["Уголь", "coal"], ["Железо", "iron"], ["Золото", "gold"], ["Алмаз", "diamond"], ["Снег", "snow", "snow_side", "dirt"], ["Лёд", "ice", "ice", "ice", "c"],
+      ["Угольная руда", "coal"], ["Железная руда", "iron"], ["Золотая руда", "gold"], ["Алмазная руда", "diamond"], ["Снег", "snow", "snow_side", "dirt"], ["Лёд", "ice", "ice", "ice", "c"],
       ["Вода", "water", "water", "water", "w"], ["Кактус", "cactus_top", "cactus"], ["Тыква", "pumpkin_top", "pumpkin"], ["Обсидиан", "obsidian"], ["Книжная полка", "planks", "books"],
       ["Светокамень", "glow", "glow", "glow", "l"], ["TNT", "tnt_top", "tnt", "tnt_bottom"], ["Глина", "clay"], ["Песчаник", "sandstone_top", "sandstone"], ["Берёза", "birch_top", "birch"],
       ["Красная шерсть", "wool_red"], ["Синяя шерсть", "wool_blue"], ["Жёлтая шерсть", "wool_yellow"], ["Белая шерсть", "wool_white"], ["Чёрная шерсть", "wool_black"],
@@ -7230,7 +7265,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         for (let y = 0; y <= h; y++) {
           let t;
           if (y === 0) t = BEDROCK;
-          else if (y < h - 3) { const o = R(); t = o < .012 ? ID["Уголь"] : o < .018 ? ID["Железо"] : o < .021 && y < 8 ? ID["Золото"] : o < .023 && y < 5 ? ID["Алмаз"] : o < .03 ? ID["Гравий"] : ID["Камень"]; }
+          else if (y < h - 3) { const o = R(); t = o < .014 ? ID["Угольная руда"] : o < .022 ? ID["Железная руда"] : o < .026 && y < 9 ? ID["Золотая руда"] : o < .029 && y < 6 ? ID["Алмазная руда"] : o < .03 ? ID["Гравий"] : ID["Камень"]; }
           else if (y < h) t = h <= WATER_Y + 1 ? ID["Песок"] : h > 22 ? ID["Камень"] : ID["Земля"];
           else t = h <= WATER_Y + 1 ? ID["Песок"] : h > 24 ? ID["Снег"] : h > 21 ? ID["Камень"] : ID["Трава"];
           world[wi(x, y, z)] = t;
@@ -7282,6 +7317,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       r3 = new THREE.WebGLRenderer({ canvas, antialias: false }); r3.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       scene = new THREE.Scene(); scene.background = new THREE.Color(0x8fcbe8); scene.fog = new THREE.Fog(0x8fcbe8, 28, 60);
       cam = new THREE.PerspectiveCamera(72, 1, .08, 120);
+      scene.add(new THREE.AmbientLight(0xffffff, .65)); const dl = new THREE.DirectionalLight(0xffffff, .55); dl.position.set(.4, 1, .3); scene.add(dl); lights = dl;
       hl = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.004, 1.004, 1.004)), new THREE.LineBasicMaterial({ color: 0x111111 })); scene.add(hl);
       // sun and clouds
       sun = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.MeshBasicMaterial({ color: 0xfff4b0, fog: false })); scene.add(sun);
@@ -7331,7 +7367,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let saveT = 0; function saveSoon() { clearTimeout(saveT); saveT = setTimeout(() => { try { const keys = Object.keys(mods); if (keys.length > 15000) keys.slice(0, keys.length - 15000).forEach((k) => delete mods[k]); store.set("vcMods", mods); store.set("vcSeed", seed); } catch (e) { /* storage full is fine */ } }, 800); }
     // ---------- player ----------
     const P = { x: SX / 2 + .5, y: 30, z: SZ / 2 + .5, vx: 0, vy: 0, vz: 0, yaw: 0, pitch: -.2, fly: false, ground: false };
-    let cur = ID["Трава"], mv = { x: 0, z: 0 }, keys = {}, raf = 0, last = 0, playing = false;
+    let mv = { x: 0, z: 0 }, keys = {}, raf = 0, last = 0, playing = false, lights = null;
     function spawn() {
       // nearest grass column to the centre of the world, with room to stand
       let best = [SX / 2, SZ / 2], bd = 1e9;
@@ -7345,14 +7381,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const f = { x: -Math.sin(P.yaw), z: -Math.cos(P.yaw) }, rt = { x: Math.cos(P.yaw), z: -Math.sin(P.yaw) };
       let ix = mv.x + (keys.d ? 1 : 0) - (keys.a ? 1 : 0), iz = mv.z + (keys.w ? 1 : 0) - (keys.s ? 1 : 0); const len = Math.hypot(ix, iz); if (len > 1) { ix /= len; iz /= len; }
       const sp = P.fly ? 9 : inWater ? 2.6 : 4.4;
-      P.vx = (f.x * iz + rt.x * ix) * sp; P.vz = (f.z * iz + rt.z * ix) * sp;
+      P.vx = (f.x * iz + rt.x * ix) * sp + (P.kx || 0); P.vz = (f.z * iz + rt.z * ix) * sp + (P.kz || 0);
+      P.kx = (P.kx || 0) * Math.pow(.02, dt); P.kz = (P.kz || 0) * Math.pow(.02, dt);
       if (P.fly) { P.vy = (jumpHeld || keys[" "] ? 7 : 0) - (keys.shift ? 7 : 0); }
       else if (inWater) { P.vy = Math.max(P.vy - 9 * dt, -2.5); if (jumpHeld || keys[" "]) P.vy = 3; }
       else { P.vy -= 26 * dt; if ((jumpHeld || keys[" "]) && P.ground) { P.vy = 8.4; P.ground = false; } }
       P.vy = Math.max(P.vy, -40);
       const step = (axis, dv) => { const n = { x: P.x, y: P.y, z: P.z }; n[axis] += dv; if (!collide(n.x, n.y, n.z)) { P[axis] = n[axis]; return false; } return true; };
       step("x", P.vx * dt); step("z", P.vz * dt);
-      const hitY = step("y", P.vy * dt); if (hitY) { if (P.vy < 0) P.ground = true; P.vy = 0; } else P.ground = false;
+      const fallV = P.vy, hitY = step("y", P.vy * dt); if (hitY) { if (P.vy < 0) { P.ground = true; if (fallV < -14 && !P.fly && !inWater) hurt(Math.round((-fallV - 12) / 1.6), null, "Падение"); } P.vy = 0; } else P.ground = false;
+      if (get(Math.floor(P.x), Math.floor(P.y + .2), Math.floor(P.z)) === LAVA) { P.lavaT = (P.lavaT || 0) + dt; if (P.lavaT > .5) { P.lavaT = 0; hurt(4, null, "Лава"); } }
       if (P.y < -10) spawn();
       P.x = Math.max(.4, Math.min(SX - .4, P.x)); P.z = Math.max(.4, Math.min(SZ - .4, P.z));
     }
@@ -7362,22 +7400,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz); const sx = Math.sign(dx), sy = Math.sign(dy), sz = Math.sign(dz);
       const tdx = Math.abs(1 / dx), tdy = Math.abs(1 / dy), tdz = Math.abs(1 / dz);
       let tx = (sx > 0 ? x + 1 - ox : ox - x) * tdx, ty = (sy > 0 ? y + 1 - oy : oy - y) * tdy, tz = (sz > 0 ? z + 1 - oz : oz - z) * tdz;
-      let prev = null;
+      let prev = null, tt = 0;
       for (let i = 0; i < 40; i++) {
         const t = get(x, y, z);
-        if (t && t !== WATER && y >= 0 && y < SY) return { x, y, z, t, prev };
+        if (t && t !== WATER && y >= 0 && y < SY) return { x, y, z, t, prev, dist: tt };
         prev = [x, y, z];
-        if (tx < ty && tx < tz) { if (tx > 7) break; x += sx; tx += tdx; } else if (ty < tz) { if (ty > 7) break; y += sy; ty += tdy; } else { if (tz > 7) break; z += sz; tz += tdz; }
+        if (tx < ty && tx < tz) { if (tx > 7) break; x += sx; tt = tx; tx += tdx; } else if (ty < tz) { if (ty > 7) break; y += sy; tt = ty; ty += tdy; } else { if (tz > 7) break; z += sz; tt = tz; tz += tdz; }
       }
       return null;
     }
     let AC = null;
     function snd(f, d, type) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "square"; o.frequency.value = f; g.gain.setValueAtTime(.08, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d); } catch (e) { /* no sound */ } }
-    function doBreak() {
-      const h = pick(); if (!h || h.t === BEDROCK) { if (h) Hero.say("craft", "bad", "Коренную породу не сломать!"); return; }
-      if (h.t === TNT) { explode(h.x, h.y, h.z); return; }
-      setBlock(h.x, h.y, h.z, 0); snd(180 + Math.random() * 60, .08);
-    }
     function explode(x0, y0, z0) {
       const rad = 3.2; const touched = new Set();
       for (let y = y0 - 4; y <= y0 + 4; y++) for (let z = z0 - 4; z <= z0 + 4; z++) for (let x = x0 - 4; x <= x0 + 4; x++) {
@@ -7386,14 +7419,351 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         world[wi(x, y, z)] = 0; mods[x + "," + y + "," + z] = 0; touched.add(Math.floor(x / CH) + "," + Math.floor(z / CH));
       }
       touched.forEach((k) => { const [a, b] = k.split(",").map(Number); rebuild(a, b); }); saveSoon();
-      snd(60, .6, "sawtooth"); shake = .5; Hero.say("craft", "good", "БУМ! 💥 TNT взорвался!");
+      snd(60, .6, "sawtooth"); shake = .5;
+      const pd = Math.hypot(P.x - x0 - .5, P.y + 1 - y0 - .5, P.z - z0 - .5); if (pd < 6) hurt(Math.round((6 - pd) * 3), [x0 + .5, z0 + .5], "Взрыв");
+      mobs.forEach((m) => { const md = Math.hypot(m.x - x0 - .5, m.y - y0, m.z - z0 - .5); if (md < 5) damageMob(m, Math.round((5 - md) * 5), x0 + .5, z0 + .5); });
     }
-    function doPlace() {
+    // ================= items, inventory, crafting =================
+    const TOOLS = (mat, c, tier, speed, dur, base) => ({
+      [mat + "_pickaxe"]: { n: { wood: "Деревянная", stone: "Каменная", iron: "Железная", diamond: "Алмазная" }[mat] + " кирка", ico: "pick", c, tool: "pick", tier, speed, dmg: base, dur },
+      [mat + "_sword"]: { n: { wood: "Деревянный", stone: "Каменный", iron: "Железный", diamond: "Алмазный" }[mat] + " меч", ico: "sword", c, tool: "sword", dmg: base + 3, dur },
+      [mat + "_axe"]: { n: { wood: "Деревянный", stone: "Каменный", iron: "Железный", diamond: "Алмазный" }[mat] + " топор", ico: "axe", c, tool: "axe", speed, dmg: base + 2, dur },
+    });
+    const IT = Object.assign({
+      coal: { n: "Уголь", ico: "coal" }, iron_ingot: { n: "Железный слиток", ico: "ingot", c: "#d8d8d8" }, gold_ingot: { n: "Золотой слиток", ico: "ingot", c: "#ffd84d" }, diamond: { n: "Алмаз", ico: "gem", c: "#5ce1e6" },
+      stick: { n: "Палка", ico: "stick" }, string: { n: "Нить", em: "🧵" }, feather: { n: "Перо", em: "🪶" }, leather: { n: "Кожа", em: "🟫" }, bone: { n: "Кость", em: "🦴" }, gunpowder: { n: "Порох", em: "💨" },
+      arrow: { n: "Стрела", ico: "arrow" }, bow: { n: "Лук", ico: "bow", stack: 1, dur: 200, tool: "bow", dmg: 1 },
+      apple: { n: "Яблоко", em: "🍎", food: 4 }, bread: { n: "Хлеб", em: "🍞", food: 5 }, raw_beef: { n: "Сырая говядина", em: "🥩", food: 2 }, steak: { n: "Стейк", em: "🍖", food: 8 },
+      raw_pork: { n: "Сырая свинина", em: "🥓", food: 2 }, porkchop: { n: "Жареная свинина", em: "🍖", food: 8 }, raw_chicken: { n: "Сырая курица", em: "🍗", food: 2 }, cooked_chicken: { n: "Жареная курица", em: "🍗", food: 6 },
+      mutton: { n: "Сырая баранина", em: "🥩", food: 2 }, cooked_mutton: { n: "Жареная баранина", em: "🍖", food: 6 }, rotten: { n: "Гнилая плоть", em: "🧟", food: 1 }, egg: { n: "Яйцо", em: "🥚" },
+    }, TOOLS("wood", "#b08a5a", 1, 2, 60, 1), TOOLS("stone", "#8a8f9e", 2, 4, 130, 2), TOOLS("iron", "#e6e6e6", 3, 6, 250, 3), TOOLS("diamond", "#5ce1e6", 4, 8, 1500, 4));
+    const isItem = (id) => typeof id === "string";
+    const nameOf = (id) => (isItem(id) ? (IT[id] ? IT[id].n : id) : (BL[id] ? BL[id][0] : "?"));
+    const stackOf = (id) => (isItem(id) && (IT[id].stack || (IT[id].tool && IT[id].tool !== "bow" ? 1 : 0))) || 64;
+    const ref = (name) => (IT[name] ? name : ID[name]);
+    // what breaking a block gives, how hard it is, which tool it needs
+    const DROP = {}; [["Трава", "Земля"], ["Камень", "Булыжник"], ["Угольная руда", "coal"], ["Алмазная руда", "diamond"], ["Стекло", null], ["Лёд", null], ["Вода", null], ["Лава", null], ["Коренная порода", null], ["Снег", "Снег"], ["Светокамень", "Светокамень"]].forEach(([b2, d]) => { DROP[ID[b2]] = d === null ? null : ref(d); });
+    const HARD = {}; const setH = (names, h, tool, tier) => names.forEach((n) => { HARD[ID[n]] = { h, tool, tier: tier || 0 }; });
+    setH(["Трава", "Земля", "Песок", "Гравий", "Глина"], .6, "shovel"); setH(["Снег", "Листва", "Стекло", "Светокамень", "Кактус", "TNT"], .3); setH(["Лёд"], .5, "pick");
+    setH(["Дуб", "Берёза", "Доски", "Книжная полка"], 2, "axe"); setH(["Тыква", "Арбуз", "Сено", "Красная шерсть", "Синяя шерсть", "Жёлтая шерсть", "Белая шерсть", "Чёрная шерсть", "Розовая шерсть"], .8, "axe");
+    setH(["Камень", "Песчаник", "V3 блок"], 1.5, "pick", 1); setH(["Булыжник", "Кирпич", "Мшистый камень"], 2, "pick", 1);
+    setH(["Угольная руда"], 3, "pick", 1); setH(["Железная руда"], 3, "pick", 2); setH(["Золотая руда", "Алмазная руда"], 3, "pick", 3); setH(["Золотой блок", "Алмазный блок"], 4, "pick", 3); setH(["Обсидиан"], 18, "pick", 4);
+    const RECIPES = [
+      ["Доски", 4, [["Дуб", 1]]], ["Доски", 4, [["Берёза", 1]]], ["stick", 4, [["Доски", 2]]],
+      ["wood_pickaxe", 1, [["Доски", 3], ["stick", 2]]], ["wood_sword", 1, [["Доски", 2], ["stick", 1]]], ["wood_axe", 1, [["Доски", 3], ["stick", 2]]],
+      ["stone_pickaxe", 1, [["Булыжник", 3], ["stick", 2]]], ["stone_sword", 1, [["Булыжник", 2], ["stick", 1]]], ["stone_axe", 1, [["Булыжник", 3], ["stick", 2]]],
+      ["iron_pickaxe", 1, [["iron_ingot", 3], ["stick", 2]]], ["iron_sword", 1, [["iron_ingot", 2], ["stick", 1]]], ["iron_axe", 1, [["iron_ingot", 3], ["stick", 2]]],
+      ["diamond_pickaxe", 1, [["diamond", 3], ["stick", 2]]], ["diamond_sword", 1, [["diamond", 2], ["stick", 1]]], ["diamond_axe", 1, [["diamond", 3], ["stick", 2]]],
+      ["bow", 1, [["stick", 3], ["string", 3]]], ["arrow", 4, [["stick", 1], ["feather", 1], ["Гравий", 1]]],
+      ["bread", 3, [["Сено", 1]]], ["Сено", 1, [["bread", 3]]], ["Книжная полка", 1, [["Доски", 6], ["leather", 3]]], ["TNT", 1, [["gunpowder", 5], ["Песок", 4]]],
+      ["Песчаник", 1, [["Песок", 4]]], ["Мшистый камень", 1, [["Булыжник", 1], ["Листва", 1]]], ["Светокамень", 1, [["coal", 2], ["gold_ingot", 1]]],
+      ["Золотой блок", 1, [["gold_ingot", 9]]], ["gold_ingot", 9, [["Золотой блок", 1]]], ["Алмазный блок", 1, [["diamond", 9]]], ["diamond", 9, [["Алмазный блок", 1]]],
+      ["Красная шерсть", 1, [["Белая шерсть", 1], ["apple", 1]]], ["Чёрная шерсть", 1, [["Белая шерсть", 1], ["coal", 1]]], ["Жёлтая шерсть", 1, [["Белая шерсть", 1], ["gold_ingot", 1]]], ["Синяя шерсть", 1, [["Белая шерсть", 1], ["diamond", 1]]],
+      ["V3 блок", 1, [["diamond", 1], ["Обсидиан", 1]]],
+    ].map(([o, n, ins]) => ({ out: ref(o), n, ins: ins.map(([a2, k]) => [ref(a2), k]) }));
+    const SMELT = [["iron_ingot", "Железная руда"], ["gold_ingot", "Золотая руда"], ["Стекло", "Песок"], ["Камень", "Булыжник"], ["Кирпич", "Глина"], ["coal", "Дуб"], ["steak", "raw_beef"], ["porkchop", "raw_pork"], ["cooked_chicken", "raw_chicken"], ["cooked_mutton", "mutton"]].map(([o, i]) => ({ out: ref(o), inp: ref(i) }));
+    let mode = store.get("vcMode", "survival"), inv = store.get("vcInv", null), selSlot = store.get("vcSel", 0) | 0, hp = 20, invTab = "inv", invPick = -1;
+    if (!Array.isArray(inv) || inv.length !== 36) inv = starter();
+    function starter() { const a2 = new Array(36).fill(null); a2[0] = { id: "wood_pickaxe", n: 1, d: IT.wood_pickaxe.dur }; a2[1] = { id: "wood_sword", n: 1, d: IT.wood_sword.dur }; a2[2] = { id: "apple", n: 4 }; a2[3] = { id: ID["Доски"], n: 16 }; return a2; }
+    const saveInv = () => { store.set("vcInv", inv); store.set("vcSel", selSlot); store.set("vcMode", mode); };
+    const held = () => inv[selSlot];
+    function count(id) { return inv.reduce((a2, sl) => a2 + (sl && sl.id === id ? sl.n : 0), 0); }
+    function addItem(id, n, quiet) {
+      let left = n; const mx = stackOf(id);
+      for (let i = 0; i < 36 && left > 0; i++) { const sl = inv[i]; if (sl && sl.id === id && sl.n < mx) { const k = Math.min(left, mx - sl.n); sl.n += k; left -= k; } }
+      for (let i = 0; i < 36 && left > 0; i++) if (!inv[i]) { const k = Math.min(left, mx); inv[i] = { id, n: k }; if (isItem(id) && IT[id].dur) inv[i].d = IT[id].dur; left -= k; }
+      if (!quiet && n - left > 0) toast(`+${n - left} ${nameOf(id)}`);
+      if (left > 0 && !quiet) toast("Инвентарь полон!");
+      hotbar(); saveInv(); return left;
+    }
+    function removeItem(id, n) { for (let i = 35; i >= 0 && n > 0; i--) { const sl = inv[i]; if (sl && sl.id === id) { const k = Math.min(n, sl.n); sl.n -= k; n -= k; if (!sl.n) inv[i] = null; } } hotbar(); saveInv(); }
+    function useDurability(k) { const sl = held(); if (!sl || !isItem(sl.id) || !IT[sl.id].dur || mode === "creative") return; sl.d = (sl.d ?? IT[sl.id].dur) - (k || 1); if (sl.d <= 0) { toast(`${IT[sl.id].n} сломался!`); inv[selSlot] = null; snd(120, .3, "sawtooth"); } hotbar(); saveInv(); }
+    // ---------- icons ----------
+    const iconCache = {};
+    function icon(id) {
+      if (iconCache[id]) return iconCache[id];
+      const c = document.createElement("canvas"); c.width = 16; c.height = 16; const g = c.getContext("2d");
+      if (!isItem(id)) { if (!atlas) return c; { const ti = faceTile(id, "side"); g.drawImage(atlas, (ti % COLS) * PX, Math.floor(ti / COLS) * PX, PX, PX, 0, 0, 16, 16); } }
+      else {
+        const it = IT[id], px = (x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); }, line = (x0, y0, x1, y1, col, w) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); g.fillStyle = col; g.fillRect(x, y, w || 1, w || 1); } };
+        const dark = it.c ? shadeC(it.c, .6) : "#333";
+        if (it.ico === "pick") { line(12, 3, 3, 12, "#7a5a32", 2); line(4, 2, 9, 1, it.c, 2); line(9, 1, 14, 6, it.c, 2); line(3, 3, 3, 5, dark); line(13, 8, 14, 8, dark); }
+        else if (it.ico === "sword") { line(13, 2, 6, 9, it.c, 2); line(14, 2, 13, 1, "#fff"); line(4, 8, 8, 12, "#5a3a20", 2); line(3, 12, 1, 14, "#7a5a32", 2); }
+        else if (it.ico === "axe") { line(12, 3, 3, 13, "#7a5a32", 2); g.fillStyle = it.c; g.fillRect(9, 1, 5, 6); g.fillStyle = dark; g.fillRect(13, 1, 1, 6); }
+        else if (it.ico === "ingot") { g.fillStyle = it.c; g.beginPath(); g.moveTo(3, 11); g.lineTo(5, 6); g.lineTo(13, 6); g.lineTo(14, 11); g.fill(); g.fillStyle = dark; g.fillRect(3, 11, 11, 2); g.fillStyle = "#fff"; g.fillRect(6, 7, 4, 1); }
+        else if (it.ico === "gem") { g.fillStyle = it.c; g.beginPath(); g.moveTo(8, 2); g.lineTo(14, 7); g.lineTo(8, 14); g.lineTo(2, 7); g.fill(); g.fillStyle = "#e8ffff"; g.fillRect(6, 5, 3, 2); g.fillStyle = dark; g.fillRect(8, 9, 2, 3); }
+        else if (it.ico === "coal") { g.fillStyle = "#1a1a1a"; g.beginPath(); g.arc(8, 8, 5.5, 0, 7); g.fill(); g.fillStyle = "#4a4a4a"; g.fillRect(6, 5, 2, 2); g.fillRect(10, 9, 2, 1); }
+        else if (it.ico === "stick") line(12, 2, 3, 13, "#8a6a3a", 2);
+        else if (it.ico === "arrow") { line(13, 2, 3, 12, "#7a5a32"); g.fillStyle = "#c9ccd6"; g.fillRect(11, 1, 4, 2); g.fillRect(13, 1, 2, 4); g.fillStyle = "#fff"; g.fillRect(1, 12, 3, 3); }
+        else if (it.ico === "bow") { g.strokeStyle = "#8a5a2b"; g.lineWidth = 2; g.beginPath(); g.arc(3, 13, 11, -Math.PI / 2, 0); g.stroke(); line(3, 2, 14, 13, "#ddd"); }
+        else { g.font = "13px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(it.em || "?", 8, 9); }
+      }
+      iconCache[id] = c; return c;
+    }
+    function slotEl(sl, i, cls) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "vc-slot " + (cls || ""); b.dataset.i = i;
+      if (sl) {
+        if (isItem(sl.id) && IT[sl.id].em) { const e = document.createElement("span"); e.className = "em"; e.textContent = IT[sl.id].em; b.appendChild(e); } else { const c = document.createElement("canvas"); c.width = 16; c.height = 16; c.getContext("2d").drawImage(icon(sl.id), 0, 0); b.appendChild(c); }
+        if (sl.n > 1) { const n = document.createElement("b"); n.textContent = sl.n; b.appendChild(n); }
+        if (isItem(sl.id) && IT[sl.id].dur && sl.d < IT[sl.id].dur) { const d = document.createElement("span"); d.className = "dur"; d.innerHTML = `<i style="width:${Math.max(4, sl.d / IT[sl.id].dur * 100)}%"></i>`; b.appendChild(d); }
+        b.title = nameOf(sl.id);
+      }
+      return b;
+    }
+    function hotbar() {
+      const box = $("#vcHot"); if (!box) return; box.innerHTML = "";
+      for (let i = 0; i < 9; i++) { const b = slotEl(inv[i], i, i === selSlot ? "on" : ""); b.addEventListener("click", () => selectSlot(i)); box.appendChild(b); }
+      const sl = held(); $("#vcBlockName").textContent = sl ? `${isItem(sl.id) && IT[sl.id].em ? IT[sl.id].em : "🧱"} ${nameOf(sl.id)}` : "✋ Пусто";
+      if (!$("#vcInv").hidden) renderInv();
+    }
+    function selectSlot(i) { selSlot = (i + 9) % 9; hotbar(); saveInv(); }
+    let toastT = 0; function toast(t) { const el = $("#vcToast"); el.textContent = t; el.style.opacity = 1; clearTimeout(toastT); toastT = setTimeout(() => { el.style.opacity = 0; }, 1500); }
+    function hearts() { const el = $("#vcHearts"); if (mode === "creative") { el.textContent = "✨ Творчество"; return; } let h = ""; for (let i = 0; i < 10; i++) h += hp >= (i + 1) * 2 ? "❤️" : hp === i * 2 + 1 ? "💔" : "🖤"; el.textContent = h; }
+    // ---------- inventory window ----------
+    function openInv(tab) { invTab = tab || invTab; invPick = -1; $("#vcInv").hidden = false; renderInv(); }
+    function closeInv() { $("#vcInv").hidden = true; }
+    function canCraft(r) { return mode === "creative" || r.ins.every(([id, k]) => count(id) >= k); }
+    function recipeRow(outId, n, insText, ok, fn) {
+      const b = document.createElement("button"); b.type = "button"; b.className = "vc-rec"; b.disabled = !ok;
+      const o = slotEl({ id: outId, n }, -1, "out"); o.disabled = true; o.style.pointerEvents = "none"; b.appendChild(o);
+      const t = document.createElement("span"); t.innerHTML = `<b></b><small></small>`; t.querySelector("b").textContent = `${nameOf(outId)}${n > 1 ? " ×" + n : ""}`; t.querySelector("small").textContent = insText; b.appendChild(t);
+      b.addEventListener("click", fn); return b;
+    }
+    function renderInv() {
+      $$("#vcInvTabs [data-tab]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === invTab)));
+      const body = $("#vcInvBody"); body.innerHTML = "";
+      if (invTab === "inv") {
+        const h = document.createElement("p"); h.className = "note"; h.textContent = invPick >= 0 ? "Теперь нажми на ячейку, куда переложить." : "Нажми на предмет, потом на другую ячейку — переложить. Нижний ряд — хотбар."; body.appendChild(h);
+        const grid = document.createElement("div"); grid.className = "vc-grid";
+        const order = [...Array(27).keys()].map((k) => k + 9).concat([...Array(9).keys()]);
+        order.forEach((i) => { const b = slotEl(inv[i], i, i === invPick ? "sel" : ""); b.addEventListener("click", () => invTap(i)); grid.appendChild(b); });
+        body.appendChild(grid);
+        if (invPick >= 0 && inv[invPick]) { const del = document.createElement("button"); del.type = "button"; del.className = "btn ghost"; del.textContent = `🗑️ Выбросить: ${nameOf(inv[invPick].id)}`; del.addEventListener("click", () => { inv[invPick] = null; invPick = -1; hotbar(); saveInv(); renderInv(); }); body.appendChild(del); }
+      } else if (invTab === "craft") {
+        const l = document.createElement("div"); l.className = "vc-recipes";
+        RECIPES.forEach((r) => l.appendChild(recipeRow(r.out, r.n, r.ins.map(([id, k]) => `${k}× ${nameOf(id)} (${count(id)})`).join(" + "), canCraft(r), () => { if (!canCraft(r)) return; if (mode !== "creative") r.ins.forEach(([id, k]) => removeItem(id, k)); addItem(r.out, r.n); snd(520, .08); renderInv(); })));
+        body.appendChild(l);
+      } else if (invTab === "smelt") {
+        const fuel = () => count("coal") > 0 ? "coal" : count(ID["Доски"]) > 0 ? ID["Доски"] : null;
+        const n = document.createElement("p"); n.className = "note"; n.textContent = "Печь: 1 уголь или 1 доска — топливо на одну переплавку."; body.appendChild(n);
+        const l = document.createElement("div"); l.className = "vc-recipes";
+        SMELT.forEach((r) => { const ok = mode === "creative" || (count(r.inp) > 0 && fuel() && !(r.inp === r.out)); l.appendChild(recipeRow(r.out, 1, `🔥 ${nameOf(r.inp)} (${count(r.inp)}) + топливо`, ok, () => { if (mode !== "creative") { const f = fuel(); if (!count(r.inp) || !f) return; removeItem(r.inp, 1); if (r.inp === "coal" || f !== r.inp) removeItem(f, 1); } addItem(r.out, 1); snd(300, .15, "triangle"); renderInv(); })); });
+        body.appendChild(l);
+      } else if (invTab === "cat") {
+        if (mode !== "creative") { const n = document.createElement("p"); n.className = "note"; n.textContent = "Каталог всех блоков и предметов доступен в режиме «Творчество» (кнопка под экраном)."; body.appendChild(n); return; }
+        const grid = document.createElement("div"); grid.className = "vc-grid";
+        [...HOTBAR, ...Object.keys(IT)].forEach((id) => { const b = slotEl({ id, n: 1 }, -1); b.addEventListener("click", () => addItem(id, stackOf(id))); grid.appendChild(b); });
+        body.appendChild(grid);
+      }
+    }
+    function invTap(i) {
+      if (invPick < 0) { if (inv[i]) invPick = i; }
+      else if (invPick === i) invPick = -1;
+      else { const a2 = inv[invPick], b2 = inv[i]; if (b2 && a2 && b2.id === a2.id && stackOf(a2.id) > 1) { const k = Math.min(a2.n, stackOf(a2.id) - b2.n); b2.n += k; a2.n -= k; if (!a2.n) inv[invPick] = null; } else { inv[invPick] = b2; inv[i] = a2; } invPick = -1; hotbar(); saveInv(); }
+      renderInv();
+    }
+    $("#vcInvTabs").addEventListener("click", (e) => { const b = e.target.closest("[data-tab]"); if (b) { invTab = b.dataset.tab; invPick = -1; renderInv(); } });
+    $("#vcInvClose").addEventListener("click", closeInv);
+    $("#vcInvBtn").addEventListener("click", () => ($("#vcInv").hidden ? openInv() : closeInv()));
+    function setMode(m) { mode = m; $("#vcMode").textContent = mode === "creative" ? "✨ Творчество" : "⚔️ Выживание"; $("#vcFly").hidden = mode !== "creative"; if (mode !== "creative") { P.fly = false; $("#vcFly").classList.remove("on"); } hearts(); saveInv(); if (!$("#vcInv").hidden) renderInv(); }
+    $("#vcMode").addEventListener("click", () => { setMode(mode === "creative" ? "survival" : "creative"); toast(mode === "creative" ? "Творчество: всё бесконечно, мобы не страшны" : "Выживание: добывай, крафти, берегись мобов"); });
+
+    // ================= breaking, placing, using =================
+    let brk = null; // {x,y,z,t,prog}
+    function breakTime(t) {
+      if (mode === "creative") return 0;
+      const H = HARD[t] || { h: 1 }, sl = held(), it = sl && isItem(sl.id) ? IT[sl.id] : null;
+      const right = it && it.tool === H.tool && (it.tool !== "pick" || it.tier >= H.tier);
+      if (H.tool === "pick" && H.tier && !right) return H.h * 5;
+      return H.h * 1.2 / (right ? it.speed : 1);
+    }
+    function dropFor(t) {
+      const H = HARD[t]; const sl = held(), it = sl && isItem(sl.id) ? IT[sl.id] : null;
+      if (H && H.tool === "pick" && H.tier && !(it && it.tool === "pick" && it.tier >= H.tier)) return null;
+      if (t === ID["Листва"]) return Math.random() < .12 ? "apple" : Math.random() < .2 ? "stick" : null;
+      return t in DROP ? DROP[t] : t;
+    }
+    function finishBreak(h) {
+      if (h.t === TNT) { setBlock(h.x, h.y, h.z, 0); explode(h.x, h.y, h.z); return; }
+      const d = mode === "creative" ? null : dropFor(h.t);
+      setBlock(h.x, h.y, h.z, 0); snd(180 + Math.random() * 60, .08);
+      if (d !== null && d !== undefined) addItem(d, 1);
+      else if (mode !== "creative" && HARD[h.t] && HARD[h.t].tier) toast("Нужна кирка получше!");
+      const sl = held(); if (sl && isItem(sl.id) && IT[sl.id].tool && IT[sl.id].tool !== "sword") useDurability(1);
+    }
+    function attackOrBreak(dt, first) {
+      const m = pickMob(); const h = pick();
+      if (m && (!h || m.dist < h.dist)) { hitMob(m.mob); brk = null; return; }
+      if (!h || h.t === BEDROCK) { brk = null; if (h && first) toast("Коренную породу не сломать!"); return; }
+      if (!brk || brk.x !== h.x || brk.y !== h.y || brk.z !== h.z) brk = { x: h.x, y: h.y, z: h.z, t: h.t, prog: 0, need: breakTime(h.t) };
+      brk.prog += dt;
+      if (brk.prog >= brk.need) { finishBreak(h); brk = null; }
+    }
+    let atkCd = 0;
+    function hitMob(m) {
+      if (atkCd > 0) return; atkCd = .35;
+      const sl = held(), it = sl && isItem(sl.id) ? IT[sl.id] : null, dmg = it && it.tool && it.tool !== "bow" ? it.dmg : 1;
+      damageMob(m, dmg, P.x, P.z); if (it && it.tool) useDurability(it.tool === "sword" ? 1 : 2);
+    }
+    function doUse() {
+      const sl = held();
+      if (sl && isItem(sl.id)) {
+        const it = IT[sl.id];
+        if (it.food) { if (mode !== "creative" && hp >= 20) { toast("Ты сыт!"); return; } hp = Math.min(20, hp + it.food); hearts(); if (mode !== "creative") { sl.n--; if (!sl.n) inv[selSlot] = null; } toast(`Ням! ${it.n} +${it.food} ❤`); snd(300, .1, "triangle"); hotbar(); saveInv(); return; }
+        if (it.tool === "bow") { if (mode !== "creative" && !count("arrow")) { toast("Нет стрел!"); return; } if (mode !== "creative") removeItem("arrow", 1); shootArrow(P.x, P.y + EYE, P.z, -Math.sin(P.yaw) * Math.cos(P.pitch), Math.sin(P.pitch), -Math.cos(P.yaw) * Math.cos(P.pitch), "player", 6); useDurability(1); snd(700, .08, "triangle"); return; }
+        toast(`${it.n} нельзя поставить`); return;
+      }
       const h = pick(); if (!h || !h.prev) return;
-      const [x, y, z] = h.prev;
-      // don't place inside yourself
-      if (solid(cur) && x + 1 > P.x - HW && x < P.x + HW && z + 1 > P.z - HW && z < P.z + HW && y + 1 > P.y && y < P.y + PH) return;
-      if (setBlock(x, y, z, cur)) { placed++; store.set("vcPlaced", placed); $("#vcPlaced").textContent = placed; snd(420, .06); if (placed % 50 === 0) { Hero.earn(10); Hero.say("craft", "win", `${placed} блоков поставлено! +10 монет`); } }
+      if (!sl) { toast("В руке пусто — выбери блок"); return; }
+      const [x, y, z] = h.prev, t = sl.id;
+      if (solid(t) && x + 1 > P.x - HW && x < P.x + HW && z + 1 > P.z - HW && z < P.z + HW && y + 1 > P.y && y < P.y + PH) return;
+      if (mobs.some((m) => x + 1 > m.x - m.d.w / 2 && x < m.x + m.d.w / 2 && z + 1 > m.z - m.d.w / 2 && z < m.z + m.d.w / 2 && y + 1 > m.y && y < m.y + m.d.h)) return;
+      if (setBlock(x, y, z, t)) {
+        if (mode !== "creative") { sl.n--; if (!sl.n) inv[selSlot] = null; hotbar(); saveInv(); }
+        placed++; store.set("vcPlaced", placed); $("#vcPlaced").textContent = placed; snd(420, .06);
+        if (placed % 50 === 0) { Hero.earn(10); Hero.say("craft", "win", `${placed} блоков поставлено! +10 монет`); }
+      }
+    }
+    // ================= player health =================
+    let hurtCd = 0;
+    function hurt(dmg, from, why) {
+      if (mode === "creative" || dmg <= 0 || hurtCd > 0) return; hurtCd = .5;
+      hp -= dmg; hearts(); const el = $("#vcHurt"); el.style.opacity = 1; setTimeout(() => { el.style.opacity = 0; }, 180); snd(160, .15, "sawtooth"); shake = Math.max(shake, .25);
+      if (from) { const dx = P.x - from[0], dz = P.z - from[1], l = Math.hypot(dx, dz) || 1; P.kx = dx / l * 7; P.kz = dz / l * 7; P.vy = 5; }
+      if (hp <= 0) { hp = 20; hearts(); toast(`Ты погиб (${why || "мобы"})! Возрождение…`); Hero.say("craft", "bad", `Погиб: ${why || "мобы"}. Вещи остались с тобой.`); spawn(); }
+    }
+    // ================= mobs =================
+    const MOB = {
+      pig: { n: "Свинья", hp: 10, w: .8, h: .9, spd: 1.3, passive: true, drops: [["raw_pork", 1, 2]] },
+      cow: { n: "Корова", hp: 10, w: .9, h: 1.3, spd: 1.1, passive: true, drops: [["raw_beef", 1, 3], ["leather", 0, 2]] },
+      sheep: { n: "Овца", hp: 8, w: .9, h: 1.2, spd: 1.2, passive: true, drops: [["Белая шерсть", 1, 1], ["mutton", 1, 2]] },
+      chicken: { n: "Курица", hp: 4, w: .45, h: .75, spd: 1.4, passive: true, drops: [["raw_chicken", 1, 1], ["feather", 0, 2], ["egg", 0, 1]] },
+      zombie: { n: "Зомби", hp: 20, w: .6, h: 1.9, spd: 2.2, dmg: 3, drops: [["rotten", 0, 2], ["iron_ingot", 0, 1, .08]] },
+      skeleton: { n: "Скелет", hp: 20, w: .6, h: 1.9, spd: 2.1, ranged: true, dmg: 3, drops: [["bone", 0, 2], ["arrow", 0, 3]] },
+      spider: { n: "Паук", hp: 16, w: 1.2, h: .8, spd: 3, dmg: 2, drops: [["string", 0, 2]] },
+      creeper: { n: "Крипер", hp: 20, w: .6, h: 1.6, spd: 1.9, boom: true, drops: [["gunpowder", 0, 2]] },
+    };
+    let mobs = [], arrows = [], spawnT = 0, dayT = store.get("vcDayT", 30);
+    const DAY_LEN = 300;
+    const isNight = () => (dayT % DAY_LEN) / DAY_LEN > .62;
+    function box(g, w, h, d, x, y, z, color, basic) {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), basic ? new THREE.MeshBasicMaterial({ color }) : new THREE.MeshLambertMaterial({ color }));
+      m.position.set(x, y, z); g.add(m); return m;
+    }
+    function makeMob(type) {
+      const g = new THREE.Group(), legs = [], eye = 0x111111;
+      const humanoid = (head, bodyC, armC, legC, armsForward) => {
+        const hd = box(g, .5, .5, .5, 0, 1.65, 0, head); box(g, .1, .08, .02, -.12, 1.68, .26, type === "zombie" ? 0x111111 : 0x222222, true); box(g, .1, .08, .02, .12, 1.68, .26, type === "zombie" ? 0x111111 : 0x222222, true);
+        box(g, .5, .7, .26, 0, 1.05, 0, bodyC);
+        [-.36, .36].forEach((x) => { const a2 = new THREE.Group(); a2.position.set(x, 1.38, 0); const arm = box(a2, .2, .66, .2, 0, -.3, 0, armC); if (armsForward) a2.rotation.x = -Math.PI / 2.2; g.add(a2); legs.push({ m: a2, arm: true, base: a2.rotation.x }); void arm; });
+        [-.13, .13].forEach((x) => { const l = new THREE.Group(); l.position.set(x, .7, 0); box(l, .22, .7, .22, 0, -.35, 0, legC); g.add(l); legs.push({ m: l }); });
+        return hd;
+      };
+      if (type === "pig") { box(g, .62, .5, .9, 0, .55, 0, 0xf0a0a8); box(g, .5, .46, .46, 0, .7, .6, 0xf0a0a8); box(g, .26, .18, .06, 0, .64, .85, 0xe07a88); box(g, .08, .08, .02, -.13, .8, .84, eye, true); box(g, .08, .08, .02, .13, .8, .84, eye, true); [[-.2, -.3], [.2, -.3], [-.2, .3], [.2, .3]].forEach(([x, z]) => { const l = new THREE.Group(); l.position.set(x, .3, z); box(l, .18, .3, .18, 0, -.15, 0, 0xe8909a); g.add(l); legs.push({ m: l }); }); }
+      if (type === "cow") { box(g, .7, .7, 1.1, 0, .95, 0, 0x4a3020); box(g, .72, .3, .4, 0, 1.05, -.1, 0xf0f0f0); box(g, .5, .5, .4, 0, 1.15, .72, 0x4a3020); box(g, .3, .2, .05, 0, 1.0, .93, 0xf0d0c0); box(g, .5, .08, .08, 0, 1.45, .7, 0xdddddd); box(g, .08, .08, .02, -.14, 1.22, .93, eye, true); box(g, .08, .08, .02, .14, 1.22, .93, eye, true); [[-.22, -.38], [.22, -.38], [-.22, .38], [.22, .38]].forEach(([x, z]) => { const l = new THREE.Group(); l.position.set(x, .6, z); box(l, .2, .6, .2, 0, -.3, 0, 0x3a2418); g.add(l); legs.push({ m: l }); }); }
+      if (type === "sheep") { box(g, .8, .7, 1.0, 0, .85, 0, 0xf2f2f2); box(g, .42, .42, .4, 0, 1.0, .62, 0xd8c8b8); box(g, .07, .07, .02, -.12, 1.06, .83, eye, true); box(g, .07, .07, .02, .12, 1.06, .83, eye, true); [[-.22, -.32], [.22, -.32], [-.22, .32], [.22, .32]].forEach(([x, z]) => { const l = new THREE.Group(); l.position.set(x, .5, z); box(l, .17, .5, .17, 0, -.25, 0, 0xd8c8b8); g.add(l); legs.push({ m: l }); }); }
+      if (type === "chicken") { box(g, .36, .36, .46, 0, .42, 0, 0xfafafa); box(g, .26, .32, .24, 0, .74, .2, 0xfafafa); box(g, .14, .08, .12, 0, .72, .36, 0xffb030); box(g, .08, .1, .04, 0, .62, .33, 0xe02020); box(g, .05, .05, .02, -.08, .8, .32, eye, true); box(g, .05, .05, .02, .08, .8, .32, eye, true); [-.08, .08].forEach((x) => { const l = new THREE.Group(); l.position.set(x, .24, 0); box(l, .05, .24, .05, 0, -.12, 0, 0xffb030); g.add(l); legs.push({ m: l }); }); }
+      if (type === "zombie") humanoid(0x4a8a3a, 0x2aa0b0, 0x4a8a3a, 0x3a3aa0, true);
+      if (type === "skeleton") { humanoid(0xd8d8d0, 0xc8c8c0, 0xc8c8c0, 0xc8c8c0, true); const bw = box(g, .05, .6, .05, .36, 1.38, .5, 0x8a5a2b); void bw; }
+      if (type === "spider") { box(g, .6, .45, .6, 0, .45, -.25, 0x2a2a2a); box(g, .5, .4, .4, 0, .45, .3, 0x333333); [[-.1, .51], [.1, .51], [-.18, .51], [.18, .51]].forEach(([x, z], i) => box(g, .07, .07, .02, x, .52 + (i > 1 ? .06 : 0), z, 0xff2020, true)); for (let i = 0; i < 8; i++) { const side = i < 4 ? -1 : 1, k = i % 4, l = new THREE.Group(); l.position.set(side * .25, .45, .25 - k * .2); const leg = box(l, .8, .06, .06, side * .4, 0, 0, 0x1a1a1a); leg.rotation.z = side * -.35; g.add(l); legs.push({ m: l, spider: true }); } }
+      if (type === "creeper") { box(g, .5, .5, .5, 0, 1.35, 0, 0x4aa84a); box(g, .12, .12, .02, -.12, 1.42, .26, eye, true); box(g, .12, .12, .02, .12, 1.42, .26, eye, true); box(g, .1, .2, .02, 0, 1.24, .26, eye, true); box(g, .45, .8, .26, 0, .7, 0, 0x5ab85a); [[-.12, -.18], [.12, -.18], [-.12, .18], [.12, .18]].forEach(([x, z]) => { const l = new THREE.Group(); l.position.set(x, .3, z); box(l, .2, .3, .2, 0, -.15, 0, 0x4a984a); g.add(l); legs.push({ m: l }); }); }
+      g.traverse((o) => { if (o.isMesh && o.material.isMeshLambertMaterial) o.userData.base = o.material.color.getHex(); });
+      g.userData.legs = legs; return g;
+    }
+    function spawnMob(type, x, y, z) { const d = MOB[type], m = { type, d, x, y, z, vx: 0, vz: 0, vy: 0, yaw: Math.random() * 6.28, hp: d.hp, t: 0, wander: 0, flee: 0, cd: 0, fuse: 0, hurtT: 0, mesh: makeMob(type), ground: false }; scene.add(m.mesh); mobs.push(m); return m; }
+    function removeMob(m) { scene.remove(m.mesh); m.mesh.traverse((o) => { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } }); mobs = mobs.filter((q) => q !== m); }
+    function damageMob(m, dmg, fx, fz) {
+      m.hp -= dmg; m.hurtT = .3; const dx = m.x - fx, dz = m.z - fz, l = Math.hypot(dx, dz) || 1; m.kx = dx / l * 6; m.kz = dz / l * 6; m.vy = 5; if (m.d.passive) m.flee = 4;
+      snd(m.d.passive ? 520 : 140, .1, "square");
+      if (m.hp <= 0) {
+        removeMob(m);
+        if (mode !== "creative") m.d.drops.forEach(([id, a2, b2, chance]) => { if (chance && Math.random() > chance) return; const n = a2 + Math.floor(Math.random() * (b2 - a2 + 1)); if (n > 0) addItem(ref(id), n); });
+        if (!m.d.passive) { Hero.earn(3); }
+        toast(`${m.d.n} побеждён!`);
+      }
+    }
+    function mobCollide(m, nx, ny, nz) { const hw = m.d.w / 2 - .05; for (let y = Math.floor(ny); y <= Math.floor(ny + m.d.h - .01); y++) for (let z = Math.floor(nz - hw); z <= Math.floor(nz + hw); z++) for (let x = Math.floor(nx - hw); x <= Math.floor(nx + hw); x++) if (solid(get(x, y, z))) return true; return false; }
+    function shootArrow(x, y, z, dx, dy, dz, from, dmg) {
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(.05, .05, .5), new THREE.MeshLambertMaterial({ color: 0x8a6a3a })); mesh.position.set(x, y, z); scene.add(mesh);
+      arrows.push({ x, y, z, vx: dx * 26, vy: dy * 26, vz: dz * 26, from, dmg, mesh, life: 3 });
+    }
+    function updMobs(dt, t) {
+      const night = isNight();
+      // spawning
+      spawnT -= dt;
+      if (spawnT <= 0) {
+        spawnT = 2;
+        const pas = mobs.filter((m) => m.d.passive).length, hos = mobs.length - pas;
+        const want = !night && pas < 7 ? ["pig", "cow", "sheep", "chicken"] : night && hos < 6 ? ["zombie", "zombie", "skeleton", "spider", "creeper"] : null;
+        if (want && mobs.length < 16) {
+          for (let k = 0; k < 8; k++) {
+            const a2 = Math.random() * 6.28, r = 12 + Math.random() * 14, x = Math.floor(P.x + Math.cos(a2) * r), z = Math.floor(P.z + Math.sin(a2) * r);
+            if (x < 1 || z < 1 || x >= SX - 1 || z >= SZ - 1) continue;
+            let y = SY - 2; while (y > 0 && !get(x, y, z)) y--; const top = get(x, y, z);
+            if (!solid(top) || top === ID["Листва"] || get(x, y + 1, z) || get(x, y + 2, z)) continue;
+            if (want[0] === "pig" && top !== ID["Трава"]) continue;
+            spawnMob(want[(Math.random() * want.length) | 0], x + .5, y + 1, z + .5); break;
+          }
+        }
+      }
+      mobs.slice().forEach((m) => {
+        const d = m.d, dx = P.x - m.x, dz = P.z - m.z, dist = Math.hypot(dx, dz);
+        let mx = 0, mz = 0, sp = d.spd;
+        if (!d.passive && !night) { m.burn = (m.burn || 0) + dt; if (d.n !== "Паук" && m.burn > 1) { m.burn = 0; m.hp -= 2; m.hurtT = .2; if (m.hp <= 0) { removeMob(m); return; } } }
+        if (dist > 60) { removeMob(m); return; }
+        if (d.passive) {
+          if (m.flee > 0) { m.flee -= dt; m.yaw = Math.atan2(-dx, -dz); mx = Math.sin(m.yaw); mz = Math.cos(m.yaw); sp *= 2.2; }
+          else { m.wander -= dt; if (m.wander <= 0) { m.wander = 2 + Math.random() * 4; m.walk = Math.random() < .6; m.yaw = Math.random() * 6.28; } if (m.walk) { mx = Math.sin(m.yaw); mz = Math.cos(m.yaw); } }
+        } else {
+          const chase = dist < 18;
+          if (chase) { m.yaw = Math.atan2(dx, dz); if (d.ranged) { const dir = dist < 6 ? -1 : dist > 11 ? 1 : 0; mx = Math.sin(m.yaw) * dir; mz = Math.cos(m.yaw) * dir; } else if (dist > (d.boom ? 1.6 : .9)) { mx = Math.sin(m.yaw); mz = Math.cos(m.yaw); } }
+          else { m.wander -= dt; if (m.wander <= 0) { m.wander = 3 + Math.random() * 3; m.yaw = Math.random() * 6.28; m.walk = Math.random() < .5; } if (m.walk) { mx = Math.sin(m.yaw) * .5; mz = Math.cos(m.yaw) * .5; } }
+          m.cd -= dt;
+          const dy = Math.abs(P.y - m.y);
+          if (d.dmg && !d.ranged && dist < d.w / 2 + .9 && dy < 1.6 && m.cd <= 0) { m.cd = d.n === "Паук" ? .8 : 1.1; hurt(d.dmg, [m.x, m.z], d.n); }
+          if (d.ranged && chase && m.cd <= 0 && dist < 16) { m.cd = 2.2; const ex = P.x - m.x, ey = P.y + 1.2 - (m.y + 1.6), ez = P.z - m.z, l = Math.hypot(ex, ey, ez); shootArrow(m.x, m.y + 1.6, m.z, ex / l, ey / l + .04 * l / 10, ez / l, "mob", d.dmg); }
+          if (d.boom) { if (dist < 2.8 && dy < 2) { m.fuse += dt; if (m.fuse > 1.5) { removeMob(m); explode(Math.floor(m.x), Math.floor(m.y), Math.floor(m.z)); return; } } else m.fuse = Math.max(0, m.fuse - dt); }
+        }
+        // movement and physics
+        const inW = get(Math.floor(m.x), Math.floor(m.y + .3), Math.floor(m.z)) === WATER;
+        m.vx = mx * sp + (m.kx || 0); m.vz = mz * sp + (m.kz || 0); m.kx = (m.kx || 0) * Math.pow(.02, dt); m.kz = (m.kz || 0) * Math.pow(.02, dt);
+        m.vy = inW ? Math.min(2, m.vy + 12 * dt) : Math.max(-30, m.vy - 26 * dt);
+        let blocked = false;
+        const nx = m.x + m.vx * dt; if (!mobCollide(m, nx, m.y, m.z) && nx > .5 && nx < SX - .5) m.x = nx; else blocked = true;
+        const nz = m.z + m.vz * dt; if (!mobCollide(m, m.x, m.y, nz) && nz > .5 && nz < SZ - .5) m.z = nz; else blocked = true;
+        const ny = m.y + m.vy * dt; if (!mobCollide(m, m.x, ny, m.z)) { m.y = ny; m.ground = false; } else { if (m.vy < 0) m.ground = true; m.vy = 0; }
+        if (blocked && m.ground && (mx || mz)) m.vy = 7.6;
+        if (m.y < -5) { removeMob(m); return; }
+        // visuals
+        m.mesh.position.set(m.x, m.y, m.z); m.mesh.rotation.y = m.yaw;
+        const moving = Math.abs(mx) + Math.abs(mz) > .1, sw = moving ? Math.sin(t * 9 + m.x) * .6 : 0;
+        m.mesh.userData.legs.forEach((L, i) => { if (L.spider) L.m.rotation.y = Math.sin(t * 12 + i) * (moving ? .3 : 0); else if (L.arm) L.m.rotation.x = L.base + (i % 2 ? sw : -sw) * .3; else L.m.rotation.x = i % 2 ? sw : -sw; });
+        m.hurtT = Math.max(0, m.hurtT - dt);
+        const flash = m.hurtT > 0 ? 0xff6060 : d.boom && m.fuse > 0 && Math.sin(t * 20) > 0 ? 0xffffff : null;
+        m.mesh.traverse((o) => { if (o.isMesh && o.userData.base !== undefined) o.material.color.setHex(flash || o.userData.base); });
+        if (d.boom) m.mesh.scale.setScalar(1 + m.fuse * .12);
+      });
+      // arrows
+      arrows = arrows.filter((a2) => {
+        a2.life -= dt; a2.vy -= 9 * dt; a2.x += a2.vx * dt; a2.y += a2.vy * dt; a2.z += a2.vz * dt;
+        a2.mesh.position.set(a2.x, a2.y, a2.z); a2.mesh.lookAt(a2.x + a2.vx, a2.y + a2.vy, a2.z + a2.vz);
+        let done = a2.life <= 0 || solid(get(Math.floor(a2.x), Math.floor(a2.y), Math.floor(a2.z)));
+        if (!done && a2.from === "mob" && Math.abs(a2.x - P.x) < .45 && Math.abs(a2.z - P.z) < .45 && a2.y > P.y && a2.y < P.y + PH) { hurt(a2.dmg, [a2.x - a2.vx, a2.z - a2.vz], "Стрела скелета"); done = true; }
+        if (!done && a2.from === "player") { const m = mobs.find((q) => Math.abs(a2.x - q.x) < q.d.w / 2 + .1 && Math.abs(a2.z - q.z) < q.d.w / 2 + .1 && a2.y > q.y && a2.y < q.y + q.d.h); if (m) { damageMob(m, a2.dmg, a2.x - a2.vx * .1, a2.z - a2.vz * .1); done = true; } }
+        if (done) { scene.remove(a2.mesh); a2.mesh.geometry.dispose(); a2.mesh.material.dispose(); }
+        return !done;
+      });
+    }
+    function pickMob() {
+      const ox = P.x, oy = P.y + EYE, oz = P.z, dx = -Math.sin(P.yaw) * Math.cos(P.pitch), dy = Math.sin(P.pitch), dz = -Math.cos(P.yaw) * Math.cos(P.pitch);
+      let best = null;
+      mobs.forEach((m) => {
+        const hw = m.d.w / 2 + .1, mn = [m.x - hw, m.y, m.z - hw], mxx = [m.x + hw, m.y + m.d.h, m.z + hw], o = [ox, oy, oz], dd = [dx, dy, dz];
+        let t0 = 0, t1 = 3.6;
+        for (let k = 0; k < 3; k++) { if (Math.abs(dd[k]) < 1e-6) { if (o[k] < mn[k] || o[k] > mxx[k]) return; continue; } let a2 = (mn[k] - o[k]) / dd[k], b2 = (mxx[k] - o[k]) / dd[k]; if (a2 > b2) [a2, b2] = [b2, a2]; t0 = Math.max(t0, a2); t1 = Math.min(t1, b2); if (t0 > t1) return; }
+        if (!best || t0 < best.dist) best = { mob: m, dist: t0 };
+      });
+      return best;
     }
     let shake = 0;
     // ---------- controls ----------
@@ -7404,45 +7774,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const endJoy = (e) => { if (joy && e.pointerId === joy.id) { joy = null; mv.x = mv.z = 0; knob.style.transform = ""; } };
     joyEl.addEventListener("pointerup", endJoy); joyEl.addEventListener("pointercancel", endJoy);
     function moveJoy(e) { const r = joyEl.getBoundingClientRect(); let dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2); const m = r.width / 2 - 10, l = Math.hypot(dx, dy); if (l > m) { dx *= m / l; dy *= m / l; } knob.style.transform = `translate(${dx}px, ${dy}px)`; mv.x = dx / m; mv.z = -dy / m; }
-    stage.addEventListener("pointerdown", (e) => { if (!playing || e.target.closest(".vc-btns, .vc-joy, .overlay")) return; look = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, btn: e.button }; try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
+    stage.addEventListener("pointerdown", (e) => { if (!playing || e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv")) return; look = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, btn: e.button }; try { stage.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } });
     stage.addEventListener("pointermove", (e) => { if (!look || e.pointerId !== look.id) return; const dx = e.clientX - look.x, dy = e.clientY - look.y; if (Math.abs(dx) + Math.abs(dy) > 3) look.moved = true; look.x = e.clientX; look.y = e.clientY; P.yaw -= dx * .006; P.pitch = Math.max(-1.5, Math.min(1.5, P.pitch - dy * .006)); });
-    stage.addEventListener("pointerup", (e) => { if (!look || e.pointerId !== look.id) return; const l = look; look = null; if (!l.moved && e.pointerType === "mouse") { if (l.btn === 2) doPlace(); else doBreak(); } });
+    stage.addEventListener("pointerup", (e) => { if (!look || e.pointerId !== look.id) return; const l = look; look = null; breaking = false; if (!l.moved && e.pointerType === "mouse" && l.btn === 2) doUse(); });
+    stage.addEventListener("pointerdown", (e) => { if (playing && e.pointerType === "mouse" && e.button === 0 && !e.target.closest(".vc-btns, .vc-joy, .overlay, .vc-inv")) { breaking = true; attackOrBreak(0, true); } });
     stage.addEventListener("contextmenu", (e) => e.preventDefault());
     const hold = (el, down, up) => { el.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); down(); }); if (up) { el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up); el.addEventListener("pointerleave", up); } };
     hold($("#vcJump"), () => { jumpHeld = true; }, () => { jumpHeld = false; });
-    let breakRep = 0, placeRep = 0;
-    hold($("#vcBreak"), () => { doBreak(); clearInterval(breakRep); breakRep = setInterval(doBreak, 260); }, () => clearInterval(breakRep));
-    hold($("#vcPlace"), () => { doPlace(); clearInterval(placeRep); placeRep = setInterval(doPlace, 300); }, () => clearInterval(placeRep));
+    let breakRep = 0, placeRep = 0, breaking = false;
+    hold($("#vcBreak"), () => { breaking = true; attackOrBreak(0, true); }, () => { breaking = false; brk = null; });
+    hold($("#vcPlace"), () => { doUse(); clearInterval(placeRep); placeRep = setInterval(() => { const sl = held(); if (sl && !isItem(sl.id)) doUse(); }, 300); }, () => clearInterval(placeRep));
     hold($("#vcFly"), () => { P.fly = !P.fly; $("#vcFly").classList.toggle("on", P.fly); Hero.say("craft", "start", P.fly ? "Режим полёта! ⬆️ — вверх" : "Полёт выключен"); });
-    window.addEventListener("keydown", (e) => { if (current !== "craft" || (e.target && e.target.closest && e.target.closest("input,textarea"))) return; const k = e.key.toLowerCase(); const map = { ц: "w", ф: "a", ы: "s", в: "d" }; keys[map[k] || k] = true; if (k === "f" || k === "а") { P.fly = !P.fly; $("#vcFly").classList.toggle("on", P.fly); } if (k === " ") e.preventDefault(); const n = parseInt(k, 10); if (n >= 1 && n <= 9) selectBlock(HOTBAR[n - 1]); });
+    window.addEventListener("keydown", (e) => { if (current !== "craft" || (e.target && e.target.closest && e.target.closest("input,textarea"))) return; const k = e.key.toLowerCase(); const map = { ц: "w", ф: "a", ы: "s", в: "d" }; keys[map[k] || k] = true; if (k === "f" || k === "а") { P.fly = !P.fly; $("#vcFly").classList.toggle("on", P.fly); } if (k === " ") e.preventDefault(); const n = parseInt(k, 10); if (n >= 1 && n <= 9) selectSlot(n - 1); if (k === "e" || k === "у") { $("#vcInv").hidden ? openInv() : closeInv(); } });
     window.addEventListener("keyup", (e) => { const k = e.key.toLowerCase(); const map = { ц: "w", ф: "a", ы: "s", в: "d" }; keys[map[k] || k] = false; });
-    // ---------- hotbar ----------
-    function hotbar() {
-      const box = $("#vcHot"); box.innerHTML = "";
-      HOTBAR.forEach((t) => {
-        const b = document.createElement("button"); b.type = "button"; b.dataset.t = t; b.title = BL[t][0];
-        const c = document.createElement("canvas"); c.width = 16; c.height = 16; const g = c.getContext("2d"); const ti = faceTile(t, "side"); g.drawImage(atlas, (ti % COLS) * PX, Math.floor(ti / COLS) * PX, PX, PX, 0, 0, 16, 16);
-        b.appendChild(c); b.appendChild(document.createTextNode(BL[t][0].length > 9 ? BL[t][0].slice(0, 8) + "…" : BL[t][0]));
-        b.addEventListener("click", () => selectBlock(t)); box.appendChild(b);
-      });
-      selectBlock(cur);
-    }
-    function selectBlock(t) { if (!t) return; cur = t; $("#vcBlockName").textContent = "🧱 " + BL[t][0]; $$("#vcHot button").forEach((b) => b.classList.toggle("on", +b.dataset.t === t)); }
-    $("#vcStart").addEventListener("click", () => { if (!ready) { init(); return; } ov.hidden = true; playing = true; Hero.say("craft", "start", "Добро пожаловать в V3 Craft! Ломай и строй."); });
+    $("#vcStart").addEventListener("click", () => { if (!ready) { init(); return; } ov.hidden = true; playing = true; hearts(); hotbar(); Hero.say("craft", "start", mode === "creative" ? "Творчество: строй что хочешь!" : "Выживание: добывай ресурсы, крафти инструменты. Ночью — мобы!"); });
     $("#vcSpawn").addEventListener("click", spawn);
-    $("#vcReset").addEventListener("click", () => { if (!confirm("Создать новый мир? Все постройки пропадут.")) return; mods = {}; seed = (Math.random() * 1e6) | 0; store.set("vcMods", mods); store.set("vcSeed", seed); generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); spawn(); Hero.say("craft", "good", "Новый мир создан! 🌍"); });
-    $("#vcDay").addEventListener("click", () => { night = !night; $("#vcDay").textContent = night ? "☀️ День" : "🌙 Ночь"; });
+    $("#vcReset").addEventListener("click", () => { if (!confirm("Создать новый мир? Все постройки пропадут.")) return; mods = {}; seed = (Math.random() * 1e6) | 0; store.set("vcMods", mods); store.set("vcSeed", seed); generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); mobs.slice().forEach(removeMob); inv = starter(); hp = 20; hotbar(); hearts(); saveInv(); spawn(); Hero.say("craft", "good", "Новый мир создан! 🌍"); });
+    $("#vcDay").addEventListener("click", () => { const ph = (dayT % DAY_LEN) / DAY_LEN; dayT += ((ph > .62 ? 1 : .63) - ph) * DAY_LEN; });
     function resize() { if (!r3) return; const w = stage.clientWidth || 360, h = stage.clientHeight || 480; r3.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
     window.addEventListener("resize", () => { if (current === "craft") resize(); });
     function frame(now) {
       raf = 0; if (current !== "craft") return;
       const dt = last ? Math.min(.05, (now - last) / 1000) : 1 / 60; last = now;
       if (ready) {
-        if (playing) physics(dt);
+        if (playing && $("#vcInv").hidden) { physics(dt); updMobs(dt, now / 1000); if (breaking) attackOrBreak(dt, false); }
+        atkCd = Math.max(0, atkCd - dt); hurtCd = Math.max(0, hurtCd - dt);
+        if (playing) { dayT += dt; if (Math.floor(dayT) % 5 === 0) store.set("vcDayT", Math.floor(dayT)); P.regen = (P.regen || 0) + dt; if (P.regen > 3) { P.regen = 0; if (hp < 20 && mode !== "creative") { hp++; hearts(); } } }
+        night = isNight(); $("#vcDay").textContent = night ? "☀️ День" : "🌙 Ночь";
+        const pr = $("#vcProg"); if (brk && brk.need > 0) { pr.style.opacity = 1; pr.style.background = `conic-gradient(rgba(255,255,255,.85) ${Math.min(1, brk.prog / brk.need) * 360}deg, rgba(0,0,0,.25) 0)`; pr.style.mask = pr.style.webkitMask = "radial-gradient(circle, transparent 13px, #000 14px)"; } else pr.style.opacity = 0;
         const sk = shake > 0 ? (shake -= dt, (Math.random() - .5) * shake * .3) : 0;
         cam.position.set(P.x + sk, P.y + EYE + sk, P.z); cam.rotation.order = "YXZ"; cam.rotation.set(P.pitch, P.yaw, 0);
         const sky = night ? 0x0d1430 : 0x8fcbe8; scene.background.setHex(sky); scene.fog.color.setHex(sky);
-        matSolid.color.setScalar(night ? .45 : 1); matWater.color.setScalar(night ? .45 : 1);
+        matSolid.color.setScalar(night ? .45 : 1); matWater.color.setScalar(night ? .45 : 1); if (lights) lights.intensity = night ? .15 : .55;
         sun.material.color.setHex(night ? 0xe8eeff : 0xfff4b0); sun.position.set(P.x + 30, P.y + 40, P.z - 20); sun.lookAt(cam.position);
         scene.children.forEach((c) => { if (c.userData.cloud) { c.position.x += dt * .6; if (c.position.x > SX + 20) c.position.x = -20; } });
         const h = playing ? pick() : null; hl.visible = !!h; if (h) hl.position.set(h.x + .5, h.y + .5, h.z + .5);
@@ -7453,10 +7816,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     mods = store.get("vcMods", {}); if (!mods || typeof mods !== "object") mods = {};
     generate(); spawn();
-    $("#vcPlaced").textContent = placed;
+    $("#vcPlaced").textContent = placed; setMode(mode); hearts();
+    if (location.hash === "#vcdebug") window.__vc = { P, mobs: () => mobs, spawn: (t, d) => spawnMob(t, P.x - Math.sin(P.yaw) * (d || 4), P.y + .5, P.z - Math.cos(P.yaw) * (d || 4)), inv: () => inv };
     return {
       enter() { init(); resize(); last = 0; if (!raf) raf = requestAnimationFrame(frame); setTimeout(resize, 50); },
-      leave() { playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
+      leave() { playing = false; ov.hidden = false; mv.x = mv.z = 0; keys = {}; jumpHeld = false; breaking = false; brk = null; closeInv(); saveInv(); clearInterval(breakRep); clearInterval(placeRep); if (raf) cancelAnimationFrame(raf); raf = 0; },
       key() {},
       best: () => String(placed),
     };
