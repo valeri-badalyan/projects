@@ -313,6 +313,26 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- Общение (live chat with online players) ---------- */
+.talk-btn { position: relative; }
+.talk-btn .badge2 { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--lime); color: #12132a; font: 900 11px var(--mono); border-radius: 999px; padding: 2px 7px; }
+.talk-btn .badge2.unread { background: var(--coral); color: #fff; }
+.tk-online { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.tk-online span { flex: none; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 999px; background: var(--panel); border: 2px solid var(--line); font-size: 12px; font-weight: 800; }
+.tk-online span i { width: 9px; height: 9px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 6px var(--lime); }
+.tk-online span small { color: var(--muted); font-weight: 700; }
+.tk-log { display: flex; flex-direction: column; gap: 6px; height: min(52vh, 420px); overflow-y: auto; padding: 10px; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); }
+.tk-msg { max-width: 82%; align-self: flex-start; padding: 7px 11px; border-radius: 14px; background: var(--panel-2); font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
+.tk-msg b { display: block; font-size: 11.5px; margin-bottom: 2px; }
+.tk-msg time { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; text-align: right; }
+.tk-msg.me { align-self: flex-end; background: #2f5aa8; }
+.tk-sys { align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
+.tk-form { display: flex; gap: 6px; }
+.tk-form input { flex: 1; min-width: 0; padding: 11px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-size: 15px; }
+.tk-emoji { display: flex; gap: 6px; flex-wrap: wrap; }
+.tk-emoji button { padding: 6px 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); font-size: 18px; cursor: pointer; }
+.tk-name { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+.tk-name input { flex: 1; min-width: 0; padding: 7px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-size: 13px; }
 /* ---------- V3 Craft ---------- */
 .vc-stage { position: relative; width: 100%; max-width: 480px; margin: 0 auto; aspect-ratio: 3 / 4; max-height: 62vh; border-radius: 14px; overflow: hidden; background: #8fcbe8; touch-action: none; user-select: none; -webkit-user-select: none; }
 .vc-stage canvas { display: block; width: 100%; height: 100%; }
@@ -1260,6 +1280,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubDubai">0/4</span></span>
       </button>
     </div>
+    <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
     <button class="btn donate wide" type="button" data-shop><span class="coin">+1K</span>Донат в игру</button>
     <footer class="foot">На телефоне управляй свайпами, на компьютере стрелками или WASD. Рекорды сохраняются в этом браузере.</footer>
@@ -1679,6 +1700,21 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
     <p class="hint">Перетаскивай пальцем или мышью. Ошибки считаются: деталь мимо места возвращается на стол.</p>
+  </section>
+
+  <!-- ===== Общение ===== -->
+  <section id="talk" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Общение</div>
+      <div class="chips"><div class="chip hi"><span>В сети</span><b id="tkCount">0</b></div></div>
+    </div>
+    <div class="tk-online" id="tkOnline" aria-label="Кто в сети"></div>
+    <div class="tk-log" id="tkLog" aria-live="polite"></div>
+    <div class="tk-emoji" id="tkEmoji"><button type="button">👋</button><button type="button">😂</button><button type="button">🔥</button><button type="button">👍</button><button type="button">❤️</button><button type="button">🎮</button><button type="button">⛏️</button><button type="button">🏆</button></div>
+    <form class="tk-form" id="tkForm"><input id="tkInput" type="text" maxlength="200" placeholder="Напиши игрокам в сети…" autocomplete="off" aria-label="Сообщение"><button class="btn" type="submit">➤</button></form>
+    <label class="tk-name" for="tkNick">Твоё имя в чате: <input id="tkNick" type="text" maxlength="16" placeholder="Имя"></label>
+    <p class="hint">Сообщения видят все, у кого сейчас открыта V3 Games. Чат живой: когда игрок выходит, его сообщения пропадают у остальных. Не пиши личные данные — адрес, телефон, пароли.</p>
   </section>
 
   <!-- ===== V3 Craft ===== -->
@@ -5375,7 +5411,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -5587,7 +5623,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -6939,7 +6975,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -7175,6 +7211,84 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       key() {},
       best: () => (best === null ? "—" : fmt(best) + " с"),
     };
+  })();
+
+  /* ================= Общение: chat with the players online right now ================= */
+  const Talk = (() => {
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
+    let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
+    if (!Array.isArray(mine)) mine = [];
+    mine = mine.filter((m) => Date.now() - m[1] < 30 * 60000);   // keep only fresh messages in presence
+    store.set("talkColor", color);
+    const myName = () => (nick || Hero.name() || "Игрок").slice(0, 16);
+    const fmt = (t) => new Date(t).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    function push() { if (room) room.presence({ n: myName(), c: color, g: current, m: mine.slice(-15), ts: Date.now() }).catch(() => {}); }
+    function online() { return room ? room.peers().filter((pr) => pr.presence && pr.presence.n) : []; }
+    function collect() {
+      let fresh = 0;
+      online().forEach((pr) => {
+        const ps = pr.presence; (Array.isArray(ps.m) ? ps.m : []).forEach((m) => {
+          if (!Array.isArray(m) || typeof m[2] !== "string") return;
+          const key = pr.peer + ":" + m[0]; if (log.has(key)) return;
+          log.set(key, { me: pr.isMe, n: String(ps.n || "Игрок").slice(0, 16), c: /^#[0-9a-f]{6}$/i.test(ps.c) ? ps.c : "#ccc", t: +m[1] || Date.now(), text: m[2].slice(0, 200) });
+          if (!pr.isMe) fresh++;
+        });
+      });
+      if (log.size > 300) [...log.keys()].slice(0, log.size - 300).forEach((k) => log.delete(k));
+      return fresh;
+    }
+    function renderOnline() {
+      const list = online(), n = list.length;
+      $("#tkCount").textContent = n; const bd = $("#talkBadge");
+      bd.textContent = unread ? `${unread} новых` : `${n} в сети`; bd.classList.toggle("unread", !!unread);
+      const box = $("#tkOnline"); box.innerHTML = "";
+      if (!room) { box.innerHTML = "<span>Ты не в сети</span>"; return; }
+      list.sort((a, b) => (b.isMe ? 1 : 0) - (a.isMe ? 1 : 0)).forEach((pr) => {
+        const sp = document.createElement("span"); sp.innerHTML = "<i></i><b></b><small></small>";
+        sp.querySelector("b").textContent = (pr.isMe ? "Ты · " : "") + String(pr.presence.n).slice(0, 16); sp.querySelector("b").style.color = /^#[0-9a-f]{6}$/i.test(pr.presence.c) ? pr.presence.c : "";
+        sp.querySelector("small").textContent = GNAME[pr.presence.g] || "";
+        box.appendChild(sp);
+      });
+    }
+    function renderLog() {
+      const box = $("#tkLog"), atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+      box.innerHTML = "";
+      if (!room) { box.innerHTML = `<p class="tk-sys">Общение работает на опубликованной странице V3 Games для тех, кого владелец пригласил в неё. Сейчас ты не в сети.</p>`; return; }
+      const items = [...log.values()].sort((a, b) => a.t - b.t);
+      if (!items.length) box.innerHTML = `<p class="tk-sys">Пока тихо. Напиши первым — сообщение увидят все игроки в сети 👋</p>`;
+      items.forEach((m) => { const d = document.createElement("div"); d.className = "tk-msg" + (m.me ? " me" : ""); d.innerHTML = "<b></b><span></span><time></time>"; d.querySelector("b").textContent = m.me ? "Ты" : m.n; d.querySelector("b").style.color = m.me ? "#cfe0ff" : m.c; d.querySelector("span").textContent = m.text; d.querySelector("time").textContent = fmt(m.t); box.appendChild(d); });
+      if (atBottom || items.length && items[items.length - 1].me) box.scrollTop = box.scrollHeight;
+    }
+    function send(text) {
+      text = String(text || "").replace(/\s+/g, " ").trim().slice(0, 200); if (!text) return;
+      if (!room) { renderLog(); return; }
+      if (Date.now() - sentAt < 250) return; sentAt = Date.now();
+      mine.push([Date.now().toString(36) + Math.random().toString(36).slice(2, 4), Date.now(), text]); mine = mine.slice(-15); store.set("talkMine", mine);
+      push(); collect(); renderLog();
+    }
+    function update() {
+      const fresh = collect();
+      if (fresh && $("#talk").hidden) unread += fresh;
+      if (!$("#talk").hidden) { unread = 0; renderLog(); }
+      renderOnline();
+    }
+    (async () => {
+      try {
+        room = window.claude && typeof window.claude.use === "function" ? await window.claude.use("room") : null;
+        if (!room) { renderOnline(); return; }
+        room.onPeers(update, () => { room = null; renderOnline(); renderLog(); });
+        push();
+        // keep "where I am" fresh for the online list
+        setInterval(() => { if (current !== lastG) { lastG = current; push(); } }, 1500);
+      } catch (e) { room = null; renderOnline(); }
+    })();
+    $("#tkForm").addEventListener("submit", (e) => { e.preventDefault(); send($("#tkInput").value); $("#tkInput").value = ""; });
+    $("#tkEmoji").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) send(b.textContent); });
+    $("#tkNick").value = nick;
+    $("#tkNick").addEventListener("change", () => { nick = $("#tkNick").value.replace(/\s+/g, " ").trim().slice(0, 16); store.set("talkNick", nick); push(); });
+    renderOnline();
+    return { me: () => ({ n: myName(), c: color }), enter() { unread = 0; collect(); renderLog(); renderOnline(); push(); setTimeout(() => { const b = $("#tkLog"); b.scrollTop = b.scrollHeight; }, 30); } };
   })();
 
   /* ================= V3 Craft: voxel sandbox (Three.js r128) ================= */
@@ -7647,7 +7761,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         // rotate through the whole world's changes so late joiners receive every building
         const keys = Object.keys(mods), chunk = [];
         for (let k = 0; k < 90 && keys.length; k++) { mp.wi = (mp.wi + 1) % keys.length; const key = keys[mp.wi], [x, y, z] = key.split(",").map(Number); chunk.push([x, y, z, mods[key], modsT[key] || 0]); }
-        mp.room.presence({ g: "craft", o: mp.owner && !mp.guest, since: mp.since, n: (Hero.name() || "Игрок").slice(0, 14), c: myColor, s: seed, p: [+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), +P.yaw.toFixed(2)], q: mp.seq, e: mp.edits, w: chunk, h: h2 ? String(h2.id) : "" }).catch(() => {});
+        mp.room.presence({ g: "craft", o: mp.owner && !mp.guest, since: mp.since, n: Talk.me().n, c: Talk.me().c, s: seed, p: [+P.x.toFixed(2), +P.y.toFixed(2), +P.z.toFixed(2), +P.yaw.toFixed(2)], q: mp.seq, e: mp.edits, w: chunk, h: h2 ? String(h2.id) : "" }).catch(() => {});
       }
       const live = new Set();
       crafters().forEach((pr) => {
@@ -9895,7 +10009,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "ideas", "events", "chars", "gear", "chats"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -9930,8 +10044,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "chats") HeroChat.list();
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
+    if (name === "talk") Talk.enter();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
