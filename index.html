@@ -313,6 +313,39 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .rs-grid button i { font-style: normal; font-size: 26px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 10px; }
 .rs-grid button.on { border-color: var(--lime); }
 .rs-grid .wide { grid-column: 1 / -1; flex-direction: row; justify-content: center; }
+/* ---------- Ads (house ads for V3 games) ---------- */
+.ad-banner { position: relative; overflow: hidden; border-radius: 16px; min-height: 92px; cursor: pointer; border: 2px solid rgba(255,255,255,.15); color: #fff; text-align: left; padding: 12px 14px 12px 96px; display: flex; flex-direction: column; justify-content: center; gap: 3px; font: inherit; width: 100%; }
+.ad-banner .ad-art { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 74px; height: 74px; display: grid; place-items: center; font-size: 46px; animation: adbob 2s ease-in-out infinite; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+@keyframes adbob { 50% { transform: translateY(-58%) rotate(-4deg); } }
+.ad-banner b { font-family: var(--display); font-size: 15px; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.ad-banner span { font-size: 12.5px; opacity: .92; line-height: 1.3; }
+.ad-banner .cta { align-self: flex-start; margin-top: 3px; padding: 4px 10px; border-radius: 999px; background: #fff; color: #12132a; font-weight: 900; font-size: 11.5px; }
+.ad-tag { position: absolute; right: 8px; top: 6px; font: 800 9px var(--mono); padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,.35); letter-spacing: .1em; }
+.ad-dots { position: absolute; right: 10px; bottom: 8px; display: flex; gap: 4px; }
+.ad-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.4); }
+.ad-dots i.on { background: #fff; }
+.ad-shine { position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.25) 45%, transparent 60%); transform: translateX(-100%); animation: adshine 3.5s ease-in-out infinite; pointer-events: none; }
+@keyframes adshine { 60%, 100% { transform: translateX(100%); } }
+.ad-reward { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.ad-full { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(5,5,15,.88); padding: 16px; }
+.ad-full[hidden] { display: none; }
+.ad-card { position: relative; width: min(380px, 100%); border-radius: 22px; overflow: hidden; color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+.ad-stage { position: relative; height: 300px; display: grid; place-items: center; overflow: hidden; }
+.ad-stage .big { font-size: 110px; animation: adzoom 1.6s ease-out both, adbob 2.2s ease-in-out 1.6s infinite; filter: drop-shadow(0 10px 14px rgba(0,0,0,.4)); }
+@keyframes adzoom { from { transform: scale(.2) rotate(-30deg); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.ad-stage .spark { position: absolute; font-size: 22px; animation: adspark 2.4s linear infinite; }
+@keyframes adspark { from { transform: translateY(40px) scale(.5); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-120px) scale(1.2); opacity: 0; } }
+.ad-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; background: rgba(0,0,0,.25); }
+.ad-body h3 { margin: 0; font-family: var(--display); font-size: 22px; }
+.ad-body p { margin: 0; font-size: 14px; line-height: 1.4; }
+.ad-bar { height: 5px; background: rgba(255,255,255,.25); }
+.ad-bar i { display: block; height: 100%; width: 0; background: #fff; }
+.ad-x { position: absolute; right: 10px; top: 10px; z-index: 2; min-width: 38px; height: 38px; padding: 0 10px; border-radius: 999px; border: 0; background: rgba(0,0,0,.55); color: #fff; font-weight: 900; font-size: 14px; cursor: pointer; }
+.ad-x[disabled] { cursor: default; opacity: .85; }
+.ad-row { display: flex; gap: 8px; }
+.ad-row .btn { flex: 1; padding: 10px 8px; font-size: 13px; }
+.ad-free { background: none; border: 0; color: rgba(255,255,255,.75); font-size: 12px; text-decoration: underline; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .ad-banner .ad-art, .ad-shine, .ad-stage .big, .ad-stage .spark { animation: none; } }
 /* ---------- Общение (live chat with online players) ---------- */
 .talk-btn { position: relative; }
 .talk-btn .badge2 { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: var(--lime); color: #12132a; font: 900 11px var(--mono); border-radius: 999px; padding: 2px 7px; }
@@ -1087,6 +1120,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <button class="btn ghost small" type="button" data-inv-open>Мои вещи</button>
       </div>
     </div>
+    <button class="ad-banner" type="button" id="adBanner" aria-label="Реклама"><span class="ad-art" id="adArt">⛏️</span><b id="adTitle">V3 Craft</b><span id="adText">Строй вместе с друзьями!</span><span class="cta" id="adCta">Играть ▶</span><span class="ad-tag">РЕКЛАМА</span><span class="ad-dots" id="adDots"></span><span class="ad-shine"></span></button>
     <button class="events-btn" type="button" data-go="events" id="eventsBtn">
       <span><b>EVENTS</b><small id="eventsSub">События дня, турниры и праздники</small></span>
       <span class="ev-count" id="eventsCount">0 сейчас</span>
@@ -1282,6 +1316,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
+    <button class="btn ghost wide ad-reward" type="button" id="adWatch">📺 Смотреть рекламу · <b>+100 монет</b> <small id="adLeft"></small></button>
     <button class="btn donate wide" type="button" data-shop><span class="coin">+1K</span>Донат в игру</button>
     <footer class="foot">На телефоне управляй свайпами, на компьютере стрелками или WASD. Рекорды сохраняются в этом браузере.</footer>
   </section>
@@ -2040,6 +2075,21 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 </div>
 
 <canvas id="blastFx" hidden></canvas>
+
+<!-- ===== Full-screen ad ===== -->
+<div class="ad-full" id="adFull" hidden role="dialog" aria-modal="true" aria-labelledby="adFTitle">
+  <div class="ad-card" id="adCard">
+    <button class="ad-x" type="button" id="adX" disabled>5</button>
+    <div class="ad-stage" id="adStage"><span class="big" id="adBig">⛏️</span></div>
+    <div class="ad-bar"><i id="adBar"></i></div>
+    <div class="ad-body">
+      <h3 id="adFTitle">V3 Craft</h3>
+      <p id="adFText"></p>
+      <div class="ad-row"><button class="btn" type="button" id="adGo">Играть ▶</button></div>
+      <button class="ad-free" type="button" id="adFree">Убрать рекламу навсегда — 3000 монет</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===== Inventory ===== -->
 <div class="shop" id="invModal" hidden role="dialog" aria-modal="true" aria-labelledby="invTitle">
@@ -7213,6 +7263,70 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Реклама: house ads for V3 games ================= */
+  const Ads = (() => {
+    const ADS = [
+      { go: "craft", ico: "⛏️", t: "V3 CRAFT", s: "Строй мир из 40 видов блоков вместе с друзьями — по одной ссылке!", bg: "linear-gradient(135deg,#3a9a3a,#1f5a7a)", fx: ["🧱", "💎", "🐷", "🌳"] },
+      { go: "mine", ico: "🏰", t: "MY MINE", s: "Построй армию, защити башнями и разгроми красных. Теперь в 3D!", bg: "linear-gradient(135deg,#7a1f3d,#2f3fa0)", fx: ["⚔️", "🏹", "🪙", "🚢"] },
+      { go: "chars", ico: "🤖", t: "ВАЛЕРИЙ · ГИГА УЛЬТРА", s: "Самый мощный персонаж V3 с короной из стальных кубиков. Забери его!", bg: "linear-gradient(135deg,#12062e,#7a3cff)", fx: ["⚡", "💜", "✨", "🔮"] },
+      { go: "dubai", ico: "🏙️", t: "JUST DUBAI!", s: "Бурдж Халифа, фонтаны Dubai Mall и 12 магазинов с бесконечными деньгами.", bg: "linear-gradient(135deg,#ff9a5a,#d9a520)", fx: ["🌴", "🛍️", "⛲", "🐪"] },
+      { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
+      { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
+      { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
+      { go: "dress", ico: "🕺", t: "ПЕРЕОДЕНЬ ЛИЧНОСТЬ", s: "Наряди MJ, Оливера Три, Милану и себя — и разрисуй одежду кистью!", bg: "linear-gradient(135deg,#ff5ad1,#5ce1e6)", fx: ["🎩", "🕶️", "👟", "🎨"] },
+      { go: "talk", ico: "💬", t: "ОБЩЕНИЕ", s: "Пиши друзьям, которые сейчас в сети, и зови их играть вместе.", bg: "linear-gradient(135deg,#2f6fd6,#9be15d)", fx: ["👋", "😂", "🎮", "❤️"] },
+    ];
+    const DAILY = 10, REWARD = 100;
+    let idx = (Math.random() * ADS.length) | 0, timer = 0, adFree = !!store.get("adFree", false), backs = store.get("adBacks", 0) | 0;
+    const today = () => new Date().toISOString().slice(0, 10);
+    let watched = store.get("adWatched", { d: today(), n: 0 }); if (!watched || watched.d !== today()) watched = { d: today(), n: 0 };
+    function banner() {
+      const a = ADS[idx], el = $("#adBanner"); if (!el) return;
+      el.hidden = adFree; if (adFree) return;
+      el.style.background = a.bg; $("#adArt").textContent = a.ico; $("#adTitle").textContent = a.t; $("#adText").textContent = a.s; $("#adCta").textContent = a.go === "chars" ? "Открыть ▶" : "Играть ▶";
+      $("#adDots").innerHTML = ADS.map((_, i) => `<i class="${i === idx ? "on" : ""}"></i>`).join("");
+    }
+    function rotate() { idx = (idx + 1) % ADS.length; banner(); }
+    function leftTxt() { const left = DAILY - watched.n; $("#adLeft").textContent = left > 0 ? `(ещё ${left} сегодня)` : "(на сегодня всё)"; $("#adWatch").disabled = left <= 0; }
+    // full-screen ad: rewarded (watch to the end for coins) or a short break between games
+    let full = null, fullT = 0;
+    function showFull(rewarded) {
+      const a = ADS[(idx + 1 + ((Math.random() * (ADS.length - 1)) | 0)) % ADS.length], dur = rewarded ? 6 : 4;
+      full = { a, rewarded, dur, t0: performance.now(), done: false };
+      $("#adCard").style.background = a.bg; $("#adBig").textContent = a.ico; $("#adFTitle").textContent = a.t; $("#adFText").textContent = a.s;
+      $("#adGo").textContent = a.go === "chars" ? "Открыть ▶" : "Играть ▶";
+      const st = $("#adStage"); st.querySelectorAll(".spark").forEach((e) => e.remove());
+      for (let i = 0; i < 10; i++) { const sp = document.createElement("span"); sp.className = "spark"; sp.textContent = a.fx[i % a.fx.length]; sp.style.left = (5 + Math.random() * 85) + "%"; sp.style.top = (40 + Math.random() * 50) + "%"; sp.style.animationDelay = (Math.random() * 2.4) + "s"; st.appendChild(sp); }
+      $("#adFree").hidden = rewarded || adFree;
+      $("#adX").disabled = true; $("#adBar").style.width = "0"; $("#cop").hidden = true;
+      $("#adFull").hidden = false;
+      clearInterval(fullT);
+      fullT = setInterval(() => {
+        const k = Math.min(1, (performance.now() - full.t0) / 1000 / full.dur), left = Math.ceil(full.dur * (1 - k));
+        $("#adBar").style.width = (k * 100) + "%";
+        if (k < 1) { $("#adX").textContent = rewarded ? `${left} с` : left; return; }
+        clearInterval(fullT); full.done = true; $("#adX").disabled = false; $("#adX").textContent = "✕";
+        if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
+      }, 100);
+    }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk"].includes(current); full = null; }
+    $("#adX").addEventListener("click", closeFull);
+    $("#adGo").addEventListener("click", () => { const a = full && full.a; if (!full || (full.rewarded && !full.done)) return; clearInterval(fullT); $("#adFull").hidden = true; full = null; if (a) show(a.go); });
+    $("#adFree").addEventListener("click", () => {
+      if (Hero.coins() < 3000) { $("#adFree").textContent = `Нужно 3000 монет — у тебя ${Hero.coins()}`; return; }
+      Hero.grant(-3000); adFree = true; store.set("adFree", true); banner(); $("#adFull").hidden = true; clearInterval(fullT); full = null; Hero.say("snake", "win", "Реклама убрана навсегда!");
+    });
+    $("#adBanner").addEventListener("click", () => show(ADS[idx].go));
+    $("#adWatch").addEventListener("click", () => { if (watched.n >= DAILY) return; showFull(true); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#adFull").hidden) { e.stopPropagation(); closeFull(); } }, true);
+    banner(); leftTxt(); timer = setInterval(() => { if (current === "hub" && document.visibilityState === "visible") rotate(); }, 6000);
+    return {
+      // a short break every third time you come back to the menu from a game
+      fromGame() { if (adFree) return; backs++; store.set("adBacks", backs); if (backs % 3 === 0) setTimeout(() => showFull(false), 250); },
+      isOpen: () => !$("#adFull").hidden,
+    };
+  })();
+
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
     const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
@@ -10034,6 +10148,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
+    const fromGame = !!GAMES[current] && name === "hub";
     if (GAMES[current] && current !== name) GAMES[current].leave();
     if (window.Pair) window.Pair.cancel();
     SCREENS.forEach((s) => { $("#" + s).hidden = s !== name; });
@@ -10045,6 +10160,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     if (name === "talk") Talk.enter();
+    if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
     $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk";
     if (GAMES[name]) Events.greet(name);
