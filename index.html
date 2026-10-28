@@ -532,6 +532,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 @keyframes sodabub { to { transform: translate(var(--dx), -90px); opacity: 0; } }
 /* ---------- Just Dubai! ---------- */
 #dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
+#yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .dx-places button {
   display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 14px; border: 2px solid var(--line);
@@ -1313,6 +1314,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubDubai">0/4</span></span>
       </button>
+      <button class="cart" data-go="yerevan" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="yvsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fc0ee"/><stop offset="1" stop-color="#f6e2c4"/></linearGradient></defs><rect width="64" height="64" fill="url(#yvsky)"/><path d="M2 40 Q16 26 26 12 L30 13 Q38 24 44 27 L48 24 Q54 32 62 40Z" fill="#a99cc0"/><path d="M19 22 Q23 16 26 12 L30 13 Q32 17 35 20 L31 19 L28 22 L24 19Z M45 26 L48 24 L50 27 L47 28Z" fill="#fff"/><g fill="#e2a184"><rect x="0" y="42" width="12" height="22"/><rect x="40" y="38" width="10" height="26"/><rect x="52" y="44" width="12" height="20"/></g><path d="M14 64 L22 44 L38 44 L46 64Z" fill="#f3ead6"/><g stroke="#c9b28c" stroke-width="1"><path d="M21 48 H39 M19 53 H41 M17 58 H43"/></g><g fill="#c97f6a"><rect x="3" y="46" width="2" height="3"/><rect x="7" y="46" width="2" height="3"/><rect x="43" y="42" width="2" height="3"/><rect x="55" y="48" width="2" height="3"/></g></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Just Yerevan</span>
+          <span class="cart-desc">Ереван: Каскад с видом на Арарат, поющие фонтаны, Вернисаж и лаваш из тонира.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubYerevan">0/4</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1665,6 +1676,37 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <span class="st" data-st="burj">BK</span><span class="st" data-st="deira">DC</span><span class="st" data-st="mall">DM</span><span class="st" data-st="marina">MB</span>
     </div>
     <p class="hint">Выбери место — такси довезёт. В каждом месте есть своё занятие; за него ставится штамп и +50 монет. Все 4 штампа — бонус +200.</p>
+  </section>
+
+  <section id="yerevan" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Just Yerevan</div>
+      <div class="chips"><div class="chip hi"><span>Драмы</span><b>∞</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Барев!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="yvStage">
+      <canvas id="yvCanvas" width="440" height="330" aria-label="Ереван"></canvas>
+    </div>
+    <div class="dx-acts">
+      <button class="btn" type="button" id="yvAction" hidden>Действие</button>
+      <button class="btn ghost" type="button" id="yvMap">Карта</button>
+      <button class="btn ghost" type="button" data-inv-open>Мои вещи</button>
+    </div>
+    <div class="dx-places" id="yvPlaces">
+      <button type="button" data-place="cascade"><i style="background:#efe3c8">▲</i>Каскад</button>
+      <button type="button" data-place="square"><i style="background:#ff5ad1">●</i>Площадь Республики</button>
+      <button type="button" data-place="vern"><i style="background:#ffb547">◆</i>Вернисаж</button>
+      <button type="button" data-place="lavash"><i style="background:#ff8a3d">★</i>Лавашная</button>
+    </div>
+    <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
+      <span class="st" data-st="cascade">КС</span><span class="st" data-st="square">ПР</span><span class="st" data-st="vern">ВР</span><span class="st" data-st="lavash">ЛВ</span>
+    </div>
+    <p class="hint">Выбери место — такси довезёт. Поднимись по Каскаду к виду на Арарат, послушай поющие фонтаны, купи сувениры на Вернисаже и испеки лаваш. Штамп +50 монет, все 4 — бонус +200.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -5256,7 +5298,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   /* ================= Just Dubai! ================= */
   // ---------- Inventory: saved on the device, synced to the account when online ----------
   const Inv = (() => {
-    const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет"];
+    const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет", "Вкусы Еревана"];
     // clothing → where it sits on the character
     const WEAR = { "Футболка": "body", "Платье": "body", "Форма": "body", "Кепка": "head", "Очки": "eyes", "Шарф": "neck", "Сумка": "bag", "Перчатки": "hands", "Джинсы": "legs", "Кроссовки": "feet", "Бутсы": "feet" };
     const charIds = CHARS.map((c) => c.id);
@@ -6577,6 +6619,409 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Just Yerevan ================= */
+  const Yerevan = (() => {
+    const cv = $("#yvCanvas"), ctx = cv.getContext("2d"), stage = $("#yvStage");
+    let W = 440, H = 330, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
+    const PLACES = {
+      cascade: { name: "Каскад", map: [.47, .4] },
+      square: { name: "Площадь Республики", map: [.55, .68] },
+      vern: { name: "Вернисаж", map: [.78, .6] },
+      lavash: { name: "Лавашная", map: [.24, .7] },
+    };
+    const TOP = 572; // steps of the Cascade
+    let place = null, scene = "map", travel = null, stamps = store.get("yvStamps", {});
+    if (!stamps || typeof stamps !== "object") stamps = {};
+    let steps = 0, hop = 0, atTop = false, photo = false, flashT = 0;
+    let show = 0;
+    let bought = 0, flyers = [], vMsg = "", goods = [];
+    const lv = { phase: "dough", roll: 0, bake: 0, good: 0, msg: "", fly: 0 };
+    const GOODS = [
+      ["Нарды", 15000, "#8a5a34", "🎲", "Вернисаж"], ["Ковёр", 60000, "#c43c4f", "🧶", "Вернисаж"], ["Дудук", 12000, "#a0785a", "🎵", "Вернисаж"], ["Керамика", 6000, "#2f6fd6", "🏺", "Вернисаж"],
+      ["Хачкар-сувенир", 9000, "#c9b49a", "🗿", "Вернисаж"], ["Джезве", 4000, "#b8741a", "☕", "Вернисаж"], ["Картина", 25000, "#5ce1e6", "🖼️", "Вернисаж"], ["Чётки", 3000, "#7b5cff", "📿", "Вернисаж"],
+      ["Абрикосы", 1500, "#ffb547", "🍑", "Вкусы Еревана"], ["Гата", 2000, "#e8c48a", "🥮", "Вкусы Еревана"], ["Сухофрукты", 2500, "#8a3a5a", "🍇", "Вкусы Еревана"], ["Магнит «Ереван»", 1000, "#ff8a3d", "🧲", "Вернисаж"],
+    ];
+
+    // ---------- sound ----------
+    let AC = null;
+    function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === "suspended") AC.resume(); }
+    function tone(f, t, d, type, vol, vib) {
+      const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f;
+      if (vib) { const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 5.5; lg.gain.value = f * .012; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + d); }
+      let out = g; if (type === "sawtooth") { const fl = AC.createBiquadFilter(); fl.type = "lowpass"; fl.frequency.value = 1100; o.connect(fl); fl.connect(g); } else o.connect(g);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + Math.min(.08, d / 3)); g.gain.setValueAtTime(vol, t + d * .7); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+      out.connect(AC.destination); o.start(t); o.stop(t + d + .02);
+    }
+    // a duduk-like tune (soft reed sound with vibrato)
+    function duduk() {
+      if (!AC) return;
+      const sc = { A: 220, B: 246.9, C: 261.6, D: 293.7, E: 329.6, F: 349.2, Gs: 415.3, A2: 440 };
+      const seq = [["E", 1], ["F", .5], ["E", .5], ["D", 1], ["C", .5], ["B", .5], ["C", 1], ["D", .5], ["E", 1.5], ["A", 2]];
+      let t = AC.currentTime + .05; seq.forEach(([n, d]) => { tone(sc[n], t, d * .5, "sawtooth", .09, true); t += d * .5; });
+    }
+    // a lively dance tune for the singing fountains
+    function dance() {
+      if (!AC) return;
+      const sc = [220, 246.9, 261.6, 293.7, 329.6, 349.2, 415.3, 440, 493.9, 523.3];
+      const seq = [4, 4, 5, 4, 3, 2, 3, 4, 7, 6, 5, 4, 3, 4, 2, 0, 4, 5, 6, 7, 8, 7, 6, 4, 5, 4, 3, 2, 1, 2, 0, 0];
+      const t0 = AC.currentTime + .05;
+      seq.forEach((n, i) => { const t = t0 + i * .36; tone(sc[n], t, .32, "triangle", .11, false); if (i % 2 === 0) tone(sc[0] / 2, t, .25, "sine", .14, false); });
+    }
+
+    // ---------- helpers ----------
+    function sky(c1, c2) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    function rect(x, y, w, h, col) { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); }
+    function text(t, x, y, size, col, align, weight) {
+      ctx.font = `${weight || 800} ${Math.round(size * U)}px Manrope, sans-serif`; ctx.textAlign = align || "center"; ctx.textBaseline = "middle";
+      const dark = /^#[0-3]/.test(col); ctx.lineJoin = "round"; ctx.miterLimit = 2; ctx.lineWidth = 3.5; ctx.strokeStyle = dark ? "rgba(255,255,255,.85)" : "rgba(18,19,42,.75)"; ctx.strokeText(t, x, y); ctx.fillStyle = col; ctx.fillText(t, x, y);
+    }
+    function emo(e, x, y, s) { ctx.font = `${Math.round(s * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000"; ctx.fillText(e, x, y); }
+    function me(x, y, s) {
+      const im = Hero.img(), z = s * U;
+      ctx.save(); ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.clip();
+      if (im.complete && im.naturalWidth) ctx.drawImage(im, x - z / 2, y - z / 2, z, z); else rect(x - z / 2, y - z / 2, z, z, Hero.accent());
+      ctx.restore(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.stroke();
+    }
+    const hsh = (i) => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+    // Mount Ararat: big Masis and little Sis, with snow caps
+    function ararat(cx, by, w, h, a) {
+      ctx.save(); ctx.globalAlpha = a == null ? 1 : a;
+      const g = ctx.createLinearGradient(0, by - h, 0, by); g.addColorStop(0, "#9a8fb8"); g.addColorStop(1, "#c9b7c9");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx - w * .62, by);
+      ctx.quadraticCurveTo(cx - w * .3, by - h * .55, cx - w * .06, by - h); ctx.lineTo(cx + w * .04, by - h * .97);
+      ctx.quadraticCurveTo(cx + w * .2, by - h * .62, cx + w * .34, by - h * .5); ctx.lineTo(cx + w * .44, by - h * .58);
+      ctx.quadraticCurveTo(cx + w * .55, by - h * .35, cx + w * .7, by); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#fbfdff"; ctx.beginPath(); ctx.moveTo(cx - w * .2, by - h * .66);
+      ctx.quadraticCurveTo(cx - w * .12, by - h * .86, cx - w * .06, by - h); ctx.lineTo(cx + w * .04, by - h * .97); ctx.quadraticCurveTo(cx + w * .1, by - h * .82, cx + w * .16, by - h * .7);
+      for (let i = 0; i <= 8; i++) ctx.lineTo(cx + w * (.16 - i * .045), by - h * (.7 - (i % 2 ? .09 : 0) + Math.sin(i) * .02)); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx + w * .38, by - h * .52); ctx.lineTo(cx + w * .44, by - h * .58); ctx.lineTo(cx + w * .49, by - h * .5); ctx.lineTo(cx + w * .45, by - h * .47); ctx.lineTo(cx + w * .41, by - h * .5); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+    // pink tuff buildings of Yerevan
+    const TUFF = ["#e2a184", "#d98e74", "#efb998", "#c97f6a", "#e8c1a0"];
+    function tuffRow(by, n, minH, maxH, seed, lit) {
+      for (let i = 0; i < n; i++) {
+        const w = W / n * (1.05 + hsh(seed + i) * .3), x = i * W / n - w * .05, h = minH + hsh(seed + i * 3) * (maxH - minH);
+        rect(x, by - h, w, h, TUFF[(i + seed) % TUFF.length]);
+        rect(x, by - h, w, 3 * U, "rgba(0,0,0,.12)");
+        ctx.fillStyle = lit ? "rgba(255,214,120,.9)" : "rgba(60,40,40,.35)";
+        for (let r = 0; r < Math.floor(h / (10 * U)) - 1; r++) for (let c = 0; c < Math.max(1, Math.floor(w / (9 * U)) - 1); c++) if (!lit || hsh(seed + i * 31 + r * 7 + c) > .35) {
+          const wx = x + 4 * U + c * 9 * U, wy = by - h + 7 * U + r * 10 * U; if (lit) ctx.fillRect(wx, wy, 4 * U, 5 * U); else { ctx.beginPath(); ctx.moveTo(wx, wy + 6 * U); ctx.lineTo(wx, wy + 2 * U); ctx.arc(wx + 2 * U, wy + 2 * U, 2 * U, Math.PI, 0); ctx.lineTo(wx + 4 * U, wy + 6 * U); ctx.fill(); }
+        }
+      }
+    }
+    function tree(x, y, s) { rect(x - 1.5 * s, y - 8 * s, 3 * s, 8 * s, "#6a4a2a"); ctx.fillStyle = "#3f8a3c"; ctx.beginPath(); ctx.arc(x, y - 12 * s, 7 * s, 0, 7); ctx.fill(); ctx.fillStyle = "#58a84a"; ctx.beginPath(); ctx.arc(x - 2 * s, y - 14 * s, 4 * s, 0, 7); ctx.fill(); }
+
+    // ---------- map ----------
+    function drawMap(t) {
+      sky("#bfe0f5", "#e9dcc0");
+      ararat(W * .66, H * .26, W * .62, H * .22, .9);
+      rect(0, H * .25, W, H * .75, "#e8d9b8");
+      // ring park around the centre
+      ctx.strokeStyle = "#8cc77a"; ctx.lineWidth = 9 * U; ctx.beginPath(); ctx.ellipse(W * .52, H * .58, W * .2, H * .2, 0, 0, 7); ctx.stroke();
+      // streets
+      ctx.strokeStyle = "rgba(160,130,100,.5)"; ctx.lineWidth = 2 * U;
+      for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(W * .52, H * .58); ctx.lineTo(W * .52 + Math.cos(i * 1.05 + .3) * W * .5, H * .58 + Math.sin(i * 1.05 + .3) * H * .45); ctx.stroke(); }
+      // Hrazdan river gorge
+      ctx.strokeStyle = "#3fa3d8"; ctx.lineWidth = 6 * U; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(W * .08, H * .3); ctx.bezierCurveTo(W * .2, H * .5, W * .06, H * .7, W * .16, H * .98); ctx.stroke();
+      // Swan lake near the opera
+      ctx.fillStyle = "#5bb8e8"; ctx.beginPath(); ctx.ellipse(W * .58, H * .5, 10 * U, 5 * U, 0, 0, 7); ctx.fill();
+      text("Арарат", W * .6, H * .12, 10, "#fff", "center", 800);
+      text("река Раздан", W * .12, H * .88, 8, "#1a4a6a", "left", 700);
+      Object.entries(PLACES).forEach(([id, p]) => {
+        const x = p.map[0] * W, y = p.map[1] * H, on = id === place;
+        ctx.fillStyle = stamps[id] ? "#2fa84a" : "#e3263a";
+        ctx.beginPath(); ctx.arc(x, y - 12 * U, 8 * U, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - 6 * U, y - 8 * U); ctx.lineTo(x, y); ctx.lineTo(x + 6 * U, y - 8 * U); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y - 12 * U, 3 * U, 0, 7); ctx.fill();
+        text(p.name, x, y + 9 * U, 9, on ? "#ffd84d" : "#fff", "center", 800);
+      });
+      if (travel) {
+        const k = Math.min(1, travel.t / travel.dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const x = travel.from[0] * W + (travel.to[0] - travel.from[0]) * W * e, y = travel.from[1] * H + (travel.to[1] - travel.from[1]) * H * e;
+        ctx.strokeStyle = "rgba(227,38,58,.7)"; ctx.lineWidth = 3; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(travel.from[0] * W, travel.from[1] * H); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        ctx.save(); ctx.translate(x, y - 6 * U);
+        rect(-10 * U, -5 * U, 20 * U, 9 * U, "#f4f4f4"); rect(-5 * U, -9 * U, 10 * U, 5 * U, "#f4f4f4"); rect(-10 * U, -1 * U, 20 * U, 2 * U, "#e3263a"); rect(-3 * U, -11 * U, 6 * U, 2 * U, "#ffd84d");
+        ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(-6 * U, 4 * U, 2.5 * U, 0, 7); ctx.arc(6 * U, 4 * U, 2.5 * U, 0, 7); ctx.fill();
+        ctx.restore();
+      } else if (!place) text("Нажми на место или кнопку ниже", W / 2, H * .95, 10, "#7a5a2a");
+    }
+
+    // ---------- Cascade: 572 white steps up the hill, Ararat from the top ----------
+    function drawCascade(t, dt) {
+      hop = Math.max(0, hop - dt * 4);
+      if (atTop) return drawTop(t, dt);
+      sky("#8fcaf0", "#d8eefa");
+      const hy = H * .14;
+      // hill and gardens on both sides
+      rect(0, hy, W, H - hy, "#7aa85a");
+      for (let i = 0; i < 14; i++) tree((i % 7) / 6 * W * .22 + (i > 6 ? W * .78 : 0), hy + 20 * U + Math.floor(i / 7) * 40 * U + (i % 2) * 18 * U, U * .9);
+      const zOf = (d) => 1 + d / 38, yOf = (z) => hy + (H - hy) / z, hw = (z) => W * .4 / z;
+      const left = TOP - steps, zTop = zOf(left), yTop = yOf(Math.min(zTop, 30));
+      // museum on top
+      if (zTop < 30) { const z = zTop, bw = hw(z) * 2.6, bh = 60 * U / Math.sqrt(z); rect(W / 2 - bw / 2, yTop - bh, bw, bh, "#efe3c8"); for (let i = 0; i < 6; i++) rect(W / 2 - bw / 2 + (i + .3) * bw / 6, yTop - bh * .8, bw / 14, bh * .6, "#c9b28c"); }
+      // staircase
+      ctx.fillStyle = "#f3ead6"; ctx.beginPath(); ctx.moveTo(W / 2 - hw(1), H); ctx.lineTo(W / 2 - hw(Math.min(zTop, 30)), yTop); ctx.lineTo(W / 2 + hw(Math.min(zTop, 30)), yTop); ctx.lineTo(W / 2 + hw(1), H); ctx.fill();
+      // terraces: fountains and flower beds every 96 steps
+      for (let s0 = Math.ceil(steps / 96) * 96; s0 < TOP; s0 += 96) {
+        const z1 = zOf(s0 - steps), z2 = zOf(s0 + 16 - steps); if (z1 > 30) break;
+        const y1 = yOf(z1), y2 = yOf(z2);
+        ctx.fillStyle = "#5bb8e8"; ctx.beginPath(); ctx.moveTo(W / 2 - hw(z1) * .5, y1); ctx.lineTo(W / 2 - hw(z2) * .5, y2); ctx.lineTo(W / 2 + hw(z2) * .5, y2); ctx.lineTo(W / 2 + hw(z1) * .5, y1); ctx.fill();
+        for (let j = 0; j < 5; j++) { const fx = W / 2 + (j - 2) * hw(z1) * .2, fh = (14 + 6 * Math.sin(t * 4 + j)) * U / Math.sqrt(z1); ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 2 * U / Math.sqrt(z1); ctx.beginPath(); ctx.moveTo(fx, y1 - 2); ctx.quadraticCurveTo(fx, y1 - fh * 1.6, fx + fh * .2, y1 - 2); ctx.stroke(); }
+        [-1, 1].forEach((sd) => { ctx.fillStyle = "#e3263a"; for (let k = 0; k < 6; k++) { ctx.beginPath(); ctx.arc(W / 2 + sd * hw(z1) * (.62 + k * .06), (y1 + y2) / 2, 2.4 * U / Math.sqrt(z1), 0, 7); ctx.fill(); ctx.fillStyle = k % 2 ? "#ffb547" : "#ff5ad1"; } });
+      }
+      // step edges
+      ctx.strokeStyle = "rgba(170,150,115,.55)";
+      for (let s = Math.ceil(steps); s < TOP; s++) { const z = zOf(s - steps); if (z > 30) break; const y = yOf(z); ctx.lineWidth = Math.max(.5, 2 / z); ctx.beginPath(); ctx.moveTo(W / 2 - hw(z), y); ctx.lineTo(W / 2 + hw(z), y); ctx.stroke(); }
+      // side walls
+      ctx.fillStyle = "#d9cbae"; [-1, 1].forEach((sd) => { ctx.beginPath(); ctx.moveTo(W / 2 + sd * hw(1), H); ctx.lineTo(W / 2 + sd * hw(Math.min(zTop, 30)), yTop); ctx.lineTo(W / 2 + sd * hw(Math.min(zTop, 30)) * 1.15, yTop); ctx.lineTo(W / 2 + sd * hw(1) * 1.15, H); ctx.fill(); });
+      // the big black cat sculpture at the bottom
+      if (steps < 60) { const z = zOf(10 - steps + 0.001); if (z > .5) { const cx = W * .14, cy = H - 30 * U + steps * 2 * U, s = 1.2; ctx.fillStyle = "#1a1a22"; ctx.beginPath(); ctx.ellipse(cx, cy, 22 * U * s, 18 * U * s, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(cx + 14 * U * s, cy - 16 * U * s, 11 * U * s, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(cx + 6 * U * s, cy - 24 * U * s); ctx.lineTo(cx + 8 * U * s, cy - 34 * U * s); ctx.lineTo(cx + 13 * U * s, cy - 26 * U * s); ctx.moveTo(cx + 16 * U * s, cy - 26 * U * s); ctx.lineTo(cx + 22 * U * s, cy - 34 * U * s); ctx.lineTo(cx + 24 * U * s, cy - 22 * U * s); ctx.fill(); ctx.strokeStyle = "#1a1a22"; ctx.lineWidth = 5 * U; ctx.beginPath(); ctx.moveTo(cx - 20 * U * s, cy); ctx.quadraticCurveTo(cx - 40 * U * s, cy - 10 * U, cx - 34 * U * s, cy - 30 * U); ctx.stroke(); } }
+      me(W / 2, H - 34 * U - hop * 14 * U, 46);
+      rect(10, 10, 132 * U, 40 * U, "rgba(18,19,42,.7)");
+      text(`Ступеньки ${Math.round(steps)}/${TOP}`, 10 + 66 * U, 10 + 14 * U, 11, "#ffd84d");
+      rect(10 + 8 * U, 10 + 27 * U, 116 * U, 6 * U, "rgba(255,255,255,.2)"); rect(10 + 8 * U, 10 + 27 * U, 116 * U * steps / TOP, 6 * U, "#ffd84d");
+      if (steps < 20 && Math.sin(t * 3) > -.3) text("Жми «Шагать» или на лестницу!", W / 2, H * .5, 11, "#fff");
+    }
+    function drawTop(t, dt) {
+      sky("#7fc0ee", "#f6e2c4");
+      ctx.fillStyle = "rgba(255,240,200,.9)"; ctx.beginPath(); ctx.arc(W * .14, H * .12, 14 * U, 0, 7); ctx.fill();
+      ararat(W * .45, H * .55, W * .95, H * .45);
+      ctx.fillStyle = "rgba(230,215,200,.5)"; ctx.fillRect(0, H * .5, W, H * .08);
+      tuffRow(H * .66, 16, 12 * U, 34 * U, 3, false);
+      tuffRow(H * .76, 11, 18 * U, 44 * U, 9, false);
+      for (let i = 0; i < 9; i++) tree(W * (i / 8), H * .8, U);
+      // the Cascade going down in front of us
+      ctx.fillStyle = "#f3ead6"; ctx.beginPath(); ctx.moveTo(W * .3, H); ctx.lineTo(W * .42, H * .8); ctx.lineTo(W * .58, H * .8); ctx.lineTo(W * .7, H); ctx.fill();
+      ctx.strokeStyle = "rgba(170,150,115,.6)"; ctx.lineWidth = 1; for (let i = 1; i < 12; i++) { const k = i / 12, y = H * .8 + H * .2 * k; ctx.beginPath(); ctx.moveTo(W * (.42 - .12 * k), y); ctx.lineTo(W * (.58 + .12 * k), y); ctx.stroke(); }
+      me(W * .2, H * .86, 54);
+      text("Вершина Каскада · вид на Арарат", W / 2, H * .05 + 4, 11, "#fff");
+      if (flashT > 0) { flashT = Math.max(0, flashT - dt); ctx.fillStyle = `rgba(255,255,255,${flashT * 2})`; ctx.fillRect(0, 0, W, H); }
+      if (photo) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 8 * U; ctx.strokeRect(4 * U, 4 * U, W - 8 * U, H - 8 * U); text("📸 Ереван · Каскад · Арарат", W / 2, H - 16 * U, 11, "#ffd84d"); }
+    }
+
+    // ---------- Republic Square: singing fountains at night ----------
+    function drawSquare(t, dt) {
+      sky("#0b1030", "#3a2350");
+      for (let i = 0; i < 30; i++) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect(hsh(i) * W, hsh(i + 50) * H * .35, 1.5, 1.5); }
+      // Government House with the clock tower, lit warm
+      const by = H * .62;
+      ctx.fillStyle = "#e9a676"; ctx.fillRect(W * .02, by - H * .26, W * .96, H * .26);
+      rect(W * .44, by - H * .5, W * .12, H * .26, "#efb282"); rect(W * .42, by - H * .52, W * .16, H * .03, "#d99566");
+      ctx.fillStyle = "#fff6d8"; ctx.beginPath(); ctx.arc(W * .5, by - H * .42, W * .035, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#3a2a20"; ctx.lineWidth = 1.5; const a = t * .5; ctx.beginPath(); ctx.moveTo(W * .5, by - H * .42); ctx.lineTo(W * .5 + Math.cos(a) * W * .025, by - H * .42 + Math.sin(a) * W * .025); ctx.moveTo(W * .5, by - H * .42); ctx.lineTo(W * .5, by - H * .44); ctx.stroke();
+      ctx.fillStyle = "rgba(120,60,40,.55)";
+      for (let i = 0; i < 14; i++) { const x = W * (.05 + i * .065); ctx.beginPath(); ctx.moveTo(x, by); ctx.lineTo(x, by - H * .11); ctx.arc(x + W * .02, by - H * .11, W * .02, Math.PI, 0); ctx.lineTo(x + W * .04, by); ctx.fill(); }
+      ctx.fillStyle = "rgba(255,214,120,.85)"; for (let i = 0; i < 14; i++) ctx.fillRect(W * (.06 + i * .065), by - H * .22, W * .02, H * .04);
+      // square paving with the stone pattern
+      rect(0, by, W, H - by, "#6a5a6a");
+      ctx.strokeStyle = "rgba(255,230,200,.18)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(W / 2, H * .82, W * .46, H * .14, 0, 0, 7); ctx.stroke();
+      // pool
+      ctx.fillStyle = "#14204a"; ctx.beginPath(); ctx.ellipse(W / 2, H * .8, W * .4, H * .08, 0, 0, 7); ctx.fill();
+      const cols = ["#ff5ad1", "#5ce1e6", "#ffd84d", "#7b5cff", "#2fa84a", "#ff8a3d"];
+      const k = show > 0 ? 1 - show / 12 : 0;
+      for (let i = 0; i < 17; i++) {
+        const x = W * (.14 + i * .045), beat = Math.abs(Math.sin(t * 2.8 + i * .5 + Math.sin(t * .6) * 2));
+        const hgt = show > 0 ? H * (.06 + .34 * beat * Math.min(1, k * 4) * Math.min(1, show)) : H * .04 * (1 + Math.sin(t * 2 + i) * .2);
+        const col = cols[(i + Math.floor(t * (show > 0 ? 1.5 : .3))) % cols.length];
+        const g = ctx.createLinearGradient(0, H * .8 - hgt, 0, H * .8);
+        g.addColorStop(0, "rgba(255,255,255,0)"); g.addColorStop(.3, col); g.addColorStop(1, "rgba(255,255,255,.4)");
+        ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 3 * U, H * .8); ctx.quadraticCurveTo(x, H * .8 - hgt * 1.1, x + 3 * U, H * .8); ctx.fill();
+        if (show > 0) { ctx.fillStyle = col; for (let j = 0; j < 3; j++) ctx.fillRect(x + Math.sin(t * 9 + i + j) * 7 * U, H * .8 - hgt + j * 5, 2, 2); }
+      }
+      if (show > 0) { show = Math.max(0, show - dt); if (show === 0) { giveStamp("square"); Hero.say("yerevan", "win", "Поющие фонтаны — браво! Ереван танцует!"); updateAction(); } }
+      else text(stamps.square ? "Ещё раз? Жми «Поющие фонтаны»" : "Жми «Поющие фонтаны»", W / 2, H * .94, 11, "#ffd84d");
+      me(W * .1, H * .9, 32);
+      text("Площадь Республики · вечер", W / 2, H * .05 + 4, 11, "#fff");
+    }
+
+    // ---------- Vernissage: open-air market ----------
+    const slot = (k) => [W * (.16 + (k % 4) * .225), H * [.3, .55, .8][Math.floor(k / 4)]];
+    function setupVern() { goods = GOODS.map((g, k) => { const [x, y] = slot(k); return { name: g[0], price: g[1], col: g[2], ico: g[3], shop: g[4], x, y, pop: 0 }; }); vMsg = "Нажимай на товар — драмы бесконечные!"; }
+    function drawVern(t, dt) {
+      sky("#a8d8f0", "#f4ead8");
+      for (let i = 0; i < 10; i++) tree(W * (i / 9), H * .16, 1.3 * U);
+      rect(0, H * .16, W, H * .84, "#d9c8a8");
+      for (let r = 0; r < 3; r++) {
+        const y = H * [.3, .55, .8][r];
+        // striped awning + table
+        for (let i = 0; i < 12; i++) rect(i * W / 12, y - 34 * U, W / 12, 8 * U, i % 2 ? "#fff" : ["#c43c4f", "#2f6fd6", "#ff8a3d"][r]);
+        rect(0, y + 12 * U, W, 8 * U, "#8a5a34"); rect(0, y + 20 * U, W, 3 * U, "#6a4424");
+        // rug hanging on the side
+        if (r === 0) { const rx = W * .92; rect(rx, y - 26 * U, W * .07, 36 * U, "#a01f2f"); ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1; ctx.strokeRect(rx + 2 * U, y - 24 * U, W * .07 - 4 * U, 32 * U); }
+      }
+      goods.forEach((g) => {
+        g.pop = Math.max(0, g.pop - dt * 3);
+        const s = 1 + g.pop * .4;
+        ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.beginPath(); ctx.arc(g.x, g.y - 4 * U, 15 * U, 0, 7); ctx.fill();
+        emo(g.ico, g.x, g.y - 4 * U, 20 * s);
+        text(`${g.name.length > 11 ? g.name.slice(0, 10) + "…" : g.name}`, g.x, g.y + 16 * U, 7.5, "#fff", "center", 800);
+      });
+      flyers = flyers.filter((f) => (f.t += dt) < .7);
+      flyers.forEach((f) => { const k = f.t / .7; emo(f.ico, f.x + (W * .9 - f.x) * k, f.y + (H * .06 - f.y) * k - Math.sin(k * Math.PI) * 30 * U, 16 * (1 - k * .5)); });
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)");
+      text(vMsg, W / 2, 9 * U, 9, "#fff", "center", 700);
+      emo("🛍️", W * .93, H * .06 + 4 * U, 16);
+    }
+
+    // ---------- Lavash in the tonir (clay pit oven) ----------
+    function drawLavash(t, dt) {
+      sky("#4a3328", "#2a1c16");
+      // stone wall and wooden beams
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 8; c++) { ctx.fillStyle = (r + c) % 2 ? "#5a4034" : "#634638"; ctx.fillRect(c * W / 8 + (r % 2) * W / 16 - W / 16, r * H * .09, W / 8 - 2, H * .09 - 2); }
+      rect(0, H * .54, W, H * .46, "#7a5a44");
+      // tonir: round clay pit in the floor, cut open so we can see inside
+      const cx = W * .62, top = H * .56, rw = W * .26;
+      ctx.fillStyle = "#a8643c"; ctx.beginPath(); ctx.ellipse(cx, top, rw + 10 * U, 16 * U, 0, 0, 7); ctx.fill();
+      const ig = ctx.createLinearGradient(0, top, 0, H); ig.addColorStop(0, "#5a2a14"); ig.addColorStop(1, "#ff8a3d");
+      ctx.fillStyle = ig; ctx.beginPath(); ctx.moveTo(cx - rw, top); ctx.lineTo(cx - rw * .8, H * .96); ctx.lineTo(cx + rw * .8, H * .96); ctx.lineTo(cx + rw, top); ctx.fill();
+      // fire at the bottom
+      for (let i = 0; i < 9; i++) { const fx = cx + (i - 4) * rw * .17, fh = (18 + 10 * Math.sin(t * 9 + i * 2)) * U; ctx.fillStyle = i % 2 ? "#ffd84d" : "#ff5a2a"; ctx.beginPath(); ctx.moveTo(fx - 7 * U, H * .96); ctx.quadraticCurveTo(fx, H * .96 - fh * 2, fx + 7 * U, H * .96); ctx.fill(); }
+      ctx.fillStyle = "rgba(255,180,90,.25)"; ctx.beginPath(); ctx.ellipse(cx, top, rw, 10 * U, 0, 0, 7); ctx.fill();
+      // lavash stuck to the hot wall
+      const lw = rw * .9, lh = H * .22, lx = cx - lw / 2, ly = top + 14 * U;
+      if (lv.phase === "bake") {
+        lv.bake += dt / 4;
+        const b = lv.bake, col = b < .7 ? `rgb(${246 - b * 40 | 0},${232 - b * 60 | 0},${200 - b * 100 | 0})` : b < 1.15 ? `rgb(${226 - (b - .7) * 60 | 0},${180 - (b - .7) * 120 | 0},${110 - (b - .7) * 100 | 0})` : `rgb(${Math.max(40, 200 - (b - 1.15) * 300) | 0},${Math.max(30, 126 - (b - 1.15) * 200) | 0},${Math.max(20, 65 - (b - 1.15) * 100) | 0})`;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(cx, ly + lh / 2, lw / 2, lh / 2, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = "rgba(120,60,20,.35)"; for (let i = 0; i < 18; i++) { if (hsh(i) > Math.min(1, b)) continue; ctx.beginPath(); ctx.arc(lx + lw * (.15 + hsh(i + 9) * .7), ly + lh * (.15 + hsh(i + 30) * .7), 3 * U, 0, 7); ctx.fill(); }
+        // doneness bar
+        const bx = W * .06, bw = W * .3; rect(bx, H * .9, bw, 8 * U, "#3a2a20"); rect(bx + bw * .7 / 1.5, H * .9, bw * .45 / 1.5, 8 * U, "#2fa84a"); rect(bx + bw * Math.min(1.5, b) / 1.5 - 2, H * .9 - 3 * U, 4, 14 * U, "#fff");
+        text("готовность", bx + bw / 2, H * .9 - 9 * U, 8, "#ffd84d", "center", 700);
+      }
+      // the baker's table with the dough
+      rect(W * .04, H * .5, W * .32, 10 * U, "#b88a5a"); rect(W * .06, H * .5 + 10 * U, 6 * U, H * .2, "#8a5a34"); rect(W * .32, H * .5 + 10 * U, 6 * U, H * .2, "#8a5a34");
+      if (lv.phase === "dough") {
+        const r = lv.roll, dw = (24 + r * 46) * U, dh = (14 - r * 9) * U;
+        ctx.fillStyle = "#f6ead0"; ctx.beginPath(); ctx.ellipse(W * .2, H * .5 - dh / 2, dw, dh, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = "#c9a26b"; ctx.lineWidth = 5 * U; ctx.lineCap = "round"; const rx = W * .2 + Math.sin(t * 6) * 16 * U * (r < 1 ? 1 : 0); ctx.beginPath(); ctx.moveTo(rx - 4 * U, H * .5 - dh - 6 * U); ctx.lineTo(rx + 4 * U, H * .5 - dh - 22 * U); ctx.stroke();
+      }
+      if (lv.fly > 0) { lv.fly = Math.max(0, lv.fly - dt * 2.5); const k = 1 - lv.fly, x = W * .2 + (cx - W * .2) * k, y = H * .45 + (ly + lh / 2 - H * .45) * k - Math.sin(k * Math.PI) * H * .2; ctx.fillStyle = "#f6ead0"; ctx.beginPath(); ctx.ellipse(x, y, 40 * U * (1 - k * .2), 6 * U + k * lh / 3, 0, 0, 7); ctx.fill(); }
+      me(W * .2, H * .32, 48);
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)");
+      text(lv.msg || `Лаваш в тонире · испечено ${lv.good}/3`, W / 2, 9 * U, 9, "#fff", "center", 700);
+    }
+
+    // ---------- flow ----------
+    function giveStamp(id) {
+      if (stamps[id]) return;
+      stamps[id] = Date.now(); store.set("yvStamps", stamps);
+      Hero.grant(50);
+      if (Object.keys(stamps).length === 4) { Hero.grant(200); Hero.say("yerevan", "win", "Паспорт заполнен! Ереван покорён! Бонус +200 монет!"); }
+      passport(); updateHub();
+    }
+    function passport() {
+      $$("#yerevan .dx-pass .st").forEach((e) => e.classList.toggle("on", !!stamps[e.dataset.st]));
+      $$("#yvPlaces button").forEach((b) => { b.classList.toggle("stamped", !!stamps[b.dataset.place]); b.setAttribute("aria-pressed", String(b.dataset.place === place && scene !== "map")); });
+    }
+    function updateAction() {
+      const b = $("#yvAction"); b.hidden = false; b.disabled = false;
+      if (scene === "cascade") b.textContent = !atTop ? "Шагать ↑" : photo ? "Спуститься" : "Сделать фото";
+      else if (scene === "square") { b.textContent = show > 0 ? "Фонтаны поют…" : "Поющие фонтаны"; b.disabled = show > 0; }
+      else if (scene === "vern") b.textContent = "Сыграть на дудуке";
+      else if (scene === "lavash") { b.textContent = lv.phase === "dough" ? (lv.roll >= 1 ? "В тонир!" : "Раскатать") : lv.phase === "bake" ? "Достать!" : "Ещё лаваш"; b.disabled = lv.fly > 0; }
+      else b.hidden = true;
+    }
+    function go(id) {
+      if (travel) return;
+      audio();
+      const from = place ? PLACES[place].map : [.5, .95];
+      travel = { from, to: PLACES[id].map, t: 0, dur: place === id ? .2 : 1.5, id };
+      scene = "map"; place = id; updateAction(); passport();
+    }
+    function arrive(id) {
+      travel = null; scene = id;
+      if (id === "cascade") { steps = 0; atTop = false; photo = false; }
+      if (id === "square") show = 0;
+      if (id === "vern") setupVern();
+      if (id === "lavash") { lv.phase = "dough"; lv.roll = 0; lv.bake = 0; lv.fly = 0; lv.msg = ""; }
+      Hero.say("yerevan", "start", { cascade: "Каскад — 572 ступеньки! Наверху откроется вид на Арарат.", square: "Площадь Республики. Вечером здесь поют фонтаны!", vern: "Вернисаж — рынок мастеров: ковры, нарды, дудук. Драмы бесконечные!", lavash: "Лавашная! Раскатай тесто и испеки лаваш в тонире." }[id]);
+      updateAction(); passport();
+    }
+    function climb() {
+      if (atTop) return;
+      steps = Math.min(TOP, steps + 22); hop = 1;
+      if (steps >= TOP) { atTop = true; Hero.say("yerevan", "good", "Вершина! Перед тобой весь Ереван и гора Арарат. Сделай фото!"); updateAction(); }
+      else if (steps % 132 < 22) Hero.say("yerevan", "good", `Уже ${Math.round(steps)} ступенек! Терраса с фонтаном — вперёд!`);
+    }
+    function buy(g) {
+      g.pop = 1; flyers.push({ x: g.x, y: g.y, ico: g.ico, t: 0 }); bought++;
+      Inv.add(g, g.shop);
+      vMsg = `Куплено: ${g.name} (${g.price.toLocaleString("ru-RU")} ֏) — в «Мои вещи». Драмы: ∞`;
+      if (g.name === "Дудук") duduk();
+      if (bought === 4 && !stamps.vern) { giveStamp("vern"); Hero.say("yerevan", "win", "Отличные покупки на Вернисаже!"); }
+    }
+    function lavashAct() {
+      if (lv.phase === "dough") {
+        if (lv.roll < 1) { lv.roll = Math.min(1, lv.roll + .25); lv.msg = lv.roll >= 1 ? "Тонкий, как бумага! Теперь в тонир" : "Раскатываем…"; }
+        else { lv.phase = "bake"; lv.bake = 0; lv.fly = 1; lv.msg = "Шлёп! Лаваш прилип к горячей стенке тонира"; }
+      } else if (lv.phase === "bake") {
+        const b = lv.bake;
+        if (b < .7) lv.msg = "Ещё сырой! Подожди, пока станет золотистым";
+        else {
+          lv.phase = "done";
+          if (b <= 1.15) { lv.good++; lv.msg = `Идеальный лаваш! (${lv.good}/3) — в «Мои вещи»`; Inv.add({ name: "Лаваш", col: "#e8c48a", ico: "🫓" }, "Вкусы Еревана"); Hero.say("yerevan", "good", "Горячий, хрустящий лаваш!"); if (lv.good >= 3) { giveStamp("lavash"); Hero.say("yerevan", "win", "Ты настоящий пекарь лаваша!"); } }
+          else { lv.msg = "Подгорел… Попробуй ещё раз!"; Hero.say("yerevan", "bad", "Упс, передержали в тонире!"); }
+        }
+      } else { lv.phase = "dough"; lv.roll = 0; lv.bake = 0; lv.msg = ""; }
+    }
+    $("#yvAction").addEventListener("click", () => {
+      audio();
+      if (scene === "cascade") {
+        if (!atTop) climb();
+        else if (!photo) { photo = true; flashT = .5; giveStamp("cascade"); Hero.say("yerevan", "win", "Фото с Каскада на фоне Арарата!"); }
+        else { steps = 0; atTop = false; photo = false; }
+      } else if (scene === "square") { if (show <= 0) { show = 12; dance(); Hero.say("yerevan", "good", "Музыка! Фонтаны начинают петь!"); } }
+      else if (scene === "vern") { duduk(); vMsg = "Звучит дудук — самый армянский инструмент 🎵"; }
+      else if (scene === "lavash") lavashAct();
+      updateAction();
+    });
+    $("#yvMap").addEventListener("click", () => { travel = null; scene = "map"; updateAction(); passport(); });
+    $("#yvPlaces").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) go(b.dataset.place); });
+    cv.addEventListener("pointerdown", (e) => {
+      audio();
+      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+      if (scene === "map" && !travel) { const id = Object.keys(PLACES).find((k) => Math.hypot(PLACES[k].map[0] * W - x, PLACES[k].map[1] * H - 12 * U - y) < 20 * U); if (id) go(id); }
+      else if (scene === "cascade" && !atTop) climb();
+      else if (scene === "vern") { const g = goods.find((q) => Math.abs(q.x - x) < 22 * U && Math.abs(q.y - y) < 24 * U); if (g) buy(g); }
+      else if (scene === "lavash" && lv.fly <= 0) lavashAct();
+      updateAction();
+    });
+
+    function frame(now) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(.05, (now - lastT) / 1000) : 1 / 60; lastT = now;
+      const t = (now - T0) / 1000;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (travel) { travel.t += dt; if (travel.t >= travel.dur) arrive(travel.id); }
+      if (scene === "map" || travel) drawMap(t);
+      else if (scene === "cascade") drawCascade(t, dt);
+      else if (scene === "square") drawSquare(t, dt);
+      else if (scene === "vern") drawVern(t, dt);
+      else if (scene === "lavash") { const f = lv.fly; drawLavash(t, dt); if (f > 0 && lv.fly === 0) updateAction(); }
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .75); U = W / 360;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      if (scene === "vern") goods.forEach((g, k) => { [g.x, g.y] = slot(k); });
+    }
+    window.addEventListener("resize", () => { if (visible) fit(); });
+    passport();
+
+    return {
+      enter() { visible = true; fit(); passport(); updateAction(); if (scene === "map" && !place) Hero.say("yerevan", "start", "Барев! Добро пожаловать в Ереван! Куда поедем?"); loop(); },
+      leave() { visible = false; },
+      key() {},
+      best: () => `${Object.keys(stamps).length}/4`,
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -7413,6 +7858,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { go: "mine", ico: "🏰", t: "MY MINE", s: "Построй армию, защити башнями и разгроми красных. Теперь в 3D!", bg: "linear-gradient(135deg,#7a1f3d,#2f3fa0)", fx: ["⚔️", "🏹", "🪙", "🚢"] },
       { go: "chars", ico: "🤖", t: "ВАЛЕРИЙ · ГИГА УЛЬТРА", s: "Самый мощный персонаж V3 с короной из стальных кубиков. Забери его!", bg: "linear-gradient(135deg,#12062e,#7a3cff)", fx: ["⚡", "💜", "✨", "🔮"] },
       { go: "dubai", ico: "🏙️", t: "JUST DUBAI!", s: "Бурдж Халифа, фонтаны Dubai Mall и 12 магазинов с бесконечными деньгами.", bg: "linear-gradient(135deg,#ff9a5a,#d9a520)", fx: ["🌴", "🛍️", "⛲", "🐪"] },
+      { go: "yerevan", ico: "🏔️", t: "JUST YEREVAN", s: "Поднимись по Каскаду к Арарату, послушай поющие фонтаны и испеки лаваш!", bg: "linear-gradient(135deg,#e2a184,#7a4aa0)", fx: ["🏔️", "🎵", "🫓", "⛲"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
       { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
       { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
@@ -7478,7 +7924,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -10296,8 +10742,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -10319,6 +10765,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubCraft").textContent = Craft.best();
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
+    $("#hubYerevan").textContent = Yerevan.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -11002,6 +11449,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (document.hidden && current === "geo") Geo.leave();
     if (document.hidden && current === "mk") MK.leave();
     if (document.hidden && current === "dubai") Dubai.leave();
+    if (document.hidden && current === "yerevan") Yerevan.leave();
     if (!document.hidden && current === "vr") VR.enter();
   });
 
