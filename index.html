@@ -5785,7 +5785,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (!stamps || typeof stamps !== "object") stamps = {};
     // scene state
     let ride = 0, riding = false, flashT = 0, photo = false;
-    let show = 0, night = false;
+    let show = 0, night = false, fall = false, wished = false, coinT = 0, coinX = 0, poolCoins = [], ripples = [];
     let bag = [], items = [], deiraMsg = "", shop = 0, flyers = [];
     const SHOPS = [
       { name: "Мода", col: "#c43c4f", items: [["Сумка", 180, "#c43c4f", "👜"], ["Кроссовки", 220, "#2f6fd6", "👟"], ["Футболка", 60, "#2fa84a", "👕"], ["Кепка", 45, "#ff8a3d", "🧢"], ["Джинсы", 150, "#3b5aa8", "👖"], ["Платье", 240, "#ff5ad1", "👗"], ["Очки", 300, "#4a4a5a", "🕶️"], ["Шарф", 70, "#ffd84d", "🧣"]] },
@@ -6012,8 +6012,69 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       }
     }
     function burjPanStart(e) { if (scene !== "burj" || ride < 1) return false; panDrag = { x: e.clientX, p: panX, id: e.pointerId, last: e.clientX, lt: performance.now() }; return true; }
+    // the Dubai Mall waterfall: a tall wall of falling water, a dark pool full of wish coins, chrome rail and glass
+    function drawFall(t, dt) {
+      const fb = H * .56, rail = H * .6, floor = H * .8;
+      const wg = ctx.createLinearGradient(0, 0, 0, fb); wg.addColorStop(0, "#2a2b2d"); wg.addColorStop(.6, "#4a4b4d"); wg.addColorStop(1, "#6a6c6e");
+      ctx.fillStyle = wg; ctx.fillRect(0, 0, W, fb);
+      // falling water: hundreds of thin streaks of different brightness rushing down
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, fb); ctx.clip();
+      const N = 120;
+      for (let i = 0; i < N; i++) {
+        const h1 = Math.sin(i * 12.9898) * 43758.5453, r = h1 - Math.floor(h1), x = (i + r * .8) / N * W;
+        const band = .5 + .5 * Math.sin(i * .17 + Math.sin(i * .05) * 3), a = (.08 + .5 * r * r) * (.35 + .65 * band);
+        ctx.strokeStyle = `rgba(235,238,240,${a.toFixed(2)})`; ctx.lineWidth = (1 + r * 2.4) * U;
+        const sp = (160 + r * 140) * U, len = (40 + r * 90) * U;
+        for (let j = 0; j < 3; j++) {
+          const y = ((t * sp + j * fb / 2.4 + r * 500) % (fb + len)) - len;
+          const wob = Math.sin(y * .03 + i) * 1.5 * U;
+          ctx.beginPath(); ctx.moveTo(x + wob, y); ctx.lineTo(x - wob, y + len); ctx.stroke();
+        }
+      }
+      // dark gaps between the water sheets, like in the photo
+      for (let i = 0; i < 14; i++) { const x = ((i * 0.0731 + .03) % 1) * W; ctx.fillStyle = "rgba(20,20,22,.35)"; ctx.fillRect(x, 0, (2 + (i % 3) * 3) * U, fb); }
+      ctx.restore();
+      // foam where the water hits the pool
+      const fg = ctx.createLinearGradient(0, fb - 26 * U, 0, fb + 10 * U); fg.addColorStop(0, "rgba(255,255,255,0)"); fg.addColorStop(.7, "rgba(255,255,255,.85)"); fg.addColorStop(1, "rgba(255,255,255,.25)");
+      ctx.fillStyle = fg; ctx.fillRect(0, fb - 26 * U, W, 36 * U);
+      for (let i = 0; i < 40; i++) { const x = (i * 37.3 + t * 30 * ((i % 2) * 2 - 1)) % W, y = fb - 4 * U + Math.sin(t * 6 + i) * 4 * U; ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.arc((x + W) % W, y, (2 + (i % 3)) * U, 0, 7); ctx.fill(); }
+      // the pool
+      const pg = ctx.createLinearGradient(0, fb, 0, floor); pg.addColorStop(0, "#202424"); pg.addColorStop(1, "#0b0d0d"); ctx.fillStyle = pg; ctx.fillRect(0, fb + 8 * U, W, floor - fb - 8 * U);
+      ctx.strokeStyle = "rgba(200,210,215,.12)"; ctx.lineWidth = 1.5 * U;
+      for (let i = 0; i < 18; i++) { const y = fb + 14 * U + i * (floor - fb) / 18, x0 = ((t * 20 + i * 47) % (W + 80)) - 80; ctx.beginPath(); ctx.moveTo(x0, y); ctx.quadraticCurveTo(x0 + 30 * U, y - 3 * U, x0 + 60 * U, y); ctx.stroke(); }
+      poolCoins.forEach((c) => { ctx.fillStyle = c.g ? "#d8b44a" : "#b8bcc0"; ctx.globalAlpha = .55 + .3 * Math.sin(t * 2 + c.x); ctx.beginPath(); ctx.ellipse(c.x * W, c.y * H, 4 * U, 2 * U, 0, 0, 7); ctx.fill(); });
+      ctx.globalAlpha = 1;
+      ripples = ripples.filter((r) => (r.t += dt) < 1.4);
+      ripples.forEach((r) => { ctx.strokeStyle = `rgba(255,255,255,${(.7 * (1 - r.t / 1.4)).toFixed(2)})`; ctx.lineWidth = 1.5 * U; ctx.beginPath(); ctx.ellipse(r.x, r.y, r.t * 40 * U, r.t * 12 * U, 0, 0, 7); ctx.stroke(); });
+      // a red neon line reflected in the glass, like in the mall
+      ctx.strokeStyle = "rgba(255,60,70,.55)"; ctx.lineWidth = 2.5 * U; ctx.beginPath(); ctx.moveTo(W * .15, H * .67); ctx.lineTo(W * .3, H * .7); ctx.lineTo(W * .78, H * .67); ctx.stroke();
+      // glass panel + chrome rail with posts
+      ctx.fillStyle = "rgba(150,180,190,.08)"; ctx.fillRect(0, rail, W, floor - rail);
+      ctx.fillStyle = "rgba(255,255,255,.07)"; ctx.beginPath(); ctx.moveTo(W * .55, rail); ctx.lineTo(W * .7, rail); ctx.lineTo(W * .5, floor); ctx.lineTo(W * .35, floor); ctx.fill();
+      [.06, .52, .96].forEach((px) => { const cg = ctx.createLinearGradient(W * px - 4 * U, 0, W * px + 4 * U, 0); cg.addColorStop(0, "#777"); cg.addColorStop(.5, "#f4f4f4"); cg.addColorStop(1, "#666"); ctx.fillStyle = cg; ctx.fillRect(W * px - 4 * U, rail, 8 * U, floor - rail); });
+      const rg = ctx.createLinearGradient(0, rail - 6 * U, 0, rail + 6 * U); rg.addColorStop(0, "#9a9a9a"); rg.addColorStop(.4, "#ffffff"); rg.addColorStop(1, "#6a6a6a");
+      ctx.fillStyle = rg; ctx.fillRect(0, rail - 6 * U, W, 12 * U);
+      rect(0, floor - 6 * U, W, 6 * U, "#141616");
+      // speckled terrazzo floor with big tiles
+      rect(0, floor, W, H - floor, "#e6ddcf");
+      for (let i = 0; i < 260; i++) { const h1 = Math.sin(i * 78.233) * 43758.5453, r = h1 - Math.floor(h1); ctx.fillStyle = i % 3 ? "rgba(90,70,50,.45)" : "rgba(160,120,80,.4)"; ctx.fillRect(((i * 0.6180339) % 1) * W, floor + r * (H - floor), 1.6 * U, 1.6 * U); }
+      ctx.strokeStyle = "rgba(150,135,115,.35)"; ctx.lineWidth = 1;
+      for (let i = -3; i < 6; i++) { ctx.beginPath(); ctx.moveTo(W * (.5 + i * .25), floor); ctx.lineTo(W * (.5 + i * .5), H); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(0, floor + (H - floor) * .45); ctx.lineTo(W, floor + (H - floor) * .45); ctx.stroke();
+      // flying coin
+      if (coinT > 0) {
+        coinT = Math.max(0, coinT - dt); const k = 1 - coinT, sx = W * .5, sy = H * .72, ty = H * .7;
+        const x = sx + (coinX - sx) * k, y = sy + (ty - sy) * k - Math.sin(k * Math.PI) * H * .3;
+        ctx.fillStyle = "#ffd84d"; ctx.beginPath(); ctx.ellipse(x, y, 5 * U, 5 * U * Math.abs(Math.cos(t * 14)) + 1, 0, 0, 7); ctx.fill();
+        if (coinT === 0) { ripples.push({ x: coinX, y: ty, t: 0 }); poolCoins.push({ x: coinX / W, y: .7, g: true }); wished = true; Hero.say("dubai", "win", "Плюх! Монетка в воде — желание загадано!"); updateAction(); }
+      }
+      me(W * .5, H * .76, 64);
+      text("DUBAI MALL · Водопад", W / 2, H * .04 + 4, 11, "#fff", "center", 800);
+      if (!wished && coinT === 0 && Math.sin(t * 2) > -.3) text("Брось монетку и загадай желание", W / 2, H * .95, 10, "#7a5a2a");
+    }
     function drawMall(t, dt) {
-      if (!night) {
+      if (!night && fall) drawFall(t, dt);
+      else if (!night) {
         // aquarium inside the mall
         sky("#f0e6d8", "#d8c8b4");
         rect(0, H * .82, W, H * .18, "#c9b49a");
@@ -6037,7 +6098,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         ctx.strokeStyle = "#8a7a6a"; ctx.lineWidth = 6; ctx.strokeRect(ax, ay, aw, ah);
         text("DUBAI MALL · Аквариум", W / 2, H * .04 + 4, 11, "#3a2a20", "center", 800);
         me(W * .15, H * .9, 34);
-        text("Вечером — фонтанное шоу!", W * .62, H * .9, 11, "#fff");
+        text("Дальше — водопад!", W * .62, H * .9, 11, "#fff");
       } else {
         // the fountain at night with Burj Khalifa behind
         sky("#0b0f2a", "#2a1a4a");
@@ -6408,7 +6469,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function updateAction() {
       const b = $("#dxAction"); b.hidden = false; b.disabled = false;
       if (scene === "burj") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 148-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
-      else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : "Выйти к фонтану"; b.disabled = show > 0; }
+      else if (scene === "mall") { b.textContent = night ? (show > 0 ? "Шоу идёт…" : "Фонтанное шоу") : !fall ? "К водопаду" : coinT > 0 ? "Летит…" : !wished ? "Бросить монетку" : "К фонтану"; b.disabled = show > 0 || coinT > 0; }
       else if (scene === "deira") b.textContent = "Следующий магазин";
       else if (scene === "marina") { b.textContent = hotel.phase === "lobby" ? "Заселиться 🛎️" : "Room service 🛎️"; b.disabled = hotel.phase === "lobby" && hotel.key > 0; }
       else b.hidden = true;
@@ -6425,7 +6486,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function arrive(id) {
       travel = null; scene = id;
       if (id === "burj") { ride = 0; riding = false; photo = false; }
-      if (id === "mall") { night = false; show = 0; fish = []; for (let i = 0; i < 12; i++) fish.push({ x: rnd(0, W), y: H * rnd(.16, .66), v: rnd(-40, 40) || 20, s: rnd(6, 12), w: rnd(1, 2), p: rnd(0, 6), c: ["#ffd84d", "#ff8a3d", "#5ce1e6", "#ff5ad1", "#9be15d"][i % 5], kind: "fish" }); fish.push({ x: W * .3, y: H * .4, v: 26, s: 26, w: .6, p: 0, c: "#8a97a8", kind: "shark" }); fish.push({ x: W * .7, y: H * .58, v: -18, s: 18, w: .8, p: 1, c: "#c9b49a", kind: "ray" }); }
+      if (id === "mall") { night = false; show = 0; fall = false; wished = false; coinT = 0; ripples = []; poolCoins = []; for (let i = 0; i < 22; i++) poolCoins.push({ x: .04 + ((i * .618) % 1) * .92, y: .64 + ((i * .377) % 1) * .14, g: i % 3 === 0 }); fish = []; for (let i = 0; i < 12; i++) fish.push({ x: rnd(0, W), y: H * rnd(.16, .66), v: rnd(-40, 40) || 20, s: rnd(6, 12), w: rnd(1, 2), p: rnd(0, 6), c: ["#ffd84d", "#ff8a3d", "#5ce1e6", "#ff5ad1", "#9be15d"][i % 5], kind: "fish" }); fish.push({ x: W * .3, y: H * .4, v: 26, s: 26, w: .6, p: 0, c: "#8a97a8", kind: "shark" }); fish.push({ x: W * .7, y: H * .58, v: -18, s: 18, w: .8, p: 1, c: "#c9b49a", kind: "ray" }); }
       if (id === "deira") setupDeira();
       if (id === "marina") setupMarina();
       const hello = { burj: "Бурдж Халифа — самое высокое здание в мире, 828 м!", mall: "Dubai Mall: огромный аквариум прямо в торговом центре!", deira: "Deira City Centre — пора за покупками!", marina: "Marina Beach Hotel — пять звёзд! Заселяемся." }[id];
@@ -6439,7 +6500,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         else if (ride >= 1 && !photo) { photo = true; flashT = .5; photoT = 3.2; snap = null; giveStamp("burj"); Hero.say("dubai", "win", "Селфи на фоне ночного Дубая с высоты 555 метров!"); }
         else if (photo) { ride = 0; photo = false; }
       } else if (scene === "mall") {
-        if (!night) night = true;
+        if (!night && !fall) { fall = true; Hero.say("dubai", "good", "Водопад Dubai Mall! Вода падает со стены высотой в 4 этажа. Брось монетку — загадай желание!"); }
+        else if (!night && !wished) { if (coinT <= 0) { coinT = 1; coinX = W * (.2 + Math.random() * .6); } }
+        else if (!night) night = true;
         else if (show <= 0) { show = 10; melody(); Hero.say("dubai", "good", "Музыка! Фонтан начинает танец!"); }
       } else if (scene === "deira") openShop(shop + 1);
       else if (scene === "marina") { if (hotel.phase === "lobby") checkIn(); else roomService(); }
