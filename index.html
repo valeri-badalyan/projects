@@ -5913,33 +5913,105 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function circleW(x, y, r) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
 
+    // ---------- Burj Khalifa at night: glass elevator up, then the city far below through the window ----------
+    let pano = null, panoKey = "", panX = .3, panV = 0, panDrag = null, photoT = 0, roads = [], snap = null;
+    const srnd = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+    function buildPano() {
+      const PW = Math.round(W * 2.4), PH = H, c = document.createElement("canvas"); c.width = Math.round(PW * dpr); c.height = Math.round(PH * dpr);
+      const g = c.getContext("2d"); g.scale(dpr, dpr);
+      // night sky with a warm haze over the horizon
+      const sk = g.createLinearGradient(0, 0, 0, PH); sk.addColorStop(0, "#03040a"); sk.addColorStop(.28, "#0d1024"); sk.addColorStop(.4, "#2a2034"); sk.addColorStop(.46, "#120e18"); sk.addColorStop(1, "#07070c");
+      g.fillStyle = sk; g.fillRect(0, 0, PW, PH);
+      // far city: a carpet of tiny lights to the horizon
+      for (let i = 0; i < 2600; i++) { const y = PH * (.4 + Math.pow(srnd(i), 1.8) * .3), x = srnd(i + 9000) * PW, warm = srnd(i + 500) < .8; g.fillStyle = warm ? `rgba(255,${190 + (srnd(i + 7) * 50) | 0},110,${.35 + srnd(i + 3) * .6})` : "rgba(220,235,255,.8)"; const r = .5 + (y / PH - .4) * 2.2; g.fillRect(x, y, r, r); }
+      // highways: glowing ribbons running to the horizon
+      roads = [];
+      for (let k = 0; k < 5; k++) {
+        const x0 = PW * (.1 + k * .2 + (srnd(k + 40) - .5) * .1), x1 = PW * (.18 + k * .17), cx = (x0 + x1) / 2 + (srnd(k + 50) - .5) * PW * .2, pts = [[x0, PH + 10], [cx, PH * .7], [x1, PH * .44]];
+        roads.push(pts);
+        g.strokeStyle = "rgba(255,170,70,.35)"; g.lineWidth = 3 + k % 2 * 2; g.beginPath(); g.moveTo(...pts[0]); g.quadraticCurveTo(...pts[1], ...pts[2]); g.stroke();
+      }
+      // the Dubai Fountain lake right below
+      const lx = PW * .62, ly = PH * .86; g.fillStyle = "#0a1428"; g.beginPath(); g.ellipse(lx, ly, PW * .09, PH * .07, 0, 0, 7); g.fill();
+      g.strokeStyle = "rgba(120,180,255,.5)"; g.lineWidth = 1.5; g.beginPath(); g.ellipse(lx, ly, PW * .09, PH * .07, 0, 0, 7); g.stroke();
+      // towers, back to front, lit in warm gold like Downtown at night
+      const towers = [];
+      for (let i = 0; i < 46; i++) { const base = PH * (.5 + srnd(i + 100) * .55), near = (base / PH - .45) / .6; towers.push({ x: srnd(i + 200) * PW, base, w: (10 + srnd(i + 300) * 22) * (.5 + near) * U, h: (40 + srnd(i + 400) * 120) * (.4 + near * .9) * U, gold: srnd(i + 600) < .75, i }); }
+      towers.push({ x: PW * .36, base: PH * 1.02, w: 58 * U, h: 190 * U, screen: true, i: 999 });
+      towers.sort((a, b) => a.base - b.base).forEach((tw) => {
+        const x = tw.x - tw.w / 2, y = tw.base - tw.h;
+        const body = g.createLinearGradient(x, 0, x + tw.w, 0); body.addColorStop(0, "#14121c"); body.addColorStop(1, "#262230"); g.fillStyle = body; g.fillRect(x, y, tw.w, tw.h);
+        if (tw.screen) {
+          // the building with the huge bright white screen from the video
+          g.save(); g.shadowColor = "rgba(255,255,255,.9)"; g.shadowBlur = 24; g.fillStyle = "#f4f6ff"; g.fillRect(x + tw.w * .08, y + tw.h * .06, tw.w * .84, tw.h * .5); g.restore();
+          const sc = g.createLinearGradient(0, y + tw.h * .12, 0, y + tw.h * .5); sc.addColorStop(0, "#0b1a3a"); sc.addColorStop(.6, "#2a6ad6"); sc.addColorStop(1, "#9fd6ff"); g.fillStyle = sc; g.fillRect(x + tw.w * .2, y + tw.h * .12, tw.w * .6, tw.h * .38);
+          g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(x + tw.w * .44, y + tw.h * .3, tw.w * .12, tw.h * .2);
+          for (let r = 0; r < 6; r++) for (let q = 0; q < 6; q++) { g.fillStyle = "rgba(255,214,140,.55)"; g.fillRect(x + 4 + q * (tw.w - 8) / 6, y + tw.h * .62 + r * 9 * U, 3 * U, 3 * U); }
+          return;
+        }
+        const cw = Math.max(2, 3 * U), ch = Math.max(2, 4 * U), gx = Math.max(3, 6 * U), gy = Math.max(4, 7 * U);
+        for (let yy = y + 3; yy < tw.base - 3; yy += gy) for (let xx = x + 2; xx < x + tw.w - cw - 1; xx += gx) {
+          const k = srnd(tw.i * 977 + xx * 3 + yy * 7); if (k < .25) continue;
+          g.fillStyle = tw.gold ? `rgba(255,${180 + (k * 60) | 0},${70 + (k * 60) | 0},${.55 + k * .45})` : `rgba(230,240,255,${.4 + k * .5})`; g.fillRect(xx, yy, cw, ch);
+        }
+        // lit crown and edge glow
+        g.fillStyle = tw.gold ? "rgba(255,200,90,.9)" : "rgba(200,220,255,.9)"; g.fillRect(x, y, tw.w, 2.5 * U);
+        g.fillStyle = "rgba(255,220,150,.18)"; g.fillRect(x - 2, y, 2, tw.h);
+      });
+      pano = { c, PW, PH }; panoKey = W + "x" + H + "@" + dpr;
+    }
+    function drawCityView(t, yOff, blurK) {
+      if (!pano || panoKey !== W + "x" + H + "@" + dpr) buildPano();
+      const maxX = pano.PW - W, sx = Math.max(0, Math.min(maxX, panX * maxX));
+      ctx.drawImage(pano.c, sx * dpr, 0, W * dpr, pano.PH * dpr, 0, yOff, W, pano.PH);
+      // traffic: little lights flowing along the highways
+      roads.forEach((pts, k) => { for (let i = 0; i < 9; i++) { const u = ((t * (.05 + k * .012) + i / 9) % 1), a = 1 - u, x = a * a * pts[0][0] + 2 * a * u * pts[1][0] + u * u * pts[2][0] - sx, y = a * a * pts[0][1] + 2 * a * u * pts[1][1] + u * u * pts[2][1] + yOff; if (x < -5 || x > W + 5) continue; ctx.fillStyle = i % 2 ? "rgba(255,80,60,.95)" : "rgba(255,250,220,.95)"; ctx.beginPath(); ctx.arc(x, y, (1 + (1 - u) * 2) * U, 0, 7); ctx.fill(); } });
+      // twinkling lights and the fountain dancing on the lake
+      for (let i = 0; i < 40; i++) { const x = srnd(i + 7000) * pano.PW - sx, y = H * (.42 + srnd(i + 7100) * .5) + yOff; if (x < 0 || x > W) continue; const k = Math.sin(t * 3 + i * 1.7); if (k > .6) { ctx.fillStyle = `rgba(255,255,255,${(k - .6) * 2.2})`; ctx.fillRect(x, y, 2, 2); } }
+      const lx = pano.PW * .62 - sx, ly = H * .86 + yOff;
+      if (lx > -80 && lx < W + 80) for (let j = 0; j < 9; j++) { const hgt = (8 + Math.abs(Math.sin(t * 2.4 + j * .8)) * 22) * U; const gr = ctx.createLinearGradient(0, ly - hgt, 0, ly); gr.addColorStop(0, "rgba(220,240,255,0)"); gr.addColorStop(1, "rgba(220,240,255,.75)"); ctx.fillStyle = gr; ctx.fillRect(lx - 40 * U + j * 10 * U, ly - hgt, 2.5 * U, hgt); }
+      if (blurK) { ctx.fillStyle = `rgba(4,5,12,${blurK})`; ctx.fillRect(0, 0, W, H); }
+    }
+    function glassOverlay(t) {
+      // window frame, reflections, and your own faint reflection in the glass
+      ctx.fillStyle = "rgba(20,22,30,.95)"; [W * .02, W * .5, W * .98].forEach((x) => ctx.fillRect(x - 3 * U, 0, 6 * U, H));
+      ctx.fillStyle = "rgba(255,255,255,.08)"; [W * .02, W * .5, W * .98].forEach((x) => ctx.fillRect(x - 3 * U, 0, 1.5 * U, H));
+      ctx.fillRect(0, H * .985, W, 3);
+      const rf = ctx.createLinearGradient(0, 0, W, H); rf.addColorStop(0, "rgba(255,255,255,0)"); rf.addColorStop(.42, "rgba(255,255,255,0)"); rf.addColorStop(.47, "rgba(255,255,255,.06)"); rf.addColorStop(.52, "rgba(255,255,255,0)"); ctx.fillStyle = rf; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.globalAlpha = .13; me(W * .22, H * .42, 120); ctx.restore();
+    }
     function drawBurj(t, dt) {
-      if (riding) { ride = Math.min(1, ride + dt / 6); if (ride >= 1) { riding = false; Hero.say("dubai", "good", "148-й этаж! Сделай фото!"); updateAction(); } }
-      const h = H * 3.4, off = ride * (h - H * .55);
-      sky(ride > .5 ? "#7fc4ff" : "#9fd6ff", "#ffe6b8");
-      ctx.save(); ctx.translate(0, off);
-      // ground and city
-      const base = H * .92;
-      skyline(base, "rgba(127,147,178,.55)", 3, 14, H * .3);
-      skyline(base, "rgba(90,110,140,.8)", 7, 10, H * .18);
-      rect(0, base, W, H * 2, "#d9b97f");
-      palm(W * .12, base, U * .9, t); palm(W * .9, base, U, t);
-      burj(W / 2, base, h, false);
-      // the elevator
-      const ey = base - h * .86 * ride;
-      ctx.fillStyle = "#ffd84d"; ctx.fillRect(W / 2 - 4 * U, ey - 8 * U, 8 * U, 8 * U);
-      ctx.restore();
-      // clouds near the top
-      if (ride > .55) { ctx.globalAlpha = (ride - .55) * 2; for (let i = 0; i < 5; i++) { const x = ((i * 120 + t * 12) % (W + 160)) - 80; ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.ellipse(x, H * (.55 + (i % 3) * .1), 50 * U, 14 * U, 0, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
+      if (riding) { ride = Math.min(1, ride + dt / 6); if (ride >= 1) { riding = false; Hero.say("dubai", "good", "148-й этаж! Ночной Дубай как на ладони. Проведи пальцем — осмотрись, и сделай фото!"); updateAction(); } }
+      if (!panDrag) { panX += panV * dt; panV *= Math.pow(.05, dt); if (ride >= 1 && !panDrag && Math.abs(panV) < .002) panX += Math.sin(t * .2) * .0006; panX = Math.max(0, Math.min(1, panX)); }
+      if (ride < 1) {
+        // glass elevator: the city drops away below while the shaft rushes past
+        const yOff = (1 - ride) * H * .55;
+        drawCityView(t, yOff, .25 * (1 - ride));
+        ctx.fillStyle = "rgba(160,170,190,.18)";
+        for (let i = 0; i < 6; i++) { const y = ((i * H / 6 + t * (riding ? 520 : 0) * U) % (H + 40)) - 20; ctx.fillRect(0, y, W, 3 * U); }
+        rect(0, 0, W * .06, H, "rgba(30,32,42,.9)"); rect(W * .94, 0, W * .06, H, "rgba(30,32,42,.9)");
+      } else drawCityView(t, 0, 0);
+      glassOverlay(t);
+      if (photo && photoT > 0 && !snap) { snap = document.createElement("canvas"); snap.width = cv.width; snap.height = cv.height; snap.getContext("2d").drawImage(cv, 0, 0); }
       const floor = Math.round(ride * 148);
       rect(10, 10, 120 * U, 42 * U, "rgba(18,19,42,.7)");
       text(`Этаж ${floor}`, 10 + 60 * U, 10 + 15 * U, 14, "#ffd84d");
       text(`${Math.round(ride * 555)} м`, 10 + 60 * U, 10 + 33 * U, 10, "#fff", "center", 700);
-      if (ride >= 1) text("At the Top · 555 м", W / 2, H * .12, 13, "#fff");
-      me(W - 30 * U, H - 30 * U, 36);
+      if (ride >= 1) { text("At the Top · 555 м · ночь", W * .66, H * .07, 11, "#fff"); if (!photo && Math.sin(t * 2) > -.3) text("⟷ проведи пальцем", W / 2, H * .94, 10, "#ffd84d"); }
       if (flashT > 0) { ctx.fillStyle = `rgba(255,255,255,${flashT * 2})`; ctx.fillRect(0, 0, W, H); }
+      // the selfie: you in front of the night city, like a real snapshot
+      if (photo && photoT > 0) {
+        photoT -= dt; const k = Math.min(1, (3.2 - photoT) * 3);
+        ctx.save(); ctx.globalAlpha = Math.min(1, photoT * 2); ctx.translate(W / 2, H / 2); ctx.rotate(-.05 * k); ctx.scale(.55 + .25 * k, .55 + .25 * k);
+        const pw = W * .8, ph = H * .86; rect(-pw / 2, -ph / 2, pw, ph, "#fff");
+        ctx.save(); ctx.beginPath(); ctx.rect(-pw / 2 + 8, -ph / 2 + 8, pw - 16, ph - 46); ctx.clip();
+        if (snap) ctx.drawImage(snap, 0, 0, snap.width, snap.height, -pw / 2 + 8, -ph / 2 + 8, pw - 16, (pw - 16) * H / W);
+        me(-pw / 2 + 70 * U, ph / 2 - 80 * U, 120); ctx.restore();
+        ctx.fillStyle = "#12132a"; ctx.font = `800 ${Math.round(13 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.fillText("Бурдж Халифа · 555 м · ночной Дубай", 0, ph / 2 - 16);
+        ctx.restore();
+      }
     }
-
+    function burjPanStart(e) { if (scene !== "burj" || ride < 1) return false; panDrag = { x: e.clientX, p: panX, id: e.pointerId, last: e.clientX, lt: performance.now() }; return true; }
     function drawMall(t, dt) {
       if (!night) {
         // aquarium inside the mall
@@ -6364,7 +6436,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       audio();
       if (scene === "burj") {
         if (ride < 1 && !riding) { riding = true; }
-        else if (ride >= 1 && !photo) { photo = true; flashT = .5; giveStamp("burj"); Hero.say("dubai", "win", "Фото с высоты 555 метров готово!"); }
+        else if (ride >= 1 && !photo) { photo = true; flashT = .5; photoT = 3.2; snap = null; giveStamp("burj"); Hero.say("dubai", "win", "Селфи на фоне ночного Дубая с высоты 555 метров!"); }
         else if (photo) { ride = 0; photo = false; }
       } else if (scene === "mall") {
         if (!night) night = true;
@@ -6399,7 +6471,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const dxXY = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; };
     cv.addEventListener("pointermove", (e) => { if (scene === "marina" && hotel.phase === "room") { const [x, y] = dxXY(e); roomMove(x, y); if (drag) e.preventDefault(); } });
     cv.addEventListener("pointerup", (e) => { if (scene === "marina") { const [x, y] = dxXY(e); roomUp(x, y); } });
-    cv.addEventListener("pointercancel", () => { if (drag) { saveRoom(); drag = null; } });
+    cv.addEventListener("pointercancel", () => { if (drag) { saveRoom(); drag = null; } panDrag = null; });
+    cv.addEventListener("pointerdown", (e) => { if (burjPanStart(e)) { try { cv.setPointerCapture(e.pointerId); } catch (er) { /* ignore */ } } });
+    cv.addEventListener("pointermove", (e) => {
+      if (!panDrag || e.pointerId !== panDrag.id) return; const r = cv.getBoundingClientRect(), maxX = (pano ? pano.PW : W * 2.4) - W;
+      panX = Math.max(0, Math.min(1, panDrag.p - (e.clientX - panDrag.x) * W / r.width / maxX));
+      const now = performance.now(); panV = -(e.clientX - panDrag.last) * W / r.width / maxX / Math.max(.008, (now - panDrag.lt) / 1000); panDrag.last = e.clientX; panDrag.lt = now;
+    });
+    cv.addEventListener("pointerup", () => { panDrag = null; });
 
     function frame(now) {
       raf = 0;
