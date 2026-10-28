@@ -1331,9 +1331,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-body">
           <span class="cart-name">Just Moscow</span>
-          <span class="cart-desc">Москва: куранты на Красной площади, метро-дворцы, ГУМ, каток в Парке Горького и Москва-Сити.</span>
+          <span class="cart-desc">Москва: куранты на Красной площади, метро-дворцы, ГУМ, каток в Парке Горького, Москва-Сити и Moskvich Hotel.</span>
         </span>
-        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubMoscow">0/5</span></span>
+        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubMoscow">0/6</span></span>
       </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
@@ -1746,11 +1746,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button type="button" data-place="gum"><i style="background:#ffd84d">◆</i>ГУМ</button>
       <button type="button" data-place="park"><i style="background:#5ce1e6">❄</i>Парк Горького</button>
       <button type="button" data-place="city"><i style="background:#9fb3cc">▲</i>Москва-Сити</button>
+      <button type="button" data-place="hotel"><i style="background:#c43c4f">♛</i>Moskvich Hotel</button>
     </div>
     <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
-      <span class="st" data-st="red">КП</span><span class="st" data-st="metro">МТ</span><span class="st" data-st="gum">ГУМ</span><span class="st" data-st="park">ПГ</span><span class="st" data-st="city">МС</span>
+      <span class="st" data-st="red">КП</span><span class="st" data-st="metro">МТ</span><span class="st" data-st="gum">ГУМ</span><span class="st" data-st="park">ПГ</span><span class="st" data-st="city">МС</span><span class="st" data-st="hotel">MH</span>
     </div>
-    <p class="hint">Выбери место — такси довезёт. Послушай куранты на Красной площади, прокатись на метро, купи сувениры в ГУМе, сделай 3 круга на катке и поднимись на 89-й этаж Москва-Сити. Штамп +50 монет, все 5 — бонус +200.</p>
+    <p class="hint">Выбери место — такси довезёт. Послушай куранты на Красной площади, прокатись на метро, купи сувениры в ГУМе, сделай 3 круга на катке и поднимись на 89-й этаж Москва-Сити и отдохни в Moskvich Hotel. Штамп +50 монет, все 6 — бонус +200.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -7197,6 +7198,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       gum: { name: "ГУМ", map: [.62, .62] },
       park: { name: "Парк Горького", map: [.4, .76] },
       city: { name: "Москва-Сити", map: [.18, .42] },
+      hotel: { name: "Moskvich Hotel", map: [.3, .24] },
     };
     const N = Object.keys(PLACES).length;
     let place = null, scene = "map", travel = null, stamps = store.get("mwStamps", {});
@@ -7218,6 +7220,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let snow = [];
     // Moscow City
     let ride = 0, riding = false, photo = false, flashT = 0, cityLights = [];
+    // Moskvich Hotel
+    const ht = { phase: "lobby", key: 0, fade: 0, done: {}, spots: [], fx: "", fxT: 0, bites: 0, tv: false };
 
     // ---------- sound ----------
     let AC = null;
@@ -7518,6 +7522,144 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (photo) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 8 * U; ctx.strokeRect(4 * U, 4 * U, W - 8 * U, H - 8 * U); me(W * .18, H * .78, 70); text("📸 Москва-Сити · 354 м · ночная Москва", W / 2, H - 16 * U, 10, "#ffd84d"); }
     }
 
+    // daytime Moscow seen from the hotel: river, Kremlin wall and towers, a Stalin skyscraper, Moscow City glass towers
+    function mskView(x0, y0, w, h, t) {
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip();
+      const g = ctx.createLinearGradient(0, y0, 0, y0 + h); g.addColorStop(0, "#7fb4e8"); g.addColorStop(1, "#e4eef8"); ctx.fillStyle = g; ctx.fillRect(x0, y0, w, h);
+      const by = y0 + h * .78, k = w / 360;
+      // Moscow City cluster
+      [[.62, .55, "#5a8ab8"], [.68, .7, "#3a6a98"], [.74, .5, "#7aa4c8"], [.79, .62, "#4a7aa8"], [.84, .44, "#6a94c0"]].forEach(([fx, fh, c], i) => {
+        const tx = x0 + w * fx, th = h * fh, tw = 16 * k;
+        const tg = ctx.createLinearGradient(tx, 0, tx + tw, 0); tg.addColorStop(0, c); tg.addColorStop(.5, "#cfe4f6"); tg.addColorStop(1, c); ctx.fillStyle = tg;
+        ctx.beginPath(); ctx.moveTo(tx, by); ctx.lineTo(tx + (i === 1 ? 3 * k : 0), by - th); ctx.lineTo(tx + tw - (i === 3 ? 4 * k : 0), by - th + (i === 3 ? 6 * k : 0)); ctx.lineTo(tx + tw, by); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.25)"; for (let r = 0; r < th / (6 * k); r++) ctx.fillRect(tx + 2 * k, by - th + r * 6 * k + 2, tw - 4 * k, 1);
+      });
+      // Stalin skyscraper
+      const sx = x0 + w * .2; ctx.fillStyle = "#c9b8a0"; ctx.fillRect(sx - 18 * k, by - h * .2, 36 * k, h * .2); ctx.fillRect(sx - 9 * k, by - h * .32, 18 * k, h * .12); ctx.fillRect(sx - 5 * k, by - h * .42, 10 * k, h * .1); ctx.beginPath(); ctx.moveTo(sx - 3 * k, by - h * .42); ctx.lineTo(sx, by - h * .54); ctx.lineTo(sx + 3 * k, by - h * .42); ctx.fill();
+      star(sx, by - h * .56, 2.5 * k, "#e3263a");
+      // houses
+      for (let i = 0; i < 12; i++) { const hx = x0 + i * w / 12, hh = h * (.08 + hsh(i + 7) * .1); ctx.fillStyle = ["#e8d8c0", "#d8c8b0", "#f0e0c8", "#c9b8a8"][i % 4]; ctx.fillRect(hx, by - hh, w / 12 + 1, hh); ctx.fillStyle = "rgba(60,70,90,.35)"; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(hx + 3 * k + c * 7 * k, by - hh + 3 * k + r * 6 * k, 3 * k, 3 * k); }
+      // Kremlin wall with a tower and a red star
+      const ky = by + h * .02; ctx.fillStyle = "#b8322e"; ctx.fillRect(x0, ky - h * .06, w * .55, h * .06);
+      for (let i = 0; i < 14; i++) { const mx = x0 + i * w * .55 / 14; ctx.beginPath(); ctx.moveTo(mx + 1, ky - h * .06); ctx.lineTo(mx + 1, ky - h * .08); ctx.lineTo(mx + w * .02, ky - h * .07); ctx.lineTo(mx + w * .04 - 1, ky - h * .08); ctx.lineTo(mx + w * .04 - 1, ky - h * .06); ctx.fill(); }
+      const kx = x0 + w * .38; ctx.fillRect(kx - 7 * k, ky - h * .26, 14 * k, h * .26); ctx.fillStyle = "#2f7a4a"; ctx.beginPath(); ctx.moveTo(kx - 7 * k, ky - h * .26); ctx.lineTo(kx, ky - h * .4); ctx.lineTo(kx + 7 * k, ky - h * .26); ctx.fill();
+      star(kx, ky - h * .42, 3.5 * k, "#ff2a2a");
+      // the river
+      ctx.fillStyle = "#4f8ac0"; ctx.fillRect(x0, ky, w, h * .22);
+      ctx.fillStyle = "rgba(255,255,255,.3)"; for (let i = 0; i < 6; i++) ctx.fillRect(x0 + ((t * 20 + i * 60 * k) % w), ky + h * (.04 + (i % 3) * .05), 14 * k, 1.5);
+      ctx.restore();
+    }
+    // ---------- Moskvich Hotel: check in, then relax in room 707 ----------
+    function drawHotelLobby(t, dt) {
+      sky("#f4e6cf", "#e2c9a4");
+      // marble floor
+      rect(0, H * .7, W, H * .3, "#efe6d8");
+      ctx.strokeStyle = "rgba(160,140,110,.35)"; ctx.lineWidth = 1;
+      for (let i = -4; i < 9; i++) { ctx.beginPath(); ctx.moveTo(W * (.5 + i * .14), H * .7); ctx.lineTo(W * (.5 + i * .3), H); ctx.stroke(); }
+      for (let i = 1; i < 4; i++) { const y = H * .7 + H * .3 * (i * i) / 12; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      // columns
+      [.06, .94].forEach((cx) => { rect(W * cx - 10 * U, H * .12, 20 * U, H * .58, "#f8f0e2"); rect(W * cx - 13 * U, H * .1, 26 * U, 6 * U, "#d9c39a"); rect(W * cx - 13 * U, H * .68, 26 * U, 6 * U, "#d9c39a"); });
+      // chandelier
+      ctx.strokeStyle = "#b8963a"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H * .08); ctx.stroke();
+      for (let i = 0; i < 7; i++) { const x = W / 2 + (i - 3) * 10 * U, y = H * .1 + Math.abs(i - 3) * -2 * U; ctx.fillStyle = `rgba(255,230,150,${.6 + .3 * Math.sin(t * 3 + i)})`; ctx.beginPath(); ctx.arc(x, y, 3.5 * U, 0, 7); ctx.fill(); }
+      // sign
+      rect(W * .22, H * .14, W * .56, H * .11, "#2a1f3a");
+      text("MOSKVICH HOTEL", W / 2, H * .195, 15, "#ffd84d");
+      for (let i = 0; i < 5; i++) text("★", W * (.4 + i * .05), H * .28, 8, "#ffd84d");
+      // reception desk
+      const dx = W * .25, dy = H * .48, dw = W * .5, dh = H * .22;
+      // receptionist
+      ctx.fillStyle = "#e0b896"; ctx.beginPath(); ctx.arc(W / 2, dy - 22 * U, 11 * U, 0, 7); ctx.fill();
+      ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.arc(W / 2, dy - 26 * U, 11 * U, Math.PI, 0); ctx.fill();
+      rect(W / 2 - 14 * U, dy - 11 * U, 28 * U, 14 * U, "#2a1f3a"); rect(W / 2 - 2 * U, dy - 11 * U, 4 * U, 8 * U, "#c43c4f");
+      ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(W / 2 - 4 * U, dy - 22 * U, 1.3 * U, 0, 7); ctx.arc(W / 2 + 4 * U, dy - 22 * U, 1.3 * U, 0, 7); ctx.fill();
+      const dg = ctx.createLinearGradient(0, dy, 0, dy + dh); dg.addColorStop(0, "#8a5a34"); dg.addColorStop(1, "#5a3a20"); ctx.fillStyle = dg; ctx.fillRect(dx, dy, dw, dh);
+      rect(dx - 6 * U, dy - 6 * U, dw + 12 * U, 8 * U, "#d9c39a");
+      // bell
+      ctx.fillStyle = "#ffd84d"; ctx.beginPath(); ctx.arc(dx + dw * .82, dy - 6 * U, 7 * U, Math.PI, 0); ctx.fill(); rect(dx + dw * .82 - 9 * U, dy - 7 * U, 18 * U, 2 * U, "#b8963a");
+      // plants
+      [.15, .85].forEach((px) => { rect(W * px - 9 * U, H * .62, 18 * U, 16 * U, "#c97f6a"); ctx.fillStyle = "#3f8a3c"; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.ellipse(W * px + (i - 2) * 5 * U, H * .58 - Math.abs(i - 2) * -3 * U, 4 * U, 12 * U, (i - 2) * .35, 0, 7); ctx.fill(); } });
+      // key card flying to you
+      if (ht.key > 0) {
+        ht.key = Math.min(1, ht.key + dt * 1.2); const k = ht.key, x = W / 2 + (W * .2 - W / 2) * k, y = dy - 4 * U + (H * .82 - dy) * k - Math.sin(k * Math.PI) * 30 * U;
+        rect(x - 12 * U, y - 8 * U, 24 * U, 16 * U, "#c43c4f"); text("707", x, y, 8, "#fff");
+        if (k >= 1) { ht.phase = "room"; ht.key = 0; ht.fade = 1; Hero.say("moscow", "start", "Номер 707 — с видом на Кремль и Москва-Сити! Нажимай на вещи."); updateAction(); }
+      }
+      ht.spots = [{ id: "desk", x: dx, y: dy - 40 * U, w: dw, h: dh + 40 * U }];
+      me(W * .2, H * .84, 46);
+      if (!ht.key && Math.sin(t * 2) > -.3) text("Нажми на ресепшен или «Заселиться»", W / 2, H * .95, 10, "#7a5a2a");
+    }
+    function drawHotelRoom(t, dt) {
+      // wall + floor
+      rect(0, 0, W, H * .66, "#f2e3d0"); rect(0, H * .66, W, H * .34, "#b88a5a");
+      for (let i = 0; i < 10; i++) rect(i * W / 10, H * .66, 1, H * .34, "rgba(0,0,0,.08)");
+      // carpet
+      ctx.fillStyle = "#a01f2f"; ctx.fillRect(W * .2, H * .78, W * .42, H * .16); ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1.5; ctx.strokeRect(W * .22, H * .8, W * .38, H * .12);
+      for (let i = 0; i < 5; i++) { const x = W * (.26 + i * .075), y = H * .86; ctx.beginPath(); ctx.moveTo(x, y - 6 * U); ctx.lineTo(x + 6 * U, y); ctx.lineTo(x, y + 6 * U); ctx.lineTo(x - 6 * U, y); ctx.closePath(); ctx.stroke(); }
+      const sp = {};
+      // balcony door with the view of Ararat
+      const bx = W * .66, by = H * .1, bw = W * .3, bh = H * .56;
+      ctx.save(); ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.clip();
+      const g = ctx.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, "#7fc0ee"); g.addColorStop(1, "#f6e2c4"); ctx.fillStyle = g; ctx.fillRect(bx, by, bw, bh);
+      mskView(bx, by, bw, bh * .74, t);
+      rect(bx, by + bh * .78, bw, bh * .22, "rgba(200,200,210,.6)");
+      for (let i = 0; i < 8; i++) rect(bx + i * bw / 8 + 2, by + bh * .72, 2 * U, bh * .28, "#6a6a7a");
+      rect(bx, by + bh * .72, bw, 3 * U, "#6a6a7a");
+      ctx.restore();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 5 * U; ctx.strokeRect(bx, by, bw, bh); ctx.beginPath(); ctx.moveTo(bx + bw / 2, by); ctx.lineTo(bx + bw / 2, by + bh); ctx.stroke();
+      sp.balcony = { x: bx, y: by, w: bw, h: bh };
+      // TV on the wall
+      const tx = W * .3, ty = H * .1, tw = W * .26, th = H * .2;
+      rect(tx, ty, tw, th, "#12132a");
+      if (ht.tv) { for (let i = 0; i < 6; i++) rect(tx + 4 + i * (tw - 8) / 6, ty + 4, (tw - 8) / 6, th - 8, ["#ff5ad1", "#5ce1e6", "#ffd84d", "#2fa84a", "#ff8a3d", "#7b5cff"][(i + Math.floor(t * 4)) % 6]); text("Москва ТВ", tx + tw / 2, ty + th / 2, 8, "#fff"); }
+      sp.tv = { x: tx, y: ty, w: tw, h: th };
+      // bed
+      const ex = W * .02, ey = H * .44, ew = W * .3, eh = H * .3;
+      rect(ex, ey - H * .12, 8 * U, eh + H * .12, "#6a4424");
+      rect(ex, ey, ew, eh * .55, "#fffdf5"); rect(ex + ew * .35, ey + 2, ew * .65, eh * .55 - 2, "#c43c4f");
+      ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(ex + ew * .35, ey + 6 * U + i * 8 * U); ctx.lineTo(ex + ew, ey + 6 * U + i * 8 * U); ctx.stroke(); }
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(ex + ew * .17, ey + 6 * U, ew * .13, 7 * U, 0, 0, 7); ctx.fill();
+      rect(ex, ey + eh * .55, ew, eh * .3, "#8a5a34");
+      sp.bed = { x: ex, y: ey - H * .05, w: ew, h: eh };
+      // breakfast table: lavash, cheese, greens, tomatoes, coffee
+      const fx = W * .38, fy = H * .56, fw = W * .22;
+      rect(fx, fy, fw, 6 * U, "#8a5a34"); rect(fx + 4 * U, fy + 6 * U, 4 * U, H * .14, "#6a4424"); rect(fx + fw - 8 * U, fy + 6 * U, 4 * U, H * .14, "#6a4424");
+      const left = 3 - ht.bites;
+      ["🥞", "🍯", "🫐", "🍳", "🫖"].forEach((e, i) => { if (i < 4 && i >= left + 1 && left < 3) return; emo(e, fx + 8 * U + i * (fw - 16 * U) / 4, fy - 9 * U, 15); });
+      sp.food = { x: fx, y: fy - 24 * U, w: fw, h: 40 * U };
+      // shower door
+      const sx = W * .02, sy = H * .06, sw = W * .16, sh = H * .32;
+      rect(sx, sy, sw, sh, "rgba(160,210,230,.55)"); ctx.strokeStyle = "#9fb3cc"; ctx.lineWidth = 2; ctx.strokeRect(sx, sy, sw, sh);
+      rect(sx + sw * .3, sy + 6 * U, sw * .4, 4 * U, "#9fb3cc"); text("🚿", sx + sw / 2, sy + sh / 2, 10, "#fff");
+      sp.shower = { x: sx, y: sy, w: sw, h: sh };
+      ht.spots = Object.entries(sp).map(([id, r]) => ({ id, ...r }));
+      me(W * .5, H * .86, 46);
+      // effects
+      if (ht.fxT > 0) {
+        ht.fxT = Math.max(0, ht.fxT - dt);
+        if (ht.fx === "bed") { ctx.fillStyle = `rgba(10,12,40,${Math.min(.75, ht.fxT)})`; ctx.fillRect(0, 0, W, H); for (let i = 0; i < 3; i++) text("Z", W * .2 + i * 14 * U, H * .4 - i * 14 * U - (2.5 - ht.fxT) * 10 * U, 12 + i * 4, "#fff"); }
+        if (ht.fx === "shower") { ctx.strokeStyle = "rgba(120,200,255,.9)"; ctx.lineWidth = 1.5; for (let i = 0; i < 18; i++) { const x = sx + 6 * U + hsh(i) * (sw - 12 * U), y = sy + 14 * U + ((t * 160 + i * 23) % (sh - 20 * U)); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 6 * U); ctx.stroke(); } }
+        if (ht.fx === "balcony") { ctx.save(); ctx.globalAlpha = Math.min(1, ht.fxT * 2); const g2 = ctx.createLinearGradient(0, 0, 0, H); g2.addColorStop(0, "#7fc0ee"); g2.addColorStop(1, "#f6e2c4"); ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H); mskView(0, 0, W, H * .8, t); rect(0, H * .8, W, H * .2, "#9a9aa8"); for (let i = 0; i < 16; i++) rect(i * W / 16, H * .72, 3 * U, H * .28, "#5a5a6a"); rect(0, H * .72, W, 4 * U, "#5a5a6a"); text("Вид с балкона Moskvich Hotel", W / 2, H * .14, 11, "#fff"); ctx.restore(); }
+      }
+      const n = Object.keys(ht.done).length;
+      rect(0, 0, W, 20 * U, "rgba(18,19,42,.55)");
+      text(n >= 5 ? "Номер 707 · отдых удался! ★" : `Номер 707 · отдых ${n}/5 — нажимай на вещи`, W / 2, 10 * U, 9, "#fff");
+    }
+    function drawHotel(t, dt) {
+      if (ht.phase === "lobby") drawHotelLobby(t, dt); else drawHotelRoom(t, dt);
+      if (ht.fade > 0) { ht.fade = Math.max(0, ht.fade - dt * 1.4); ctx.fillStyle = `rgba(18,19,42,${ht.fade})`; ctx.fillRect(0, 0, W, H); if (ht.fade > .4) text("Лифт · 7 этаж", W / 2, H / 2, 14, "#ffd84d"); }
+    }
+    function hotelTask(id) {
+      if (id === "desk") { if (!ht.key) { ht.key = .01; Hero.say("moscow", "good", "Здравствуйте! Добро пожаловать в Moskvich Hotel. Ваш ключ — номер 707."); } return; }
+      if (ht.fxT > 0) return;
+      const say = { bed: "Мягкая кровать… Zzz… выспался!", shower: "Тёплый душ — красота!", balcony: "Вот это вид! Кремль и небоскрёбы Москва-Сити с балкона!" };
+      if (id === "tv") { ht.tv = !ht.tv; Hero.say("moscow", "good", ht.tv ? "Включили московское ТВ!" : "Телевизор выключен"); }
+      else if (id === "food") {
+        if (ht.bites >= 3) { Hero.say("moscow", "good", "Тарелки пустые — закажи завтрак ещё раз!"); return; }
+        ht.bites++; Hero.say("moscow", "good", ht.bites >= 3 ? "Завтрак съеден: блины с мёдом, сырники, ягоды и чай! +5 монет" : `Ням! Кусочек ${ht.bites}/3`); if (ht.bites >= 3) Hero.grant(5); else return;
+      } else { ht.fx = id; ht.fxT = id === "balcony" ? 3 : 2.5; Hero.say("moscow", "good", say[id]); }
+      if (!ht.done[id]) { ht.done[id] = 1; const n = Object.keys(ht.done).length; if (n === 5) { giveStamp("hotel"); Hero.say("moscow", "win", "Лучший отдых в Moskvich Hotel!"); } }
+    }
     // ---------- flow ----------
     function giveStamp(id) {
       if (stamps[id]) return;
@@ -7536,6 +7678,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "metro") { b.textContent = ["Купить «Тройку»", "Пройти турникет", "Ждём поезд…", "Сесть в поезд", mt.stop >= 3 ? "Выйти из метро" : mt.ride > 0 ? "Едем…" : "Следующая станция"][mt.phase]; b.disabled = mt.phase === 2 || mt.ride > 0; }
       else if (scene === "gum") b.textContent = "Мороженое ГУМ 🍦";
       else if (scene === "park") b.textContent = "Катиться ⛸️";
+      else if (scene === "hotel") { b.textContent = ht.phase === "lobby" ? "Заселиться 🛎️" : "Завтрак 🍳"; b.disabled = ht.phase === "lobby" && ht.key > 0; }
       else if (scene === "city") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 89-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
       else b.hidden = true;
     }
@@ -7553,7 +7696,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (id === "gum") setupGum();
       if (id === "park") { rk.v = 0; rk.laps = 0; rk.total = 0; rk.a = Math.PI / 2; }
       if (id === "city") { ride = 0; riding = false; photo = false; setupCity(); }
-      Hero.say("moscow", "start", { red: "Красная площадь! Спасская башня, Кремль и собор Василия Блаженного.", metro: "Московское метро — подземные дворцы с люстрами!", gum: "ГУМ — самый знаменитый магазин Москвы. Рубли бесконечные!", park: "Парк Горького, зима! Каток ждёт — сделай 3 круга.", city: "Москва-Сити — небоскрёбы из стекла. Поднимемся на 89-й этаж!" }[id]);
+      if (id === "hotel") { ht.phase = "lobby"; ht.key = 0; ht.fade = 0; ht.fxT = 0; ht.bites = 0; }
+      Hero.say("moscow", "start", { red: "Красная площадь! Спасская башня, Кремль и собор Василия Блаженного.", metro: "Московское метро — подземные дворцы с люстрами!", gum: "ГУМ — самый знаменитый магазин Москвы. Рубли бесконечные!", park: "Парк Горького, зима! Каток ждёт — сделай 3 круга.", city: "Москва-Сити — небоскрёбы из стекла. Поднимемся на 89-й этаж!", hotel: "Moskvich Hotel — заселяемся! Подойди к ресепшену." }[id]);
       updateAction(); passport();
     }
     function buy(g) {
@@ -7575,6 +7719,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "metro") metroAct();
       else if (scene === "gum") { Inv.add({ name: "Мороженое ГУМ", col: "#fff7c2", ico: "🍦" }, "Вкусы Москвы"); gMsg = "Знаменитое мороженое ГУМ в стаканчике — в «Мои вещи»!"; }
       else if (scene === "park") skate();
+      else if (scene === "hotel") { if (ht.phase === "lobby") hotelTask("desk"); else { ht.bites = 0; Hero.say("moscow", "good", "Завтрак принесли: блины с мёдом, сырники, ягоды и чай!"); } }
       else if (scene === "city") {
         if (ride < 1 && !riding) riding = true;
         else if (ride >= 1 && !photo) { photo = true; flashT = .5; giveStamp("city"); Hero.say("moscow", "win", "Селфи над ночной Москвой с высоты 354 метра!"); }
@@ -7590,6 +7735,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (scene === "map" && !travel) { const id = Object.keys(PLACES).find((k) => Math.hypot(PLACES[k].map[0] * W - x, PLACES[k].map[1] * H - 12 * U - y) < 20 * U); if (id) go(id); }
       else if (scene === "gum") { const g = goods.find((q) => Math.abs(q.x - x) < 22 * U && Math.abs(q.y - y) < 24 * U); if (g) buy(g); }
       else if (scene === "park") skate();
+      else if (scene === "hotel" && !ht.fade) { const q = ht.spots.find((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h); if (q) hotelTask(q.id); }
       updateAction();
     });
 
@@ -7605,6 +7751,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "metro") drawMetro(t, dt);
       else if (scene === "gum") drawGum(t, dt);
       else if (scene === "park") drawPark(t, dt);
+      else if (scene === "hotel") drawHotel(t, dt);
       else if (scene === "city") { const was = riding; drawCity(t, dt); if (was) updateAction(); }
       raf = requestAnimationFrame(frame);
     }
