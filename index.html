@@ -1320,9 +1320,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-body">
           <span class="cart-name">Just Yerevan</span>
-          <span class="cart-desc">Ереван: Каскад с видом на Арарат, поющие фонтаны, Вернисаж и лаваш из тонира.</span>
+          <span class="cart-desc">Ереван: Каскад с видом на Арарат, поющие фонтаны, Вернисаж, лаваш из тонира и Olimpia Hotel.</span>
         </span>
-        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubYerevan">0/4</span></span>
+        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubYerevan">0/5</span></span>
       </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
@@ -1702,11 +1702,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button type="button" data-place="square"><i style="background:#ff5ad1">●</i>Площадь Республики</button>
       <button type="button" data-place="vern"><i style="background:#ffb547">◆</i>Вернисаж</button>
       <button type="button" data-place="lavash"><i style="background:#ff8a3d">★</i>Лавашная</button>
+      <button type="button" data-place="hotel"><i style="background:#c43c4f">♛</i>Olimpia Hotel</button>
     </div>
     <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
-      <span class="st" data-st="cascade">КС</span><span class="st" data-st="square">ПР</span><span class="st" data-st="vern">ВР</span><span class="st" data-st="lavash">ЛВ</span>
+      <span class="st" data-st="cascade">КС</span><span class="st" data-st="square">ПР</span><span class="st" data-st="vern">ВР</span><span class="st" data-st="lavash">ЛВ</span><span class="st" data-st="hotel">OH</span>
     </div>
-    <p class="hint">Выбери место — такси довезёт. Поднимись по Каскаду к виду на Арарат, послушай поющие фонтаны, купи сувениры на Вернисаже и испеки лаваш. Штамп +50 монет, все 4 — бонус +200.</p>
+    <p class="hint">Выбери место — такси довезёт. Поднимись по Каскаду к виду на Арарат, послушай поющие фонтаны, купи сувениры на Вернисаже, испеки лаваш и отдохни в Olimpia Hotel. Штамп +50 монет, все 5 — бонус +200.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -6628,6 +6629,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       square: { name: "Площадь Республики", map: [.55, .68] },
       vern: { name: "Вернисаж", map: [.78, .6] },
       lavash: { name: "Лавашная", map: [.24, .7] },
+      hotel: { name: "Olimpia Hotel", map: [.7, .4] },
     };
     const TOP = 572; // steps of the Cascade
     let place = null, scene = "map", travel = null, stamps = store.get("yvStamps", {});
@@ -6636,6 +6638,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let show = 0;
     let bought = 0, flyers = [], vMsg = "", goods = [];
     const lv = { phase: "dough", roll: 0, bake: 0, good: 0, msg: "", fly: 0 };
+    const ht = { phase: "lobby", key: 0, fade: 0, done: {}, spots: [], fx: "", fxT: 0, bites: 0, tv: false };
+    const HT_TASKS = { bed: "Поспать", tv: "Телевизор", food: "Завтрак", balcony: "Балкон", shower: "Душ" };
     const GOODS = [
       ["Нарды", 15000, "#8a5a34", "🎲", "Вернисаж"], ["Ковёр", 60000, "#c43c4f", "🧶", "Вернисаж"], ["Дудук", 12000, "#a0785a", "🎵", "Вернисаж"], ["Керамика", 6000, "#2f6fd6", "🏺", "Вернисаж"],
       ["Хачкар-сувенир", 9000, "#c9b49a", "🗿", "Вернисаж"], ["Джезве", 4000, "#b8741a", "☕", "Вернисаж"], ["Картина", 25000, "#5ce1e6", "🖼️", "Вернисаж"], ["Чётки", 3000, "#7b5cff", "📿", "Вернисаж"],
@@ -6903,12 +6907,125 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       text(lv.msg || `Лаваш в тонире · испечено ${lv.good}/3`, W / 2, 9 * U, 9, "#fff", "center", 700);
     }
 
+
+    // ---------- Olimpia Hotel: check in, then relax in room 305 ----------
+    function drawHotelLobby(t, dt) {
+      sky("#f4e6cf", "#e2c9a4");
+      // marble floor
+      rect(0, H * .7, W, H * .3, "#efe6d8");
+      ctx.strokeStyle = "rgba(160,140,110,.35)"; ctx.lineWidth = 1;
+      for (let i = -4; i < 9; i++) { ctx.beginPath(); ctx.moveTo(W * (.5 + i * .14), H * .7); ctx.lineTo(W * (.5 + i * .3), H); ctx.stroke(); }
+      for (let i = 1; i < 4; i++) { const y = H * .7 + H * .3 * (i * i) / 12; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      // columns
+      [.06, .94].forEach((cx) => { rect(W * cx - 10 * U, H * .12, 20 * U, H * .58, "#f8f0e2"); rect(W * cx - 13 * U, H * .1, 26 * U, 6 * U, "#d9c39a"); rect(W * cx - 13 * U, H * .68, 26 * U, 6 * U, "#d9c39a"); });
+      // chandelier
+      ctx.strokeStyle = "#b8963a"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H * .08); ctx.stroke();
+      for (let i = 0; i < 7; i++) { const x = W / 2 + (i - 3) * 10 * U, y = H * .1 + Math.abs(i - 3) * -2 * U; ctx.fillStyle = `rgba(255,230,150,${.6 + .3 * Math.sin(t * 3 + i)})`; ctx.beginPath(); ctx.arc(x, y, 3.5 * U, 0, 7); ctx.fill(); }
+      // sign
+      rect(W * .22, H * .14, W * .56, H * .11, "#2a1f3a");
+      text("OLIMPIA HOTEL", W / 2, H * .195, 15, "#ffd84d");
+      for (let i = 0; i < 5; i++) text("★", W * (.4 + i * .05), H * .28, 8, "#ffd84d");
+      // reception desk
+      const dx = W * .25, dy = H * .48, dw = W * .5, dh = H * .22;
+      // receptionist
+      ctx.fillStyle = "#e0b896"; ctx.beginPath(); ctx.arc(W / 2, dy - 22 * U, 11 * U, 0, 7); ctx.fill();
+      ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.arc(W / 2, dy - 26 * U, 11 * U, Math.PI, 0); ctx.fill();
+      rect(W / 2 - 14 * U, dy - 11 * U, 28 * U, 14 * U, "#2a1f3a"); rect(W / 2 - 2 * U, dy - 11 * U, 4 * U, 8 * U, "#c43c4f");
+      ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(W / 2 - 4 * U, dy - 22 * U, 1.3 * U, 0, 7); ctx.arc(W / 2 + 4 * U, dy - 22 * U, 1.3 * U, 0, 7); ctx.fill();
+      const dg = ctx.createLinearGradient(0, dy, 0, dy + dh); dg.addColorStop(0, "#8a5a34"); dg.addColorStop(1, "#5a3a20"); ctx.fillStyle = dg; ctx.fillRect(dx, dy, dw, dh);
+      rect(dx - 6 * U, dy - 6 * U, dw + 12 * U, 8 * U, "#d9c39a");
+      // bell
+      ctx.fillStyle = "#ffd84d"; ctx.beginPath(); ctx.arc(dx + dw * .82, dy - 6 * U, 7 * U, Math.PI, 0); ctx.fill(); rect(dx + dw * .82 - 9 * U, dy - 7 * U, 18 * U, 2 * U, "#b8963a");
+      // plants
+      [.15, .85].forEach((px) => { rect(W * px - 9 * U, H * .62, 18 * U, 16 * U, "#c97f6a"); ctx.fillStyle = "#3f8a3c"; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.ellipse(W * px + (i - 2) * 5 * U, H * .58 - Math.abs(i - 2) * -3 * U, 4 * U, 12 * U, (i - 2) * .35, 0, 7); ctx.fill(); } });
+      // key card flying to you
+      if (ht.key > 0) {
+        ht.key = Math.min(1, ht.key + dt * 1.2); const k = ht.key, x = W / 2 + (W * .2 - W / 2) * k, y = dy - 4 * U + (H * .82 - dy) * k - Math.sin(k * Math.PI) * 30 * U;
+        rect(x - 12 * U, y - 8 * U, 24 * U, 16 * U, "#c43c4f"); text("305", x, y, 8, "#fff");
+        if (k >= 1) { ht.phase = "room"; ht.key = 0; ht.fade = 1; Hero.say("yerevan", "start", "Номер 305 — с балконом на Арарат! Нажимай на вещи."); updateAction(); }
+      }
+      ht.spots = [{ id: "desk", x: dx, y: dy - 40 * U, w: dw, h: dh + 40 * U }];
+      me(W * .2, H * .84, 46);
+      if (!ht.key && Math.sin(t * 2) > -.3) text("Нажми на ресепшен или «Заселиться»", W / 2, H * .95, 10, "#7a5a2a");
+    }
+    function drawHotelRoom(t, dt) {
+      // wall + floor
+      rect(0, 0, W, H * .66, "#f2e3d0"); rect(0, H * .66, W, H * .34, "#b88a5a");
+      for (let i = 0; i < 10; i++) rect(i * W / 10, H * .66, 1, H * .34, "rgba(0,0,0,.08)");
+      // carpet with an Armenian pattern
+      ctx.fillStyle = "#a01f2f"; ctx.fillRect(W * .2, H * .78, W * .42, H * .16); ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1.5; ctx.strokeRect(W * .22, H * .8, W * .38, H * .12);
+      for (let i = 0; i < 5; i++) { const x = W * (.26 + i * .075), y = H * .86; ctx.beginPath(); ctx.moveTo(x, y - 6 * U); ctx.lineTo(x + 6 * U, y); ctx.lineTo(x, y + 6 * U); ctx.lineTo(x - 6 * U, y); ctx.closePath(); ctx.stroke(); }
+      const sp = {};
+      // balcony door with the view of Ararat
+      const bx = W * .66, by = H * .1, bw = W * .3, bh = H * .56;
+      ctx.save(); ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.clip();
+      const g = ctx.createLinearGradient(0, by, 0, by + bh); g.addColorStop(0, "#7fc0ee"); g.addColorStop(1, "#f6e2c4"); ctx.fillStyle = g; ctx.fillRect(bx, by, bw, bh);
+      ararat(bx + bw * .45, by + bh * .62, bw * 1.3, bh * .45);
+      for (let i = 0; i < 5; i++) rect(bx + i * bw / 5, by + bh * .62 - (10 + hsh(i) * 22) * U, bw / 5 + 1, (10 + hsh(i) * 22) * U, TUFF[i % 5]);
+      rect(bx, by + bh * .78, bw, bh * .22, "rgba(200,200,210,.6)");
+      for (let i = 0; i < 8; i++) rect(bx + i * bw / 8 + 2, by + bh * .72, 2 * U, bh * .28, "#6a6a7a");
+      rect(bx, by + bh * .72, bw, 3 * U, "#6a6a7a");
+      ctx.restore();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 5 * U; ctx.strokeRect(bx, by, bw, bh); ctx.beginPath(); ctx.moveTo(bx + bw / 2, by); ctx.lineTo(bx + bw / 2, by + bh); ctx.stroke();
+      sp.balcony = { x: bx, y: by, w: bw, h: bh };
+      // TV on the wall
+      const tx = W * .3, ty = H * .1, tw = W * .26, th = H * .2;
+      rect(tx, ty, tw, th, "#12132a");
+      if (ht.tv) { for (let i = 0; i < 6; i++) rect(tx + 4 + i * (tw - 8) / 6, ty + 4, (tw - 8) / 6, th - 8, ["#ff5ad1", "#5ce1e6", "#ffd84d", "#2fa84a", "#ff8a3d", "#7b5cff"][(i + Math.floor(t * 4)) % 6]); text("Армения ТВ", tx + tw / 2, ty + th / 2, 8, "#fff"); }
+      sp.tv = { x: tx, y: ty, w: tw, h: th };
+      // bed
+      const ex = W * .02, ey = H * .44, ew = W * .3, eh = H * .3;
+      rect(ex, ey - H * .12, 8 * U, eh + H * .12, "#6a4424");
+      rect(ex, ey, ew, eh * .55, "#fffdf5"); rect(ex + ew * .35, ey + 2, ew * .65, eh * .55 - 2, "#c43c4f");
+      ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(ex + ew * .35, ey + 6 * U + i * 8 * U); ctx.lineTo(ex + ew, ey + 6 * U + i * 8 * U); ctx.stroke(); }
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(ex + ew * .17, ey + 6 * U, ew * .13, 7 * U, 0, 0, 7); ctx.fill();
+      rect(ex, ey + eh * .55, ew, eh * .3, "#8a5a34");
+      sp.bed = { x: ex, y: ey - H * .05, w: ew, h: eh };
+      // breakfast table: lavash, cheese, greens, tomatoes, coffee
+      const fx = W * .38, fy = H * .56, fw = W * .22;
+      rect(fx, fy, fw, 6 * U, "#8a5a34"); rect(fx + 4 * U, fy + 6 * U, 4 * U, H * .14, "#6a4424"); rect(fx + fw - 8 * U, fy + 6 * U, 4 * U, H * .14, "#6a4424");
+      const left = 3 - ht.bites;
+      ["🫓", "🧀", "🍅", "🥬", "☕"].forEach((e, i) => { if (i < 4 && i >= left + 1 && left < 3) return; emo(e, fx + 8 * U + i * (fw - 16 * U) / 4, fy - 9 * U, 15); });
+      sp.food = { x: fx, y: fy - 24 * U, w: fw, h: 40 * U };
+      // shower door
+      const sx = W * .02, sy = H * .06, sw = W * .16, sh = H * .32;
+      rect(sx, sy, sw, sh, "rgba(160,210,230,.55)"); ctx.strokeStyle = "#9fb3cc"; ctx.lineWidth = 2; ctx.strokeRect(sx, sy, sw, sh);
+      rect(sx + sw * .3, sy + 6 * U, sw * .4, 4 * U, "#9fb3cc"); text("🚿", sx + sw / 2, sy + sh / 2, 10, "#fff");
+      sp.shower = { x: sx, y: sy, w: sw, h: sh };
+      ht.spots = Object.entries(sp).map(([id, r]) => ({ id, ...r }));
+      me(W * .5, H * .86, 46);
+      // effects
+      if (ht.fxT > 0) {
+        ht.fxT = Math.max(0, ht.fxT - dt);
+        if (ht.fx === "bed") { ctx.fillStyle = `rgba(10,12,40,${Math.min(.75, ht.fxT)})`; ctx.fillRect(0, 0, W, H); for (let i = 0; i < 3; i++) text("Z", W * .2 + i * 14 * U, H * .4 - i * 14 * U - (2.5 - ht.fxT) * 10 * U, 12 + i * 4, "#fff"); }
+        if (ht.fx === "shower") { ctx.strokeStyle = "rgba(120,200,255,.9)"; ctx.lineWidth = 1.5; for (let i = 0; i < 18; i++) { const x = sx + 6 * U + hsh(i) * (sw - 12 * U), y = sy + 14 * U + ((t * 160 + i * 23) % (sh - 20 * U)); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 6 * U); ctx.stroke(); } }
+        if (ht.fx === "balcony") { ctx.save(); ctx.globalAlpha = Math.min(1, ht.fxT * 2); const g2 = ctx.createLinearGradient(0, 0, 0, H); g2.addColorStop(0, "#7fc0ee"); g2.addColorStop(1, "#f6e2c4"); ctx.fillStyle = g2; ctx.fillRect(0, 0, W, H); ararat(W * .45, H * .62, W * 1.05, H * .52); tuffRow(H * .8, 12, 14 * U, 40 * U, 21, false); rect(0, H * .8, W, H * .2, "#9a9aa8"); for (let i = 0; i < 16; i++) rect(i * W / 16, H * .72, 3 * U, H * .28, "#5a5a6a"); rect(0, H * .72, W, 4 * U, "#5a5a6a"); text("Вид с балкона Olimpia Hotel", W / 2, H * .14, 11, "#fff"); ctx.restore(); }
+      }
+      const n = Object.keys(ht.done).length;
+      rect(0, 0, W, 20 * U, "rgba(18,19,42,.55)");
+      text(n >= 5 ? "Номер 305 · отдых удался! ★" : `Номер 305 · отдых ${n}/5 — нажимай на вещи`, W / 2, 10 * U, 9, "#fff");
+    }
+    function drawHotel(t, dt) {
+      if (ht.phase === "lobby") drawHotelLobby(t, dt); else drawHotelRoom(t, dt);
+      if (ht.fade > 0) { ht.fade = Math.max(0, ht.fade - dt * 1.4); ctx.fillStyle = `rgba(18,19,42,${ht.fade})`; ctx.fillRect(0, 0, W, H); if (ht.fade > .4) text("Лифт · 3 этаж", W / 2, H / 2, 14, "#ffd84d"); }
+    }
+    function hotelTask(id) {
+      if (id === "desk") { if (!ht.key) { ht.key = .01; Hero.say("yerevan", "good", "Барев дзез! Добро пожаловать в Olimpia Hotel. Ваш ключ — номер 305."); } return; }
+      if (ht.fxT > 0) return;
+      const say = { bed: "Мягкая кровать… Zzz… выспался!", shower: "Тёплый душ — красота!", balcony: "Вот это вид! Арарат прямо с балкона!" };
+      if (id === "tv") { ht.tv = !ht.tv; Hero.say("yerevan", "good", ht.tv ? "Включили армянское ТВ!" : "Телевизор выключен"); }
+      else if (id === "food") {
+        if (ht.bites >= 3) { Hero.say("yerevan", "good", "Тарелки пустые — закажи завтрак ещё раз!"); return; }
+        ht.bites++; Hero.say("yerevan", "good", ht.bites >= 3 ? "Армянский завтрак съеден: лаваш, сыр, зелень и кофе! +5 монет" : `Ням! Кусочек ${ht.bites}/3`); if (ht.bites >= 3) Hero.grant(5); else return;
+      } else { ht.fx = id; ht.fxT = id === "balcony" ? 3 : 2.5; Hero.say("yerevan", "good", say[id]); }
+      if (!ht.done[id]) { ht.done[id] = 1; const n = Object.keys(ht.done).length; if (n === 5) { giveStamp("hotel"); Hero.say("yerevan", "win", "Лучший отдых в Olimpia Hotel!"); } }
+    }
     // ---------- flow ----------
     function giveStamp(id) {
       if (stamps[id]) return;
       stamps[id] = Date.now(); store.set("yvStamps", stamps);
       Hero.grant(50);
-      if (Object.keys(stamps).length === 4) { Hero.grant(200); Hero.say("yerevan", "win", "Паспорт заполнен! Ереван покорён! Бонус +200 монет!"); }
+      if (Object.keys(stamps).length === 5) { Hero.grant(200); Hero.say("yerevan", "win", "Паспорт заполнен! Ереван покорён! Бонус +200 монет!"); }
       passport(); updateHub();
     }
     function passport() {
@@ -6920,6 +7037,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (scene === "cascade") b.textContent = !atTop ? "Шагать ↑" : photo ? "Спуститься" : "Сделать фото";
       else if (scene === "square") { b.textContent = show > 0 ? "Фонтаны поют…" : "Поющие фонтаны"; b.disabled = show > 0; }
       else if (scene === "vern") b.textContent = "Сыграть на дудуке";
+      else if (scene === "hotel") { b.textContent = ht.phase === "lobby" ? "Заселиться 🛎️" : "Завтрак 🍳"; b.disabled = ht.phase === "lobby" && ht.key > 0; }
       else if (scene === "lavash") { b.textContent = lv.phase === "dough" ? (lv.roll >= 1 ? "В тонир!" : "Раскатать") : lv.phase === "bake" ? "Достать!" : "Ещё лаваш"; b.disabled = lv.fly > 0; }
       else b.hidden = true;
     }
@@ -6935,8 +7053,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (id === "cascade") { steps = 0; atTop = false; photo = false; }
       if (id === "square") show = 0;
       if (id === "vern") setupVern();
+      if (id === "hotel") { ht.phase = "lobby"; ht.key = 0; ht.fade = 0; ht.fxT = 0; ht.bites = 0; }
       if (id === "lavash") { lv.phase = "dough"; lv.roll = 0; lv.bake = 0; lv.fly = 0; lv.msg = ""; }
-      Hero.say("yerevan", "start", { cascade: "Каскад — 572 ступеньки! Наверху откроется вид на Арарат.", square: "Площадь Республики. Вечером здесь поют фонтаны!", vern: "Вернисаж — рынок мастеров: ковры, нарды, дудук. Драмы бесконечные!", lavash: "Лавашная! Раскатай тесто и испеки лаваш в тонире." }[id]);
+      Hero.say("yerevan", "start", { cascade: "Каскад — 572 ступеньки! Наверху откроется вид на Арарат.", square: "Площадь Республики. Вечером здесь поют фонтаны!", vern: "Вернисаж — рынок мастеров: ковры, нарды, дудук. Драмы бесконечные!", lavash: "Лавашная! Раскатай тесто и испеки лаваш в тонире.", hotel: "Olimpia Hotel — заселяемся! Подойди к ресепшену." }[id]);
       updateAction(); passport();
     }
     function climb() {
@@ -6975,6 +7094,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       } else if (scene === "square") { if (show <= 0) { show = 12; dance(); Hero.say("yerevan", "good", "Музыка! Фонтаны начинают петь!"); } }
       else if (scene === "vern") { duduk(); vMsg = "Звучит дудук — самый армянский инструмент 🎵"; }
       else if (scene === "lavash") lavashAct();
+      else if (scene === "hotel") { if (ht.phase === "lobby") hotelTask("desk"); else { ht.bites = 0; Hero.say("yerevan", "good", "Завтрак принесли: лаваш, сыр, помидоры, зелень и кофе!"); } }
       updateAction();
     });
     $("#yvMap").addEventListener("click", () => { travel = null; scene = "map"; updateAction(); passport(); });
@@ -6986,6 +7106,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "cascade" && !atTop) climb();
       else if (scene === "vern") { const g = goods.find((q) => Math.abs(q.x - x) < 22 * U && Math.abs(q.y - y) < 24 * U); if (g) buy(g); }
       else if (scene === "lavash" && lv.fly <= 0) lavashAct();
+      else if (scene === "hotel" && !ht.fade) { const q = ht.spots.find((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h); if (q) hotelTask(q.id); }
       updateAction();
     });
 
@@ -7000,6 +7121,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "cascade") drawCascade(t, dt);
       else if (scene === "square") drawSquare(t, dt);
       else if (scene === "vern") drawVern(t, dt);
+      else if (scene === "hotel") drawHotel(t, dt);
       else if (scene === "lavash") { const f = lv.fly; drawLavash(t, dt); if (f > 0 && lv.fly === 0) updateAction(); }
       raf = requestAnimationFrame(frame);
     }
@@ -7018,7 +7140,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       enter() { visible = true; fit(); passport(); updateAction(); if (scene === "map" && !place) Hero.say("yerevan", "start", "Барев! Добро пожаловать в Ереван! Куда поедем?"); loop(); },
       leave() { visible = false; },
       key() {},
-      best: () => `${Object.keys(stamps).length}/4`,
+      best: () => `${Object.keys(stamps).length}/5`,
     };
   })();
 
