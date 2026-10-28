@@ -317,7 +317,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ad-banner { position: relative; overflow: hidden; border-radius: 16px; min-height: 92px; cursor: pointer; border: 2px solid rgba(255,255,255,.15); color: #fff; text-align: left; padding: 12px 14px 12px 96px; display: flex; flex-direction: column; justify-content: center; gap: 3px; font: inherit; width: 100%; }
 .ad-banner .ad-art { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 74px; height: 74px; display: grid; place-items: center; font-size: 46px; animation: adbob 2s ease-in-out infinite; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
 @keyframes adbob { 50% { transform: translateY(-58%) rotate(-4deg); } }
-.ad-banner b { font-family: var(--display); font-size: 15px; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
+.ad-banner b { padding-right: 74px; font-family: var(--display); font-size: 15px; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(0,0,0,.3); }
 .ad-banner span { font-size: 12.5px; opacity: .92; line-height: 1.3; }
 .ad-banner .cta { align-self: flex-start; margin-top: 3px; padding: 4px 10px; border-radius: 999px; background: #fff; color: #12132a; font-weight: 900; font-size: 11.5px; }
 .ad-tag { position: absolute; right: 8px; top: 6px; font: 800 9px var(--mono); padding: 1px 6px; border-radius: 4px; background: rgba(0,0,0,.35); letter-spacing: .1em; }
@@ -7266,6 +7266,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   /* ================= Реклама: house ads for V3 games ================= */
   const Ads = (() => {
     const ADS = [
+      { url: "https://www.canva.com/features/ai-video-generator/", ico: "🎬", t: "CANVA · ИИ-ВИДЕО", s: "Опиши идею словами — и ИИ-генератор видео в Canva соберёт ролик. Внешний сайт.", bg: "linear-gradient(135deg,#00b5c8,#6a35d8)", fx: ["🎬", "✨", "🎞️", "🤖"] },
       { go: "craft", ico: "⛏️", t: "V3 CRAFT", s: "Строй мир из 40 видов блоков вместе с друзьями — по одной ссылке!", bg: "linear-gradient(135deg,#3a9a3a,#1f5a7a)", fx: ["🧱", "💎", "🐷", "🌳"] },
       { go: "mine", ico: "🏰", t: "MY MINE", s: "Построй армию, защити башнями и разгроми красных. Теперь в 3D!", bg: "linear-gradient(135deg,#7a1f3d,#2f3fa0)", fx: ["⚔️", "🏹", "🪙", "🚢"] },
       { go: "chars", ico: "🤖", t: "ВАЛЕРИЙ · ГИГА УЛЬТРА", s: "Самый мощный персонаж V3 с короной из стальных кубиков. Забери его!", bg: "linear-gradient(135deg,#12062e,#7a3cff)", fx: ["⚡", "💜", "✨", "🔮"] },
@@ -7283,7 +7284,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function banner() {
       const a = ADS[idx], el = $("#adBanner"); if (!el) return;
       el.hidden = adFree; if (adFree) return;
-      el.style.background = a.bg; $("#adArt").textContent = a.ico; $("#adTitle").textContent = a.t; $("#adText").textContent = a.s; $("#adCta").textContent = a.go === "chars" ? "Открыть ▶" : "Играть ▶";
+      el.style.background = a.bg; $("#adArt").textContent = a.ico; $("#adTitle").textContent = a.t; $("#adText").textContent = a.s; $("#adCta").textContent = a.url ? "Открыть сайт ↗" : a.go === "chars" ? "Открыть ▶" : "Играть ▶";
       $("#adDots").innerHTML = ADS.map((_, i) => `<i class="${i === idx ? "on" : ""}"></i>`).join("");
     }
     function rotate() { idx = (idx + 1) % ADS.length; banner(); }
@@ -7294,7 +7295,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const a = ADS[(idx + 1 + ((Math.random() * (ADS.length - 1)) | 0)) % ADS.length], dur = rewarded ? 6 : 4;
       full = { a, rewarded, dur, t0: performance.now(), done: false };
       $("#adCard").style.background = a.bg; $("#adBig").textContent = a.ico; $("#adFTitle").textContent = a.t; $("#adFText").textContent = a.s;
-      $("#adGo").textContent = a.go === "chars" ? "Открыть ▶" : "Играть ▶";
+      $("#adGo").textContent = a.url ? "Открыть сайт ↗" : a.go === "chars" ? "Открыть ▶" : "Играть ▶";
       const st = $("#adStage"); st.querySelectorAll(".spark").forEach((e) => e.remove());
       for (let i = 0; i < 10; i++) { const sp = document.createElement("span"); sp.className = "spark"; sp.textContent = a.fx[i % a.fx.length]; sp.style.left = (5 + Math.random() * 85) + "%"; sp.style.top = (40 + Math.random() * 50) + "%"; sp.style.animationDelay = (Math.random() * 2.4) + "s"; st.appendChild(sp); }
       $("#adFree").hidden = rewarded || adFree;
@@ -7311,12 +7312,18 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
-    $("#adGo").addEventListener("click", () => { const a = full && full.a; if (!full || (full.rewarded && !full.done)) return; clearInterval(fullT); $("#adFull").hidden = true; full = null; if (a) show(a.go); });
+    function openAd(a) {
+      if (!a) return;
+      if (!a.url) { show(a.go); return; }
+      // external site: always in a new tab
+      const link = document.createElement("a"); link.href = a.url; link.target = "_blank"; link.rel = "noopener noreferrer"; document.body.appendChild(link); link.click(); link.remove();
+    }
+    $("#adGo").addEventListener("click", () => { const a = full && full.a; if (!full || (full.rewarded && !full.done)) return; clearInterval(fullT); $("#adFull").hidden = true; full = null; openAd(a); });
     $("#adFree").addEventListener("click", () => {
       if (Hero.coins() < 3000) { $("#adFree").textContent = `Нужно 3000 монет — у тебя ${Hero.coins()}`; return; }
       Hero.grant(-3000); adFree = true; store.set("adFree", true); banner(); $("#adFull").hidden = true; clearInterval(fullT); full = null; Hero.say("snake", "win", "Реклама убрана навсегда!");
     });
-    $("#adBanner").addEventListener("click", () => show(ADS[idx].go));
+    $("#adBanner").addEventListener("click", () => openAd(ADS[idx]));
     $("#adWatch").addEventListener("click", () => { if (watched.n >= DAILY) return; showFull(true); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#adFull").hidden) { e.stopPropagation(); closeFull(); } }, true);
     banner(); leftTxt(); timer = setInterval(() => { if (current === "hub" && document.visibilityState === "visible") rotate(); }, 6000);
