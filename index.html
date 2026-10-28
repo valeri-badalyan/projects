@@ -532,6 +532,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 @keyframes sodabub { to { transform: translate(var(--dx), -90px); opacity: 0; } }
 /* ---------- Just Dubai! ---------- */
 #dxCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #f6d7a6; cursor: pointer; }
+#mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .dx-places button {
@@ -1324,6 +1325,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubYerevan">0/5</span></span>
       </button>
+      <button class="cart" data-go="moscow" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="mwsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a8ad8"/><stop offset="1" stop-color="#cfe0f4"/></linearGradient></defs><rect width="64" height="64" fill="url(#mwsky)"/><rect x="12" y="24" width="12" height="32" fill="#c43c3c"/><rect x="14" y="16" width="8" height="10" fill="#c43c3c"/><circle cx="18" cy="21" r="2.6" fill="#1d2a4a" stroke="#ffd84d" stroke-width=".6"/><path d="M14 16 L18 5 L22 16Z" fill="#2f7a4a"/><path d="M18 1.5 l.9 2 2.1.2-1.6 1.4.5 2.1-1.9-1.1-1.9 1.1.5-2.1-1.6-1.4 2.1-.2Z" fill="#ff2a2a"/><rect x="34" y="40" width="26" height="16" fill="#c4503c"/><rect x="45" y="26" width="5" height="16" fill="#d8805a"/><path d="M40 40 q-6-7 0-12 q6 5 0 12Z" fill="#2f6fd6"/><path d="M47.5 28 q-7-8 0-14 q7 6 0 14Z" fill="#c43c3c"/><path d="M55 40 q-6-7 0-12 q6 5 0 12Z" fill="#2fa84a"/><path d="M38 34 l4 4 M38 31 l4 4" stroke="#fff" stroke-width="1"/><rect y="56" width="64" height="8" fill="#5a5a62"/><rect x="0" y="48" width="12" height="8" fill="#b8322e"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Just Moscow</span>
+          <span class="cart-desc">Москва: куранты на Красной площади, метро-дворцы, ГУМ, каток в Парке Горького и Москва-Сити.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Штампы</span><span class="stat-val" id="hubMoscow">0/5</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1708,6 +1719,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <span class="st" data-st="cascade">КС</span><span class="st" data-st="square">ПР</span><span class="st" data-st="vern">ВР</span><span class="st" data-st="lavash">ЛВ</span><span class="st" data-st="hotel">OH</span>
     </div>
     <p class="hint">Выбери место — такси довезёт. Поднимись по Каскаду к виду на Арарат, послушай поющие фонтаны, купи сувениры на Вернисаже, испеки лаваш и отдохни в Olimpia Hotel. Штамп +50 монет, все 5 — бонус +200.</p>
+  </section>
+
+  <section id="moscow" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Just Moscow</div>
+      <div class="chips"><div class="chip hi"><span>Рубли</span><b>∞</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Привет!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="stage" id="mwStage">
+      <canvas id="mwCanvas" width="440" height="330" aria-label="Москва"></canvas>
+    </div>
+    <div class="dx-acts">
+      <button class="btn" type="button" id="mwAction" hidden>Действие</button>
+      <button class="btn ghost" type="button" id="mwMap">Карта</button>
+      <button class="btn ghost" type="button" data-inv-open>Мои вещи</button>
+    </div>
+    <div class="dx-places" id="mwPlaces">
+      <button type="button" data-place="red"><i style="background:#e3263a">★</i>Красная площадь</button>
+      <button type="button" data-place="metro"><i style="background:#ff5a5a">М</i>Метро</button>
+      <button type="button" data-place="gum"><i style="background:#ffd84d">◆</i>ГУМ</button>
+      <button type="button" data-place="park"><i style="background:#5ce1e6">❄</i>Парк Горького</button>
+      <button type="button" data-place="city"><i style="background:#9fb3cc">▲</i>Москва-Сити</button>
+    </div>
+    <div class="dx-pass" aria-label="Паспорт туриста"><span>Паспорт туриста:</span>
+      <span class="st" data-st="red">КП</span><span class="st" data-st="metro">МТ</span><span class="st" data-st="gum">ГУМ</span><span class="st" data-st="park">ПГ</span><span class="st" data-st="city">МС</span>
+    </div>
+    <p class="hint">Выбери место — такси довезёт. Послушай куранты на Красной площади, прокатись на метро, купи сувениры в ГУМе, сделай 3 круга на катке и поднимись на 89-й этаж Москва-Сити. Штамп +50 монет, все 5 — бонус +200.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -5299,7 +5342,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   /* ================= Just Dubai! ================= */
   // ---------- Inventory: saved on the device, synced to the account when online ----------
   const Inv = (() => {
-    const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет", "Вкусы Еревана"];
+    const modal = $("#invModal"), FOOD = ["Сладости", "Супермаркет", "Вкусы Еревана", "Вкусы Москвы"];
     // clothing → where it sits on the character
     const WEAR = { "Футболка": "body", "Платье": "body", "Форма": "body", "Кепка": "head", "Очки": "eyes", "Шарф": "neck", "Сумка": "bag", "Перчатки": "hands", "Джинсы": "legs", "Кроссовки": "feet", "Бутсы": "feet" };
     const charIds = CHARS.map((c) => c.id);
@@ -7144,6 +7187,446 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Just Moscow ================= */
+  const Moscow = (() => {
+    const cv = $("#mwCanvas"), ctx = cv.getContext("2d"), stage = $("#mwStage");
+    let W = 440, H = 330, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
+    const PLACES = {
+      red: { name: "Красная площадь", map: [.52, .5] },
+      metro: { name: "Метро", map: [.7, .36] },
+      gum: { name: "ГУМ", map: [.62, .62] },
+      park: { name: "Парк Горького", map: [.4, .76] },
+      city: { name: "Москва-Сити", map: [.18, .42] },
+    };
+    const N = Object.keys(PLACES).length;
+    let place = null, scene = "map", travel = null, stamps = store.get("mwStamps", {});
+    if (!stamps || typeof stamps !== "object") stamps = {};
+    // Red Square
+    let chime = -1, chimeT = 0, fireT = 0, sparks = [];
+    // Metro
+    const mt = { phase: 0, train: 0, ride: 0, stop: 0, doors: 0 };
+    const STATIONS = ["Охотный Ряд", "Театральная", "Площадь Революции", "Маяковская"];
+    // GUM
+    let goods = [], bought = 0, flyers = [], gMsg = "";
+    const GOODS = [
+      ["Матрёшка", 1500, "#c43c4f", "🪆", "ГУМ"], ["Самовар", 9000, "#d9a520", "🫖", "ГУМ"], ["Балалайка", 6000, "#a0785a", "🪕", "ГУМ"], ["Ушанка", 2500, "#6a4a3a", "🎩", "ГУМ"],
+      ["Валенки", 3000, "#8a8a9a", "👢", "ГУМ"], ["Платок", 4000, "#e3263a", "🧣", "ГУМ"], ["Хохлома", 1200, "#ffb547", "🥄", "ГУМ"], ["Магнит «Москва»", 300, "#2f6fd6", "🧲", "ГУМ"],
+      ["Мороженое ГУМ", 150, "#fff7c2", "🍦", "Вкусы Москвы"], ["Пряник", 200, "#c9a26b", "🍪", "Вкусы Москвы"], ["Сушки", 120, "#e8c48a", "🥯", "Вкусы Москвы"], ["Пирожок", 90, "#d99a5a", "🥟", "Вкусы Москвы"],
+    ];
+    // Gorky Park rink
+    const rk = { a: Math.PI / 2, v: 0, laps: 0, lastA: Math.PI / 2, total: 0 };
+    let snow = [];
+    // Moscow City
+    let ride = 0, riding = false, photo = false, flashT = 0, cityLights = [];
+
+    // ---------- sound ----------
+    let AC = null;
+    function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === "suspended") AC.resume(); }
+    function bell(f, t, d, v) {
+      if (!AC) return;
+      [1, 2.76, 5.4].forEach((m, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = "sine"; o.frequency.value = f * m; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(v / (i + 1), t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d / (i + 1)); o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + d); });
+    }
+    function chimeTune() { if (!AC) return; const t0 = AC.currentTime + .05; [659, 523, 587, 392, 392, 587, 659, 523].forEach((f, i) => bell(f, t0 + i * .45, 1.4, .12)); }
+    function ding2() { if (!AC) return; const t = AC.currentTime + .02; bell(784, t, .6, .1); bell(587, t + .35, .8, .1); }
+
+    // ---------- helpers ----------
+    function sky(c1, c2) { const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    function rect(x, y, w, h, col) { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); }
+    function text(t, x, y, size, col, align, weight) {
+      ctx.font = `${weight || 800} ${Math.round(size * U)}px Manrope, sans-serif`; ctx.textAlign = align || "center"; ctx.textBaseline = "middle";
+      const dark = /^#[0-3]/.test(col); ctx.lineJoin = "round"; ctx.miterLimit = 2; ctx.lineWidth = 3.5; ctx.strokeStyle = dark ? "rgba(255,255,255,.85)" : "rgba(18,19,42,.75)"; ctx.strokeText(t, x, y); ctx.fillStyle = col; ctx.fillText(t, x, y);
+    }
+    function emo(e, x, y, s) { ctx.font = `${Math.round(s * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000"; ctx.fillText(e, x, y); }
+    function me(x, y, s) {
+      const im = Hero.img(), z = s * U;
+      ctx.save(); ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.clip();
+      if (im.complete && im.naturalWidth) ctx.drawImage(im, x - z / 2, y - z / 2, z, z); else rect(x - z / 2, y - z / 2, z, z, Hero.accent());
+      ctx.restore(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, z / 2, 0, Math.PI * 2); ctx.stroke();
+    }
+    const hsh = (i) => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+    function star(x, y, r, col) { ctx.fillStyle = col; ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); }
+    function onion(x, y, w, h, c1, c2, stripes) {
+      ctx.save(); ctx.beginPath(); ctx.moveTo(x, y - h); ctx.bezierCurveTo(x + w * .2, y - h * .7, x + w * .75, y - h * .55, x + w * .5, y - h * .1); ctx.lineTo(x - w * .5, y - h * .1); ctx.bezierCurveTo(x - w * .75, y - h * .55, x - w * .2, y - h * .7, x, y - h); ctx.closePath();
+      ctx.fillStyle = c1; ctx.fill(); ctx.clip();
+      ctx.strokeStyle = c2; ctx.lineWidth = w * .14;
+      for (let i = -4; i < 6; i++) { ctx.beginPath(); if (stripes === "spiral") { ctx.moveTo(x - w + i * w * .3, y); ctx.lineTo(x + i * w * .3, y - h); } else if (stripes === "zig") { for (let k = 0; k < 6; k++) ctx.lineTo(x - w * .6 + k * w * .25, y - h * .2 - i * h * .16 - (k % 2) * h * .08); } else { ctx.moveTo(x - w + i * w * .3, y - h); ctx.lineTo(x + i * w * .3, y); } ctx.stroke(); }
+      ctx.restore();
+      rect(x - 1, y - h - h * .25, 2, h * .25, "#ffd84d"); ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - 4 * U, y - h - h * .16); ctx.lineTo(x + 4 * U, y - h - h * .16); ctx.stroke();
+    }
+
+    // ---------- map ----------
+    function drawMap(t) {
+      sky("#e9e4da", "#ddd5c4");
+      // Garden Ring and Boulevard Ring
+      ctx.strokeStyle = "#8cc77a"; ctx.lineWidth = 6 * U; ctx.beginPath(); ctx.ellipse(W * .52, H * .52, W * .17, H * .2, 0, 0, 7); ctx.stroke();
+      ctx.strokeStyle = "rgba(150,120,90,.45)"; ctx.lineWidth = 4 * U; ctx.beginPath(); ctx.ellipse(W * .52, H * .52, W * .32, H * .38, 0, 0, 7); ctx.stroke();
+      ctx.lineWidth = 2 * U; for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(W * .52, H * .52); ctx.lineTo(W * .52 + Math.cos(i * .785) * W * .6, H * .52 + Math.sin(i * .785) * H * .6); ctx.stroke(); }
+      // the Moskva river
+      ctx.strokeStyle = "#4fa3d8"; ctx.lineWidth = 9 * U; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(0, H * .3); ctx.bezierCurveTo(W * .2, H * .62, W * .38, H * .3, W * .52, H * .6); ctx.bezierCurveTo(W * .62, H * .8, W * .8, H * .7, W, H * .9); ctx.stroke();
+      // the Kremlin triangle
+      ctx.fillStyle = "#c43c3c"; ctx.beginPath(); ctx.moveTo(W * .47, H * .5); ctx.lineTo(W * .5, H * .42); ctx.lineTo(W * .53, H * .5); ctx.closePath(); ctx.fill();
+      text("река Москва", W * .86, H * .92, 8, "#1a4a6a", "center", 700);
+      Object.entries(PLACES).forEach(([id, p]) => {
+        const x = p.map[0] * W, y = p.map[1] * H, on = id === place;
+        ctx.fillStyle = stamps[id] ? "#2fa84a" : "#e3263a";
+        ctx.beginPath(); ctx.arc(x, y - 12 * U, 8 * U, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x - 6 * U, y - 8 * U); ctx.lineTo(x, y); ctx.lineTo(x + 6 * U, y - 8 * U); ctx.fill();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y - 12 * U, 3 * U, 0, 7); ctx.fill();
+        text(p.name, x, y + 9 * U, 9, on ? "#ffd84d" : "#fff", "center", 800);
+      });
+      if (travel) {
+        const k = Math.min(1, travel.t / travel.dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const x = travel.from[0] * W + (travel.to[0] - travel.from[0]) * W * e, y = travel.from[1] * H + (travel.to[1] - travel.from[1]) * H * e;
+        ctx.strokeStyle = "rgba(255,190,40,.8)"; ctx.lineWidth = 3; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(travel.from[0] * W, travel.from[1] * H); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+        ctx.save(); ctx.translate(x, y - 6 * U);
+        rect(-10 * U, -5 * U, 20 * U, 9 * U, "#ffd84d"); rect(-5 * U, -9 * U, 10 * U, 5 * U, "#ffd84d");
+        for (let i = 0; i < 5; i++) rect(-10 * U + i * 4 * U, -1 * U, 2 * U, 2 * U, i % 2 ? "#fff" : "#12132a");
+        ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(-6 * U, 4 * U, 2.5 * U, 0, 7); ctx.arc(6 * U, 4 * U, 2.5 * U, 0, 7); ctx.fill();
+        ctx.restore();
+      } else if (!place) text("Нажми на место или кнопку ниже", W / 2, H * .95, 10, "#7a5a2a");
+    }
+
+    // ---------- Red Square ----------
+    function drawRed(t, dt) {
+      sky("#7fb4e8", "#dbe9f6");
+      const gy = H * .7;
+      // Kremlin wall with swallowtail merlons
+      rect(0, gy - H * .14, W, H * .14, "#b8322e");
+      ctx.fillStyle = "#b8322e"; for (let i = 0; i < 26; i++) { const x = i * W / 26; ctx.beginPath(); ctx.moveTo(x + 2, gy - H * .14); ctx.lineTo(x + 2, gy - H * .17); ctx.lineTo(x + W / 52, gy - H * .155); ctx.lineTo(x + W / 26 - 4, gy - H * .17); ctx.lineTo(x + W / 26 - 4, gy - H * .14); ctx.fill(); }
+      rect(0, gy - H * .14, W, 2, "rgba(0,0,0,.15)");
+      // Lenin mausoleum
+      rect(W * .3, gy - H * .1, W * .16, H * .1, "#6a2a2a"); rect(W * .33, gy - H * .13, W * .1, H * .03, "#5a2222"); rect(W * .355, gy - H * .15, W * .05, H * .02, "#4a1a1a");
+      // Spasskaya tower
+      const sx = W * .2, sw = W * .14;
+      rect(sx - sw / 2, gy - H * .44, sw, H * .44, "#c43c3c");
+      rect(sx - sw / 2 - 3 * U, gy - H * .44, sw + 6 * U, 4 * U, "#f4f0e6");
+      for (let i = 0; i < 4; i++) rect(sx - sw / 2 + 4 * U + i * (sw - 8 * U) / 3.6, gy - H * .3, 3 * U, H * .1, "#f4f0e6");
+      ctx.fillStyle = "#3a2a20"; ctx.beginPath(); ctx.moveTo(sx - sw * .22, gy); ctx.lineTo(sx - sw * .22, gy - H * .08); ctx.arc(sx, gy - H * .08, sw * .22, Math.PI, 0); ctx.lineTo(sx + sw * .22, gy); ctx.fill();
+      rect(sx - sw * .36, gy - H * .58, sw * .72, H * .14, "#c43c3c");
+      // clock
+      const cx = sx, cy = gy - H * .51, cr = sw * .27;
+      ctx.fillStyle = "#12132a"; ctx.beginPath(); ctx.arc(cx, cy, cr + 2 * U, 0, 7); ctx.fill();
+      ctx.fillStyle = "#1d2a4a"; ctx.beginPath(); ctx.arc(cx, cy, cr, 0, 7); ctx.fill();
+      ctx.fillStyle = "#ffd84d"; for (let i = 0; i < 12; i++) { const a = i * Math.PI / 6; ctx.beginPath(); ctx.arc(cx + Math.cos(a) * cr * .82, cy + Math.sin(a) * cr * .82, 1.2 * U, 0, 7); ctx.fill(); }
+      const now = new Date(); let hA = ((now.getHours() % 12) + now.getMinutes() / 60) / 12 * Math.PI * 2, mA = now.getMinutes() / 60 * Math.PI * 2;
+      if (chime >= 0) { hA = 0; mA = 0; }
+      ctx.strokeStyle = "#ffd84d"; ctx.lineCap = "round";
+      ctx.lineWidth = 2.4 * U; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.sin(hA) * cr * .5, cy - Math.cos(hA) * cr * .5); ctx.stroke();
+      ctx.lineWidth = 1.5 * U; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.sin(mA) * cr * .78, cy - Math.cos(mA) * cr * .78); ctx.stroke();
+      // tent roof + star
+      ctx.fillStyle = "#2f7a4a"; ctx.beginPath(); ctx.moveTo(sx - sw * .36, gy - H * .58); ctx.lineTo(sx, gy - H * .86); ctx.lineTo(sx + sw * .36, gy - H * .58); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx, gy - H * .86); ctx.lineTo(sx, gy - H * .58); ctx.stroke();
+      const glow = .6 + .4 * Math.sin(t * 3); ctx.save(); ctx.shadowColor = "#ff3b3b"; ctx.shadowBlur = 10 * glow; star(sx, gy - H * .9, 7 * U, "#ff2a2a"); ctx.restore();
+      // St Basil's cathedral
+      const bx = W * .76, bb = gy;
+      rect(bx - W * .2, bb - H * .2, W * .4, H * .2, "#c4503c");
+      for (let i = 0; i < 6; i++) { ctx.fillStyle = "#f4f0e6"; ctx.beginPath(); ctx.arc(bx - W * .17 + i * W * .068, bb - H * .1, 6 * U, Math.PI, 0); ctx.fill(); }
+      const towers = [[-.15, .3, "#2f8a4a", "#ffd84d", "zig"], [-.07, .38, "#2f6fd6", "#fff", "spiral"], [.0, .52, "#c43c3c", "#fff", "zig"], [.08, .4, "#2fa84a", "#ffd84d", "spiral"], [.16, .3, "#ffb547", "#2f8a4a", "v"]];
+      towers.forEach(([dx, hh, c1, c2, st], i) => {
+        const x = bx + dx * W, tw = (i === 2 ? 14 : 18) * U, top = bb - H * hh;
+        rect(x - tw / 2, top, tw, bb - H * .2 - top + 2, i === 2 ? "#d8805a" : "#c4503c");
+        rect(x - tw / 2 - 1, top, tw + 2, 3 * U, "#f4f0e6");
+        if (i === 2) { ctx.fillStyle = "#c4503c"; ctx.beginPath(); ctx.moveTo(x - tw / 2, top); ctx.lineTo(x, top - H * .12); ctx.lineTo(x + tw / 2, top); ctx.fill(); onion(x, top - H * .1, 12 * U, 16 * U, "#ffd84d", "#d9a520", "v"); }
+        else onion(x, top + 2, tw * 1.35, tw * 1.45, c1, c2, st);
+      });
+      // cobblestones
+      const pg = ctx.createLinearGradient(0, gy, 0, H); pg.addColorStop(0, "#6a6a72"); pg.addColorStop(1, "#4a4a52"); ctx.fillStyle = pg; ctx.fillRect(0, gy, W, H - gy);
+      ctx.strokeStyle = "rgba(255,255,255,.08)"; ctx.lineWidth = 1;
+      for (let r = 0; r < 10; r++) { const y = gy + (H - gy) * (r * r) / 100; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      for (let i = -10; i < 20; i++) { ctx.beginPath(); ctx.moveTo(W * .5 + i * W * .04, gy); ctx.lineTo(W * .5 + i * W * .12, H); ctx.stroke(); }
+      me(W * .5, H * .86, 46);
+      // chimes
+      if (chime >= 0) {
+        chimeT += dt;
+        if (chime < 8) { if (chimeT > .45) { chime++; chimeT = 0; } }
+        else if (chime < 20) { if (chimeT > .9) { chime++; chimeT = 0; if (AC) bell(196, AC.currentTime + .01, 2.4, .25); if (chime === 20) { fireT = 4; giveStamp("red"); Hero.say("moscow", "win", "Куранты пробили 12 раз! С праздником — салют над Кремлём!"); updateAction(); } } }
+        if (chime >= 8 && chime < 20) { const k = chimeT / .9; ctx.strokeStyle = `rgba(255,216,77,${1 - k})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, cr + k * 40 * U, 0, 7); ctx.stroke(); text(`Бом! ${chime - 7}/12`, W / 2, H * .1, 13, "#ffd84d"); }
+        else if (chime < 8) text("♪ Мелодия курантов…", W / 2, H * .1, 12, "#fff");
+      } else text(stamps.red ? "Ещё раз? Жми «Куранты»" : "Жми «Куранты» — и слушай бой часов", W / 2, H * .96, 10, "#fff");
+      if (fireT > 0) {
+        fireT -= dt; if (Math.random() < .12) { const x = W * (.1 + Math.random() * .8), y = H * (.08 + Math.random() * .25), c = ["#ff5ad1", "#ffd84d", "#5ce1e6", "#9be15d", "#ff8a3d"][Math.random() * 5 | 0]; for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; sparks.push({ x, y, vx: Math.cos(a) * 60 * U, vy: Math.sin(a) * 60 * U, t: 1, c }); } }
+        if (fireT <= 0) { chime = -1; updateAction(); }
+      }
+      sparks = sparks.filter((s) => (s.t -= dt) > 0);
+      sparks.forEach((s) => { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 40 * U * dt; ctx.fillStyle = s.c; ctx.globalAlpha = s.t; ctx.fillRect(s.x, s.y, 2.5 * U, 2.5 * U); ctx.globalAlpha = 1; });
+    }
+
+    // ---------- Metro: marble, chandeliers and a train ----------
+    function drawMetro(t, dt) {
+      if (mt.phase === 4) return drawRide(t, dt);
+      sky("#3a2a3a", "#1a1420");
+      // vaulted ceiling
+      const vg = ctx.createLinearGradient(0, 0, 0, H * .35); vg.addColorStop(0, "#f2e6c8"); vg.addColorStop(1, "#d9c49a"); ctx.fillStyle = vg;
+      ctx.beginPath(); ctx.moveTo(0, H * .4); ctx.quadraticCurveTo(W / 2, -H * .2, W, H * .4); ctx.lineTo(W, 0); ctx.lineTo(0, 0); ctx.fill();
+      ctx.fillStyle = "#e8d8b0"; ctx.beginPath(); ctx.moveTo(0, H * .4); ctx.quadraticCurveTo(W / 2, -H * .2, W, H * .4); ctx.lineTo(W, H * .46); ctx.quadraticCurveTo(W / 2, -H * .1, 0, H * .46); ctx.fill();
+      // mosaic panels in the vault
+      for (let i = 0; i < 3; i++) { const x = W * (.25 + i * .25); ctx.fillStyle = "#c9a24a"; ctx.beginPath(); ctx.ellipse(x, H * .1, 16 * U, 9 * U, 0, 0, 7); ctx.fill(); ctx.fillStyle = ["#2f6fd6", "#c43c4f", "#2fa84a"][i]; ctx.beginPath(); ctx.ellipse(x, H * .1, 12 * U, 6 * U, 0, 0, 7); ctx.fill(); }
+      // marble columns
+      for (let i = 0; i < 5; i++) { const x = W * (.04 + i * .23); const cg = ctx.createLinearGradient(x, 0, x + 18 * U, 0); cg.addColorStop(0, "#c9b8b0"); cg.addColorStop(.5, "#f4ece6"); cg.addColorStop(1, "#b0a098"); ctx.fillStyle = cg; ctx.fillRect(x, H * .3, 18 * U, H * .38); rect(x - 3 * U, H * .3, 24 * U, 5 * U, "#c9a24a"); }
+      // chandeliers
+      for (let i = 0; i < 4; i++) { const x = W * (.17 + i * .23), y = H * .26; ctx.strokeStyle = "#c9a24a"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, H * .12); ctx.lineTo(x, y); ctx.stroke(); ctx.save(); ctx.shadowColor = "#ffe9a8"; ctx.shadowBlur = 12; for (let k = 0; k < 5; k++) { ctx.fillStyle = "#fff3c4"; ctx.beginPath(); ctx.arc(x + (k - 2) * 5 * U, y + Math.abs(k - 2) * -2 * U + 4 * U, 3 * U, 0, 7); ctx.fill(); } ctx.restore(); rect(x - 12 * U, y, 24 * U, 2 * U, "#c9a24a"); }
+      // track wall + tracks
+      rect(0, H * .5, W, H * .2, "#5a4a5a"); text("М", W * .9, H * .56, 14, "#e3263a"); text(STATIONS[mt.stop], W * .5, H * .56, 11, "#fff");
+      rect(0, H * .7, W, H * .04, "#2a2228"); rect(0, H * .72, W, 2, "#9a9aa8"); rect(0, H * .735, W, 2, "#9a9aa8");
+      // train
+      if (mt.phase >= 2) {
+        if (mt.phase === 2) { mt.train = Math.min(1, mt.train + dt / 2.2); if (mt.train >= 1) { mt.phase = 3; ding2(); Hero.say("moscow", "good", "Поезд прибыл! Заходи в вагон."); updateAction(); } }
+        const e = 1 - Math.pow(1 - mt.train, 3), tx = W * 1.1 - e * W * 1.1;
+        for (let c = 0; c < 3; c++) {
+          const x = tx + c * W * .52, y = H * .5, w = W * .5, h = H * .22;
+          rect(x, y, w, h, "#2f5fb0"); rect(x, y + h * .62, w, h * .12, "#e9e9f0");
+          for (let k = 0; k < 4; k++) rect(x + 8 * U + k * (w - 16 * U) / 4, y + 6 * U, (w - 16 * U) / 4 - 6 * U, h * .4, "#bfe0ff");
+          if (c === 0) { rect(x - 4 * U, y + 2 * U, 6 * U, h - 4 * U, "#2a4a8a"); ctx.fillStyle = "#ffd84d"; ctx.beginPath(); ctx.arc(x + 4 * U, y + h * .8, 3 * U, 0, 7); ctx.fill(); }
+        }
+      }
+      // platform floor: granite
+      const fg = ctx.createLinearGradient(0, H * .74, 0, H); fg.addColorStop(0, "#9a8a8a"); fg.addColorStop(1, "#6a5a5a"); ctx.fillStyle = fg; ctx.fillRect(0, H * .74, W, H * .26);
+      rect(0, H * .74, W, 4 * U, "#ffd84d");
+      // turnstile + ticket
+      if (mt.phase < 2) {
+        const tx = W * .66, ty = H * .78; rect(tx, ty, 26 * U, 34 * U, "#c9ccd8"); rect(tx + 4 * U, ty + 4 * U, 10 * U, 6 * U, mt.phase >= 1 ? "#2fa84a" : "#e3263a");
+        ctx.strokeStyle = "#9a9aa8"; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.moveTo(tx - 2 * U, ty + 18 * U); ctx.lineTo(tx - 22 * U, ty + 18 * U); ctx.stroke();
+        if (mt.phase === 1) { rect(W * .3, H * .82, 30 * U, 19 * U, "#e3263a"); text("Тройка", W * .3 + 15 * U, H * .82 + 9.5 * U, 7, "#fff"); }
+      }
+      me(W * .2, H * .88, 42);
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)");
+      text(["Станция метро · купи билет", "Билет «Тройка» есть · проходи через турникет", "Ждём поезд…", "Поезд на станции · заходи!"][mt.phase] || "", W / 2, 9 * U, 9, "#fff", "center", 700);
+    }
+    function drawRide(t, dt) {
+      // inside the carriage
+      rect(0, 0, W, H, "#d8d4c8"); rect(0, H * .72, W, H * .28, "#6a6a72");
+      for (let i = 0; i < 3; i++) {
+        const x = W * (.05 + i * .32), y = H * .14, w = W * .26, h = H * .34;
+        rect(x, y, w, h, "#12121a");
+        if (mt.ride > 0) for (let k = 0; k < 4; k++) rect(x + ((t * 900 + k * 120) % (w + 60 * U)) - 30 * U, y + h * .4, 30 * U, 3 * U, "rgba(255,230,160,.6)");
+        else { rect(x, y + h * .2, w, h * .8, "#e8d8b0"); text(STATIONS[mt.stop], x + w / 2, y + h * .6, 8, "#12132a"); }
+        ctx.strokeStyle = "#9a9aa8"; ctx.lineWidth = 3 * U; ctx.strokeRect(x, y, w, h);
+      }
+      // handrail + seats
+      rect(0, H * .08, W, 3 * U, "#c9ccd8"); for (let i = 0; i < 6; i++) { ctx.strokeStyle = "#c9ccd8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(W * (.1 + i * .16), H * .08); ctx.lineTo(W * (.1 + i * .16), H * .14); ctx.stroke(); }
+      rect(0, H * .56, W, H * .1, "#2f5fb0"); rect(0, H * .66, W, H * .06, "#244a8a");
+      // route map line
+      rect(W * .1, H * .52, W * .8, 3 * U, "#e3263a");
+      STATIONS.forEach((s, i) => { const x = W * (.1 + i * .8 / 3); ctx.fillStyle = i <= mt.stop ? "#e3263a" : "#fff"; ctx.beginPath(); ctx.arc(x, H * .52 + 1.5 * U, 4 * U, 0, 7); ctx.fill(); });
+      const shake = mt.ride > 0 ? Math.sin(t * 40) * 1.5 * U : 0;
+      me(W * .5, H * .62 + shake, 44);
+      if (mt.ride > 0) {
+        mt.ride = Math.max(0, mt.ride - dt);
+        if (mt.ride === 0) { mt.stop++; ding2(); Hero.say("moscow", "good", `Станция «${STATIONS[mt.stop]}»${mt.stop === 3 ? " — приехали!" : ""}`); if (mt.stop === 3) { giveStamp("metro"); Hero.say("moscow", "win", "Прокатились на московском метро — самом красивом в мире!"); } updateAction(); }
+      }
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)");
+      text(mt.ride > 0 ? "Осторожно, двери закрываются! Следующая станция…" : `Станция «${STATIONS[mt.stop]}»`, W / 2, 9 * U, 9, "#fff", "center", 700);
+    }
+
+    // ---------- GUM: glass roof, bridges and a fountain ----------
+    const slot = (k) => [W * (.16 + (k % 4) * .225), H * [.34, .57, .8][Math.floor(k / 4)]];
+    function setupGum() { goods = GOODS.map((g, k) => { const [x, y] = slot(k); return { name: g[0], price: g[1], col: g[2], ico: g[3], shop: g[4], x, y, pop: 0 }; }); gMsg = "Нажимай на товар — рубли бесконечные!"; }
+    function drawGum(t, dt) {
+      sky("#cfe4f2", "#efe4d4");
+      // glass arched roof
+      ctx.strokeStyle = "rgba(90,100,120,.5)"; ctx.lineWidth = 1.5;
+      for (let i = 0; i < 12; i++) { ctx.beginPath(); ctx.moveTo(i * W / 11, H * .2); ctx.quadraticCurveTo(i * W / 11 + W / 22, 0, i * W / 11 + W / 11, H * .2); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(0, H * .2); ctx.lineTo(W, H * .2); ctx.stroke();
+      // galleries
+      rect(0, H * .2, W, H * .05, "#e8dcc8"); for (let i = 0; i < 16; i++) rect(i * W / 16 + 3, H * .2 + 2, W / 16 - 6, H * .04, "#f8f2e6");
+      // flower bridge
+      rect(W * .3, H * .23, W * .4, 4 * U, "#9aa0b0"); for (let i = 0; i < 12; i++) { ctx.fillStyle = ["#ff5ad1", "#ffd84d", "#e3263a"][i % 3]; ctx.beginPath(); ctx.arc(W * .31 + i * W * .034, H * .23, 2.5 * U, 0, 7); ctx.fill(); }
+      rect(0, H * .25, W, H * .75, "#efe4d4");
+      for (let r = 0; r < 3; r++) { const y = H * [.34, .57, .8][r]; rect(0, y + 14 * U, W, 6 * U, "#c9b48a"); rect(0, y + 20 * U, W, 2 * U, "#a8946a"); }
+      goods.forEach((g) => {
+        g.pop = Math.max(0, g.pop - dt * 3); const s = 1 + g.pop * .4;
+        ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.arc(g.x, g.y - 2 * U, 15 * U, 0, 7); ctx.fill();
+        emo(g.ico, g.x, g.y - 2 * U, 20 * s);
+        text(g.name.length > 11 ? g.name.slice(0, 10) + "…" : g.name, g.x, g.y + 17 * U, 7.5, "#fff", "center", 800);
+      });
+      flyers = flyers.filter((f) => (f.t += dt) < .7);
+      flyers.forEach((f) => { const k = f.t / .7; emo(f.ico, f.x + (W * .9 - f.x) * k, f.y + (H * .06 - f.y) * k - Math.sin(k * Math.PI) * 30 * U, 16 * (1 - k * .5)); });
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)"); text(gMsg, W / 2, 9 * U, 9, "#fff", "center", 700);
+      emo("🛍️", W * .93, H * .1, 16);
+    }
+
+    // ---------- Gorky Park ice rink ----------
+    function drawPark(t, dt) {
+      sky("#1a2350", "#4a5a8a");
+      for (let i = 0; i < 25; i++) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect(hsh(i) * W, hsh(i + 40) * H * .25, 1.5, 1.5); }
+      // park gate with columns
+      const gx = W / 2, gy = H * .4;
+      rect(gx - W * .3, gy - H * .2, W * .6, H * .2, "#d8d0c0");
+      for (let i = 0; i < 8; i++) rect(gx - W * .28 + i * W * .078, gy - H * .17, 7 * U, H * .17, "#f4ece0");
+      rect(gx - W * .32, gy - H * .24, W * .64, H * .05, "#c9c0ae");
+      text("ПАРК ГОРЬКОГО", gx, gy - H * .215, 9, "#12132a");
+      // trees with snow
+      for (let i = 0; i < 10; i++) { const x = i < 5 ? W * (.02 + i * .04) : W * (.8 + (i - 5) * .04), y = gy; ctx.fillStyle = "#1f4a3a"; ctx.beginPath(); ctx.moveTo(x - 10 * U, y); ctx.lineTo(x, y - 34 * U); ctx.lineTo(x + 10 * U, y); ctx.fill(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(x - 4 * U, y - 22 * U); ctx.lineTo(x, y - 34 * U); ctx.lineTo(x + 4 * U, y - 22 * U); ctx.fill(); }
+      // garland
+      for (let i = 0; i < 24; i++) { const x = i * W / 23, y = gy + 6 * U + Math.sin(i * .9) * 3 * U; ctx.fillStyle = ["#ff5ad1", "#ffd84d", "#5ce1e6", "#9be15d"][(i + Math.floor(t * 3)) % 4]; ctx.beginPath(); ctx.arc(x, y, 2.4 * U, 0, 7); ctx.fill(); }
+      // snow ground + rink
+      rect(0, gy + 10 * U, W, H, "#e8eef8");
+      const rx = W / 2, ry = H * .72, ra = W * .42, rb = H * .2;
+      ctx.fillStyle = "#bfe0f5"; ctx.beginPath(); ctx.ellipse(rx, ry, ra, rb, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 4 * U; ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(rx, ry, ra * (.3 + i * .1), rb * (.3 + i * .1), 0, .3 + i, 1.4 + i); ctx.stroke(); }
+      // skating
+      rk.v = Math.max(0, rk.v - dt * .5);
+      rk.a += rk.v * dt; rk.total += rk.v * dt;
+      if (rk.total >= Math.PI * 2 * (rk.laps + 1)) { rk.laps++; ding2(); if (rk.laps === 3) { giveStamp("park"); Hero.say("moscow", "win", "Три круга на катке! Ты чемпион Парка Горького!"); } else if (rk.laps < 3) Hero.say("moscow", "good", `Круг ${rk.laps}/3 — быстрее!`); }
+      const px = rx + Math.cos(rk.a) * ra * .78, py = ry + Math.sin(rk.a) * rb * .78;
+      ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(rx, ry, ra * .78, rb * .78, 0, rk.a - Math.min(1.2, rk.v * .4), rk.a); ctx.stroke();
+      me(px, py - 14 * U, 34);
+      rect(px - 10 * U, py + 3 * U, 8 * U, 2 * U, "#c9ccd8"); rect(px + 2 * U, py + 3 * U, 8 * U, 2 * U, "#c9ccd8");
+      // falling snow
+      if (snow.length < 60) snow.push({ x: Math.random() * W, y: -5, v: 20 + Math.random() * 30, s: 1 + Math.random() * 2 });
+      snow.forEach((f) => { f.y += f.v * dt * U; f.x += Math.sin(t + f.v) * .3; if (f.y > H) { f.y = -5; f.x = Math.random() * W; } ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(f.x, f.y, f.s * U, 0, 7); ctx.fill(); });
+      rect(0, 0, W, 18 * U, "rgba(18,19,42,.6)");
+      text(rk.laps >= 3 ? `Каток · кругов: ${rk.laps} ★` : `Каток · круг ${rk.laps}/3 · жми, чтобы катиться быстрее`, W / 2, 9 * U, 9, "#fff", "center", 700);
+      rect(W * .3, H * .94, W * .4, 6 * U, "rgba(18,19,42,.5)"); rect(W * .3, H * .94, W * .4 * Math.min(1, rk.v / 4), 6 * U, "#5ce1e6");
+    }
+
+    // ---------- Moscow City: glass elevator to the 89th floor, night Moscow ----------
+    function setupCity() { cityLights = []; for (let i = 0; i < 900; i++) { const y = .5 + Math.pow(Math.random(), .7) * .5; cityLights.push([Math.random(), y, Math.random() < .2 ? "#fff3c4" : Math.random() < .5 ? "#ffd27a" : "#ffb35a", Math.random() * 6]); } }
+    function nightCity(t, yOff) {
+      sky("#070a1e", "#2a2050");
+      const hz = H * .5 + yOff;
+      const hg = ctx.createLinearGradient(0, hz - H * .15, 0, hz + 4); hg.addColorStop(0, "rgba(255,140,80,0)"); hg.addColorStop(1, "rgba(255,150,90,.35)"); ctx.fillStyle = hg; ctx.fillRect(0, hz - H * .15, W, H * .15);
+      ctx.fillStyle = "#0b0d1e"; ctx.fillRect(0, hz, W, H - hz + 10);
+      cityLights.forEach(([x, y, c, p]) => { const yy = H * y + yOff; if (yy < hz || yy > H) return; ctx.globalAlpha = .55 + .45 * Math.sin(t * 2 + p); ctx.fillStyle = c; ctx.fillRect(x * W, yy, 1.3 * U, 1.3 * U); }); ctx.globalAlpha = 1;
+      // the river with reflections
+      ctx.strokeStyle = "#1a2a5a"; ctx.lineWidth = 10 * U; ctx.beginPath(); ctx.moveTo(0, hz + H * .3); ctx.bezierCurveTo(W * .3, hz + H * .1, W * .5, hz + H * .45, W, hz + H * .2); ctx.stroke();
+      // highways with traffic
+      for (let r = 0; r < 2; r++) { ctx.strokeStyle = "rgba(255,200,120,.35)"; ctx.lineWidth = 2 * U; ctx.beginPath(); ctx.moveTo(0, hz + H * (.16 + r * .16)); ctx.lineTo(W, hz + H * (.08 + r * .22)); ctx.stroke(); for (let k = 0; k < 10; k++) { const q = ((t * .08 + k / 10 + r * .5) % 1); ctx.fillStyle = k % 2 ? "#fff" : "#ff4a4a"; ctx.fillRect(q * W, hz + H * (.16 + r * .16) + (H * (r * .06 - .08)) * q - 1, 2 * U, 2 * U); } }
+      // skyline: Stalin skyscraper (MSU) and Ostankino tower on the horizon
+      ctx.fillStyle = "#1a1830";
+      const mx = W * .3; ctx.fillRect(mx - 30 * U, hz - 16 * U, 60 * U, 16 * U); ctx.fillRect(mx - 14 * U, hz - 30 * U, 28 * U, 14 * U); ctx.fillRect(mx - 7 * U, hz - 44 * U, 14 * U, 14 * U); ctx.beginPath(); ctx.moveTo(mx - 4 * U, hz - 44 * U); ctx.lineTo(mx, hz - 64 * U); ctx.lineTo(mx + 4 * U, hz - 44 * U); ctx.fill();
+      star(mx, hz - 66 * U, 3 * U, "#ff4a4a");
+      const ox = W * .8; ctx.fillStyle = "#1a1830"; ctx.beginPath(); ctx.moveTo(ox - 6 * U, hz); ctx.lineTo(ox - 1.5 * U, hz - 70 * U); ctx.lineTo(ox + 1.5 * U, hz - 70 * U); ctx.lineTo(ox + 6 * U, hz); ctx.fill(); ctx.fillRect(ox - 4 * U, hz - 50 * U, 8 * U, 4 * U); rect(ox - .8 * U, hz - 92 * U, 1.6 * U, 22 * U, "#1a1830");
+      ctx.fillStyle = Math.sin(t * 4) > 0 ? "#ff4a4a" : "#5a1a1a"; ctx.fillRect(ox - 1 * U, hz - 94 * U, 2 * U, 2 * U);
+      for (let i = 0; i < 12; i++) { const x = hsh(i + 3) * W, h = (8 + hsh(i) * 20) * U; ctx.fillStyle = "#14132a"; ctx.fillRect(x, hz - h, 14 * U, h); ctx.fillStyle = "rgba(255,210,120,.7)"; for (let k = 0; k < h / (5 * U) - 1; k++) ctx.fillRect(x + 3 * U, hz - h + 3 * U + k * 5 * U, 2 * U, 2 * U); }
+    }
+    function drawCity(t, dt) {
+      if (riding) { ride = Math.min(1, ride + dt / 5); if (ride >= 1) { riding = false; Hero.say("moscow", "good", "89-й этаж, 354 метра! Ночная Москва внизу. Сделай фото!"); updateAction(); } }
+      nightCity(t, (1 - ride) * H * .5);
+      if (ride < 1) { ctx.fillStyle = "rgba(160,170,190,.2)"; for (let i = 0; i < 6; i++) { const y = ((i * H / 6 + t * (riding ? 480 : 0) * U) % (H + 40)) - 20; ctx.fillRect(0, y, W, 3 * U); } }
+      // glass panes
+      ctx.strokeStyle = "rgba(20,22,32,.9)"; ctx.lineWidth = 6 * U; [.33, .66].forEach((k) => { ctx.beginPath(); ctx.moveTo(W * k, 0); ctx.lineTo(W * k, H); ctx.stroke(); });
+      const rg = ctx.createLinearGradient(0, 0, W, H); rg.addColorStop(.3, "rgba(255,255,255,0)"); rg.addColorStop(.42, "rgba(255,255,255,.07)"); rg.addColorStop(.5, "rgba(255,255,255,0)"); ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.globalAlpha = .14; me(W * .2, H * .4, 110); ctx.restore();
+      rect(10, 10, 120 * U, 42 * U, "rgba(18,19,42,.7)");
+      text(`Этаж ${Math.round(ride * 89)}`, 10 + 60 * U, 10 + 15 * U, 14, "#ffd84d");
+      text(`${Math.round(ride * 354)} м`, 10 + 60 * U, 10 + 33 * U, 10, "#fff", "center", 700);
+      if (ride >= 1) text("Москва-Сити · смотровая · ночь", W * .66, H * .07, 10, "#fff");
+      if (flashT > 0) { flashT = Math.max(0, flashT - dt); ctx.fillStyle = `rgba(255,255,255,${flashT * 2})`; ctx.fillRect(0, 0, W, H); }
+      if (photo) { ctx.strokeStyle = "#fff"; ctx.lineWidth = 8 * U; ctx.strokeRect(4 * U, 4 * U, W - 8 * U, H - 8 * U); me(W * .18, H * .78, 70); text("📸 Москва-Сити · 354 м · ночная Москва", W / 2, H - 16 * U, 10, "#ffd84d"); }
+    }
+
+    // ---------- flow ----------
+    function giveStamp(id) {
+      if (stamps[id]) return;
+      stamps[id] = Date.now(); store.set("mwStamps", stamps);
+      Hero.grant(50);
+      if (Object.keys(stamps).length === N) { Hero.grant(200); Hero.say("moscow", "win", "Паспорт заполнен! Москва покорена! Бонус +200 монет!"); }
+      passport(); updateHub();
+    }
+    function passport() {
+      $$("#moscow .dx-pass .st").forEach((e) => e.classList.toggle("on", !!stamps[e.dataset.st]));
+      $$("#mwPlaces button").forEach((b) => { b.classList.toggle("stamped", !!stamps[b.dataset.place]); b.setAttribute("aria-pressed", String(b.dataset.place === place && scene !== "map")); });
+    }
+    function updateAction() {
+      const b = $("#mwAction"); b.hidden = false; b.disabled = false;
+      if (scene === "red") { b.textContent = chime >= 0 ? "Куранты бьют…" : "Куранты 🔔"; b.disabled = chime >= 0; }
+      else if (scene === "metro") { b.textContent = ["Купить «Тройку»", "Пройти турникет", "Ждём поезд…", "Сесть в поезд", mt.stop >= 3 ? "Выйти из метро" : mt.ride > 0 ? "Едем…" : "Следующая станция"][mt.phase]; b.disabled = mt.phase === 2 || mt.ride > 0; }
+      else if (scene === "gum") b.textContent = "Мороженое ГУМ 🍦";
+      else if (scene === "park") b.textContent = "Катиться ⛸️";
+      else if (scene === "city") { if (ride < 1) { b.textContent = riding ? "Едем вверх…" : "Подняться на 89-й этаж"; b.disabled = riding; } else b.textContent = photo ? "Спуститься" : "Сделать фото"; }
+      else b.hidden = true;
+    }
+    function go(id) {
+      if (travel) return;
+      audio();
+      const from = place ? PLACES[place].map : [.5, .95];
+      travel = { from, to: PLACES[id].map, t: 0, dur: place === id ? .2 : 1.5, id };
+      scene = "map"; place = id; updateAction(); passport();
+    }
+    function arrive(id) {
+      travel = null; scene = id;
+      if (id === "red") { chime = -1; fireT = 0; sparks = []; }
+      if (id === "metro") { mt.phase = 0; mt.train = 0; mt.ride = 0; mt.stop = 0; }
+      if (id === "gum") setupGum();
+      if (id === "park") { rk.v = 0; rk.laps = 0; rk.total = 0; rk.a = Math.PI / 2; }
+      if (id === "city") { ride = 0; riding = false; photo = false; setupCity(); }
+      Hero.say("moscow", "start", { red: "Красная площадь! Спасская башня, Кремль и собор Василия Блаженного.", metro: "Московское метро — подземные дворцы с люстрами!", gum: "ГУМ — самый знаменитый магазин Москвы. Рубли бесконечные!", park: "Парк Горького, зима! Каток ждёт — сделай 3 круга.", city: "Москва-Сити — небоскрёбы из стекла. Поднимемся на 89-й этаж!" }[id]);
+      updateAction(); passport();
+    }
+    function buy(g) {
+      g.pop = 1; flyers.push({ x: g.x, y: g.y, ico: g.ico, t: 0 }); bought++;
+      Inv.add(g, g.shop);
+      gMsg = `Куплено: ${g.name} (${g.price.toLocaleString("ru-RU")} ₽) — в «Мои вещи». Рубли: ∞`;
+      if (bought === 4 && !stamps.gum) { giveStamp("gum"); Hero.say("moscow", "win", "Отличный шопинг в ГУМе!"); }
+    }
+    function metroAct() {
+      if (mt.phase === 0) { mt.phase = 1; Hero.say("moscow", "good", "Карта «Тройка» куплена! Приложи её к турникету."); }
+      else if (mt.phase === 1) { mt.phase = 2; mt.train = 0; ding2(); Hero.say("moscow", "good", "Пик! Проходи. Поезд уже едет…"); }
+      else if (mt.phase === 3) { mt.phase = 4; mt.ride = 2.5; Hero.say("moscow", "good", "Осторожно, двери закрываются!"); }
+      else if (mt.phase === 4) { if (mt.stop >= 3) { mt.phase = 0; mt.stop = 0; mt.train = 0; } else if (mt.ride <= 0) { mt.ride = 2.5; Hero.say("moscow", "good", "Осторожно, двери закрываются!"); } }
+    }
+    function skate() { rk.v = Math.min(4, rk.v + .7); }
+    $("#mwAction").addEventListener("click", () => {
+      audio();
+      if (scene === "red") { if (chime < 0) { chime = 0; chimeT = 0; chimeTune(); Hero.say("moscow", "good", "Тише… Куранты на Спасской башне!"); } }
+      else if (scene === "metro") metroAct();
+      else if (scene === "gum") { Inv.add({ name: "Мороженое ГУМ", col: "#fff7c2", ico: "🍦" }, "Вкусы Москвы"); gMsg = "Знаменитое мороженое ГУМ в стаканчике — в «Мои вещи»!"; }
+      else if (scene === "park") skate();
+      else if (scene === "city") {
+        if (ride < 1 && !riding) riding = true;
+        else if (ride >= 1 && !photo) { photo = true; flashT = .5; giveStamp("city"); Hero.say("moscow", "win", "Селфи над ночной Москвой с высоты 354 метра!"); }
+        else if (photo) { ride = 0; photo = false; }
+      }
+      updateAction();
+    });
+    $("#mwMap").addEventListener("click", () => { travel = null; scene = "map"; updateAction(); passport(); });
+    $("#mwPlaces").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) go(b.dataset.place); });
+    cv.addEventListener("pointerdown", (e) => {
+      audio();
+      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+      if (scene === "map" && !travel) { const id = Object.keys(PLACES).find((k) => Math.hypot(PLACES[k].map[0] * W - x, PLACES[k].map[1] * H - 12 * U - y) < 20 * U); if (id) go(id); }
+      else if (scene === "gum") { const g = goods.find((q) => Math.abs(q.x - x) < 22 * U && Math.abs(q.y - y) < 24 * U); if (g) buy(g); }
+      else if (scene === "park") skate();
+      updateAction();
+    });
+
+    function frame(now) {
+      raf = 0;
+      if (!visible) return;
+      const dt = lastT ? Math.min(.05, (now - lastT) / 1000) : 1 / 60; lastT = now;
+      const t = (now - T0) / 1000;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (travel) { travel.t += dt; if (travel.t >= travel.dur) arrive(travel.id); }
+      if (scene === "map" || travel) drawMap(t);
+      else if (scene === "red") drawRed(t, dt);
+      else if (scene === "metro") drawMetro(t, dt);
+      else if (scene === "gum") drawGum(t, dt);
+      else if (scene === "park") drawPark(t, dt);
+      else if (scene === "city") { const was = riding; drawCity(t, dt); if (was) updateAction(); }
+      raf = requestAnimationFrame(frame);
+    }
+    function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
+    function fit() {
+      const w = Math.floor(Math.min(stage.clientWidth || 440, 440));
+      if (!w) return;
+      dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .75); U = W / 360;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      if (scene === "gum") goods.forEach((g, k) => { [g.x, g.y] = slot(k); });
+    }
+    window.addEventListener("resize", () => { if (visible) fit(); });
+    passport();
+
+    return {
+      enter() { visible = true; fit(); passport(); updateAction(); if (scene === "map" && !place) Hero.say("moscow", "start", "Привет, Москва! Куда поедем?"); loop(); },
+      leave() { visible = false; riding = false; },
+      key() {},
+      best: () => `${Object.keys(stamps).length}/${N}`,
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -7981,6 +8464,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { go: "chars", ico: "🤖", t: "ВАЛЕРИЙ · ГИГА УЛЬТРА", s: "Самый мощный персонаж V3 с короной из стальных кубиков. Забери его!", bg: "linear-gradient(135deg,#12062e,#7a3cff)", fx: ["⚡", "💜", "✨", "🔮"] },
       { go: "dubai", ico: "🏙️", t: "JUST DUBAI!", s: "Бурдж Халифа, фонтаны Dubai Mall и 12 магазинов с бесконечными деньгами.", bg: "linear-gradient(135deg,#ff9a5a,#d9a520)", fx: ["🌴", "🛍️", "⛲", "🐪"] },
       { go: "yerevan", ico: "🏔️", t: "JUST YEREVAN", s: "Поднимись по Каскаду к Арарату, послушай поющие фонтаны и испеки лаваш!", bg: "linear-gradient(135deg,#e2a184,#7a4aa0)", fx: ["🏔️", "🎵", "🫓", "⛲"] },
+      { go: "moscow", ico: "🏰", t: "JUST MOSCOW", s: "Куранты, салют над Кремлём, метро с люстрами и каток в Парке Горького!", bg: "linear-gradient(135deg,#c43c3c,#1d2a6a)", fx: ["⭐", "🔔", "⛸️", "🪆"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
       { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
       { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
@@ -8046,7 +8530,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -10864,8 +11348,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -10888,6 +11372,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubMk").textContent = MK.best();
     $("#hubDubai").textContent = Dubai.best();
     $("#hubYerevan").textContent = Yerevan.best();
+    $("#hubMoscow").textContent = Moscow.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -11572,6 +12057,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (document.hidden && current === "mk") MK.leave();
     if (document.hidden && current === "dubai") Dubai.leave();
     if (document.hidden && current === "yerevan") Yerevan.leave();
+    if (document.hidden && current === "moscow") Moscow.leave();
     if (!document.hidden && current === "vr") VR.enter();
   });
 
