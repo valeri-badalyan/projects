@@ -1,0 +1,396 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>IRUUT</title>
+<meta name="description" content="IRUUT — студия браузерных игр и цифровых проектов. Делаем игры, сайты и интерактив, которые открываются в один клик.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: «двойное U» — гигантский вордмарк, дальше страница идёт парами колонок, как две буквы U рядом */
+:root {
+  --paper: #eceef6;
+  --paper-2: #e0e3f0;
+  --ink: #141a46;
+  --ink-soft: #4a5080;
+  --cobalt: #2b3fd9;
+  --saffron: #f0a531;
+  --line: #c6cae0;
+  --on-cobalt: #f4f5fb;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.75rem;
+  --step-3: clamp(2rem, 5vw, 3.25rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0d1030; --paper-2: #151a44; --ink: #e9ebf8; --ink-soft: #a3a8d0;
+    --cobalt: #6f80ff; --saffron: #f5b54d; --line: #2a3066; --on-cobalt: #0d1030;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0d1030; --paper-2: #151a44; --ink: #e9ebf8; --ink-soft: #a3a8d0;
+  --cobalt: #6f80ff; --saffron: #f5b54d; --line: #2a3066; --on-cobalt: #0d1030;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  margin: 0;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper);
+}
+.wrap {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h2 { font-size: var(--step-3); font-weight: 800; letter-spacing: -0.02em; }
+h3 { font-size: var(--step-1); font-weight: 600; }
+p { margin: 0; max-width: 62ch; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--saffron); outline-offset: 3px; border-radius: 4px; }
+.label {
+  font-family: var(--f-mono); font-size: var(--step--1);
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft);
+}
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: 1.1rem; text-decoration: none; letter-spacing: 0.02em; }
+.logo span { color: var(--cobalt); }
+.top nav ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+.top nav a { text-decoration: none; font-weight: 500; font-size: 0.95rem; }
+.top nav a:hover { color: var(--cobalt); }
+@media (max-width: 640px) { .top nav li:not(:last-child) { display: none; } }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--ink); color: var(--paper);
+  padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 600;
+  border: 0; font: inherit; font-weight: 600; cursor: pointer;
+  transition: transform .2s ease, background .2s ease;
+}
+.pill:hover { background: var(--cobalt); color: var(--on-cobalt); transform: translateY(-2px); }
+
+/* Hero */
+.hero .wrap { padding-block: clamp(40px, 8vw, 96px) clamp(32px, 6vw, 72px); display: grid; gap: 28px; }
+.mark {
+  font-family: var(--f-display); font-weight: 800;
+  font-size: clamp(3.6rem, 17.5vw, 15rem);
+  line-height: 0.9; letter-spacing: -0.04em;
+  display: flex; flex-wrap: nowrap;
+}
+.mark span { display: inline-block; animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
+.mark span:nth-child(2) { animation-delay: .06s; }
+.mark span:nth-child(3) { animation-delay: .12s; }
+.mark span:nth-child(4) { animation-delay: .18s; }
+.mark span:nth-child(5) { animation-delay: .24s; }
+.mark .u {
+  color: transparent;
+  -webkit-text-stroke: 0.035em var(--cobalt);
+  background: linear-gradient(to top, var(--cobalt) 0 50%, transparent 50% 100%);
+  background-size: 100% 200%;
+  background-position: 0 0;
+  -webkit-background-clip: text; background-clip: text;
+  animation: rise .8s cubic-bezier(.2,.8,.2,1) both, fill 2.4s 0.6s cubic-bezier(.5,0,.2,1) forwards;
+}
+.mark .u + .u {
+  -webkit-text-stroke-color: var(--saffron);
+  background-image: linear-gradient(to top, var(--saffron) 0 50%, transparent 50% 100%);
+  animation-delay: .18s, .9s;
+}
+@keyframes rise { from { transform: translateY(0.25em); opacity: 0.2; } to { transform: none; opacity: 1; } }
+@keyframes fill { from { background-position: 0 0; } to { background-position: 0 100%; } }
+.hero-row { display: grid; gap: 24px; align-items: end; }
+@media (min-width: 820px) { .hero-row { grid-template-columns: 1.3fr 1fr; } }
+.lead { font-size: var(--step-1); line-height: 1.45; }
+.lead strong { color: var(--cobalt); font-weight: 600; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.ghost { text-decoration: none; font-weight: 600; border-bottom: 2px solid var(--saffron); padding-bottom: 2px; }
+
+/* Ticker */
+.ticker { background: var(--cobalt); color: var(--on-cobalt); overflow: hidden; }
+.ticker-track {
+  display: flex; gap: 48px; width: max-content; padding-block: 14px;
+  font-family: var(--f-display); font-weight: 600; font-size: var(--step-1);
+  animation: slide 28s linear infinite;
+}
+.ticker-track span::after { content: "◡◡"; margin-left: 48px; color: var(--saffron); }
+@keyframes slide { to { transform: translateX(-50%); } }
+
+/* Sections */
+section.block .wrap { padding-block: clamp(56px, 9vw, 112px); display: grid; gap: 40px; }
+.head { display: grid; gap: 12px; }
+@media (min-width: 820px) { .head { grid-template-columns: 1fr 1fr; align-items: end; gap: 40px; } }
+
+/* About: stats */
+.facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+@media (min-width: 820px) { .facts { grid-template-columns: repeat(4, 1fr); } }
+.fact { background: var(--paper); padding: 24px 20px; display: grid; gap: 4px; }
+.fact b { font-family: var(--f-display); font-size: var(--step-2); font-weight: 800; font-variant-numeric: tabular-nums; }
+.fact span { color: var(--ink-soft); font-size: 0.95rem; }
+
+/* Directions */
+.dirs { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.dir {
+  display: grid; gap: 8px 32px; padding-block: 24px; border-bottom: 1px solid var(--line);
+  transition: padding .25s ease;
+}
+@media (min-width: 820px) { .dir { grid-template-columns: 1fr 1.4fr auto; align-items: baseline; } }
+.dir:hover { padding-left: 12px; }
+.dir:hover h3 { color: var(--cobalt); }
+.dir h3 { font-size: var(--step-2); transition: color .25s; }
+.dir p { color: var(--ink-soft); }
+.dir .label { white-space: nowrap; }
+
+/* Projects: asymmetric grid */
+.alt { background: var(--paper-2); }
+.works { display: grid; gap: 16px; }
+@media (min-width: 720px) {
+  .works { grid-template-columns: repeat(6, 1fr); }
+  .work:nth-child(1) { grid-column: span 4; grid-row: span 2; }
+  .work:nth-child(2), .work:nth-child(3) { grid-column: span 2; }
+  .work:nth-child(4), .work:nth-child(5), .work:nth-child(6) { grid-column: span 2; }
+}
+.work {
+  position: relative; overflow: hidden; min-width: 0;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 18px;
+  padding: 22px; display: grid; gap: 10px; align-content: end; min-height: 200px;
+  transition: transform .25s ease, border-color .25s ease;
+}
+.work:hover { transform: translateY(-4px); border-color: var(--cobalt); }
+.work .glyph {
+  position: absolute; top: 14px; right: 18px;
+  font-family: var(--f-display); font-weight: 800; font-size: 3rem; line-height: 1;
+  color: var(--line);
+}
+.work:nth-child(1) { background: var(--ink); color: var(--paper); border-color: var(--ink); min-height: 320px; }
+.work:nth-child(1) .label { color: var(--saffron); }
+.work:nth-child(1) p { color: color-mix(in srgb, var(--paper) 78%, transparent); }
+.work:nth-child(1) h3 { font-size: var(--step-3); }
+.work:nth-child(1) .glyph { color: var(--cobalt); font-size: 7rem; }
+.work p { color: var(--ink-soft); font-size: 0.95rem; }
+
+/* Process */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; counter-reset: s; }
+@media (min-width: 820px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+.steps li { counter-increment: s; display: grid; gap: 10px; padding-top: 18px; border-top: 3px solid var(--ink); }
+.steps li::before { content: "Шаг " counter(s); font-family: var(--f-mono); font-size: var(--step--1); letter-spacing: .12em; text-transform: uppercase; color: var(--cobalt); }
+.steps p { color: var(--ink-soft); }
+
+/* Contact */
+.contact { background: var(--cobalt); color: var(--on-cobalt); }
+.contact .label { color: color-mix(in srgb, var(--on-cobalt) 75%, transparent); }
+.contact-grid { display: grid; gap: 32px; padding-block: clamp(56px, 9vw, 112px); }
+.contact-head { align-content: start; }
+@media (min-width: 820px) { .contact-head { grid-template-columns: 1fr; } }
+@media (min-width: 820px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+.contact h2 em { font-style: normal; color: var(--saffron); }
+form { display: grid; gap: 14px; min-width: 0; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; font-size: 0.95rem; }
+input, select, textarea {
+  font: inherit; color: var(--ink); background: var(--paper);
+  border: 2px solid transparent; border-radius: 12px; padding: 12px 14px; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--saffron); }
+textarea { min-height: 120px; resize: vertical; }
+.contact .pill { background: var(--saffron); color: #141a46; justify-self: start; }
+.contact .pill:hover { background: var(--paper); color: var(--ink); }
+.result { background: var(--paper); color: var(--ink); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
+.result pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--f-mono); font-size: 0.875rem; }
+.result .pill { background: var(--ink); color: var(--paper); }
+
+footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; color: var(--ink-soft); font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .mark .u { background-position: 0 100%; }
+  html { scroll-behavior: auto; }
+}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top">IR<span>UU</span>T</a>
+    <nav aria-label="Основное меню">
+      <ul>
+        <li><a href="#about">Студия</a></li>
+        <li><a href="#work">Проекты</a></li>
+        <li><a href="#process">Процесс</a></li>
+        <li><a class="pill" href="#contact">Обсудить проект</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <p class="label">Студия браузерных игр и цифровых проектов</p>
+      <h1 id="hero-title" class="mark" aria-label="IRUUT"><span>I</span><span>R</span><span class="u">U</span><span class="u">U</span><span>T</span></h1>
+      <div class="hero-row">
+        <p class="lead">Делаем игры, сайты и интерактив, которые <strong>открываются по ссылке</strong> и работают на телефоне. Без установки, без магазинов приложений, без ожидания.</p>
+        <div class="hero-cta">
+          <a class="pill" href="#contact">Обсудить проект →</a>
+          <a class="ghost" href="#work">Смотреть проекты</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Браузерные игры</span><span>Сайты и лендинги</span><span>3D и WebGL</span><span>Мультиплеер</span><span>Видео и моушн</span>
+      <span>Браузерные игры</span><span>Сайты и лендинги</span><span>3D и WebGL</span><span>Мультиплеер</span><span>Видео и моушн</span>
+    </div>
+  </div>
+
+  <section class="block" id="about" aria-labelledby="about-title">
+    <div class="wrap">
+      <div class="head">
+        <h2 id="about-title">Два U — две половины работы</h2>
+        <p>Первое U — идея: персонажи, мир, правила игры. Второе U — инженерия: чтобы всё летало на старом телефоне и грузилось за секунды. IRUUT держит обе половины в одной команде, поэтому проект не теряется между «придумали» и «сделали».</p>
+      </div>
+      <div class="facts">
+        <div class="fact"><b>22</b><span>игры в одной мини-приставке V3 Games</span></div>
+        <div class="fact"><b>1 файл</b><span>весь проект — без сборки и установки</span></div>
+        <div class="fact"><b>40</b><span>видов блоков в 3D-песочнице V3 Craft</span></div>
+        <div class="fact"><b>3 города</b><span>в серии путешествий: Дубай, Ереван, Москва</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="dirs-title">
+    <div class="wrap">
+      <div class="head">
+        <h2 id="dirs-title">Что делаем</h2>
+        <p>Берём проект от идеи до опубликованной ссылки. Можно заказать одно направление или всё сразу.</p>
+      </div>
+      <div class="dirs">
+        <article class="dir"><h3>Браузерные игры</h3><p>Аркады, стратегии, тайкуны, файтинги. Сенсорное управление, рекорды, монеты и сохранения.</p><span class="label">HTML · Canvas</span></article>
+        <article class="dir"><h3>3D и WebGL</h3><p>Объёмные миры на Three.js: песочницы, аттракционы, режим VR-очков с гироскопом.</p><span class="label">Three.js</span></article>
+        <article class="dir"><h3>Сайты и лендинги</h3><p>Быстрые страницы для брендов и запусков: адаптивные, с тёмной темой и понятной структурой.</p><span class="label">HTML · CSS</span></article>
+        <article class="dir"><h3>Мультиплеер и чат</h3><p>Общие миры по ссылке, чат игроков, «кто сейчас в сети» — без кодов комнат.</p><span class="label">Realtime</span></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt" id="work" aria-labelledby="work-title">
+    <div class="wrap">
+      <div class="head">
+        <h2 id="work-title">Проекты</h2>
+        <p>Всё ниже собрано внутри V3 Games — браузерной мини-приставки, которую можно открыть с любого телефона.</p>
+      </div>
+      <div class="works">
+        <article class="work"><span class="glyph" aria-hidden="true">V3</span><span class="label">Песочница · 3D</span><h3>V3 Craft</h3><p>Мир 64×64 из 40 видов блоков, крафт и печь, день и ночь, мобы. Отправил ссылку — друг сразу в твоём мире.</p></article>
+        <article class="work"><span class="glyph" aria-hidden="true">M</span><span class="label">Путешествие</span><h3>Just Moscow</h3><p>Куранты на Красной площади, метро по «Тройке», каток в Парке Горького.</p></article>
+        <article class="work"><span class="glyph" aria-hidden="true">$</span><span class="label">Тайкун</span><h3>Business Empire</h3><p>От лимонадной лавки до $1 трлн: 11 бизнесов и менеджеры.</p></article>
+        <article class="work"><span class="glyph" aria-hidden="true">⚔</span><span class="label">Стратегия</span><h3>My Mine</h3><p>Крестьяне, лучники, порт с нефтью и вид 2D или 3D.</p></article>
+        <article class="work"><span class="glyph" aria-hidden="true">◆</span><span class="label">Ритм</span><h3>Geometry Lite</h3><p>Прыжки под бит, батуты и режим корабля, 3 уровня.</p></article>
+        <article class="work"><span class="glyph" aria-hidden="true">⌨</span><span class="label">Конструктор</span><h3>Computer Tycoon</h3><p>Собери ПК из деталей, протестируй и выпусти на рынок.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="process" aria-labelledby="process-title">
+    <div class="wrap">
+      <div class="head">
+        <h2 id="process-title">Как работаем</h2>
+        <p>Первую играбельную версию вы видите в первые дни, а не в конце проекта.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Идея</h3><p>Обсуждаем, для кого проект и что игрок должен почувствовать в первые 10 секунд.</p></li>
+        <li><h3>Прототип</h3><p>Собираем черновую версию по ссылке — можно сразу открыть на телефоне.</p></li>
+        <li><h3>Доводка</h3><p>Графика, звук, баланс, сохранения. Правки идут маленькими шагами.</p></li>
+        <li><h3>Запуск</h3><p>Публикуем, следим за отзывами и добавляем обновления.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap">
+      <div class="contact-grid">
+        <div class="head contact-head">
+          <p class="label">Новый проект</p>
+          <h2 id="contact-title">Расскажите идею — <em>соберём из неё игру</em></h2>
+          <p>Заполните форму: она соберёт готовый текст заявки, который можно скопировать и отправить нам в удобный мессенджер.</p>
+        </div>
+        <form id="brief" novalidate>
+          <div class="field"><label for="f-name">Как вас зовут</label><input id="f-name" name="name" autocomplete="name" placeholder="Например, Валерий" required></div>
+          <div class="field"><label for="f-type">Что нужно</label>
+            <select id="f-type" name="type">
+              <option>Браузерная игра</option><option>3D-проект</option><option>Сайт или лендинг</option><option>Мультиплеер</option><option>Пока не знаю</option>
+            </select>
+          </div>
+          <div class="field"><label for="f-idea">Идея в двух словах</label><textarea id="f-idea" name="idea" placeholder="Гонки на такси по Еревану с мини-играми в каждом районе" required></textarea></div>
+          <button class="pill" type="submit">Собрать заявку</button>
+          <div class="result" id="result" hidden>
+            <pre id="result-text"></pre>
+            <button class="pill" type="button" id="copy">Скопировать текст</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 IRUUT</span>
+    <span>Игры, которые открываются по ссылке</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('brief');
+  var box = document.getElementById('result');
+  var out = document.getElementById('result-text');
+  var copy = document.getElementById('copy');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = form.name.value.trim();
+    var idea = form.idea.value.trim();
+    if (!name || !idea) {
+      (name ? form.idea : form.name).focus();
+      return;
+    }
+    out.textContent = 'Заявка для IRUUT\nИмя: ' + name + '\nНужно: ' + form.type.value + '\nИдея: ' + idea;
+    box.hidden = false;
+    copy.textContent = 'Скопировать текст';
+  });
+  copy.addEventListener('click', function () {
+    var text = out.textContent;
+    function selectIt() {
+      var r = document.createRange(); r.selectNodeContents(out);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      copy.textContent = 'Текст выделен — скопируйте вручную';
+    }
+    try {
+      navigator.clipboard.writeText(text).then(function () { copy.textContent = 'Скопировано'; }, selectIt);
+    } catch (err) { selectIt(); }
+  });
+})();
+</script>
