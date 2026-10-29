@@ -1963,6 +1963,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="be-goal" aria-hidden="true"><i id="beGoal"></i></div>
       <small id="beGoalT">Путь к $1 трлн: 0%</small>
     </div>
+    <button class="btn ghost wide" type="button" id="beInf" hidden>♾️ Бесконечные деньги: вкл</button>
     <div class="be-tabs" id="beTabs" role="tablist">
       <button type="button" role="tab" data-tab="biz">🏢 Бизнесы</button>
       <button type="button" role="tab" data-tab="mgr">🤵 Менеджеры<i id="beMgrDot" hidden></i></button>
@@ -8223,6 +8224,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let S = store.get("bizState", null);
     if (!S || !Array.isArray(S.n) || S.n.length !== B.length) S = fresh(1);
     ["mgr", "run", "prog"].forEach((k) => { if (!Array.isArray(S[k]) || S[k].length !== B.length) S[k] = B.map(() => (k === "prog" ? 0 : false)); });
+    // infinite money only for the owner of the page
+    let owner = false, inf = store.get("bizInf", true) !== false;
+    const unlimited = () => owner && inf;
+    const can = (c) => unlimited() || S.money >= c;
+    const pay = (c) => { if (!unlimited()) S.money -= c; };
     let visible = false, raf = 0, lastT = 0, buyMul = store.get("bizMul", 1), tab = "biz", uiT = 0, saveT = 0, AC = null;
 
     // ---------- numbers ----------
@@ -8239,7 +8245,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const rev = (i) => B[i][5] * S.n[i] * mult();
     const perSec = () => B.reduce((s, b, i) => s + (S.n[i] && S.mgr[i] ? rev(i) / cycle(i) : 0), 0);
     const costOf = (i, k) => { const [, , , c0, g] = B[i]; return c0 * Math.pow(g, S.n[i]) * (Math.pow(g, k) - 1) / (g - 1); };
-    function maxBuy(i) { const [, , , c0, g] = B[i]; const base = c0 * Math.pow(g, S.n[i]); if (S.money < base) return 0; return Math.floor(Math.log(S.money * (g - 1) / base + 1) / Math.log(g)); }
+    function maxBuy(i) { if (unlimited()) return 100; const [, , , c0, g] = B[i]; const base = c0 * Math.pow(g, S.n[i]); if (S.money < base) return 0; return Math.floor(Math.log(S.money * (g - 1) / base + 1) / Math.log(g)); }
     function buyCount(i) { if (buyMul === "max") return Math.max(1, maxBuy(i)); return buyMul; }
     const nextMs = (i) => MS.find((m) => S.n[i] < m);
 
@@ -8269,22 +8275,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function start(i) { if (S.n[i] && !S.mgr[i] && !S.run[i]) { S.run[i] = true; S.prog[i] = 0; } }
     function buy(i) {
       const k = S.n[i] ? buyCount(i) : 1, c = costOf(i, k);
-      if (S.money < c || k < 1) return;
-      const before = S.n[i]; S.money -= c; S.n[i] += k; kaching();
+      if (!can(c) || k < 1) return;
+      const before = S.n[i]; pay(c); S.n[i] += k; kaching();
       if (before === 0) Hero.say("biz", "good", `Открыт новый бизнес: ${B[i][2]} ${B[i][1]}!`);
       const passed = MS.filter((m) => before < m && S.n[i] >= m);
       if (passed.length) Hero.say("biz", "good", `${B[i][1]}: ${S.n[i]} шт — скорость x${Math.pow(2, passed.length)}!`);
       render(); save();
     }
     function hire(i) {
-      if (S.mgr[i] || S.money < B[i][7] || !S.n[i]) return;
-      S.money -= B[i][7]; S.mgr[i] = true; kaching(true);
+      if (S.mgr[i] || !can(B[i][7]) || !S.n[i]) return;
+      pay(B[i][7]); S.mgr[i] = true; kaching(true);
       Hero.say("biz", "good", `${B[i][8]} теперь управляет: ${B[i][1]}. Деньги идут сами!`);
       render(); save();
     }
     function upgrade() {
-      const u = UPS[S.ups]; if (!u || S.money < u[2]) return;
-      S.money -= u[2]; S.ups++; kaching(true);
+      const u = UPS[S.ups]; if (!u || !can(u[2])) return;
+      pay(u[2]); S.ups++; kaching(true);
       Hero.say("biz", "good", `${u[1]} ${u[0]} — вся прибыль x3!`);
       render(); save();
     }
@@ -8333,7 +8339,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         r.querySelector("b").textContent = b[8];
         r.querySelector("small").textContent = S.mgr[i] ? `Управляет: ${b[1]} — работает сам` : `Будет сам запускать «${b[1]}»`;
         const bt = r.querySelector("button");
-        bt.textContent = S.mgr[i] ? "Нанят ✓" : fmt(b[7]); bt.disabled = S.mgr[i] || !S.n[i] || S.money < b[7];
+        bt.textContent = S.mgr[i] ? "Нанят ✓" : fmt(b[7]); bt.disabled = S.mgr[i] || !S.n[i] || !can(b[7]);
         if (!S.n[i] && !S.mgr[i]) bt.textContent = "Сначала открой бизнес";
         bt.addEventListener("click", () => hire(i)); m.appendChild(r);
       });
@@ -8344,12 +8350,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         r.querySelector("b").textContent = up[0];
         const bt = r.querySelector("button");
         bt.textContent = k < S.ups ? "Куплено ✓" : k > S.ups ? "Сначала предыдущее" : fmt(up[2]);
-        bt.disabled = k !== S.ups || S.money < up[2];
+        bt.disabled = k !== S.ups || !can(up[2]);
         bt.addEventListener("click", upgrade); u.appendChild(r);
       });
     }
     function render() {
-      $("#beMoney").textContent = fmt(S.money);
+      $("#beMoney").textContent = unlimited() ? "$∞" : fmt(S.money);
       const ps = perSec();
       $("#bePs").textContent = ps > 0 ? `${fmt(ps)} / сек` : S.n[1] ? "Нажимай на значки бизнесов или найми менеджеров" : "Нажимай на 🍋, чтобы продавать лимонад";
       $("#beTitle").textContent = title() + (S.bonus > 1 ? ` · бонус x${S.bonus}` : "");
@@ -8369,15 +8375,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         q.sub.textContent = !own ? `Открыть за ${fmt(B[i][3])}` : S.mgr[i] ? `🤵 ${B[i][8]} · ${T < 1 ? T.toFixed(2) : Math.ceil(T * (1 - S.prog[i]))} сек` : S.run[i] ? `Готовится… ${Math.ceil(T * (1 - S.prog[i]))} сек` : "▶ Нажми на значок — запусти";
         q.btL.textContent = own ? `Купить x${k2}` : "Открыть";
         q.btC.textContent = fmt(own ? c : B[i][3]);
-        q.bt.disabled = S.money < (own ? c : B[i][3]);
+        q.bt.disabled = !can(own ? c : B[i][3]);
         q.c.classList.toggle("ready", own && !S.mgr[i] && !S.run[i]);
       });
       $$("#beMul button").forEach((b) => b.setAttribute("aria-pressed", String(String(buyMul) === b.dataset.mul)));
-      $("#beMgrDot").hidden = !B.some((b, i) => S.n[i] && !S.mgr[i] && S.money >= b[7]);
-      $("#beUpDot").hidden = !(UPS[S.ups] && S.money >= UPS[S.ups][2]);
+      $("#beMgrDot").hidden = !B.some((b, i) => S.n[i] && !S.mgr[i] && can(b[7]));
+      $("#beUpDot").hidden = !(UPS[S.ups] && can(UPS[S.ups][2]));
     }
+    let lastSig = "";
     function showTab(t) {
-      tab = t;
+      tab = t; lastSig = "";
       $$("#beTabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t)));
       $("#beList").hidden = t !== "biz"; $("#beMgr").hidden = t !== "mgr"; $("#beUps").hidden = t !== "ups"; $("#beMul").hidden = t !== "biz";
       if (t !== "biz") renderLists();
@@ -8388,7 +8395,13 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const dt = lastT ? Math.min(.25, (now - lastT) / 1000) : 0; lastT = now;
       tick(dt);
       render();
-      uiT += dt; if (uiT > .5 && tab !== "biz") { uiT = 0; renderLists(); }
+      uiT += dt;
+      if (uiT > .4 && tab !== "biz") {
+        uiT = 0;
+        // redraw the lists only when something on them changed, so buttons stay under the finger
+        const sig = S.mgr.join() + S.ups + S.n.map((n) => n > 0).join() + B.map((b) => can(b[7])).join() + UPS.map((u) => can(u[2])).join();
+        if (sig !== lastSig) { lastSig = sig; renderLists(); }
+      }
       saveT += dt; if (saveT > 3) { saveT = 0; save(); }
       raf = requestAnimationFrame(frame);
     }
@@ -8402,8 +8415,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (got > 0) Hero.say("biz", "good", `Пока тебя не было, менеджеры заработали ${fmt(got)}!`);
     }
 
+    function infBtn() { const b = $("#beInf"); b.hidden = !owner; b.textContent = `♾️ Бесконечные деньги: ${inf ? "вкл" : "выкл"}`; b.setAttribute("aria-pressed", String(inf)); }
+    (async () => {
+      try { const user = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; owner = !!(user && await user.isOwner()); } catch (e) { owner = false; }
+      infBtn(); if (visible) render();
+    })();
     // wiring
     build();
+    $("#beInf").addEventListener("click", () => { if (!owner) return; inf = !inf; store.set("bizInf", inf); infBtn(); render(); if (tab !== "biz") renderLists(); Hero.say("biz", "good", inf ? "Деньги бесконечные ♾️ — покупай всё!" : "Обычный режим — зарабатывай сам!"); });
     $("#beTabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) showTab(b.dataset.tab); });
     $("#beMul").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; buyMul = b.dataset.mul === "max" ? "max" : +b.dataset.mul; store.set("bizMul", buyMul); render(); });
     $("#beWinNew").addEventListener("click", () => { const w = S.wins, bonus = S.bonus * 2; S = fresh(bonus); S.wins = w; save(); $("#beWin").hidden = true; render(); showTab("biz"); Hero.say("biz", "start", `Новая империя! Теперь вся прибыль x${bonus} навсегда.`); });
