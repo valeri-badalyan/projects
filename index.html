@@ -599,6 +599,47 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .be-win-ico { font-size: 54px; }
 .be-win-card h2 { margin: 0; color: var(--amber); font-size: 26px; }
 .be-win-card p { margin: 0; font-weight: 700; line-height: 1.4; }
+.ct-stage { border-radius: 16px; overflow: hidden; border: 2px solid rgba(255,255,255,.08); background: #12132a; }
+#ctCanvas { display: block; width: 100%; }
+.ct-name { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; }
+.ct-name input { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 10px; border: 2px solid rgba(255,255,255,.15); background: var(--panel, #1c1d3a); color: inherit; font: 800 14px Manrope, sans-serif; }
+.ct-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.ct-cats::-webkit-scrollbar { display: none; }
+.ct-cats button { flex: none; padding: 7px 11px; border-radius: 99px; border: 2px solid rgba(255,255,255,.14); background: var(--panel, #1c1d3a); color: inherit; font: 800 12px Manrope, sans-serif; cursor: pointer; white-space: nowrap; }
+.ct-cats button[aria-pressed="true"] { background: var(--amber); color: #12132a; border-color: var(--amber); }
+.ct-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.ct-opt { display: grid; grid-template-columns: 28px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 6px; text-align: left; padding: 8px; border-radius: 12px; border: 2px solid rgba(255,255,255,.1); background: var(--panel, #1c1d3a); color: inherit; cursor: pointer; font-family: Manrope, sans-serif; }
+.ct-opt.on { border-color: var(--amber); background: var(--panel-2, #26284a); }
+.ct-opt i { grid-row: 1 / 4; font-style: normal; font-size: 18px; color: var(--amber); align-self: center; text-align: center; letter-spacing: -2px; overflow: hidden; }
+.ct-opt b { font-size: 12.5px; }
+.ct-opt small { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-opt em { font-style: normal; font-size: 11px; font-weight: 800; color: #9be15d; }
+.ct-panel { padding: 10px 12px; border-radius: 16px; background: var(--panel, #1c1d3a); border: 2px solid rgba(255,255,255,.08); display: flex; flex-direction: column; gap: 6px; }
+.ct-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+.ct-top small { display: block; font-size: 11px; color: var(--muted); font-weight: 800; }
+.ct-top b { font: 900 28px/1 Manrope, sans-serif; }
+.ct-top span { color: var(--muted); font-weight: 800; }
+.ct-top .ct-cost { font-size: 18px; color: #9be15d; }
+.ct-top > div:last-child { text-align: right; }
+.ct-stat { display: grid; grid-template-columns: 74px minmax(0, 1fr) 28px; gap: 8px; align-items: center; font-size: 12px; font-weight: 700; }
+.ct-stat div { height: 9px; border-radius: 99px; background: rgba(255,255,255,.1); overflow: hidden; }
+.ct-stat i { display: block; height: 100%; border-radius: 99px; transition: width .25s; }
+.ct-stat b { text-align: right; }
+.ct-warn { margin: 0; min-height: 1em; color: #ff8a6b; font-size: 12px; font-weight: 800; }
+.ct-price { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; }
+.ct-price input { width: 100%; accent-color: var(--amber); }
+.ct-acts { display: flex; gap: 6px; }
+.ct-acts .btn { flex: 1; min-width: 0; padding-left: 6px; padding-right: 6px; }
+.ct-model { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.ct-model i { font-style: normal; font-size: 20px; }
+.ct-model b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-model small { color: var(--muted); font-size: 11px; }
+.ct-model em { font-style: normal; color: var(--amber); font-size: 12px; letter-spacing: -1px; }
+.ct-empty { margin: 0; color: var(--muted); font-size: 12px; }
+.ct-res h2 { font-size: 20px; }
+.ct-revs { display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.ct-revs div { padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.06); font-size: 12.5px; }
+.ct-revs b { display: block; color: var(--amber); font-size: 11px; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1412,6 +1453,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">Капитал</span><span class="stat-val" id="hubBiz">$0</span></span>
       </button>
+      <button class="cart" data-go="comp" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1c1d3a"/><rect x="10" y="12" width="44" height="28" rx="3" fill="#c9ccd6"/><rect x="13" y="15" width="38" height="22" rx="1" fill="#3a6ad8"/><path d="M13 37 L51 15 L51 37Z" fill="#d84aa8" opacity=".7"/><circle cx="32" cy="13.5" r="1" fill="#12132a"/><path d="M6 44 L58 44 L54 40 L10 40Z" fill="#c9ccd6"/><g fill="#ff5ad1"><rect x="14" y="41" width="3" height="2"/><rect x="19" y="41" width="3" height="2" fill="#ffd84d"/><rect x="24" y="41" width="3" height="2" fill="#5ce1e6"/><rect x="29" y="41" width="3" height="2" fill="#9be15d"/><rect x="34" y="41" width="3" height="2"/><rect x="39" y="41" width="3" height="2" fill="#ffd84d"/><rect x="44" y="41" width="3" height="2" fill="#5ce1e6"/></g><rect x="22" y="48" width="20" height="12" rx="2" fill="#2fa84a"/><g fill="#ffd84d"><rect x="20" y="50" width="2" height="2"/><rect x="20" y="55" width="2" height="2"/><rect x="42" y="50" width="2" height="2"/><rect x="42" y="55" width="2" height="2"/></g><text x="32" y="56.5" text-anchor="middle" font-size="6" font-weight="900" fill="#fff" font-family="sans-serif">V3</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Computer Tycoon</span>
+          <span class="cart-desc">Деньги бесконечные: собирай компьютеры — чипы, экраны, камеры, динамики, функции — и выпускай их на рынок.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Лучшая</span><span class="stat-val" id="hubComp">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1867,6 +1918,48 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <p id="beWinT"></p>
         <button type="button" class="btn" id="beWinNew">Новая империя</button>
         <button type="button" class="btn ghost" id="beWinKeep">Продолжить играть</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="comp" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Computer Tycoon</div>
+      <div class="chips"><div class="chip hi"><span>Деньги</span><b>∞</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Собираем компьютер!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="ct-stage"><canvas id="ctCanvas" width="360" height="224" aria-label="Твой компьютер"></canvas></div>
+    <label class="ct-name"><span>Название модели</span><input id="ctName" type="text" maxlength="24" autocomplete="off"></label>
+    <div class="ct-cats" id="ctCats" aria-label="Детали"></div>
+    <div class="ct-opts" id="ctOpts"></div>
+    <div class="ct-panel">
+      <div class="ct-top"><div><small>Оценка</small><b id="ctScore">0</b><span>/100</span></div><div><small>Себестоимость</small><b id="ctCost" class="ct-cost">$0</b></div></div>
+      <div id="ctStats"></div>
+      <p class="ct-warn" id="ctWarn" aria-live="polite"></p>
+      <label class="ct-price"><span>Цена в магазине: <b id="ctPriceT">$0</b></span><input id="ctPrice" type="range" min="0" max="1000" step="10"></label>
+      <div class="ct-acts">
+        <button class="btn ghost" type="button" id="ctRandom">🎲 Случайно</button>
+        <button class="btn ghost" type="button" id="ctTest">🧪 Тест</button>
+        <button class="btn" type="button" id="ctRelease">🚀 Выпустить</button>
+      </div>
+    </div>
+    <div class="ct-panel">
+      <div class="ct-top"><div><small>Мои модели</small></div><div><small>Заработано всего</small><b id="ctEarned" class="ct-cost">$0</b></div></div>
+      <div id="ctModels"></div>
+    </div>
+    <p class="hint">Деньги бесконечные — выбирай любые детали. Оценка зависит от типа: игровому ПК важна видеокарта, ноутбуку и планшету — батарея и камера. Смотри, чтобы детали подходили друг другу, и ставь честную цену — тогда купят больше.</p>
+    <div class="be-win" id="ctRes" hidden role="dialog" aria-modal="true" aria-labelledby="ctResH">
+      <div class="be-win-card ct-res">
+        <div class="be-win-ico">🛒</div>
+        <h2 id="ctResH"></h2>
+        <p id="ctResS"></p>
+        <div class="ct-revs" id="ctResR"></div>
+        <button type="button" class="btn" id="ctResOk">Супер!</button>
       </div>
     </div>
   </section>
@@ -5681,7 +5774,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -5956,7 +6049,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -8208,6 +8301,296 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Computer Tycoon: design computers with infinite money ================= */
+  const Comp = (() => {
+    const cv = $("#ctCanvas"), ctx = cv.getContext("2d");
+    // each option: [name, cost $, points 0-10, short note, extra]
+    const TYPES = [["Ноутбук", "💻", "laptop"], ["Игровой ПК", "🖥️", "desktop"], ["Моноблок", "🖼️", "mono"], ["Планшет", "📱", "tablet"]];
+    const CAT = {
+      body: { t: "Корпус", i: "🎨", o: [["Пластик белый", 20, 2, "лёгкий и дешёвый", "#f2f2f5"], ["Алюминий серебро", 90, 5, "классика", "#c9ccd6"], ["Космос-серый", 110, 6, "строгий", "#5a5d6a"], ["Небесно-синий", 120, 6, "яркий", "#3a7ad8"], ["Розовое золото", 150, 7, "стильный", "#e8b4a8"], ["Карбон", 260, 8, "прочный и лёгкий", "#22232a"], ["Прозрачный RGB", 220, 8, "видно всё внутри", "rgba(160,220,255,.45)"], ["Титан", 400, 9, "премиум", "#8a8f9a"], ["Чистое золото", 5000, 10, "для королей", "#e8b82a"]] },
+      chip: { t: "Процессор", i: "🧠", o: [["Кварк 4", 60, 2, "4 ядра"], ["Кварк 8", 160, 4, "8 ядер"], ["Нейрон X", 320, 6, "12 ядер"], ["Нейрон X Pro", 600, 8, "16 ядер + ИИ-блок"], ["Квант Q1", 2500, 10, "квантовый ускоритель"]] },
+      gpu: { t: "Видеокарта", i: "🎮", o: [["Встроенная", 0, 1, "для учёбы"], ["Пиксель 3050", 220, 4, "игры на средних"], ["Пиксель 4070", 550, 7, "игры на ультра"], ["Пиксель 5090 Ultra", 1600, 10, "трассировка лучей, 8K"]] },
+      ram: { t: "Память", i: "🧩", o: [["8 ГБ", 40, 2, ""], ["16 ГБ", 80, 4, ""], ["32 ГБ", 160, 6, ""], ["64 ГБ", 320, 8, ""], ["128 ГБ", 700, 10, "для монтажа 8K"]] },
+      ssd: { t: "Накопитель", i: "💾", o: [["256 ГБ", 30, 2, "SSD"], ["512 ГБ", 60, 4, "SSD"], ["1 ТБ", 110, 6, "SSD"], ["4 ТБ", 350, 8, "SSD"], ["8 ТБ", 800, 10, "сверхбыстрый SSD"]] },
+      screen: { t: "Экран", i: "🖥️", o: [["HD", 40, 1, "60 Гц"], ["Full HD", 90, 3, "60 Гц"], ["2K", 180, 6, "120 Гц"], ["4K OLED", 420, 8, "яркий и чёткий"], ["8K Mini-LED", 1200, 10, "240 Гц, HDR"]] },
+      cam: { t: "Камера", i: "📷", o: [["Без камеры", 0, 0, ""], ["720p", 15, 2, "для звонков"], ["1080p", 40, 5, "чёткое видео"], ["4K с автофокусом", 120, 8, "для блогеров"], ["8K + ИИ-слежение", 400, 10, "следит за лицом"]] },
+      spk: { t: "Динамики", i: "🔊", o: [["Один динамик", 5, 1, "моно", 1], ["Стерео", 25, 4, "2 динамика", 2], ["4 динамика", 70, 6, "громко", 4], ["Hi-Fi + сабвуфер", 180, 8, "мощный бас", 6], ["3D пространственный", 400, 10, "звук со всех сторон", 8]] },
+      bat: { t: "Батарея", i: "🔋", o: [["3 часа", 20, 1, ""], ["8 часов", 60, 4, ""], ["14 часов", 120, 6, ""], ["24 часа", 260, 8, ""], ["48 ч + солнечная панель", 700, 10, "заряжается от солнца"]] },
+    };
+    const FEATS = [
+      ["Wi-Fi 7", "📶", 30], ["Сканер отпечатка", "👆", 25], ["Распознавание лица", "🙂", 60], ["RGB-клавиатура", "🌈", 40], ["Сенсорный экран", "👉", 80],
+      ["Стилус", "✏️", 50], ["Водозащита", "💧", 70], ["ИИ-помощник", "🤖", 120], ["Жидкостное охлаждение", "❄️", 150], ["Беспроводная зарядка", "⚡", 45],
+      ["5G-модем", "📡", 90], ["Встроенный проектор", "📽️", 220], ["Голограмма", "✨", 600], ["Сгибаемый экран", "📐", 500],
+    ];
+    const ORDER = ["type", "body", "chip", "gpu", "ram", "ssd", "screen", "cam", "spk", "bat", "feat"];
+    // weights per device type
+    const WT = {
+      laptop: { perf: .2, gpu: .1, screen: .15, cam: .1, spk: .1, bat: .15, style: .1, feat: .1 },
+      desktop: { perf: .25, gpu: .3, screen: .15, cam: .03, spk: .07, bat: 0, style: .1, feat: .1 },
+      mono: { perf: .2, gpu: .1, screen: .2, cam: .1, spk: .15, bat: 0, style: .15, feat: .1 },
+      tablet: { perf: .15, gpu: .05, screen: .2, cam: .15, spk: .1, bat: .15, style: .1, feat: .1 },
+    };
+    const STAT = [["perf", "Мощность", "#5ce1e6"], ["gpu", "Графика", "#ff5ad1"], ["screen", "Экран", "#ffd84d"], ["cam", "Камера", "#ff8a3d"], ["spk", "Звук", "#9be15d"], ["bat", "Батарея", "#2fa84a"], ["style", "Стиль", "#e8b4a8"], ["feat", "Фишки", "#7b5cff"]];
+
+    let pc = store.get("ctPC", null);
+    if (!pc || typeof pc !== "object") pc = { type: 0, body: 1, chip: 1, gpu: 0, ram: 1, ssd: 1, screen: 1, cam: 1, spk: 1, bat: 1, feat: [], name: "V3 Book 1", price: 0 };
+    if (!Array.isArray(pc.feat)) pc.feat = [];
+    let models = store.get("ctModels", []); if (!Array.isArray(models)) models = [];
+    let earned = store.get("ctEarned", 0) || 0;
+    let cat = "type", visible = false, raf = 0, test = 0, testScore = 0, T0 = performance.now();
+    const kind = () => TYPES[pc.type][2];
+    const opt = (k) => CAT[k].o[Math.min(pc[k], CAT[k].o.length - 1)];
+
+    // ---------- scoring ----------
+    function stats() {
+      const p = (k) => opt(k)[2];
+      const perf = Math.round((p("chip") * .55 + p("ram") * .25 + p("ssd") * .2) * 10) / 10;
+      const featPts = Math.min(10, pc.feat.reduce((s, i) => s + (FEATS[i][2] >= 200 ? 2.5 : FEATS[i][2] >= 80 ? 1.8 : 1.2), 0));
+      let st = { perf, gpu: p("gpu"), screen: p("screen"), cam: p("cam"), spk: p("spk"), bat: kind() === "desktop" || kind() === "mono" ? 10 : p("bat"), style: p("body"), feat: Math.round(featPts * 10) / 10 };
+      if (pc.feat.includes(8)) st.perf = Math.min(10, st.perf + .8); // liquid cooling
+      return st;
+    }
+    function cost() {
+      let c = 0; ["body", "chip", "gpu", "ram", "ssd", "screen", "cam", "spk"].forEach((k) => { c += opt(k)[1]; });
+      if (kind() !== "desktop" && kind() !== "mono") c += opt("bat")[1];
+      c += pc.feat.reduce((s, i) => s + FEATS[i][2], 0);
+      c += [120, 160, 200, 80][pc.type]; // assembly
+      return c;
+    }
+    function score() {
+      const st = stats(), w = WT[kind()];
+      let s = 0; Object.keys(w).forEach((k) => { s += w[k] * st[k]; });
+      s *= 10;
+      const notes = [];
+      if (st.gpu >= 7 && st.perf < 4) { s -= 8; notes.push("Мощная видеокарта, но слабый процессор — тормозит"); }
+      if (kind() === "desktop" && st.gpu <= 1) { s -= 10; notes.push("Игровой ПК без видеокарты?!"); }
+      if (kind() === "tablet" && st.gpu >= 7 && !pc.feat.includes(8)) { s -= 5; notes.push("Планшет перегревается от видеокарты"); }
+      if (st.screen >= 8 && st.perf <= 2) { s -= 5; notes.push("Экран 4K, а процессор не тянет"); }
+      if (pc.feat.includes(13) && kind() === "desktop") { s -= 3; notes.push("Сгибаемый экран у ПК — зачем?"); }
+      return { s: Math.max(1, Math.min(100, Math.round(s))), notes, st };
+    }
+    const fair = () => Math.round(cost() * 1.25 + score().s * 14);
+
+    // ---------- preview drawing ----------
+    let W = 360, H = 250, dpr = 1;
+    function fit() { const w = Math.min(440, cv.parentElement.clientWidth || 360); dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .62); cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px"; }
+    function rr(x, y, w, h, r, fill, stroke) { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); } }
+    function screenArt(x, y, w, h, t) {
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+      const sc = opt("screen")[2];
+      const g = ctx.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, "#2a1f6a"); g.addColorStop(.5, sc >= 8 ? "#d84aa8" : "#3a6ad8"); g.addColorStop(1, sc >= 8 ? "#ffb347" : "#5ce1e6"); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+      if (test > 0) {
+        for (let i = 0; i < 6; i++) { const a = t * (2 + opt("gpu")[2] * .4) + i; ctx.fillStyle = ["#fff", "#ffd84d", "#5ce1e6", "#ff5ad1", "#9be15d", "#ff8a3d"][i]; ctx.save(); ctx.translate(x + w / 2 + Math.cos(a) * w * .25, y + h / 2 + Math.sin(a * 1.3) * h * .25); ctx.rotate(a * 2); ctx.fillRect(-w * .05, -w * .05, w * .1, w * .1); ctx.restore(); }
+        ctx.fillStyle = "#fff"; ctx.font = `800 ${Math.max(9, w * .06)}px Manrope, sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "top";
+        ctx.fillText(`FPS: ${Math.round(20 + score().st.gpu * 22 + score().st.perf * 6 + Math.sin(t * 9) * 3)}`, x + 6, y + 5);
+      } else {
+        ctx.fillStyle = "rgba(255,255,255,.95)"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = `900 ${Math.max(10, w * .085)}px Manrope, sans-serif`; ctx.fillText(pc.name || "V3", x + w / 2, y + h * .42);
+        ctx.font = `700 ${Math.max(8, w * .05)}px Manrope, sans-serif`; ctx.fillText(`${opt("chip")[0]} · ${opt("screen")[0]}`, x + w / 2, y + h * .62);
+      }
+      ctx.restore();
+      if (pc.feat.includes(12)) {
+        // hologram: a glowing wireframe cube floating over the screen
+        const cx = x + w * .8, cy = y + h * .3, r = w * .1, a = t * 1.5;
+        const P = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]].map(([px, py, pz]) => { const X = px * Math.cos(a) - pz * Math.sin(a), Z = px * Math.sin(a) + pz * Math.cos(a), Y = py * Math.cos(a * .7) - Z * Math.sin(a * .7); return [cx + X * r, cy + Y * r]; });
+        ctx.save(); ctx.shadowColor = "#5cfff0"; ctx.shadowBlur = 10; ctx.strokeStyle = `rgba(120,255,240,${.75 + .2 * Math.sin(t * 5)})`; ctx.lineWidth = 1.6;
+        [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([i, j]) => { ctx.beginPath(); ctx.moveTo(P[i][0], P[i][1]); ctx.lineTo(P[j][0], P[j][1]); ctx.stroke(); });
+        ctx.restore();
+        ctx.fillStyle = "rgba(120,255,240,.12)"; ctx.beginPath(); ctx.moveTo(cx - r * .4, y + h); ctx.lineTo(cx + r * .4, y + h); ctx.lineTo(cx + r * 1.4, cy); ctx.lineTo(cx - r * 1.4, cy); ctx.fill();
+      }
+      ctx.fillStyle = "rgba(255,255,255,.08)"; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + w * .35, y); ctx.lineTo(x, y + h * .6); ctx.fill();
+    }
+    function camera(x, y) {
+      const c = pc.cam; if (!c) return;
+      const r = 1.6 + c * 1.1;
+      ctx.fillStyle = "#0a0a12"; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+      ctx.fillStyle = c >= 3 ? "#3a6ad8" : "#2a2a3a"; ctx.beginPath(); ctx.arc(x, y, r * .5, 0, 7); ctx.fill();
+      if (c >= 4) { ctx.fillStyle = "#2fa84a"; ctx.beginPath(); ctx.arc(x + r + 3, y, 1.4, 0, 7); ctx.fill(); }
+    }
+    function grills(x, y, w, h, n) { ctx.fillStyle = "rgba(0,0,0,.45)"; const cols = Math.max(2, Math.round(w / 4)), rows = Math.max(1, Math.round(h / 4)); for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) { ctx.beginPath(); ctx.arc(x + 2 + c * (w - 4) / Math.max(1, cols - 1), y + 2 + r * (h - 4) / Math.max(1, rows - 1), .9, 0, 7); ctx.fill(); } }
+    function rgbCol(t, i) { return `hsl(${(t * 80 + i * 25) % 360},90%,60%)`; }
+    function draw(t) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#1c1d3a"); bg.addColorStop(1, "#12132a"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(255,255,255,.04)"; ctx.beginPath(); ctx.ellipse(W / 2, H * .9, W * .42, H * .06, 0, 0, 7); ctx.fill();
+      const col = opt("body")[4], spk = opt("spk")[4], k = kind(), rgb = pc.feat.includes(3) || pc.body === 6;
+      const shine = (x, y, w, h, r) => { ctx.save(); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r || 0) : ctx.rect(x, y, w, h); ctx.clip(); const g = ctx.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, "rgba(255,255,255,.25)"); g.addColorStop(.5, "rgba(255,255,255,0)"); ctx.fillStyle = g; ctx.fillRect(x, y, w, h); ctx.restore(); };
+      if (k === "laptop") {
+        const sw = W * .56, sh = sw * .62, sx = W / 2 - sw / 2, sy = H * .08;
+        rr(sx, sy, sw, sh, 8, col); rr(sx + 6, sy + 10, sw - 12, sh - 16, 3, "#0a0a12"); screenArt(sx + 8, sy + 12, sw - 16, sh - 20, t); camera(W / 2, sy + 5);
+        // deck
+        ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(sx, sy + sh); ctx.lineTo(sx + sw, sy + sh); ctx.lineTo(sx + sw + W * .08, H * .86); ctx.lineTo(sx - W * .08, H * .86); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(sx - W * .08, H * .86, sw + W * .16, 4);
+        const kx = sx + sw * .14, ky = sy + sh + 6, kw = sw * .72, kh = H * .86 - ky - 18;
+        for (let r = 0; r < 4; r++) for (let c = 0; c < 12; c++) { const off = (r / 4) * W * .02; ctx.fillStyle = rgb ? rgbCol(t, r * 12 + c) : "rgba(20,20,30,.75)"; ctx.fillRect(kx - off + c * (kw + off * 2) / 12 + 1, ky + r * kh / 4 + 1, (kw + off * 2) / 12 - 2, kh / 4 - 2); }
+        rr(W / 2 - sw * .14, H * .86 - 14, sw * .28, 10, 3, "rgba(0,0,0,.15)");
+        if (spk > 1) { grills(sx - W * .03, ky, sw * .1, kh, spk); grills(sx + sw * .93, ky, sw * .1, kh, spk); } else grills(sx + sw * .9, ky + kh * .6, sw * .08, kh * .3, 1);
+        if (pc.feat.includes(1)) rr(sx + sw * .82, H * .86 - 14, 10, 10, 2, "#1a1a22");
+        shine(sx, sy, sw, sh, 8);
+      } else if (k === "desktop") {
+        const mw = W * .5, mh = mw * .58, mx = W * .08, my = H * .1;
+        rr(mx + mw / 2 - 8, my + mh, 16, H * .18, 2, "#4a4c5a"); rr(mx + mw / 2 - 40, H * .84, 80, 7, 3, "#4a4c5a");
+        rr(mx, my, mw, mh, 6, "#1a1a22"); screenArt(mx + 5, my + 5, mw - 10, mh - 10, t); camera(mx + mw / 2, my + 2.5);
+        // tower
+        const tx = W * .66, ty = H * .12, tw = W * .26, th = H * .74;
+        rr(tx, ty, tw, th, 8, col, "rgba(255,255,255,.2)");
+        rr(tx + tw * .12, ty + th * .08, tw * .76, th * .8, 5, "rgba(10,14,30,.75)");
+        const fans = pc.feat.includes(8) ? 3 : 2;
+        for (let i = 0; i < fans; i++) { const fx = tx + tw / 2, fy = ty + th * (.25 + i * .25); ctx.strokeStyle = rgb ? rgbCol(t, i * 4) : "#6a6c7a"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(fx, fy, tw * .22, 0, 7); ctx.stroke(); for (let b = 0; b < 5; b++) { const a = t * 8 + b * 1.26; ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx + Math.cos(a) * tw * .18, fy + Math.sin(a) * tw * .18); ctx.stroke(); } }
+        if (pc.feat.includes(8)) { ctx.strokeStyle = "#5ce1e6"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(tx + tw * .2, ty + th * .2); ctx.quadraticCurveTo(tx + tw * .1, ty + th * .5, tx + tw * .3, ty + th * .8); ctx.stroke(); }
+        if (opt("gpu")[2] >= 4) { rr(tx + tw * .16, ty + th * .66, tw * .68, th * .08, 2, "#2a2a36"); ctx.fillStyle = rgb ? rgbCol(t, 9) : "#9be15d"; ctx.fillRect(tx + tw * .18, ty + th * .69, tw * .3, 2); }
+        if (spk >= 4) { [mx - W * .06, mx + mw + W * .015].forEach((x) => { rr(x, my + mh * .35, W * .05, mh * .65, 3, "#2a2a36"); ctx.fillStyle = "#12121a"; ctx.beginPath(); ctx.arc(x + W * .025, my + mh * .75, W * .016, 0, 7); ctx.fill(); }); }
+        // keyboard
+        rr(mx + mw * .1, H * .88, mw * .8, H * .06, 3, "#2a2a36"); if (rgb) for (let i = 0; i < 16; i++) { ctx.fillStyle = rgbCol(t, i); ctx.fillRect(mx + mw * .12 + i * mw * .76 / 16, H * .895, mw * .76 / 16 - 2, H * .04); }
+      } else if (k === "mono") {
+        const mw = W * .66, mh = mw * .6, mx = W / 2 - mw / 2, my = H * .06;
+        ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(W / 2 - 22, my + mh + mh * .14); ctx.lineTo(W / 2 + 22, my + mh + mh * .14); ctx.lineTo(W / 2 + 34, H * .86); ctx.lineTo(W / 2 - 34, H * .86); ctx.fill();
+        rr(W / 2 - 50, H * .86, 100, 6, 3, col);
+        rr(mx, my, mw, mh + mh * .16, 10, col); rr(mx + 6, my + 6, mw - 12, mh - 8, 3, "#0a0a12"); screenArt(mx + 8, my + 8, mw - 16, mh - 12, t);
+        camera(W / 2, my + 3); grills(mx + mw * .2, my + mh + 2, mw * .6, mh * .1, spk);
+        shine(mx, my, mw, mh + mh * .16, 10);
+      } else {
+        const tw = W * .62, th = tw * .66, tx = W / 2 - tw / 2, ty = H * .1;
+        ctx.save(); ctx.translate(W / 2, ty + th / 2); ctx.rotate(-.04); ctx.translate(-W / 2, -(ty + th / 2));
+        rr(tx, ty, tw, th, 16, col); rr(tx + 9, ty + 9, tw - 18, th - 18, 6, "#0a0a12"); screenArt(tx + 10, ty + 10, tw - 20, th - 20, t);
+        camera(tx + tw / 2, ty + 4.5);
+        if (spk > 1) { grills(tx + 2, ty + th * .3, 6, th * .4, spk); grills(tx + tw - 8, ty + th * .3, 6, th * .4, spk); }
+        shine(tx, ty, tw, th, 16);
+        ctx.restore();
+        if (pc.feat.includes(5)) { ctx.save(); ctx.translate(tx + tw + 14, ty + th * .2); ctx.rotate(.5); rr(-3, 0, 6, th * .8, 3, "#f4f4f8"); ctx.fillStyle = "#9aa"; ctx.fillRect(-1, th * .8, 2, 6); ctx.restore(); }
+      }
+      if (pc.feat.includes(11)) { ctx.fillStyle = "rgba(255,255,220,.12)"; ctx.beginPath(); ctx.moveTo(W * .5, H * .78); ctx.lineTo(W * .98, H * .02); ctx.lineTo(W * .98, H * .4); ctx.fill(); }
+      // label
+      ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = `800 ${Math.round(W / 34)}px Manrope, sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText(`${TYPES[pc.type][1]} ${TYPES[pc.type][0]}`, 8, 6);
+      if (test > 0) { ctx.textAlign = "right"; ctx.fillStyle = "#ffd84d"; ctx.fillText("ТЕСТ…", W - 8, 6); }
+    }
+    function frame(now) {
+      raf = 0; if (!visible) return;
+      const t = (now - T0) / 1000;
+      if (test > 0) { test = Math.max(0, test - 1 / 60); if (test === 0) endTest(); }
+      draw(t); raf = requestAnimationFrame(frame);
+    }
+
+    // ---------- UI ----------
+    function money(v) { return "$" + Math.round(v).toLocaleString("ru-RU"); }
+    function renderCats() {
+      const box = $("#ctCats"); box.innerHTML = "";
+      ORDER.forEach((k) => {
+        if (k === "bat" && (kind() === "desktop" || kind() === "mono")) return;
+        const b = document.createElement("button"); b.type = "button"; b.dataset.cat = k;
+        b.textContent = k === "type" ? "🧰 Тип" : k === "feat" ? `✨ Функции${pc.feat.length ? " " + pc.feat.length : ""}` : `${CAT[k].i} ${CAT[k].t}`;
+        b.setAttribute("aria-pressed", String(k === cat)); box.appendChild(b);
+      });
+    }
+    function renderOpts() {
+      const box = $("#ctOpts"); box.innerHTML = "";
+      const add = (ico, name, note, price, on, fn) => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "ct-opt" + (on ? " on" : "");
+        b.innerHTML = `<i></i><b></b><small></small><em></em>`;
+        b.querySelector("i").textContent = ico; b.querySelector("b").textContent = name; b.querySelector("small").textContent = note; b.querySelector("em").textContent = price;
+        b.setAttribute("aria-pressed", String(on)); b.addEventListener("click", fn); box.appendChild(b);
+      };
+      if (cat === "type") TYPES.forEach((ty, i) => add(ty[1], ty[0], ["носить с собой", "для игр и стримов", "всё в экране", "лёгкий и сенсорный"][i], "", pc.type === i, () => { pc.type = i; if ((kind() === "desktop" || kind() === "mono") && cat === "bat") cat = "type"; changed(); }));
+      else if (cat === "feat") FEATS.forEach((f, i) => add(f[1], f[0], pc.feat.includes(i) ? "установлено ✓" : "нажми, чтобы добавить", money(f[2]), pc.feat.includes(i), () => { const j = pc.feat.indexOf(i); if (j >= 0) pc.feat.splice(j, 1); else pc.feat.push(i); changed(); }));
+      else CAT[cat].o.forEach((o, i) => {
+        const ico = cat === "body" ? "⬤" : "★".repeat(Math.max(1, Math.round(o[2] / 2)));
+        add(ico, o[0], o[3] || " ", money(o[1]), pc[cat] === i, () => { pc[cat] = i; changed(); });
+        if (cat === "body") box.lastChild.querySelector("i").style.color = o[4];
+      });
+    }
+    function renderStats() {
+      const sc = score(), c = cost(), w = WT[kind()];
+      const box = $("#ctStats"); box.innerHTML = "";
+      STAT.forEach(([k, n, col]) => {
+        if (!w[k]) return;
+        const v = sc.st[k];
+        const r = document.createElement("div"); r.className = "ct-stat";
+        r.innerHTML = `<span></span><div><i></i></div><b></b>`;
+        r.querySelector("span").textContent = n; r.querySelector("i").style.width = v * 10 + "%"; r.querySelector("i").style.background = col; r.querySelector("b").textContent = v.toFixed(v % 1 ? 1 : 0);
+        box.appendChild(r);
+      });
+      $("#ctScore").textContent = sc.s; $("#ctScore").style.color = sc.s >= 85 ? "#9be15d" : sc.s >= 60 ? "#ffd84d" : "#ff8a6b";
+      $("#ctCost").textContent = money(c);
+      const pr = $("#ctPrice"), f = fair();
+      pr.min = Math.round(c * .8); pr.max = Math.round(c * 4 + 2000); pr.step = 10;
+      if (!pc.price || pc.price < +pr.min || pc.price > +pr.max) pc.price = f;
+      pr.value = pc.price; $("#ctPriceT").textContent = money(pc.price) + (Math.abs(pc.price - f) / f < .1 ? " · честная цена" : pc.price > f ? " · дороговато" : " · дёшево!");
+      $("#ctWarn").textContent = sc.notes[0] || "";
+    }
+    function changed() { pc.price = fair(); store.set("ctPC", pc); renderCats(); renderOpts(); renderStats(); }
+    function renderModels() {
+      const box = $("#ctModels"); box.innerHTML = "";
+      $("#ctEarned").textContent = money(earned);
+      if (!models.length) { box.innerHTML = "<p class='ct-empty'>Пока нет выпущенных моделей. Собери компьютер и нажми «Выпустить».</p>"; return; }
+      models.slice(0, 12).forEach((m) => {
+        const r = document.createElement("div"); r.className = "ct-model";
+        r.innerHTML = `<i></i><div><b></b><small></small></div><em></em>`;
+        r.querySelector("i").textContent = TYPES[m.type][1]; r.querySelector("b").textContent = m.name;
+        r.querySelector("small").textContent = `${m.units.toLocaleString("ru-RU")} шт · прибыль ${money(m.profit)}`;
+        r.querySelector("em").textContent = "★".repeat(m.stars) + "☆".repeat(5 - m.stars);
+        box.appendChild(r);
+      });
+    }
+
+    // ---------- test & release ----------
+    function runTest() { if (test > 0) return; test = 2.2; $("#ctTest").disabled = true; Hero.say("comp", "good", "Запускаем тест производительности…"); }
+    function endTest() {
+      const st = score().st; testScore = Math.round((st.perf * 900 + st.gpu * 700 + opt("ram")[2] * 150 + opt("ssd")[2] * 120) * (pc.feat.includes(8) ? 1.1 : 1));
+      $("#ctTest").disabled = false;
+      Hero.say("comp", "good", `Тест пройден: ${testScore.toLocaleString("ru-RU")} баллов! ${testScore > 14000 ? "Это монстр!" : testScore > 8000 ? "Очень быстро!" : "Для учёбы хватит."}`);
+      const best = store.get("ctBench", 0); if (testScore > best) store.set("ctBench", testScore);
+    }
+    function release() {
+      const sc = score(), c = cost(), price = pc.price, f = fair();
+      const demand = Math.pow(sc.s / 100, 3) * Math.exp(-Math.max(-.6, price / f - 1) * 2.6);
+      const units = Math.max(12, Math.round(250000 * demand * (.85 + Math.random() * .3)));
+      const profit = units * (price - c);
+      const stars = Math.max(1, Math.min(5, Math.round(sc.s / 20 - (price > f * 1.4 ? 1 : 0))));
+      // reviews: best and worst stats speak
+      const st = sc.st, w = WT[kind()]; const keys = Object.keys(w).filter((k) => w[k] > 0);
+      keys.sort((a, b) => st[b] - st[a]);
+      const NAME = { perf: "мощность", gpu: "графику", screen: "экран", cam: "камеру", spk: "звук", bat: "батарею", style: "дизайн", feat: "фишки" };
+      const revs = [
+        ["🧑‍💻 ТехноБлог", stars >= 4 ? `«${pc.name}» — лучший ${TYPES[pc.type][0].toLowerCase()} года! Особенно хвалим ${NAME[keys[0]]}.` : `Хвалим ${NAME[keys[0]]}, но в целом можно лучше.`],
+        ["🎮 Геймер Макс", st.gpu >= 7 ? "Все игры летают на ультрах! Беру два." : st.gpu >= 4 ? "Игры идут нормально, на средних." : "Для игр не подходит, тормозит…"],
+        ["👀 Обзорщица Аня", st[keys[keys.length - 1]] < 4 ? `Слабое место — ${NAME[keys[keys.length - 1]]}. Улучшите в следующей модели.` : price > f * 1.3 ? "Классный, но слишком дорогой." : price < f * .85 ? "За такую цену — просто подарок!" : "Честная цена за такое качество."],
+      ];
+      if (sc.notes.length) revs[2] = ["⚠️ Мастер Ремонта", sc.notes[0]];
+      const m = { name: pc.name || "Без названия", type: pc.type, score: sc.s, stars, units, profit, price, t: Date.now() };
+      models.unshift(m); models = models.slice(0, 30); store.set("ctModels", models);
+      earned += Math.max(0, profit); store.set("ctEarned", earned);
+      const best = store.get("ctBest", 0); if (sc.s > best) { store.set("ctBest", sc.s); if (sc.s >= 90 && best < 90) { Hero.grant(200); revs.push(["🏆 Премия «Компьютер года»", "+200 монет за легендарную модель!"]); } }
+      if (sc.s >= 60) Hero.grant(10);
+      // show result
+      $("#ctResH").textContent = `${m.name}: ${"★".repeat(stars)}${"☆".repeat(5 - stars)}`;
+      $("#ctResS").textContent = `Продано ${units.toLocaleString("ru-RU")} шт по ${money(price)} · прибыль ${money(profit)}`;
+      const rb = $("#ctResR"); rb.innerHTML = ""; revs.forEach(([who, txt]) => { const d = document.createElement("div"); d.innerHTML = "<b></b><span></span>"; d.querySelector("b").textContent = who; d.querySelector("span").textContent = txt; rb.appendChild(d); });
+      $("#ctRes").hidden = false; $("#ctResOk").focus();
+      Hero.say("comp", stars >= 4 ? "win" : "good", stars >= 4 ? `Хит продаж! ${units.toLocaleString("ru-RU")} штук!` : "Модель вышла. Можно сделать ещё лучше!");
+      // next model name
+      const mm = (pc.name || "").match(/^(.*?)(\d+)$/); pc.name = mm ? mm[1] + (+mm[2] + 1) : (pc.name || "V3") + " 2"; $("#ctName").value = pc.name; store.set("ctPC", pc);
+      renderModels(); updateHub();
+    }
+
+    // wiring
+    $("#ctCats").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; cat = b.dataset.cat; renderCats(); renderOpts(); });
+    $("#ctName").addEventListener("input", (e) => { pc.name = e.target.value.slice(0, 24); store.set("ctPC", pc); });
+    $("#ctPrice").addEventListener("input", (e) => { pc.price = +e.target.value; store.set("ctPC", pc); renderStats(); });
+    $("#ctTest").addEventListener("click", runTest);
+    $("#ctRelease").addEventListener("click", release);
+    $("#ctResOk").addEventListener("click", () => { $("#ctRes").hidden = true; });
+    $("#ctRandom").addEventListener("click", () => { ["body", "chip", "gpu", "ram", "ssd", "screen", "cam", "spk", "bat"].forEach((k) => { pc[k] = Math.floor(Math.random() * CAT[k].o.length); }); pc.feat = FEATS.map((f, i) => i).filter(() => Math.random() < .3); changed(); Hero.say("comp", "good", "Случайная сборка! Посмотрим, что вышло."); });
+    window.addEventListener("resize", () => { if (visible) fit(); });
+
+    return {
+      enter() { visible = true; fit(); $("#ctName").value = pc.name; changed(); renderModels(); Hero.say("comp", "start", "Денег бесконечно! Собери свой компьютер и выпусти его на рынок."); if (!raf) raf = requestAnimationFrame(frame); },
+      leave() { visible = false; test = 0; $("#ctTest").disabled = false; },
+      key() {},
+      best: () => { const b = store.get("ctBest", 0); return b ? `${b}/100` : "—"; },
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -8798,7 +9181,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -9047,6 +9430,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { go: "yerevan", ico: "🏔️", t: "JUST YEREVAN", s: "Поднимись по Каскаду к Арарату, послушай поющие фонтаны и испеки лаваш!", bg: "linear-gradient(135deg,#e2a184,#7a4aa0)", fx: ["🏔️", "🎵", "🫓", "⛲"] },
       { go: "moscow", ico: "🏰", t: "JUST MOSCOW", s: "Куранты, салют над Кремлём, метро с люстрами и каток в Парке Горького!", bg: "linear-gradient(135deg,#c43c3c,#1d2a6a)", fx: ["⭐", "🔔", "⛸️", "🪆"] },
       { go: "biz", ico: "💰", t: "BUSINESS EMPIRE", s: "От лимонадной лавки до космической компании. Стань триллионером!", bg: "linear-gradient(135deg,#1d6a3a,#d9a520)", fx: ["💵", "🏦", "🚀", "📈"] },
+      { go: "comp", ico: "💻", t: "COMPUTER TYCOON", s: "Бесконечные деньги: собери ноутбук мечты с 8K-экраном и голограммой!", bg: "linear-gradient(135deg,#3a6ad8,#d84aa8)", fx: ["💻", "🖥️", "📷", "🔊"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
       { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
       { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
@@ -9086,7 +9470,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -9112,7 +9496,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -11930,8 +12314,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -11956,6 +12340,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubYerevan").textContent = Yerevan.best();
     $("#hubMoscow").textContent = Moscow.best();
     $("#hubBiz").textContent = Biz.best();
+    $("#hubComp").textContent = Comp.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -11973,7 +12358,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "talk") Talk.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -12642,6 +13027,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (document.hidden && current === "yerevan") Yerevan.leave();
     if (document.hidden && current === "moscow") Moscow.leave();
     if (document.hidden && current === "biz") Biz.leave();
+    if (document.hidden && current === "comp") Comp.leave();
     if (!document.hidden && current === "biz") Biz.enter();
     if (!document.hidden && current === "vr") VR.enter();
   });
