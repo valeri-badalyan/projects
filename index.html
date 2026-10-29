@@ -657,6 +657,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .cs-shop b { display: block; font-size: 13px; }
 .cs-shop small { display: block; font-size: 11px; color: var(--muted); }
 .cs-shop em { font-style: normal; font-weight: 900; color: #ffd84d; font-size: 15px; }
+.cs-shop button.own { border-color: rgba(155,225,93,.5); opacity: 1; }
+.cs-shop button.own em { color: #9be15d; font-size: 13px; }
+.cs-home { width: 100%; }
+.cs-flat { display: flex; flex-direction: column; gap: 6px; }
+.cs-flat[hidden], .cs-shop[hidden] { display: none; }
+.cs-flat-h { font-size: 14px; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -2009,12 +2015,17 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div><small>Работники</small><b id="csWork">0</b></div>
       <div><small>Ларьки</small><b id="csStalls">1</b></div>
     </div>
-    <div class="cs-shop">
+    <button type="button" class="btn ghost cs-home" id="csHome">🏠 Зайти в квартиру</button>
+    <div class="cs-shop" id="csShopStreet">
       <button type="button" id="csBuyStock"><i>📦</i><span><b>Запас продуктов на месяц</b><small>+30 дней торговли</small></span><em>8 р.</em></button>
       <button type="button" id="csBuyEquip"><i>🧑‍🍳</i><span><b>Выкупить оборудование</b><small id="csBuyEquipT">Самовар + работник</small></span><em>20 р.</em></button>
       <button type="button" id="csBuyStall"><i>🏪</i><span><b>Купить ещё ларёк</b><small id="csBuyStallT">Ещё ларёк (x2 денег)</small></span><em>100 р.</em></button>
     </div>
-    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. Каждый покупатель платит 23 р. 67 коп. (с каждым новым ларьком — вдвое больше). <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
+    <div class="cs-flat" id="csShopFlat" hidden>
+      <b class="cs-flat-h">🛋️ Обустроить квартиру</b>
+      <div class="cs-shop" id="csFurn"></div>
+    </div>
+    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★, нажми на него или на «Зайти в квартиру»). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. Каждый покупатель платит 23 р. 67 коп. (с каждым новым ларьком — вдвое больше). <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -8658,6 +8669,18 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     let S = store.get("cashSim", null); if (!S || typeof S.money !== "number") S = fresh();
     let W = 360, H = 270, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
     let queue = [], walkers = [], coins = [], spawnT = 0, workT = 0, cab = null, saveT = 0, closedSaid = false;
+    // the flat on the 3rd floor
+    let scene = "street", fx = "", fxT = 0, spots = [], catX = .6, catV = 0;
+    if (!Array.isArray(S.flat)) S.flat = [];
+    // [id, name, icon, price in kopecks, what it does]
+    const FURN = [
+      ["fikus", "Фикус в кадке", "🪴", 500, "уют"], ["pic", "Картина маслом", "🖼️", 1500, "красиво"], ["carpet", "Персидский ковёр", "🧶", 2500, "тепло ногам"],
+      ["cat", "Кот Барсик", "🐈", 300, "мурлычет"], ["cuckoo", "Часы с кукушкой", "🕰️", 4000, "ку-ку!"], ["books", "Книжный шкаф", "📚", 6000, "Пушкин и Толстой"],
+      ["gramo", "Граммофон", "🎶", 3000, "играет вальс"], ["piano", "Пианино", "🎹", 20000, "играй музыку"], ["lustre", "Хрустальная люстра", "💡", 15000, "сияет"],
+      ["gold", "Золотой самовар", "🫖", 50000, "для гостей"],
+    ];
+    const has = (id) => S.flat.includes(id);
+    function myWindow() { const hx = W * .04, hw = W * .62, top = H * .06, base = H * .66, fh = (base - top) / 5.4, y = base - 3 * fh; return { x: hx + 10 * U + 4 * (hw - 20 * U) / 6, y: y + fh * .22, w: (hw - 20 * U) / 6 - 10 * U, h: fh * .6 }; }
 
     // ---------- money ----------
     function rub(k) { k = Math.round(k); const r = Math.floor(k / 100), c = k % 100; return r ? (c ? `${r.toLocaleString("ru-RU")} р. ${c} коп.` : `${r.toLocaleString("ru-RU")} р.`) : `${c} коп.`; }
@@ -8787,7 +8810,122 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       ctx.fillStyle = "#1a1a22"; ctx.fillRect(x + 32 * s, y - 30 * s, 34 * s, 20 * s); ctx.fillRect(x + 36 * s, y - 40 * s, 22 * s, 10 * s);
       ctx.strokeStyle = "#3a2a1a"; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.arc(x + 40 * s, y - 6 * s, 6 * s, 0, 7); ctx.arc(x + 60 * s, y - 6 * s, 6 * s, 0, 7); ctx.stroke();
     }
+    function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); ctx.fill(); }
+    function emo(e, x, y, sz) { ctx.font = `${Math.round(sz * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000"; ctx.fillText(e, x, y); }
+    function drawFlat(t, dt) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const fy = H * .7, sp = {};
+      // wallpaper with stripes and little flowers
+      ctx.fillStyle = "#d8c49a"; ctx.fillRect(0, 0, W, fy);
+      for (let i = 0; i < 24; i++) { ctx.fillStyle = i % 2 ? "rgba(150,110,60,.12)" : "rgba(255,255,255,.08)"; ctx.fillRect(i * W / 24, 0, W / 48, fy); }
+      ctx.fillStyle = "rgba(140,60,50,.35)"; for (let r = 0; r < 6; r++) for (let c = 0; c < 12; c++) { ctx.beginPath(); ctx.arc(c * W / 12 + (r % 2) * W / 24 + 6 * U, r * fy / 6 + 10 * U, 1.8 * U, 0, 7); ctx.fill(); }
+      // wainscot + floor boards
+      ctx.fillStyle = "#8a5a34"; ctx.fillRect(0, fy - 22 * U, W, 22 * U); ctx.fillStyle = "#6a4424"; ctx.fillRect(0, fy - 22 * U, W, 3 * U);
+      ctx.fillStyle = "#a0703f"; ctx.fillRect(0, fy, W, H - fy);
+      ctx.strokeStyle = "rgba(60,30,10,.35)"; ctx.lineWidth = 1; for (let i = 0; i < 9; i++) { const y = fy + (H - fy) * (i * i) / 64; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      if (has("carpet")) { ctx.fillStyle = "#8a1f2a"; ctx.beginPath(); ctx.ellipse(W * .5, H * .86, W * .26, H * .08, 0, 0, 7); ctx.fill(); ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(W * .5, H * .86, W * .22, H * .06, 0, 0, 7); ctx.stroke(); }
+      // window to the street
+      const wx = W * .66, wy = H * .08, ww = W * .26, wh = H * .38;
+      const night = isNight(); const sky = ctx.createLinearGradient(0, wy, 0, wy + wh); sky.addColorStop(0, night ? "#0e1430" : "#a8c8e0"); sky.addColorStop(1, night ? "#2a2a4a" : "#ece0c8");
+      ctx.fillStyle = sky; ctx.fillRect(wx, wy, ww, wh);
+      ctx.fillStyle = night ? "#3a3048" : "#a88a6a"; ctx.fillRect(wx, wy + wh * .45, ww, wh * .55);
+      for (let i = 0; i < 4; i++) { ctx.fillStyle = night && i % 2 ? "#ffd27a" : "#5a6a7a"; ctx.fillRect(wx + 6 * U + i * ww / 4, wy + wh * .55, ww / 8, wh * .14); }
+      // your stall far below
+      for (let i = 0; i < 6; i++) { ctx.fillStyle = i % 2 ? "#f4ecd8" : "#b8322e"; ctx.fillRect(wx + ww * .3 + i * ww * .07, wy + wh * .86, ww * .07, wh * .06); }
+      ctx.fillStyle = "#8a5a34"; ctx.fillRect(wx + ww * .32, wy + wh * .92, ww * .38, wh * .08);
+      ctx.strokeStyle = "#f4ecd8"; ctx.lineWidth = 5 * U; ctx.strokeRect(wx, wy, ww, wh); ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.moveTo(wx + ww / 2, wy); ctx.lineTo(wx + ww / 2, wy + wh); ctx.moveTo(wx, wy + wh * .4); ctx.lineTo(wx + ww, wy + wh * .4); ctx.stroke();
+      ctx.fillStyle = "#b8322e"; ctx.fillRect(wx - 10 * U, wy - 6 * U, 12 * U, wh + 14 * U); ctx.fillRect(wx + ww - 2 * U, wy - 6 * U, 12 * U, wh + 14 * U); ctx.fillStyle = "#6a4424"; ctx.fillRect(wx - 14 * U, wy - 8 * U, ww + 28 * U, 4 * U);
+      ctx.fillStyle = "#e8dcc0"; ctx.fillRect(wx - 6 * U, wy + wh, ww + 12 * U, 5 * U);
+      sp.window = { x: wx, y: wy, w: ww, h: wh };
+      // tiled stove in the corner
+      const sx = W * .02, sw = W * .17, sy = H * .1;
+      ctx.fillStyle = "#f4f0e6"; ctx.fillRect(sx, sy, sw, fy - sy);
+      ctx.strokeStyle = "rgba(60,90,160,.6)"; ctx.lineWidth = 1;
+      for (let r = 0; r < 10; r++) for (let c = 0; c < 3; c++) { const tx = sx + c * sw / 3, ty = sy + r * (fy - sy) / 10; ctx.strokeRect(tx, ty, sw / 3, (fy - sy) / 10); ctx.beginPath(); ctx.arc(tx + sw / 6, ty + (fy - sy) / 20, 2 * U, 0, 7); ctx.stroke(); }
+      const fire = .7 + .3 * Math.sin(t * 9) * Math.sin(t * 5);
+      ctx.fillStyle = "#2a1a10"; ctx.fillRect(sx + sw * .25, fy - 44 * U, sw * .5, 24 * U);
+      ctx.fillStyle = `rgba(255,${120 + fire * 60 | 0},40,${fire})`; ctx.beginPath(); ctx.moveTo(sx + sw * .3, fy - 21 * U); ctx.quadraticCurveTo(sx + sw * .5, fy - (40 + fire * 6) * U, sx + sw * .7, fy - 21 * U); ctx.fill();
+      sp.stove = { x: sx, y: sy, w: sw, h: fy - sy };
+      // pictures & clock on the wall
+      if (has("pic")) { ctx.fillStyle = "#b8963a"; ctx.fillRect(W * .25, H * .1, W * .14, H * .14); ctx.fillStyle = "#4a7a5a"; ctx.fillRect(W * .26, H * .115, W * .12, H * .11); ctx.fillStyle = "#e8d8a0"; ctx.beginPath(); ctx.arc(W * .3, H * .15, 4 * U, 0, 7); ctx.fill(); ctx.fillStyle = "#2a5a3a"; ctx.beginPath(); ctx.moveTo(W * .26, H * .225); ctx.lineTo(W * .33, H * .16); ctx.lineTo(W * .38, H * .225); ctx.fill(); sp.pic = { x: W * .25, y: H * .1, w: W * .14, h: H * .14 }; }
+      const ccx = W * .48, ccy = H * .17;
+      if (has("cuckoo")) { ctx.fillStyle = "#6a4424"; ctx.beginPath(); ctx.moveTo(ccx - 14 * U, ccy - 6 * U); ctx.lineTo(ccx, ccy - 20 * U); ctx.lineTo(ccx + 14 * U, ccy - 6 * U); ctx.fill(); ctx.fillRect(ccx - 12 * U, ccy - 6 * U, 24 * U, 26 * U); if (fx === "cuckoo" && fxT > 0) emo("🐦", ccx, ccy - 10 * U, 12); }
+      ctx.fillStyle = "#f4f0e6"; ctx.beginPath(); ctx.arc(ccx, ccy + 4 * U, 9 * U, 0, 7); ctx.fill(); ctx.strokeStyle = "#2a1a10"; ctx.lineWidth = 1.5; ctx.stroke();
+      const h = hour(); ctx.beginPath(); ctx.moveTo(ccx, ccy + 4 * U); ctx.lineTo(ccx + Math.sin(h / 12 * Math.PI * 2) * 5 * U, ccy + 4 * U - Math.cos(h / 12 * Math.PI * 2) * 5 * U); ctx.moveTo(ccx, ccy + 4 * U); ctx.lineTo(ccx + Math.sin(h % 1 * Math.PI * 2) * 7 * U, ccy + 4 * U - Math.cos(h % 1 * Math.PI * 2) * 7 * U); ctx.stroke();
+      ctx.strokeStyle = "#b8963a"; ctx.beginPath(); ctx.moveTo(ccx, ccy + 13 * U); const sw2 = Math.sin(t * 3) * 5 * U; ctx.lineTo(ccx + sw2, ccy + 30 * U); ctx.stroke(); ctx.fillStyle = "#d9a520"; ctx.beginPath(); ctx.arc(ccx + sw2, ccy + 31 * U, 3 * U, 0, 7); ctx.fill();
+      sp.clock = { x: ccx - 14 * U, y: ccy - 20 * U, w: 28 * U, h: 54 * U };
+      // lustre or kerosene lamp
+      if (has("lustre")) { ctx.strokeStyle = "#b8963a"; ctx.beginPath(); ctx.moveTo(W * .5, 0); ctx.lineTo(W * .5, H * .05); ctx.stroke(); for (let i = 0; i < 7; i++) { ctx.fillStyle = `rgba(255,240,200,${.7 + .3 * Math.sin(t * 4 + i)})`; ctx.beginPath(); ctx.arc(W * .5 + (i - 3) * 6 * U, H * .06 + Math.abs(i - 3) * -1.5 * U, 2.6 * U, 0, 7); ctx.fill(); } }
+      // books
+      if (has("books")) { const bx = W * .2, by = H * .3; ctx.fillStyle = "#5a3a20"; ctx.fillRect(bx, by, W * .1, fy - by - 22 * U); for (let r = 0; r < 4; r++) for (let i = 0; i < 6; i++) { ctx.fillStyle = ["#8a1f2a", "#2a4a7a", "#3a6a3a", "#b8963a"][(r + i) % 4]; ctx.fillRect(bx + 3 * U + i * W * .015, by + 4 * U + r * (fy - by - 22 * U) / 4, W * .012, (fy - by - 22 * U) / 4 - 8 * U); } sp.books = { x: bx, y: by, w: W * .1, h: fy - by }; }
+      // iron bed
+      const bx2 = W * .04, by2 = H * .72;
+      ctx.strokeStyle = "#3a3a42"; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.moveTo(bx2 + 4 * U, by2 + 40 * U); ctx.lineTo(bx2 + 4 * U, by2 - 24 * U); ctx.moveTo(bx2 + W * .3, by2 + 40 * U); ctx.lineTo(bx2 + W * .3, by2 - 6 * U); ctx.stroke();
+      ctx.beginPath(); ctx.arc(bx2 + 4 * U, by2 - 26 * U, 3 * U, 0, 7); ctx.stroke();
+      rr(bx2 + 4 * U, by2, W * .3 - 4 * U, 18 * U, 4, "#fffdf5"); rr(bx2 + W * .1, by2 - 2 * U, W * .2, 22 * U, 4, "#7a3a5a");
+      ctx.strokeStyle = "rgba(255,216,77,.6)"; ctx.lineWidth = 1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(bx2 + W * .1, by2 + 4 * U + i * 6 * U); ctx.lineTo(bx2 + W * .3, by2 + 4 * U + i * 6 * U); ctx.stroke(); }
+      rr(bx2 + 6 * U, by2 - 6 * U, W * .07, 10 * U, 5, "#fff");
+      sp.bed = { x: bx2, y: by2 - 26 * U, w: W * .3, h: 66 * U };
+      // table with a samovar
+      const tx = W * .44, ty = H * .74;
+      ctx.fillStyle = "#6a4424"; ctx.fillRect(tx - 34 * U, ty, 68 * U, 6 * U); ctx.fillRect(tx - 30 * U, ty + 6 * U, 4 * U, 30 * U); ctx.fillRect(tx + 26 * U, ty + 6 * U, 4 * U, 30 * U);
+      ctx.fillStyle = "#f4f0e6"; ctx.fillRect(tx - 34 * U, ty - 1 * U, 68 * U, 4 * U);
+      ctx.fillStyle = has("gold") ? "#ffcc33" : "#c98a3a"; ctx.beginPath(); ctx.ellipse(tx - 8 * U, ty - 16 * U, 11 * U, 14 * U, 0, 0, 7); ctx.fill(); ctx.fillRect(tx - 12 * U, ty - 6 * U, 8 * U, 6 * U); ctx.fillRect(tx - 11 * U, ty - 34 * U, 6 * U, 6 * U);
+      if (fx === "tea" && fxT > 0 || Math.sin(t * 2) > .6) { ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(tx - 8 * U, ty - 40 * U - (t % 1) * 8 * U, 3 * U, 0, 7); ctx.fill(); }
+      emo("🍵", tx + 14 * U, ty - 6 * U, 11); emo("🥯", tx + 26 * U, ty - 6 * U, 10);
+      sp.tea = { x: tx - 34 * U, y: ty - 44 * U, w: 68 * U, h: 50 * U };
+      // the chest with your savings
+      const cx = W * .62, cy = H * .84;
+      rr(cx, cy, 52 * U, 26 * U, 4, "#7a4a24"); ctx.fillStyle = "#b8963a"; ctx.fillRect(cx, cy + 8 * U, 52 * U, 3 * U); ctx.fillRect(cx + 22 * U, cy + 6 * U, 8 * U, 10 * U);
+      if (fx === "chest" && fxT > 0) { ctx.fillStyle = "#5a3418"; ctx.fillRect(cx, cy - 16 * U, 52 * U, 16 * U); for (let i = 0; i < 8; i++) emo("🪙", cx + 6 * U + (i % 4) * 13 * U, cy - 4 * U - Math.floor(i / 4) * 7 * U, 9); }
+      sp.chest = { x: cx, y: cy - 16 * U, w: 52 * U, h: 42 * U };
+      // extras on the floor
+      if (has("fikus")) { emo("🪴", W * .62, H * .64, 30); sp.fikus = { x: W * .57, y: H * .54, w: W * .1, h: H * .16 }; }
+      if (has("gramo")) { const gx = W * .86, gy = H * .76; ctx.fillStyle = "#6a4424"; ctx.fillRect(gx - 14 * U, gy, 28 * U, 18 * U); ctx.fillStyle = "#d9a520"; ctx.beginPath(); ctx.moveTo(gx - 2 * U, gy); ctx.lineTo(gx - 22 * U, gy - 30 * U); ctx.lineTo(gx + 6 * U, gy - 34 * U); ctx.fill(); if (fx === "gramo" && fxT > 0) for (let i = 0; i < 3; i++) emo("♪", gx - 10 * U + i * 10 * U, gy - 40 * U - ((t * 20 + i * 8) % 20) * U, 12); sp.gramo = { x: gx - 24 * U, y: gy - 36 * U, w: 48 * U, h: 54 * U }; }
+      if (has("piano")) { const px = W * .74, py = H * .5; ctx.fillStyle = "#1a1012"; ctx.fillRect(px, py, W * .2, H * .2); ctx.fillStyle = "#fff"; ctx.fillRect(px + 3 * U, py + H * .1, W * .2 - 6 * U, 6 * U); ctx.fillStyle = "#1a1012"; for (let i = 0; i < 10; i++) ctx.fillRect(px + 6 * U + i * (W * .2 - 12 * U) / 10, py + H * .1, 2 * U, 3.5 * U); sp.piano = { x: px, y: py, w: W * .2, h: H * .2 }; }
+      if (has("cat")) { catV += (Math.random() - .5) * dt * .2; catV = Math.max(-.05, Math.min(.05, catV)); catX = Math.max(.35, Math.min(.85, catX + catV * dt)); emo(catV < 0 ? "🐈" : "🐈", W * catX, H * .93, 18); sp.cat = { x: W * catX - 14 * U, y: H * .88, w: 28 * U, h: 20 * U }; }
+      // you
+      const im = Hero.img(), z = 40 * U, mx = W * .32, my = H * .86;
+      ctx.save(); ctx.beginPath(); ctx.arc(mx, my, z / 2, 0, 7); ctx.clip(); if (im.complete && im.naturalWidth) ctx.drawImage(im, mx - z / 2, my - z / 2, z, z); else { ctx.fillStyle = Hero.accent(); ctx.fillRect(mx - z / 2, my - z / 2, z, z); } ctx.restore();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(mx, my, z / 2, 0, 7); ctx.stroke();
+      spots = Object.entries(sp).map(([id, r]) => ({ id, ...r }));
+      // effects
+      if (fxT > 0) { fxT = Math.max(0, fxT - dt); if (fx === "sleep") { ctx.fillStyle = `rgba(8,10,30,${Math.min(.85, fxT)})`; ctx.fillRect(0, 0, W, H); for (let i = 0; i < 3; i++) { ctx.fillStyle = "#fff"; ctx.font = `900 ${Math.round((12 + i * 4) * U)}px Manrope, sans-serif`; ctx.fillText("Z", W * .2 + i * 14 * U, H * .5 - i * 16 * U - (2 - fxT) * 10 * U); } } }
+      if (night) { ctx.fillStyle = has("lustre") ? "rgba(255,200,120,.08)" : "rgba(10,14,40,.28)"; ctx.fillRect(0, 0, W, H); }
+      ctx.fillStyle = "rgba(120,80,30,.08)"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(18,12,6,.65)"; ctx.fillRect(0, 0, W, 18 * U);
+      ctx.fillStyle = "#f4e6c8"; ctx.font = `800 ${Math.round(9 * U)}px Manrope, sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(`🏠 Кв. на 3-м этаже · ${date()} · ${String(Math.floor(hour())).padStart(2, "0")}:00`, 6 * U, 9 * U);
+      ctx.textAlign = "right"; ctx.fillText("Нажимай на вещи", W - 6 * U, 9 * U);
+    }
+    function flatTap(id) {
+      const L = {
+        bed: () => { fx = "sleep"; fxT = 2; sleep(); return "Сладко поспал! Утро, 7 часов — работники торговали, пока ты спал."; },
+        stove: () => "Печка трещит дровами — тепло и уютно.",
+        tea: () => { fx = "tea"; fxT = 2; return has("gold") ? "Чай из золотого самовара — как у самого царя!" : "Горячий чай из самовара с бубликом. Вкусно!"; },
+        chest: () => { fx = "chest"; fxT = 2.5; return `В сундуке ${rub(S.money)}. Всего заработано ${rub(S.total)}.`; },
+        window: () => `Внизу твой ларёк${S.stalls > 1 ? ` и ещё ${S.stalls - 1}` : ""}. ${S.stock > 0 ? `${workers() ? "Работники торгуют." : "Без тебя никто не продаёт — иди вниз!"}` : "Товара нет — надо купить запас!"}`,
+        clock: () => { if (has("cuckoo")) { fx = "cuckoo"; fxT = 1.5; return "Ку-ку! Ку-ку!"; } return `На часах ${String(Math.floor(hour())).padStart(2, "0")}:${String(Math.floor(hour() % 1 * 60)).padStart(2, "0")}.`; },
+        pic: () => "Пейзаж маслом: лес и речка. Красота!",
+        books: () => "«Евгений Онегин», «Война и мир»… Почитаем вечером.",
+        fikus: () => "Фикус растёт и зеленеет.",
+        gramo: () => { fx = "gramo"; fxT = 4; waltz(); return "Граммофон играет вальс!"; },
+        piano: () => { fx = "gramo"; fxT = 2; piano(); return "Тра-ля-ля! Ты играешь на пианино."; },
+        cat: () => "Барсик: «Мур-мур-мяу!»",
+      };
+      const f = L[id]; if (f) Hero.say("cash", "good", f());
+    }
+    function sleep() {
+      // fast-forward to 7 in the morning; workers keep selling while you sleep
+      const target = Math.floor(S.day) + (hour() >= 7 ? 1 : 0) + 7 / 24;
+      let guard = 0; while (S.day < target && guard++ < 4000) sim(.05);
+      queue = []; walkers = [];
+    }
+    function note(f, t, d) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = "triangle"; o.frequency.value = f; g.gain.setValueAtTime(.0001, AC.currentTime + t); g.gain.exponentialRampToValueAtTime(.09, AC.currentTime + t + .02); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + t + d); o.connect(g); g.connect(AC.destination); o.start(AC.currentTime + t); o.stop(AC.currentTime + t + d + .05); } catch (e) { /* optional */ } }
+    function waltz() { [392, 494, 587, 587, 523, 494, 440, 494, 523, 523, 494, 440, 392].forEach((f, i) => { note(f, i * .38, .5); if (i % 3 === 0) note(98, i * .38, .3); }); }
+    function piano() { [523, 587, 659, 698, 784, 698, 659, 587, 523].forEach((f, i) => note(f, i * .2, .35)); }
     function draw(t, dt) {
+      if (scene === "flat") return drawFlat(t, dt);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const [c1, c2] = skyCols(); const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       if (isNight()) for (let i = 0; i < 20; i++) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect((i * 97) % W, (i * 41) % (H * .3), 1.5, 1.5); }
@@ -8876,17 +9014,38 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#csBuyEquipT").textContent = S.equip >= EQUIP.length ? "Всё оборудование куплено" : `${EQUIP[S.equip]} + работник`;
       $("#csBuyStall").disabled = S.money < P_STALL || S.stalls >= 6;
       $("#csBuyStallT").textContent = S.stalls >= 6 ? "Больше места на улице нет" : `Ещё ларёк (x${Math.pow(2, S.stalls)} денег)`;
+      $$("#csFurn button").forEach((b) => { const f = FURN.find((q) => q[0] === b.dataset.id); b.disabled = has(f[0]) || S.money < f[3]; });
+    }
+    function renderFurn() {
+      const box = $("#csFurn"); box.innerHTML = "";
+      FURN.forEach((f) => {
+        const b = document.createElement("button"); b.type = "button"; b.dataset.id = f[0]; b.className = has(f[0]) ? "own" : "";
+        b.innerHTML = "<i></i><span><b></b><small></small></span><em></em>";
+        b.querySelector("i").textContent = f[2]; b.querySelector("b").textContent = f[1]; b.querySelector("small").textContent = f[4]; b.querySelector("em").textContent = has(f[0]) ? "есть ✓" : rub(f[3]);
+        b.addEventListener("click", () => { if (has(f[0]) || S.money < f[3]) return; S.money -= f[3]; S.flat.push(f[0]); clink(); Hero.say("cash", "good", `${f[2]} ${f[1]} теперь в твоей квартире!`); store.set("cashSim", S); renderFurn(); ui(); });
+        box.appendChild(b);
+      });
+    }
+    function setScene(sc) {
+      scene = sc; fxT = 0;
+      $("#csHome").textContent = sc === "flat" ? "🏪 Выйти к ларьку" : "🏠 Зайти в квартиру";
+      $("#csShopStreet").hidden = sc === "flat"; $("#csShopFlat").hidden = sc !== "flat";
+      if (sc === "flat") { renderFurn(); Hero.say("cash", "start", "Ты дома! Кровать, печка, самовар и сундук с деньгами. Нажимай на вещи."); }
+      else Hero.say("cash", "start", "Снова у ларька — торгуем!");
     }
     function buyStock() { if (S.money < P_STOCK) return; S.money -= P_STOCK; S.stock += 30; closedSaid = false; clink(); Hero.say("cash", "good", "Привезли запас продуктов на месяц: хлеб, бублики, чай, сахар!"); store.set("cashSim", S); }
     function buyEquip() { if (S.money < P_EQUIP || S.equip >= EQUIP.length) return; S.money -= P_EQUIP; const n = EQUIP[S.equip]; S.equip++; clink(); Hero.say("cash", "good", `Выкуплено: ${n}. Нанят работник №${S.equip} — он сам обслуживает покупателей!`); store.set("cashSim", S); }
     function buyStall() { if (S.money < P_STALL || S.stalls >= 6) return; S.money -= P_STALL; S.stalls++; clink(); Hero.say("cash", "win", `Открыт ларёк №${S.stalls}! Теперь денег x${Math.pow(2, S.stalls - 1)}.`); store.set("cashSim", S); }
     cv.addEventListener("pointerdown", (e) => {
       const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+      if (scene === "flat") { if (fx === "sleep" && fxT > 0) return; const q = spots.slice().reverse().find((p) => x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h); if (q) flatTap(q.id); return; }
+      const mw = myWindow(); if (x >= mw.x - 8 * U && x <= mw.x + mw.w + 8 * U && y >= mw.y - 12 * U && y <= mw.y + mw.h + 6 * U) { setScene("flat"); return; }
       if (S.stock <= 0) { Hero.say("cash", "bad", "Нечего продавать — купи запас продуктов."); return; }
       // tap the first customer, the counter or anywhere near the queue
       if (queue.length && (y > H * .5 || Math.abs(x - queue[0].x) < 30 * U)) serve(false);
     });
     $("#csBuyStock").addEventListener("click", buyStock);
+    $("#csHome").addEventListener("click", () => setScene(scene === "flat" ? "street" : "flat"));
     $("#csBuyEquip").addEventListener("click", buyEquip);
     $("#csBuyStall").addEventListener("click", buyStall);
     let resetArm = 0;
@@ -8896,7 +9055,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     return {
       enter() { visible = true; fit(); ui(); Hero.say("cash", "start", S.total ? `${date()}. В кармане ${rub(S.money)}. Торгуем!` : "1896 год. Ты живёшь в пятиэтажке, кв. на 3-м этаже (★). Внизу твой ларёк — нажимай на покупателей!"); lastT = 0; if (!raf) raf = requestAnimationFrame(frame); },
       leave() { visible = false; store.set("cashSim", S); },
-      key(e) { if (e.key === " " || e.key === "Enter") { if (e.target && e.target.closest && e.target.closest("button")) return; serve(false); e.preventDefault(); } },
+      key(e) { if (e.key === " " || e.key === "Enter") { if (e.target && e.target.closest && e.target.closest("button")) return; if (scene === "street") serve(false); e.preventDefault(); } },
       best: () => rub(S.total),
     };
   })();
