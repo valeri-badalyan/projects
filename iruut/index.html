@@ -221,6 +221,11 @@ textarea { min-height: 120px; resize: vertical; }
 .result { background: var(--paper); color: var(--ink); border-radius: 12px; padding: 16px; display: grid; gap: 12px; }
 .result pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--f-mono); font-size: 0.875rem; }
 .result .pill { background: var(--ink); color: var(--paper); }
+.mail { display: grid; gap: 8px; justify-items: start; padding-top: 8px; min-width: 0; }
+.mail-addr { font-family: var(--f-display); font-weight: 600; font-size: clamp(1rem, 4.6vw, 1.5rem); color: var(--on-cobalt); text-decoration: none; border-bottom: 2px solid var(--saffron); overflow-wrap: anywhere; user-select: all; }
+.contact .pill-light { background: transparent; color: var(--on-cobalt); border: 2px solid var(--on-cobalt); padding: 8px 16px; }
+.hint { font-size: 0.9rem; color: var(--ink-soft); }
+.hint b { color: var(--ink); overflow-wrap: anywhere; }
 
 footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; color: var(--ink-soft); font-size: 0.9rem; }
 
@@ -351,7 +356,12 @@ footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; gap: 12px; j
         <div class="head contact-head">
           <p class="label">Новый проект</p>
           <h2 id="contact-title">Расскажите задачу — <em>предложим идею ролика</em></h2>
-          <p>Заполните форму: она соберёт готовый текст заявки, который можно скопировать и отправить нам в удобный мессенджер.</p>
+          <p>Хотите клип или другое видео? Напишите нам на почту или заполните форму: она соберёт готовый текст заявки, который останется скопировать в письмо.</p>
+          <div class="mail">
+            <span class="label">Почта для заказов</span>
+            <a class="mail-addr" id="mail-addr" href="mailto:valeri.badalian27@gmail.com?subject=%D0%97%D0%B0%D0%BA%D0%B0%D0%B7%20%D0%BA%D0%BB%D0%B8%D0%BF%D0%B0%20IRUUT">valeri.badalian27@gmail.com</a>
+            <button class="pill pill-light" type="button" id="copy-mail">Скопировать адрес</button>
+          </div>
         </div>
         <form id="brief" novalidate>
           <div class="field"><label for="f-name">Как вас зовут</label><input id="f-name" name="name" autocomplete="name" placeholder="Например, Анна" required></div>
@@ -370,6 +380,7 @@ footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; gap: 12px; j
           <div class="result" id="result" hidden>
             <pre id="result-text"></pre>
             <button class="pill" type="button" id="copy">Скопировать текст</button>
+            <p class="hint">Отправьте этот текст на <b>valeri.badalian27@gmail.com</b></p>
           </div>
         </form>
       </div>
@@ -410,6 +421,16 @@ footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; gap: 12px; j
     out.textContent = 'Заявка для IRUUT\nИмя: ' + name + '\nВидео: ' + form.type.value + '\nХронометраж: ' + form.len.value + '\nЗадача: ' + idea;
     box.hidden = false;
     copy.textContent = 'Скопировать текст';
+  });
+  var copyMail = document.getElementById('copy-mail');
+  copyMail.addEventListener('click', function () {
+    var addr = 'valeri.badalian27@gmail.com';
+    function sel() {
+      var r = document.createRange(); r.selectNodeContents(document.getElementById('mail-addr'));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      copyMail.textContent = 'Адрес выделен';
+    }
+    try { navigator.clipboard.writeText(addr).then(function () { copyMail.textContent = 'Скопировано'; }, sel); } catch (err) { sel(); }
   });
   copy.addEventListener('click', function () {
     var text = out.textContent;
