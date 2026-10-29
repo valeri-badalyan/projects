@@ -2014,7 +2014,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button type="button" id="csBuyEquip"><i>🧑‍🍳</i><span><b>Выкупить оборудование</b><small id="csBuyEquipT">Самовар + работник</small></span><em>20 р.</em></button>
       <button type="button" id="csBuyStall"><i>🏪</i><span><b>Купить ещё ларёк</b><small id="csBuyStallT">Ещё ларёк (x2 денег)</small></span><em>100 р.</em></button>
     </div>
-    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. 100 копеек = 1 рубль. <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
+    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. Каждый покупатель платит 23 р. 67 коп. (с каждым новым ларьком — вдвое больше). <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -8651,7 +8651,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const P_STOCK = 800, P_EQUIP = 2000, P_STALL = 10000; // kopecks: 8 р., 20 р., 100 р.
     const EQUIP = ["Самовар", "Весы", "Печь для пирожков", "Ледник", "Кассовый аппарат", "Второй прилавок", "Тележка", "Вывеска с позолотой"];
     const GOODS = [["Бублик", 3, "🥯"], ["Ситный хлеб", 5, "🍞"], ["Стакан чаю", 4, "🍵"], ["Пирожок", 3, "🥟"], ["Крынка молока", 6, "🥛"], ["Фунт сахару", 12, "🍬"], ["Квас", 2, "🍺"], ["Мёд", 10, "🍯"], ["Яблоки", 5, "🍎"], ["Селёдка", 7, "🐟"]];
-    const TITLES = [[0, "Бедный жилец"], [1000, "Лавочник"], [10000, "Торговец"], [100000, "Купец 3-й гильдии"], [1000000, "Купец 1-й гильдии"]];
+    const TITLES = [[0, "Бедный жилец"], [100000, "Лавочник"], [1000000, "Торговец"], [10000000, "Купец 3-й гильдии"], [100000000, "Купец 1-й гильдии"]];
+    const PAY = 2367; // every customer pays 23 р. 67 коп.
     const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
     function fresh() { return { money: 100, total: 0, stock: 14, equip: 0, stalls: 1, day: .33, served: 0, milestone: 0 }; }
     let S = store.get("cashSim", null); if (!S || typeof S.money !== "number") S = fresh();
@@ -8660,7 +8661,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
     // ---------- money ----------
     function rub(k) { k = Math.round(k); const r = Math.floor(k / 100), c = k % 100; return r ? (c ? `${r.toLocaleString("ru-RU")} р. ${c} коп.` : `${r.toLocaleString("ru-RU")} р.`) : `${c} коп.`; }
-    const mult = () => (1 + S.equip * .25) * Math.pow(2, S.stalls - 1);
+    const mult = () => Math.pow(2, S.stalls - 1);
     const workers = () => S.equip;
     function date() { const d0 = new Date(1896, 0, 1); d0.setDate(d0.getDate() + Math.floor(S.day)); return `${d0.getDate()} ${MONTHS[d0.getMonth()]} ${d0.getFullYear()} г.`; }
     const hour = () => (S.day % 1) * 24;
@@ -8822,7 +8823,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function serve(byWorker) {
       const p = queue[0]; if (!p || S.stock <= 0) return;
       queue.shift();
-      const v = Math.round(p.good[1] * mult() * (2 + Math.random() * .8));
+      const v = PAY * mult();
       S.money += v; S.total += v; S.served++;
       coins.push({ x: p.x, y: H * .86 - 70 * U, v, t: 0 });
       p.out = true; p.moving = true; walkers.push(p);
@@ -8830,7 +8831,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       milestones();
     }
     function milestones() {
-      const M = [[1000, 20, "10 рублей! Ты теперь лавочник."], [10000, 50, "100 рублей скоплено! Торговец!"], [100000, 200, "1000 рублей! Купец 3-й гильдии!"], [1000000, 500, "10 000 рублей! Купец 1-й гильдии — богаче всех в доме!"]];
+      const M = [[100000, 20, "1000 рублей! Ты теперь лавочник."], [1000000, 50, "10 000 рублей скоплено! Торговец!"], [10000000, 200, "100 000 рублей! Купец 3-й гильдии!"], [100000000, 500, "Миллион рублей! Купец 1-й гильдии — богаче всех в доме!"]];
       while (S.milestone < M.length && S.total >= M[S.milestone][0]) { const [, c, msg] = M[S.milestone]; Hero.grant(c); Hero.say("cash", "win", `${msg} +${c} монет`); S.milestone++; }
     }
     function sim(dt) {
