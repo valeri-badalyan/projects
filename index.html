@@ -640,6 +640,23 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ct-revs { display: flex; flex-direction: column; gap: 6px; text-align: left; }
 .ct-revs div { padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,.06); font-size: 12.5px; }
 .ct-revs b { display: block; color: var(--amber); font-size: 11px; }
+.cs-purse { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 16px; background: linear-gradient(135deg, #5a3a1a, #2a1a0a); border: 2px solid rgba(255,216,77,.4); }
+.cs-purse small { color: #f4e6c8; font-weight: 800; font-size: 12px; }
+.cs-purse b { font: 900 clamp(20px, 6vw, 26px) Manrope, sans-serif; color: #ffd84d; font-variant-numeric: tabular-nums; }
+.cs-stage { cursor: pointer; }
+#csCanvas { display: block; width: 100%; touch-action: manipulation; }
+.cs-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.cs-stats div { padding: 6px 8px; border-radius: 12px; background: var(--panel, #1c1d3a); text-align: center; }
+.cs-stats small { display: block; font-size: 11px; color: var(--muted); font-weight: 800; }
+.cs-stats b { font-size: 15px; }
+.cs-stats b.bad { color: #ff6a5a; }
+.cs-shop { display: flex; flex-direction: column; gap: 6px; }
+.cs-shop button { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; padding: 9px 12px; border-radius: 14px; border: 2px solid var(--amber); background: var(--panel, #1c1d3a); color: inherit; cursor: pointer; font-family: Manrope, sans-serif; }
+.cs-shop button:disabled { border-color: rgba(255,255,255,.1); opacity: .6; cursor: default; }
+.cs-shop i { font-style: normal; font-size: 24px; }
+.cs-shop b { display: block; font-size: 13px; }
+.cs-shop small { display: block; font-size: 11px; color: var(--muted); }
+.cs-shop em { font-style: normal; font-weight: 900; color: #ffd84d; font-size: 15px; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1463,6 +1480,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">Лучшая</span><span class="stat-val" id="hubComp">—</span></span>
       </button>
+      <button class="cart" data-go="cash" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#e8d8b8"/><rect x="4" y="6" width="34" height="46" fill="#c9a878"/><g fill="#5a6a7a"><rect x="8" y="10" width="5" height="6"/><rect x="17" y="10" width="5" height="6"/><rect x="26" y="10" width="5" height="6"/><rect x="8" y="19" width="5" height="6"/><rect x="17" y="19" width="5" height="6"/><rect x="26" y="19" width="5" height="6" fill="#ffd27a"/><rect x="8" y="28" width="5" height="6"/><rect x="17" y="28" width="5" height="6"/><rect x="26" y="28" width="5" height="6"/><rect x="8" y="37" width="5" height="6"/><rect x="26" y="37" width="5" height="6"/></g><rect x="0" y="52" width="64" height="12" fill="#6a6058"/><rect x="34" y="34" width="26" height="20" fill="#8a5a34"/><rect x="37" y="38" width="20" height="8" fill="#3a2a1a"/><g><rect x="32" y="30" width="5" height="5" fill="#b8322e"/><rect x="37" y="30" width="5" height="5" fill="#f4ecd8"/><rect x="42" y="30" width="5" height="5" fill="#b8322e"/><rect x="47" y="30" width="5" height="5" fill="#f4ecd8"/><rect x="52" y="30" width="5" height="5" fill="#b8322e"/><rect x="57" y="30" width="5" height="5" fill="#f4ecd8"/></g><circle cx="47" cy="12" r="8" fill="#ffd84d" stroke="#b8963a" stroke-width="2"/><text x="47" y="15.5" text-anchor="middle" font-size="9" font-weight="900" fill="#5a3a10" font-family="serif">₽</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Cash Simulator</span>
+          <span class="cart-desc">1896 год. Живёшь в пятиэтажке, торгуешь в ларьке и копишь рубли: запас, работники, новые ларьки.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Заработано</span><span class="stat-val" id="hubCash">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -1962,6 +1989,32 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <button type="button" class="btn" id="ctResOk">Супер!</button>
       </div>
     </div>
+  </section>
+
+  <section id="cash" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Cash Simulator</div>
+      <div class="chips"><div class="chip hi"><span>Год</span><b>1896</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Торгуем!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="cs-purse"><small id="csTitle">Бедный жилец</small><b id="csMoney">1 р.</b></div>
+    <div class="ct-stage cs-stage"><canvas id="csCanvas" width="360" height="280" aria-label="Улица 1896 года: пятиэтажка и ларёк"></canvas></div>
+    <div class="cs-stats">
+      <div><small>Запас</small><b id="csStock">14 дн.</b></div>
+      <div><small>Работники</small><b id="csWork">0</b></div>
+      <div><small>Ларьки</small><b id="csStalls">1</b></div>
+    </div>
+    <div class="cs-shop">
+      <button type="button" id="csBuyStock"><i>📦</i><span><b>Запас продуктов на месяц</b><small>+30 дней торговли</small></span><em>8 р.</em></button>
+      <button type="button" id="csBuyEquip"><i>🧑‍🍳</i><span><b>Выкупить оборудование</b><small id="csBuyEquipT">Самовар + работник</small></span><em>20 р.</em></button>
+      <button type="button" id="csBuyStall"><i>🏪</i><span><b>Купить ещё ларёк</b><small id="csBuyStallT">Ещё ларёк (x2 денег)</small></span><em>100 р.</em></button>
+    </div>
+    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. 100 копеек = 1 рубль. <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -5774,7 +5827,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6049,7 +6102,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -8591,6 +8644,262 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Cash Simulator: a stall by a five-storey house, 1896 ================= */
+  const Cash = (() => {
+    const cv = $("#csCanvas"), ctx = cv.getContext("2d");
+    const DAY = 18; // seconds per in-game day
+    const P_STOCK = 800, P_EQUIP = 2000, P_STALL = 10000; // kopecks: 8 р., 20 р., 100 р.
+    const EQUIP = ["Самовар", "Весы", "Печь для пирожков", "Ледник", "Кассовый аппарат", "Второй прилавок", "Тележка", "Вывеска с позолотой"];
+    const GOODS = [["Бублик", 3, "🥯"], ["Ситный хлеб", 5, "🍞"], ["Стакан чаю", 4, "🍵"], ["Пирожок", 3, "🥟"], ["Крынка молока", 6, "🥛"], ["Фунт сахару", 12, "🍬"], ["Квас", 2, "🍺"], ["Мёд", 10, "🍯"], ["Яблоки", 5, "🍎"], ["Селёдка", 7, "🐟"]];
+    const TITLES = [[0, "Бедный жилец"], [1000, "Лавочник"], [10000, "Торговец"], [100000, "Купец 3-й гильдии"], [1000000, "Купец 1-й гильдии"]];
+    const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+    function fresh() { return { money: 100, total: 0, stock: 14, equip: 0, stalls: 1, day: .33, served: 0, milestone: 0 }; }
+    let S = store.get("cashSim", null); if (!S || typeof S.money !== "number") S = fresh();
+    let W = 360, H = 270, dpr = 1, U = 1, visible = false, raf = 0, lastT = 0, T0 = performance.now();
+    let queue = [], walkers = [], coins = [], spawnT = 0, workT = 0, cab = null, saveT = 0, closedSaid = false;
+
+    // ---------- money ----------
+    function rub(k) { k = Math.round(k); const r = Math.floor(k / 100), c = k % 100; return r ? (c ? `${r.toLocaleString("ru-RU")} р. ${c} коп.` : `${r.toLocaleString("ru-RU")} р.`) : `${c} коп.`; }
+    const mult = () => (1 + S.equip * .25) * Math.pow(2, S.stalls - 1);
+    const workers = () => S.equip;
+    function date() { const d0 = new Date(1896, 0, 1); d0.setDate(d0.getDate() + Math.floor(S.day)); return `${d0.getDate()} ${MONTHS[d0.getMonth()]} ${d0.getFullYear()} г.`; }
+    const hour = () => (S.day % 1) * 24;
+    const isNight = () => hour() < 5 || hour() >= 21;
+
+    // ---------- sound ----------
+    let AC = null;
+    function clink() { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const t = AC.currentTime; [2200, 2900].forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = "sine"; o.frequency.value = f; g.gain.setValueAtTime(.0001, t + i * .05); g.gain.exponentialRampToValueAtTime(.06, t + i * .05 + .005); g.gain.exponentialRampToValueAtTime(.0001, t + i * .05 + .18); o.connect(g); g.connect(AC.destination); o.start(t + i * .05); o.stop(t + i * .05 + .2); }); } catch (e) { /* optional */ } }
+
+    // ---------- people ----------
+    const COATS = ["#5a3a2a", "#3a3a4a", "#6a4a3a", "#2a3a5a", "#7a2a2a", "#4a5a3a", "#8a6a4a"];
+    function person() {
+      const lady = Math.random() < .45;
+      const g = GOODS[Math.floor(Math.random() * GOODS.length)];
+      return { x: -20, tx: 0, lady, coat: COATS[Math.floor(Math.random() * COATS.length)], hat: lady ? ["#c9a0a0", "#e8d8c0", "#8a7aa0"][Math.floor(Math.random() * 3)] : "#2a2a2a", good: g, wait: 0, mood: 1, bob: Math.random() * 6, out: false };
+    }
+    function drawPerson(p, t) {
+      const y = H * .86, s = U * 1.05, x = p.x, step = Math.sin(t * 8 + p.bob) * (p.moving ? 2 : 0);
+      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(x, y + 2, 9 * s, 3 * s, 0, 0, 7); ctx.fill();
+      // legs
+      ctx.strokeStyle = "#2a1a12"; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.moveTo(x - 3 * s, y - 14 * s); ctx.lineTo(x - 3 * s - step, y); ctx.moveTo(x + 3 * s, y - 14 * s); ctx.lineTo(x + 3 * s + step, y); ctx.stroke();
+      // coat / dress
+      ctx.fillStyle = p.coat; ctx.beginPath();
+      if (p.lady) { ctx.moveTo(x - 5 * s, y - 34 * s); ctx.lineTo(x + 5 * s, y - 34 * s); ctx.lineTo(x + 11 * s, y - 4 * s); ctx.lineTo(x - 11 * s, y - 4 * s); }
+      else { ctx.moveTo(x - 7 * s, y - 34 * s); ctx.lineTo(x + 7 * s, y - 34 * s); ctx.lineTo(x + 8 * s, y - 12 * s); ctx.lineTo(x - 8 * s, y - 12 * s); }
+      ctx.fill();
+      // head
+      ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(x, y - 40 * s, 6 * s, 0, 7); ctx.fill();
+      // hat: bonnet or peaked cap
+      ctx.fillStyle = p.hat;
+      if (p.lady) { ctx.beginPath(); ctx.arc(x, y - 42 * s, 7.5 * s, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 9 * s, y - 43 * s, 18 * s, 2.5 * s); }
+      else { ctx.fillRect(x - 6.5 * s, y - 48 * s, 13 * s, 5 * s); ctx.fillRect(x - 1 * s, y - 44 * s, 9 * s, 2 * s); }
+      if (!p.lady) { ctx.fillStyle = "#5a3a20"; ctx.fillRect(x - 3 * s, y - 36 * s, 6 * s, 1.5 * s); }
+    }
+
+    // ---------- scene ----------
+    function fit() { const w = Math.min(440, cv.parentElement.clientWidth || 360); dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .78); U = W / 360; cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px"; }
+    function skyCols() {
+      const h = hour();
+      if (isNight()) return ["#0e1430", "#2a2a4a"];
+      if (h < 7) return ["#5a5a8a", "#e8b48a"];
+      if (h >= 19) return ["#4a3a6a", "#e89a6a"];
+      return ["#b8c8d0", "#ece0c8"];
+    }
+    function house(t) {
+      // a five-storey "доходный дом"
+      const hx = W * .04, hw = W * .62, top = H * .06, base = H * .66, fh = (base - top) / 5.4;
+      ctx.fillStyle = "#c9a878"; ctx.fillRect(hx, top, hw, base - top);
+      ctx.fillStyle = "#b08a5a"; ctx.fillRect(hx - 4 * U, top - 6 * U, hw + 8 * U, 8 * U);
+      for (let f = 0; f < 5; f++) {
+        const y = base - (f + 1) * fh;
+        ctx.fillStyle = "rgba(120,90,60,.35)"; ctx.fillRect(hx, y + fh - 3 * U, hw, 3 * U);
+        for (let w = 0; w < 6; w++) {
+          const wx = hx + 10 * U + w * (hw - 20 * U) / 6, ww = (hw - 20 * U) / 6 - 10 * U, wy = y + fh * .22, wh = fh * .6;
+          if (f === 0 && (w === 2 || w === 3)) continue; // the arch gate
+          const mine = f === 2 && w === 4;
+          const lit = isNight() ? (mine || ((f * 7 + w * 3) % 5) < 2) : false;
+          ctx.fillStyle = lit ? "#ffd27a" : mine ? "#8aa8c0" : "#5a6a7a"; ctx.fillRect(wx, wy, ww, wh);
+          ctx.fillStyle = "#e8dcc0"; ctx.fillRect(wx - 2 * U, wy - 3 * U, ww + 4 * U, 3 * U); ctx.fillRect(wx + ww / 2 - .7 * U, wy, 1.4 * U, wh);
+          if (mine) { ctx.fillStyle = "#ffd84d"; ctx.font = `900 ${Math.round(9 * U)}px sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("★", wx + ww / 2, wy - 8 * U); }
+        }
+      }
+      // arch gate
+      const gx = hx + 10 * U + 2 * (hw - 20 * U) / 6, gw = 2 * (hw - 20 * U) / 6 - 10 * U;
+      ctx.fillStyle = "#3a2a1a"; ctx.beginPath(); ctx.moveTo(gx, base); ctx.lineTo(gx, base - fh * .55); ctx.arc(gx + gw / 2, base - fh * .55, gw / 2, Math.PI, 0); ctx.lineTo(gx + gw, base); ctx.fill();
+      ctx.fillStyle = "#2a1f3a"; ctx.fillRect(hx + hw * .3, top + 4 * U, hw * .4, 12 * U);
+      ctx.fillStyle = "#ffd84d"; ctx.font = `800 ${Math.round(8 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ДОХОДНЫЙ ДОМЪ", hx + hw / 2, top + 10 * U);
+      // chimney smoke
+      for (let i = 0; i < 4; i++) { const k = ((t * .3 + i * .25) % 1); ctx.fillStyle = `rgba(200,200,200,${.35 * (1 - k)})`; ctx.beginPath(); ctx.arc(hx + hw * .8 + k * 14 * U, top - 10 * U - k * 30 * U, (4 + k * 8) * U, 0, 7); ctx.fill(); }
+      ctx.fillStyle = "#8a5a3a"; ctx.fillRect(hx + hw * .78, top - 14 * U, 8 * U, 10 * U);
+    }
+    function stall(x, scale, main, t) {
+      const s = U * scale, by = H * .86, w = 92 * s, h = 70 * s, open = S.stock > 0;
+      // body
+      ctx.fillStyle = "#8a5a34"; ctx.fillRect(x - w / 2, by - h, w, h);
+      ctx.fillStyle = "#6a4424"; for (let i = 0; i < 6; i++) ctx.fillRect(x - w / 2 + i * w / 6, by - h, 1.5 * s, h);
+      // window opening + counter
+      ctx.fillStyle = open ? "#3a2a1a" : "#5a3a24"; ctx.fillRect(x - w * .4, by - h * .82, w * .8, h * .42);
+      if (!open) { ctx.strokeStyle = "#3a2414"; ctx.lineWidth = 3 * s; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - w * .4, by - h * .82 + i * h * .12); ctx.lineTo(x + w * .4, by - h * .82 + i * h * .12 + 4 * s); ctx.stroke(); } }
+      ctx.fillStyle = "#c9a26b"; ctx.fillRect(x - w * .48, by - h * .4, w * .96, 6 * s);
+      // striped awning
+      for (let i = 0; i < 8; i++) { ctx.fillStyle = i % 2 ? "#f4ecd8" : "#b8322e"; ctx.beginPath(); ctx.moveTo(x - w * .55 + i * w * 1.1 / 8, by - h - 2 * s); ctx.lineTo(x - w * .55 + (i + 1) * w * 1.1 / 8, by - h - 2 * s); ctx.lineTo(x - w * .55 + (i + 1) * w * 1.1 / 8, by - h + 12 * s); ctx.arc(x - w * .55 + (i + .5) * w * 1.1 / 8, by - h + 12 * s, w * 1.1 / 16, 0, Math.PI); ctx.closePath(); ctx.fill(); }
+      // sign
+      ctx.fillStyle = "#2a1a0a"; ctx.fillRect(x - w * .32, by - h - 16 * s, w * .64, 12 * s);
+      ctx.fillStyle = "#ffd84d"; ctx.font = `800 ${Math.round(8 * s)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(open ? "ЛАРЁКЪ" : "ЗАКРЫТО", x, by - h - 10 * s);
+      if (open) {
+        // goods on the counter
+        ctx.font = `${Math.round(10 * s)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+        ["🥯", "🍞", "🥟", "🍎"].forEach((e, i) => ctx.fillText(e, x - w * .36 + i * w * .14 + w * .07, by - h * .46));
+        // samovar after the first upgrade
+        if (S.equip >= 1) { ctx.fillStyle = "#d9a520"; ctx.beginPath(); ctx.ellipse(x + w * .3, by - h * .52, 7 * s, 9 * s, 0, 0, 7); ctx.fill(); ctx.fillRect(x + w * .3 - 2 * s, by - h * .66, 4 * s, 5 * s); if (Math.sin(t * 3) > 0) { ctx.fillStyle = "rgba(255,255,255,.5)"; ctx.beginPath(); ctx.arc(x + w * .3, by - h * .72 - (t % 1) * 6 * s, 2.5 * s, 0, 7); ctx.fill(); } }
+        if (main) {
+          // you behind the counter
+          const im = Hero.img(), z = 26 * s; ctx.save(); ctx.beginPath(); ctx.arc(x - w * .08, by - h * .62, z / 2, 0, 7); ctx.clip();
+          if (im.complete && im.naturalWidth) ctx.drawImage(im, x - w * .08 - z / 2, by - h * .62 - z / 2, z, z); else { ctx.fillStyle = Hero.accent(); ctx.fillRect(x - w * .08 - z / 2, by - h * .62 - z / 2, z, z); }
+          ctx.restore();
+        }
+      }
+      // wheels base
+      ctx.fillStyle = "#4a3020"; ctx.fillRect(x - w / 2, by - 4 * s, w, 4 * s);
+    }
+    function worker(x, t, i) {
+      const y = H * .86, s = U * .95, b = Math.sin(t * 6 + i) * 1.5;
+      ctx.strokeStyle = "#2a1a12"; ctx.lineWidth = 3 * s; ctx.beginPath(); ctx.moveTo(x - 3 * s, y - 14 * s); ctx.lineTo(x - 3 * s, y); ctx.moveTo(x + 3 * s, y - 14 * s); ctx.lineTo(x + 3 * s, y); ctx.stroke();
+      ctx.fillStyle = "#4a6a8a"; ctx.fillRect(x - 7 * s, y - 34 * s + b, 14 * s, 22 * s);
+      ctx.fillStyle = "#f4f0e6"; ctx.fillRect(x - 5 * s, y - 30 * s + b, 10 * s, 18 * s);
+      ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(x, y - 40 * s + b, 6 * s, 0, 7); ctx.fill();
+      ctx.fillStyle = "#f4f0e6"; ctx.fillRect(x - 6 * s, y - 47 * s + b, 12 * s, 4 * s);
+    }
+    function lamp(x, t) {
+      const y = H * .86; ctx.fillStyle = "#2a2a2a"; ctx.fillRect(x - 1.5 * U, y - 70 * U, 3 * U, 70 * U); ctx.fillRect(x - 6 * U, y - 76 * U, 12 * U, 8 * U);
+      if (isNight() || hour() >= 19 || hour() < 7) { const g = ctx.createRadialGradient(x, y - 72 * U, 2, x, y - 72 * U, 40 * U); g.addColorStop(0, "rgba(255,210,120,.6)"); g.addColorStop(1, "rgba(255,210,120,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y - 72 * U, 40 * U, 0, 7); ctx.fill(); ctx.fillStyle = "#ffe0a0"; ctx.fillRect(x - 4 * U, y - 75 * U, 8 * U, 6 * U); }
+    }
+    function drawCab(t, dt) {
+      if (!cab && Math.random() < dt / 12) cab = { x: W + 60 * U, v: -(50 + Math.random() * 30) * U };
+      if (!cab) return;
+      cab.x += cab.v * dt; if (cab.x < -120 * U) { cab = null; return; }
+      const x = cab.x, y = H * .97, s = U;
+      // horse
+      ctx.fillStyle = "#6a4424"; ctx.fillRect(x, y - 22 * s, 26 * s, 10 * s); ctx.fillRect(x - 6 * s, y - 30 * s, 8 * s, 12 * s);
+      ctx.strokeStyle = "#4a2a14"; ctx.lineWidth = 2.5 * s; const k = Math.sin(t * 10) * 3 * s; [3, 9, 18, 24].forEach((dx, i) => { ctx.beginPath(); ctx.moveTo(x + dx * s, y - 12 * s); ctx.lineTo(x + dx * s + (i % 2 ? k : -k), y); ctx.stroke(); });
+      // carriage
+      ctx.fillStyle = "#1a1a22"; ctx.fillRect(x + 32 * s, y - 30 * s, 34 * s, 20 * s); ctx.fillRect(x + 36 * s, y - 40 * s, 22 * s, 10 * s);
+      ctx.strokeStyle = "#3a2a1a"; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.arc(x + 40 * s, y - 6 * s, 6 * s, 0, 7); ctx.arc(x + 60 * s, y - 6 * s, 6 * s, 0, 7); ctx.stroke();
+    }
+    function draw(t, dt) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const [c1, c2] = skyCols(); const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, c1); g.addColorStop(1, c2); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      if (isNight()) for (let i = 0; i < 20; i++) { ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect((i * 97) % W, (i * 41) % (H * .3), 1.5, 1.5); }
+      // neighbour houses
+      ctx.fillStyle = "#a88a6a"; ctx.fillRect(W * .68, H * .26, W * .32, H * .4); ctx.fillStyle = "#9a7a5a"; ctx.fillRect(W * .68, H * .26, W * .32, 4 * U);
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) { ctx.fillStyle = isNight() && (r + c) % 2 ? "#ffd27a" : "#5a6a7a"; ctx.fillRect(W * .71 + c * W * .1, H * .31 + r * H * .11, W * .05, H * .07); }
+      house(t);
+      // sidewalk and cobbles
+      ctx.fillStyle = "#b8a88a"; ctx.fillRect(0, H * .66, W, H * .22);
+      ctx.fillStyle = "#6a6058"; ctx.fillRect(0, H * .88, W, H * .12);
+      ctx.fillStyle = "rgba(255,255,255,.08)"; for (let i = 0; i < 40; i++) { ctx.beginPath(); ctx.ellipse((i * 23) % W, H * .9 + ((i * 7) % 4) * H * .025, 5 * U, 2.5 * U, 0, 0, 7); ctx.fill(); }
+      lamp(W * .03, t); lamp(W * .97, t);
+      // extra stalls in a row to the right, the main one in front
+      for (let i = S.stalls - 1; i >= 1; i--) stall(W * (.78 + ((i - 1) % 2) * .14), .55, false, t);
+      stall(W * .5, 1.18, true, t);
+      for (let i = 0; i < Math.min(workers(), 4); i++) worker(W * (.62 + i * .045), t, i);
+      // customers
+      walkers.forEach((p) => drawPerson(p, t));
+      queue.forEach((p, i) => { drawPerson(p, t); if (i === 0 && S.stock > 0 && Math.abs(p.tx - p.x) < 3) { ctx.fillStyle = "rgba(255,255,255,.92)"; const bx = p.x + 6 * U, by = H * .86 - 64 * U; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, 74 * U, 18 * U, 6) : ctx.rect(bx, by, 74 * U, 18 * U); ctx.fill(); ctx.fillStyle = "#12132a"; ctx.font = `800 ${Math.round(8 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`${p.good[2]} ${p.good[0]}`, bx + 37 * U, by + 9 * U); } });
+      drawCab(t, dt);
+      coins = coins.filter((c) => (c.t += dt) < 1);
+      coins.forEach((c) => { ctx.globalAlpha = 1 - c.t; ctx.fillStyle = "#ffd84d"; ctx.font = `900 ${Math.round(11 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.fillText(`+${rub(c.v)}`, c.x, c.y - c.t * 40 * U); ctx.globalAlpha = 1; });
+      if (isNight()) { ctx.fillStyle = "rgba(10,14,40,.25)"; ctx.fillRect(0, 0, W, H); }
+      // sepia tint, like an old photo
+      ctx.fillStyle = "rgba(120,80,30,.08)"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(18,12,6,.65)"; ctx.fillRect(0, 0, W, 18 * U);
+      ctx.fillStyle = "#f4e6c8"; ctx.font = `800 ${Math.round(9 * U)}px Manrope, sans-serif`; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(`📅 ${date()} · ${String(Math.floor(hour())).padStart(2, "0")}:00`, 6 * U, 9 * U);
+      ctx.textAlign = "right"; ctx.fillText(S.stock > 0 ? (queue.length ? "Нажми на покупателя!" : "Ждём покупателей…") : "Нет товара!", W - 6 * U, 9 * U);
+    }
+
+    // ---------- simulation ----------
+    function serve(byWorker) {
+      const p = queue[0]; if (!p || S.stock <= 0) return;
+      queue.shift();
+      const v = Math.round(p.good[1] * mult() * (2 + Math.random() * .8));
+      S.money += v; S.total += v; S.served++;
+      coins.push({ x: p.x, y: H * .86 - 70 * U, v, t: 0 });
+      p.out = true; p.moving = true; walkers.push(p);
+      if (!byWorker) clink();
+      milestones();
+    }
+    function milestones() {
+      const M = [[1000, 20, "10 рублей! Ты теперь лавочник."], [10000, 50, "100 рублей скоплено! Торговец!"], [100000, 200, "1000 рублей! Купец 3-й гильдии!"], [1000000, 500, "10 000 рублей! Купец 1-й гильдии — богаче всех в доме!"]];
+      while (S.milestone < M.length && S.total >= M[S.milestone][0]) { const [, c, msg] = M[S.milestone]; Hero.grant(c); Hero.say("cash", "win", `${msg} +${c} монет`); S.milestone++; }
+    }
+    function sim(dt) {
+      const prevDay = Math.floor(S.day);
+      S.day += dt / DAY;
+      if (Math.floor(S.day) > prevDay) {
+        S.stock = Math.max(0, S.stock - 1);
+        if (S.stock === 3) Hero.say("cash", "bad", "Продукты кончаются — осталось на 3 дня! Купи запас за 8 р.");
+        if (S.stock === 0 && !closedSaid) { closedSaid = true; Hero.say("cash", "bad", "Товар кончился, ларёк закрыт. Купи запас на месяц — 8 р."); }
+      }
+      // customers come more often by day and with more workers
+      const rate = (isNight() ? .3 : 1) * (1 + workers() * .6) / 1.1;
+      spawnT -= dt;
+      if (spawnT <= 0) { spawnT = (1 / rate) * (.6 + Math.random() * .8); if (queue.length < 5 && S.stock > 0) queue.push(person()); }
+      // queue positions
+      queue.forEach((p, i) => { p.tx = W * .5 - 34 * U - i * 22 * U; const d = p.tx - p.x; p.moving = Math.abs(d) > 1; p.x += Math.sign(d) * Math.min(Math.abs(d), 70 * U * dt); p.wait += dt; });
+      // impatient customers leave
+      if (queue.length && queue[0].wait > 14 && !workers()) { const p = queue.shift(); p.out = true; walkers.push(p); }
+      if (S.stock <= 0) while (queue.length) { const p = queue.shift(); p.out = true; walkers.push(p); }
+      walkers.forEach((p) => { p.moving = true; p.x += 80 * U * dt; });
+      walkers = walkers.filter((p) => p.x < W + 30);
+      // workers serve automatically
+      if (workers() && queue.length && Math.abs(queue[0].tx - queue[0].x) < 2) { workT -= dt; if (workT <= 0) { workT = 1.6 / workers(); serve(true); } }
+    }
+    function frame(now) {
+      raf = 0; if (!visible) return;
+      const dt = lastT ? Math.min(.05, (now - lastT) / 1000) : 1 / 60; lastT = now;
+      sim(dt); draw((now - T0) / 1000, dt); ui();
+      saveT += dt; if (saveT > 3) { saveT = 0; store.set("cashSim", S); }
+      raf = requestAnimationFrame(frame);
+    }
+
+    // ---------- UI ----------
+    function ui() {
+      $("#csMoney").textContent = rub(S.money);
+      let tt = TITLES[0][1]; TITLES.forEach(([v, n]) => { if (S.total >= v) tt = n; }); $("#csTitle").textContent = tt;
+      $("#csStock").textContent = S.stock > 0 ? `${S.stock} дн.` : "нет!"; $("#csStock").classList.toggle("bad", S.stock <= 3);
+      $("#csWork").textContent = String(workers());
+      $("#csStalls").textContent = `${S.stalls} (x${Math.pow(2, S.stalls - 1)})`;
+      $("#csBuyStock").disabled = S.money < P_STOCK;
+      $("#csBuyEquip").disabled = S.money < P_EQUIP || S.equip >= EQUIP.length;
+      $("#csBuyEquipT").textContent = S.equip >= EQUIP.length ? "Всё оборудование куплено" : `${EQUIP[S.equip]} + работник`;
+      $("#csBuyStall").disabled = S.money < P_STALL || S.stalls >= 6;
+      $("#csBuyStallT").textContent = S.stalls >= 6 ? "Больше места на улице нет" : `Ещё ларёк (x${Math.pow(2, S.stalls)} денег)`;
+    }
+    function buyStock() { if (S.money < P_STOCK) return; S.money -= P_STOCK; S.stock += 30; closedSaid = false; clink(); Hero.say("cash", "good", "Привезли запас продуктов на месяц: хлеб, бублики, чай, сахар!"); store.set("cashSim", S); }
+    function buyEquip() { if (S.money < P_EQUIP || S.equip >= EQUIP.length) return; S.money -= P_EQUIP; const n = EQUIP[S.equip]; S.equip++; clink(); Hero.say("cash", "good", `Выкуплено: ${n}. Нанят работник №${S.equip} — он сам обслуживает покупателей!`); store.set("cashSim", S); }
+    function buyStall() { if (S.money < P_STALL || S.stalls >= 6) return; S.money -= P_STALL; S.stalls++; clink(); Hero.say("cash", "win", `Открыт ларёк №${S.stalls}! Теперь денег x${Math.pow(2, S.stalls - 1)}.`); store.set("cashSim", S); }
+    cv.addEventListener("pointerdown", (e) => {
+      const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+      if (S.stock <= 0) { Hero.say("cash", "bad", "Нечего продавать — купи запас продуктов."); return; }
+      // tap the first customer, the counter or anywhere near the queue
+      if (queue.length && (y > H * .5 || Math.abs(x - queue[0].x) < 30 * U)) serve(false);
+    });
+    $("#csBuyStock").addEventListener("click", buyStock);
+    $("#csBuyEquip").addEventListener("click", buyEquip);
+    $("#csBuyStall").addEventListener("click", buyStall);
+    let resetArm = 0;
+    $("#csReset").addEventListener("click", (e) => { const b = e.currentTarget; if (Date.now() - resetArm > 4000) { resetArm = Date.now(); b.textContent = "Точно? Нажми ещё раз"; setTimeout(() => { b.textContent = "Начать сначала"; }, 4000); return; } resetArm = 0; b.textContent = "Начать сначала"; S = fresh(); queue = []; walkers = []; store.set("cashSim", S); Hero.say("cash", "start", "Всё сначала: 1 рубль и один ларёк."); });
+    window.addEventListener("resize", () => { if (visible) fit(); });
+
+    return {
+      enter() { visible = true; fit(); ui(); Hero.say("cash", "start", S.total ? `${date()}. В кармане ${rub(S.money)}. Торгуем!` : "1896 год. Ты живёшь в пятиэтажке, кв. на 3-м этаже (★). Внизу твой ларёк — нажимай на покупателей!"); lastT = 0; if (!raf) raf = requestAnimationFrame(frame); },
+      leave() { visible = false; store.set("cashSim", S); },
+      key(e) { if (e.key === " " || e.key === "Enter") { if (e.target && e.target.closest && e.target.closest("button")) return; serve(false); e.preventDefault(); } },
+      best: () => rub(S.total),
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -9181,7 +9490,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -9431,6 +9740,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { go: "moscow", ico: "🏰", t: "JUST MOSCOW", s: "Куранты, салют над Кремлём, метро с люстрами и каток в Парке Горького!", bg: "linear-gradient(135deg,#c43c3c,#1d2a6a)", fx: ["⭐", "🔔", "⛸️", "🪆"] },
       { go: "biz", ico: "💰", t: "BUSINESS EMPIRE", s: "От лимонадной лавки до космической компании. Стань триллионером!", bg: "linear-gradient(135deg,#1d6a3a,#d9a520)", fx: ["💵", "🏦", "🚀", "📈"] },
       { go: "comp", ico: "💻", t: "COMPUTER TYCOON", s: "Бесконечные деньги: собери ноутбук мечты с 8K-экраном и голограммой!", bg: "linear-gradient(135deg,#3a6ad8,#d84aa8)", fx: ["💻", "🖥️", "📷", "🔊"] },
+      { go: "cash", ico: "🪙", t: "CASH SIMULATOR", s: "1896 год: ларёк у пятиэтажки, бублики по 3 копейки — стань купцом 1-й гильдии!", bg: "linear-gradient(135deg,#8a5a34,#2a1a0a)", fx: ["🥯", "🪙", "🍵", "🏪"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
       { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
       { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
@@ -9470,7 +9780,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -9496,7 +9806,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -12314,8 +12624,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -12341,6 +12651,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubMoscow").textContent = Moscow.best();
     $("#hubBiz").textContent = Biz.best();
     $("#hubComp").textContent = Comp.best();
+    $("#hubCash").textContent = Cash.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -12358,7 +12669,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "talk") Talk.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -13028,6 +13339,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (document.hidden && current === "moscow") Moscow.leave();
     if (document.hidden && current === "biz") Biz.leave();
     if (document.hidden && current === "comp") Comp.leave();
+    if (document.hidden && current === "cash") Cash.leave();
+    if (!document.hidden && current === "cash") Cash.enter();
     if (!document.hidden && current === "biz") Biz.enter();
     if (!document.hidden && current === "vr") VR.enter();
   });
