@@ -9157,7 +9157,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const cv = $("#mnCanvas"), ctx = cv.getContext("2d");
     // word stem → [emoji, hint]; hints: soup, drink, hot, sweet, board
     const DICT = [
-      ["шакшук", "🍳", "pan"], ["люля", "🍢", "lula"], ["кебаб", "🍢", "lula"], ["ламаджо", "🫓", "lahma"], ["ламаджун", "🫓", "lahma"], ["лахмаджун", "🫓", "lahma"], ["лахмаджо", "🫓", "lahma"], ["помидор", "🍅"], ["овощ", "🥦"], ["яблоч", "🍎"], ["клубнич", "🍓"], ["чернич", "🫐"], ["малинов", "🍓"], ["фрикадел", "🧆", "hot"], ["тефтел", "🧆", "hot"], ["творо", "🧀"], ["сметан", "🥛"], ["гриль", "", "hot"], ["томат", "🍅"], ["черри", "🍅"], ["огур", "🥒"], ["латук", "🥬"], ["зелен", "🥬"], ["капуст", "🥬"], ["шпинат", "🥬"], ["руккол", "🥬"],
+      ["шакшук", "🍳", "pan"], ["пепси", "🥤", "drink"], ["спрайт", "🥤", "drink"], ["фанта", "🥤", "drink"], ["люля", "🍢", "lula"], ["кебаб", "🍢", "lula"], ["ламаджо", "🫓", "lahma"], ["ламаджун", "🫓", "lahma"], ["лахмаджун", "🫓", "lahma"], ["лахмаджо", "🫓", "lahma"], ["помидор", "🍅"], ["овощ", "🥦"], ["яблоч", "🍎"], ["клубнич", "🍓"], ["чернич", "🫐"], ["малинов", "🍓"], ["фрикадел", "🧆", "hot"], ["тефтел", "🧆", "hot"], ["творо", "🧀"], ["сметан", "🥛"], ["гриль", "", "hot"], ["томат", "🍅"], ["черри", "🍅"], ["огур", "🥒"], ["латук", "🥬"], ["зелен", "🥬"], ["капуст", "🥬"], ["шпинат", "🥬"], ["руккол", "🥬"],
       ["морков", "🥕"], ["картоф", "🥔"], ["картош", "🥔"], ["фри", "🍟"], ["лук", "🧅"], ["чеснок", "🧄"], ["перец", "🫑"], ["перч", "🌶️"], ["остр", "🌶️"],
       ["кукуруз", "🌽"], ["гриб", "🍄"], ["шампиньон", "🍄"], ["баклажан", "🍆"], ["авокадо", "🥑"], ["брокколи", "🥦"], ["горох", "🫛"], ["фасол", "🫘"], ["оливк", "🫒"], ["маслин", "🫒"],
       ["хлеб", "🍞", "board"], ["батон", "🍞", "board"], ["багет", "🥖", "board"], ["круассан", "🥐"], ["блин", "🥞", "hot"], ["олад", "🥞", "hot"], ["вафл", "🧇", "sweet"], ["сырник", "🥞", "hot"],
@@ -9176,7 +9176,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       ["газиров", "🥤", "drink"], ["коктейл", "🥤", "drink"], ["смузи", "🥤", "drink"], ["милкшейк", "🥤", "drink"], ["молок", "🥛", "drink"], ["кефир", "🥛", "drink"], ["вод", "💧", "drink"], ["компот", "🍒", "drink"], ["морс", "🍒", "drink"],
     ];
     const SOUP_COL = [["борщ", "#b8283a"], ["щи", "#9aa85a"], ["тыкв", "#ff9a3a"], ["гриб", "#8a6a4a"], ["курин", "#f0c860"], ["уха", "#e8c890"], ["окрошк", "#f4f0e0"], ["каш", "#f0e0c0"], ["овсян", "#e8d4a8"], ["том", "#d84a2a"], ["лапш", "#e8c070"], ["рамен", "#d89a50"]];
-    const DRINK_COL = [["чай", "#c97a2a"], ["кофе", "#5a3418"], ["капучино", "#c9a07a"], ["латте", "#d8b890"], ["какао", "#7a4a2a"], ["апельсин", "#ff9a1a"], ["яблок", "#e8d060"], ["вишн", "#a01f3a"], ["томат", "#c8301a"], ["кола", "#3a1a10"], ["молок", "#fbfaf4"], ["кефир", "#fbfaf4"], ["лимонад", "#f4f0a0"], ["клубник", "#ff6a8a"], ["смузи", "#ff7aa0"], ["вод", "#bfe6ff"], ["компот", "#c0504a"], ["морс", "#c0304a"], ["сок", "#ffb030"]];
+    const DRINK_COL = [["пепси", "#2a140a"], ["спрайт", "#e8f8e0"], ["фанта", "#ff8a1a"], ["чай", "#c97a2a"], ["кофе", "#5a3418"], ["капучино", "#c9a07a"], ["латте", "#d8b890"], ["какао", "#7a4a2a"], ["апельсин", "#ff9a1a"], ["яблок", "#e8d060"], ["вишн", "#a01f3a"], ["томат", "#c8301a"], ["кола", "#3a1a10"], ["молок", "#fbfaf4"], ["кефир", "#fbfaf4"], ["лимонад", "#f4f0a0"], ["клубник", "#ff6a8a"], ["смузи", "#ff7aa0"], ["вод", "#bfe6ff"], ["компот", "#c0504a"], ["морс", "#c0304a"], ["сок", "#ffb030"]];
     const CATS = [["salad", "🥗 Салаты"], ["soup", "🍲 Супы"], ["hot", "🍳 Горячее"], ["dessert", "🍰 Десерты"], ["drink", "🥤 Напитки"]];
     let data = store.get("myMenu", null); if (!data || !Array.isArray(data.items)) data = { cafe: "Кафе «Вкусняшка»", items: [] };
     let ai = store.get("menuAI", {}); if (!ai || typeof ai !== "object") ai = {};
@@ -9187,6 +9187,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function recognise(name) {
       const n = low(name).trim(); if (!n) return null;
       if (ai[n]) return ai[n];
+      if (/(бургер|биг[^а-я]*мак)/.test(n)) {
+        const big = /биг[^а-я]*мак/.test(n), dbl = big || /(двойн|дабл|double)/.test(n);
+        return { items: ["🍔"], vessel: "burger", liquid: null, hot: true, many: false, patties: dbl ? 2 : 1, cheese: big || /(чиз|сыр)/.test(n), mid: big, bacon: /бекон/.test(n), chicken: /(чикен|курин|куриц)/.test(n) };
+      }
+      if (/(наггет|наггец|нагетс)/.test(n)) return { items: ["🍗"], vessel: "nuggets", liquid: null, hot: true, many: false };
       const found = []; const hints = new Set();
       // a stem counts only at the start of a word; a shorter stem inside a longer match is ignored (сыр in сырники)
       const hits = [];
@@ -9234,7 +9239,37 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         return;
       }
       const v = spec.vessel;
-      if (v === "lula" || v === "lahma") {
+      if (v === "burger") {
+        // paper wrap on a plate, then the burger built layer by layer from the bottom
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy + 6 * k, R, R * .42, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = "#f4e8d0"; ctx.beginPath(); ctx.moveTo(cx - R * .7, cy + 10 * k); ctx.lineTo(cx - R * .55, cy - 4 * k); ctx.lineTo(cx + R * .55, cy - 4 * k); ctx.lineTo(cx + R * .7, cy + 10 * k); ctx.closePath(); ctx.fill();
+        const bw = R * .62, layers = [];
+        const bun = (top) => layers.push((y) => { const h = top ? 26 * k : 12 * k; const g = ctx.createLinearGradient(0, y - h, 0, y); g.addColorStop(0, "#e8a24a"); g.addColorStop(1, "#c9772a"); ctx.fillStyle = g; ctx.beginPath(); if (top) { ctx.moveTo(cx - bw, y); ctx.bezierCurveTo(cx - bw, y - h * 1.35, cx + bw, y - h * 1.35, cx + bw, y); } else { ctx.roundRect ? ctx.roundRect(cx - bw, y - h, bw * 2, h, 5 * k) : ctx.rect(cx - bw, y - h, bw * 2, h); } ctx.fill(); if (top) { ctx.fillStyle = "#fff6dc"; for (let i = 0; i < 11; i++) { ctx.beginPath(); ctx.ellipse(cx + (i % 6 - 2.5) * bw * .3 + (i > 5 ? bw * .15 : 0), y - h * (.55 + (i > 5 ? .25 : 0)), 2.6 * k, 1.4 * k, (i % 3 - 1) * .5, 0, 7); ctx.fill(); } } return h; });
+        const patty = () => layers.push((y) => { const h = 13 * k; ctx.fillStyle = spec.chicken ? "#d9963a" : "#5a2a14"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - bw * 1.04, y - h, bw * 2.08, h, 6 * k) : ctx.rect(cx - bw, y - h, bw * 2, h); ctx.fill(); ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(cx - bw * .9, y - h + 2 * k, bw * 1.8, 2 * k); return h - 2 * k; });
+        const cheese = () => layers.push((y) => { ctx.fillStyle = "#ffc21a"; ctx.beginPath(); ctx.moveTo(cx - bw * 1.08, y - 4 * k); ctx.lineTo(cx + bw * 1.08, y - 4 * k); ctx.lineTo(cx + bw * .9, y + 2 * k); ctx.lineTo(cx + bw * .6, y + 9 * k); ctx.lineTo(cx + bw * .4, y + 2 * k); ctx.lineTo(cx - bw * .3, y + 2 * k); ctx.lineTo(cx - bw * .55, y + 10 * k); ctx.lineTo(cx - bw * .8, y + 2 * k); ctx.closePath(); ctx.fill(); return 4 * k; });
+        const lettuce = () => layers.push((y) => { ctx.fillStyle = "#5ab83a"; ctx.beginPath(); ctx.moveTo(cx - bw * 1.1, y); for (let i = 0; i <= 12; i++) ctx.lineTo(cx - bw * 1.1 + i * bw * 2.2 / 12, y - (i % 2 ? 7 : 2) * k); ctx.lineTo(cx + bw * 1.1, y + 3 * k); ctx.closePath(); ctx.fill(); return 5 * k; });
+        const tomato = () => layers.push((y) => { ctx.fillStyle = "#e3312a"; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - bw * .9, y - 6 * k, bw * 1.8, 6 * k, 3 * k) : ctx.rect(cx - bw * .9, y - 6 * k, bw * 1.8, 6 * k); ctx.fill(); return 5 * k; });
+        const sauce = () => layers.push((y) => { ctx.fillStyle = "#f4c890"; ctx.beginPath(); ctx.ellipse(cx, y - 2 * k, bw * 1.02, 3 * k, 0, 0, 7); ctx.fill(); return 2 * k; });
+        const bacon = () => layers.push((y) => { ctx.strokeStyle = "#b8422a"; ctx.lineWidth = 4 * k; ctx.beginPath(); for (let i = 0; i <= 10; i++) ctx.lineTo(cx - bw + i * bw / 5, y - 3 * k + Math.sin(i * 1.4) * 2 * k); ctx.stroke(); return 4 * k; });
+        bun(false); patty(); if (spec.cheese) cheese(); if (spec.patties === 2 && !spec.mid) { patty(); if (spec.cheese) cheese(); } if (spec.bacon) bacon();
+        if (spec.mid) { lettuce(); sauce(); bun(false); patty(); cheese(); }
+        lettuce(); if (!spec.mid) tomato(); sauce(); bun(true);
+        let y = cy + 6 * k; const n2 = layers.length;
+        layers.forEach((f, i) => { const d = Math.min(1, Math.max(0, appear * (n2 + 1) - i)); if (d <= 0) return; const drop = (1 - d) * 24 * k; ctx.globalAlpha = d; y -= f(y - drop); ctx.globalAlpha = 1; });
+      } else if (v === "nuggets") {
+        // paper box with golden nuggets and a cup of sauce
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy + 6 * k, R, R * .42, 0, 0, 7); ctx.fill();
+        const bx = cx - R * .55, bw2 = R * .8, by = cy + 12 * k;
+        ctx.fillStyle = "#d8282a"; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx - 8 * k, by - 40 * k); ctx.lineTo(bx + bw2 + 8 * k, by - 40 * k); ctx.lineTo(bx + bw2, by); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#b81e20"; ctx.beginPath(); ctx.moveTo(bx - 8 * k, by - 40 * k); ctx.lineTo(bx + 4 * k, by - 58 * k); ctx.lineTo(bx + bw2 - 4 * k, by - 58 * k); ctx.lineTo(bx + bw2 + 8 * k, by - 40 * k); ctx.closePath(); ctx.fill();
+        const shapes = [[-.32, -.5], [-.05, -.56], [.24, -.5], [-.2, -.34], [.1, -.32], [.36, -.34]];
+        shapes.forEach(([ox, oy], i) => { const d = Math.min(1, Math.max(0, appear * 7 - i)); if (d <= 0) return; const x = bx + bw2 / 2 + ox * bw2, yy = by + oy * 80 * k - (1 - d) * 20 * k; const ng = ctx.createRadialGradient(x - 3 * k, yy - 3 * k, 1, x, yy, 13 * k); ng.addColorStop(0, "#ffd27a"); ng.addColorStop(1, "#c9822a"); ctx.fillStyle = ng; ctx.beginPath(); for (let j = 0; j <= 10; j++) { const an = j / 10 * Math.PI * 2, rr2 = (11 + Math.sin(j * 2.3 + i) * 2.5) * k; j ? ctx.lineTo(x + Math.cos(an) * rr2 * 1.2, yy + Math.sin(an) * rr2 * .8) : ctx.moveTo(x + Math.cos(an) * rr2 * 1.2, yy + Math.sin(an) * rr2 * .8); } ctx.fill(); ctx.fillStyle = "rgba(140,70,10,.35)"; for (let j = 0; j < 4; j++) ctx.fillRect(x - 6 * k + j * 4 * k, yy - 2 * k + (j % 2) * 3 * k, 1.6 * k, 1.6 * k); });
+        // dipping sauce
+        const sx = cx + R * .55, sy = cy + 4 * k;
+        ctx.fillStyle = "#f4f4f8"; ctx.beginPath(); ctx.ellipse(sx, sy + 8 * k, 20 * k, 8 * k, 0, 0, 7); ctx.fill(); ctx.fillRect(sx - 20 * k, sy - 4 * k, 40 * k, 12 * k);
+        ctx.fillStyle = "#c8401a"; ctx.beginPath(); ctx.ellipse(sx, sy - 4 * k, 18 * k, 6 * k, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.ellipse(sx - 6 * k, sy - 6 * k, 5 * k, 1.5 * k, 0, 0, 7); ctx.fill();
+      } else if (v === "lula" || v === "lahma") {
         // a wooden board under both dishes
         ctx.fillStyle = "#a8743a"; ctx.beginPath(); ctx.ellipse(cx, cy + 4 * k, R * 1.08, R * .47, 0, 0, 7); ctx.fill();
         ctx.fillStyle = "#c9944f"; ctx.beginPath(); ctx.ellipse(cx, cy, R * 1.03, R * .44, 0, 0, 7); ctx.fill();
@@ -9304,6 +9339,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         const gh = 64 * k, gw = R * .45;
         ctx.fillStyle = "rgba(220,240,255,.55)"; ctx.beginPath(); ctx.moveTo(cx - gw, cy - gh * .6); ctx.lineTo(cx - gw * .8, cy + gh * .4); ctx.lineTo(cx + gw * .8, cy + gh * .4); ctx.lineTo(cx + gw, cy - gh * .6); ctx.fill();
         ctx.fillStyle = spec.liquid; ctx.globalAlpha = .9 * a; const top = cy - gh * .45 + (1 - a) * gh * .8; ctx.beginPath(); ctx.moveTo(cx - gw * .97 + (top - (cy - gh * .6)) * .02, top); ctx.lineTo(cx - gw * .8, cy + gh * .4); ctx.lineTo(cx + gw * .8, cy + gh * .4); ctx.lineTo(cx + gw * .97, top); ctx.fill(); ctx.globalAlpha = 1;
+        if (/^#(2a140a|3a1a10|e8f8e0|ff8a1a)$/i.test(spec.liquid || "") && a >= 1) {
+          // fizzy drink: ice cubes and rising bubbles
+          ctx.fillStyle = "rgba(230,245,255,.75)"; [[-.4, -.35, .2], [.15, -.42, -.15], [-.05, -.18, .4]].forEach(([ix, iy, rot]) => { ctx.save(); ctx.translate(cx + ix * gw, cy + iy * gh); ctx.rotate(rot); ctx.fillRect(-7 * k, -7 * k, 14 * k, 14 * k); ctx.restore(); });
+          ctx.fillStyle = "rgba(255,255,255,.7)"; const tt = performance.now() / 1000; for (let i = 0; i < 12; i++) { const bxp = cx + (((i * .37) % 1) - .5) * gw * 1.4, byp = cy + gh * .35 - ((tt * 30 * k + i * 11 * k) % (gh * .75)); ctx.beginPath(); ctx.arc(bxp, byp, 1.4 * k, 0, 7); ctx.fill(); }
+        }
         ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - gw * .7, cy - gh * .5); ctx.lineTo(cx - gw * .6, cy + gh * .3); ctx.stroke();
         ctx.strokeStyle = "#ff5ad1"; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.moveTo(cx + gw * .2, cy); ctx.lineTo(cx + gw * .6, cy - gh * .9); ctx.stroke();
         if (spec.items[0] && !"🥤🧃💧🥛".includes(spec.items[0])) emo(spec.items[0], cx - gw * .9, cy - gh * .55, 18 * k);
@@ -9318,7 +9358,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         ctx.fillStyle = "#fffdf2"; ctx.beginPath(); ctx.ellipse(cx + R * .12, cy - 10 * k, R * .14, R * .06, 0, 0, 7); ctx.fill();
         ctx.fillStyle = "#3a9a3a"; for (let i = 0; i < 9; i++) { const an = i * 2.4, rr2 = R * (.2 + (i % 3) * .15); ctx.fillRect(cx + Math.cos(an) * rr2, cy - 8 * k + Math.sin(an) * rr2 * .32, 3 * k, 2 * k); }
       }
-      if (v !== "cup" && v !== "glass" && v !== "pan" && v !== "lula" && v !== "lahma") {
+      if (!["cup", "glass", "pan", "lula", "lahma", "burger", "nuggets"].includes(v)) {
         const its = v === "bowl" ? spec.items.filter((e) => e !== "🍲" && e !== "🥣") : spec.items, pos = [];
         if (its.length === 1 && spec.many) { const n = 5; for (let i = 0; i < n; i++) { const an = i / n * Math.PI * 2 + .4; pos.push([its[0], cx + Math.cos(an) * R * .38, cy - 4 * k + Math.sin(an) * R * .15, 34 * k]); } pos.push([its[0], cx, cy - 6 * k, 38 * k]); }
         else if (its.length === 1) pos.push([its[0], cx, cy - 10 * k, 62 * k]);
@@ -9419,7 +9459,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const cb = $("#mnCats"); cb.innerHTML = "";
       CATS.forEach(([id, t]) => { const b = document.createElement("button"); b.type = "button"; b.dataset.cat = id; b.textContent = t; b.addEventListener("click", () => { cat = id; $("#mnName").dataset.catTouched = "1"; renderCats(); }); cb.appendChild(b); });
       renderCats();
-      const ideas = ["Шакшука", "Люля-кебаб", "Ламаджо", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
+      const ideas = ["Чизбургер", "Биг-Мак", "Мак'наггетс", "Пепси", "Шакшука", "Люля-кебаб", "Ламаджо", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
       const ib = $("#mnIdeas"); ib.innerHTML = "";
       ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#mnName").value = s; delete $("#mnName").dataset.catTouched; setPreview(s); $("#mnPrice").focus(); }); ib.appendChild(b); });
     }
