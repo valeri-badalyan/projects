@@ -9157,7 +9157,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const cv = $("#mnCanvas"), ctx = cv.getContext("2d");
     // word stem → [emoji, hint]; hints: soup, drink, hot, sweet, board
     const DICT = [
-      ["шакшук", "🍳", "pan"], ["помидор", "🍅"], ["овощ", "🥦"], ["яблоч", "🍎"], ["клубнич", "🍓"], ["чернич", "🫐"], ["малинов", "🍓"], ["фрикадел", "🧆", "hot"], ["тефтел", "🧆", "hot"], ["творо", "🧀"], ["сметан", "🥛"], ["гриль", "", "hot"], ["томат", "🍅"], ["черри", "🍅"], ["огур", "🥒"], ["латук", "🥬"], ["зелен", "🥬"], ["капуст", "🥬"], ["шпинат", "🥬"], ["руккол", "🥬"],
+      ["шакшук", "🍳", "pan"], ["люля", "🍢", "lula"], ["кебаб", "🍢", "lula"], ["ламаджо", "🫓", "lahma"], ["ламаджун", "🫓", "lahma"], ["лахмаджун", "🫓", "lahma"], ["лахмаджо", "🫓", "lahma"], ["помидор", "🍅"], ["овощ", "🥦"], ["яблоч", "🍎"], ["клубнич", "🍓"], ["чернич", "🫐"], ["малинов", "🍓"], ["фрикадел", "🧆", "hot"], ["тефтел", "🧆", "hot"], ["творо", "🧀"], ["сметан", "🥛"], ["гриль", "", "hot"], ["томат", "🍅"], ["черри", "🍅"], ["огур", "🥒"], ["латук", "🥬"], ["зелен", "🥬"], ["капуст", "🥬"], ["шпинат", "🥬"], ["руккол", "🥬"],
       ["морков", "🥕"], ["картоф", "🥔"], ["картош", "🥔"], ["фри", "🍟"], ["лук", "🧅"], ["чеснок", "🧄"], ["перец", "🫑"], ["перч", "🌶️"], ["остр", "🌶️"],
       ["кукуруз", "🌽"], ["гриб", "🍄"], ["шампиньон", "🍄"], ["баклажан", "🍆"], ["авокадо", "🥑"], ["брокколи", "🥦"], ["горох", "🫛"], ["фасол", "🫘"], ["оливк", "🫒"], ["маслин", "🫒"],
       ["хлеб", "🍞", "board"], ["батон", "🍞", "board"], ["багет", "🥖", "board"], ["круассан", "🥐"], ["блин", "🥞", "hot"], ["олад", "🥞", "hot"], ["вафл", "🧇", "sweet"], ["сырник", "🥞", "hot"],
@@ -9195,10 +9195,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!found.length) return null;
       found.sort((a, b) => a[0] - b[0]);
       const items = []; found.forEach(([, e]) => { if (!items.includes(e)) items.push(e); });
-      let vessel = hints.has("pan") ? "pan" : hints.has("soup") ? "bowl" : hints.has("drink") ? (/(чай|кофе|капучино|латте|какао|эспрессо)/.test(n) ? "cup" : "glass") : hints.has("board") && items.length <= 2 ? "board" : "plate";
+      let vessel = hints.has("lula") ? "lula" : hints.has("lahma") ? "lahma" : hints.has("pan") ? "pan" : hints.has("soup") ? "bowl" : hints.has("drink") ? (/(чай|кофе|капучино|латте|какао|эспрессо)/.test(n) ? "cup" : "glass") : hints.has("board") && items.length <= 2 ? "board" : "plate";
       let liquid = null;
       if (vessel === "bowl") liquid = (SOUP_COL.find(([k]) => n.includes(k)) || [0, "#e8b860"])[1];
       if (vessel === "cup" || vessel === "glass") liquid = (DRINK_COL.find(([k]) => n.includes(k)) || [0, "#ffb030"])[1];
+      if (vessel === "lula") return { items: ["🍢", "🧅", "🍅"], vessel, liquid: null, hot: true, many: false };
+      if (vessel === "lahma") return { items: ["🫓", "🥩", "🍋"], vessel, liquid: null, hot: true, many: false };
       if (vessel === "pan") return { items: ["🍳", "🍅"], vessel, liquid: "#c8301a", hot: true, many: false };
       const hot = hints.has("hot") || vessel === "bowl" && !/окрошк/.test(n) || vessel === "cup" || /(горяч|жарен|печен|тушен|запеч|гриль|пицц)/.test(n);
       const plural = /(ы|и|а)\b/.test(n.split(/\s+/)[0]) && !/(суп|паст|пицц|кола|вод)/.test(n);
@@ -9232,7 +9234,43 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         return;
       }
       const v = spec.vessel;
-      if (v === "pan") {
+      if (v === "lula" || v === "lahma") {
+        // a wooden board under both dishes
+        ctx.fillStyle = "#a8743a"; ctx.beginPath(); ctx.ellipse(cx, cy + 4 * k, R * 1.08, R * .47, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = "#c9944f"; ctx.beginPath(); ctx.ellipse(cx, cy, R * 1.03, R * .44, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = "rgba(120,70,30,.25)"; ctx.lineWidth = 1; for (let i = -3; i <= 3; i++) { ctx.beginPath(); ctx.ellipse(cx, cy, R * (.3 + Math.abs(i) * .1), R * (.12 + Math.abs(i) * .04), 0, .2, 2.6); ctx.stroke(); }
+        const lemon = (x, y) => { ctx.fillStyle = "#ffe04a"; ctx.beginPath(); ctx.arc(x, y, 11 * k, Math.PI, 0); ctx.fill(); ctx.fillStyle = "#fff6c0"; ctx.beginPath(); ctx.arc(x, y, 8 * k, Math.PI, 0); ctx.fill(); ctx.strokeStyle = "#ffd21a"; ctx.lineWidth = 1; for (let j = 1; j < 6; j++) { const an = Math.PI + j * Math.PI / 6; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(an) * 8 * k, y + Math.sin(an) * 8 * k); ctx.stroke(); } };
+        const herbs = (n, spread) => { for (let i = 0; i < n; i++) { const an = i * 2.3, rr2 = R * spread * (.3 + (i % 4) * .2); ctx.fillStyle = i % 2 ? "#2f8a3a" : "#4ab04a"; ctx.beginPath(); ctx.ellipse(cx + Math.cos(an) * rr2, cy + Math.sin(an) * rr2 * .36, 4 * k, 2.2 * k, an, 0, 7); ctx.fill(); } };
+        if (v === "lula") {
+          // thin lavash sheet with folded edges
+          ctx.fillStyle = "#f0d9a8"; ctx.beginPath(); ctx.ellipse(cx, cy, R * .9, R * .36, -.05, 0, 7); ctx.fill();
+          ctx.fillStyle = "rgba(160,100,40,.25)"; for (let i = 0; i < 18; i++) { ctx.beginPath(); ctx.arc(cx + Math.cos(i * 1.9) * R * (.2 + (i % 5) * .13), cy + Math.sin(i * 1.9) * R * .25, 2.5 * k, 0, 7); ctx.fill(); }
+          // red onion rings
+          ctx.strokeStyle = "#b04a8a"; ctx.lineWidth = 2 * k; [[-.55, .1], [-.42, -.08], [.5, .12], [.6, -.06]].forEach(([ox, oy]) => { ctx.beginPath(); ctx.ellipse(cx + ox * R, cy + oy * R, 9 * k, 4.5 * k, 0, 0, 7); ctx.stroke(); });
+          // three kebabs on skewers, appearing one by one
+          [-.2, 0, .2].forEach((oy, i) => {
+            const d = Math.min(1, Math.max(0, appear * 4 - i)); if (d <= 0) return;
+            const y = cy + oy * R * .9 - (1 - d) * 20 * k, x0 = cx - R * .62, x1 = cx + R * .62;
+            ctx.strokeStyle = "#c9ccd6"; ctx.lineWidth = 2.5 * k; ctx.beginPath(); ctx.moveTo(x0 - 18 * k, y); ctx.lineTo(x1 + 14 * k, y); ctx.stroke();
+            ctx.fillStyle = "#3a3a42"; ctx.fillRect(x0 - 26 * k, y - 3 * k, 10 * k, 6 * k);
+            const mg = ctx.createLinearGradient(0, y - 8 * k, 0, y + 8 * k); mg.addColorStop(0, "#a0582a"); mg.addColorStop(.5, "#7a3a1a"); mg.addColorStop(1, "#4a200c");
+            ctx.fillStyle = mg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x0, y - 8 * k, x1 - x0, 16 * k, 8 * k) : ctx.rect(x0, y - 8 * k, x1 - x0, 16 * k); ctx.fill();
+            ctx.strokeStyle = "rgba(30,10,0,.55)"; ctx.lineWidth = 2 * k; for (let j = 1; j < 7; j++) { const gx = x0 + j * (x1 - x0) / 7; ctx.beginPath(); ctx.moveTo(gx - 3 * k, y - 7 * k); ctx.lineTo(gx + 3 * k, y + 7 * k); ctx.stroke(); }
+            ctx.fillStyle = "rgba(255,200,140,.35)"; ctx.fillRect(x0 + 6 * k, y - 6 * k, x1 - x0 - 12 * k, 2 * k);
+          });
+          if (appear >= 1) { herbs(10, .9); emo("🍅", cx + R * .7, cy + R * .2, 20 * k); lemon(cx - R * .72, cy + R * .24); }
+        } else {
+          // lahmajo: thin round flatbread with a spiced meat topping
+          const fr = R * .82;
+          ctx.fillStyle = "#d9a85a"; ctx.beginPath(); ctx.ellipse(cx, cy - 2 * k, fr, fr * .42, 0, 0, 7); ctx.fill();
+          ctx.fillStyle = "#8a3a1a"; ctx.beginPath(); ctx.ellipse(cx, cy - 2 * k, fr * .88, fr * .36, 0, 0, 7); ctx.fill();
+          const d = Math.min(1, appear * 1.5);
+          ctx.fillStyle = `rgba(200,60,30,${.8 * d})`; ctx.beginPath(); ctx.ellipse(cx, cy - 2 * k, fr * .86, fr * .35, 0, 0, 7); ctx.fill();
+          for (let i = 0; i < 70; i++) { const an = i * 2.39996, rr2 = Math.sqrt((i + .5) / 70) * fr * .82; ctx.fillStyle = i % 3 ? "rgba(110,40,20,.85)" : "rgba(240,120,60,.8)"; ctx.beginPath(); ctx.arc(cx + Math.cos(an) * rr2, cy - 2 * k + Math.sin(an) * rr2 * .41, (i % 3 ? 2.6 : 1.8) * k, 0, 7); ctx.fill(); }
+          ctx.strokeStyle = "rgba(255,220,150,.6)"; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.ellipse(cx, cy - 2 * k, fr * .97, fr * .405, 0, 3.4, 5.6); ctx.stroke();
+          if (appear >= 1) { herbs(14, .75); lemon(cx + fr * .95, cy + fr * .3); }
+        }
+      } else if (v === "pan") {
         // cast-iron skillet: red tomato sauce, eggs with runny yolks, herbs
         ctx.fillStyle = "#2a2a30"; ctx.save(); ctx.translate(cx + R * .95, cy - 2 * k); ctx.rotate(-.12); ctx.fillRect(0, -6 * k, R * .55, 12 * k); ctx.restore();
         ctx.fillStyle = "#1c1c22"; ctx.beginPath(); ctx.ellipse(cx, cy + 4 * k, R, R * .44, 0, 0, 7); ctx.fill();
@@ -9280,7 +9318,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         ctx.fillStyle = "#fffdf2"; ctx.beginPath(); ctx.ellipse(cx + R * .12, cy - 10 * k, R * .14, R * .06, 0, 0, 7); ctx.fill();
         ctx.fillStyle = "#3a9a3a"; for (let i = 0; i < 9; i++) { const an = i * 2.4, rr2 = R * (.2 + (i % 3) * .15); ctx.fillRect(cx + Math.cos(an) * rr2, cy - 8 * k + Math.sin(an) * rr2 * .32, 3 * k, 2 * k); }
       }
-      if (v !== "cup" && v !== "glass" && v !== "pan") {
+      if (v !== "cup" && v !== "glass" && v !== "pan" && v !== "lula" && v !== "lahma") {
         const its = v === "bowl" ? spec.items.filter((e) => e !== "🍲" && e !== "🥣") : spec.items, pos = [];
         if (its.length === 1 && spec.many) { const n = 5; for (let i = 0; i < n; i++) { const an = i / n * Math.PI * 2 + .4; pos.push([its[0], cx + Math.cos(an) * R * .38, cy - 4 * k + Math.sin(an) * R * .15, 34 * k]); } pos.push([its[0], cx, cy - 6 * k, 38 * k]); }
         else if (its.length === 1) pos.push([its[0], cx, cy - 10 * k, 62 * k]);
@@ -9381,7 +9419,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const cb = $("#mnCats"); cb.innerHTML = "";
       CATS.forEach(([id, t]) => { const b = document.createElement("button"); b.type = "button"; b.dataset.cat = id; b.textContent = t; b.addEventListener("click", () => { cat = id; $("#mnName").dataset.catTouched = "1"; renderCats(); }); cb.appendChild(b); });
       renderCats();
-      const ideas = ["Шакшука", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
+      const ideas = ["Шакшука", "Люля-кебаб", "Ламаджо", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
       const ib = $("#mnIdeas"); ib.innerHTML = "";
       ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#mnName").value = s; delete $("#mnName").dataset.catTouched; setPreview(s); $("#mnPrice").focus(); }); ib.appendChild(b); });
     }
