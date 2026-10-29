@@ -683,6 +683,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mn-row em { font-style: normal; font-weight: 700; white-space: nowrap; color: #7a1f2a; }
 .mn-del { border: 0; background: none; color: rgba(58,42,26,.4); cursor: pointer; font-size: 13px; padding: 0 2px; }
 .mn-empty { margin: 4px 0 0; text-align: center; font: italic 14px Georgia, serif; color: rgba(58,42,26,.6); }
+#usCanvas { display: block; width: 100%; }
+.us-stats { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 14px; background: linear-gradient(135deg, #8a1f2a, #3a0e14); border: 2px solid rgba(255,216,77,.4); }
+.us-money { text-align: center; }
+.us-money small { display: block; font-size: 10px; color: #f4d8c0; font-weight: 800; }
+.us-money b { font-size: 15px; color: #ffd84d; white-space: nowrap; }
+.us-bars { display: flex; flex-direction: column; gap: 3px; }
+.us-bars label { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: #f4e6c8; }
+.us-bars span { height: 8px; border-radius: 99px; background: rgba(255,255,255,.15); overflow: hidden; }
+.us-bars i { display: block; height: 100%; width: 0; border-radius: 99px; transition: width .3s, background .3s; }
+.us-places { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.us-places button { flex-direction: column; gap: 2px; padding: 6px 2px; font-size: 10.5px; text-align: center; justify-content: center; }
+.us-places button i { width: auto; height: auto; background: none; font-size: 20px; }
+.us-acts button { border-color: rgba(255,216,77,.6); }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1526,6 +1539,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">В меню</span><span class="stat-val" id="hubMenu">—</span></span>
       </button>
+      <button class="cart" data-go="ussr" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#9cc8e8"/><rect x="2" y="14" width="36" height="38" fill="#c9c4b8"/><g fill="#6a7a8a"><rect x="5" y="17" width="5" height="5"/><rect x="13" y="17" width="5" height="5"/><rect x="21" y="17" width="5" height="5" fill="#ffd27a"/><rect x="29" y="17" width="5" height="5"/><rect x="5" y="25" width="5" height="5"/><rect x="13" y="25" width="5" height="5" fill="#ffd27a"/><rect x="21" y="25" width="5" height="5"/><rect x="29" y="25" width="5" height="5"/><rect x="5" y="33" width="5" height="5"/><rect x="13" y="33" width="5" height="5"/><rect x="21" y="33" width="5" height="5"/><rect x="29" y="33" width="5" height="5" fill="#ffd27a"/><rect x="5" y="41" width="5" height="5"/><rect x="21" y="41" width="5" height="5"/><rect x="29" y="41" width="5" height="5"/></g><rect y="52" width="64" height="12" fill="#7aa85a"/><rect x="42" y="22" width="16" height="32" rx="2" fill="#c8282a"/><rect x="44" y="25" width="12" height="5" fill="#f4f0e6"/><rect x="46" y="38" width="8" height="10" fill="#3a1a1a"/><rect x="48" y="41" width="4" height="6" fill="#ffc83a" opacity=".9"/><path d="M14 2 l2 4 4 .5 -3 3 .8 4 -3.8 -2 -3.8 2 .8 -4 -3 -3 4 -.5z" fill="#d8202a"/><text x="44" y="12" font-size="9" font-weight="900" fill="#8a1f2a" font-family="sans-serif">1986</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Жизнь сладка!</span>
+          <span class="cart-desc">Симулятор жизни в СССР, 1986 год: школа, гастроном, газировка за 3 копейки, кино, стеклотара — копи на велосипед!</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Прожито</span><span class="stat-val" id="hubUssr">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2087,6 +2110,32 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
     <button class="btn" type="button" id="mnGuest">🛎️ Позвать гостя</button>
     <p class="hint">Пиши название — и блюдо сразу появляется на тарелке: помидоры, борщ, пицца, капучино, торт… Нажми на блюдо в меню, чтобы снова его показать. Гости заказывают из твоего меню и ставят звёзды: вкусно и недорого — 5 звёзд.</p>
+  </section>
+
+  <section id="ussr" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Жизнь сладка!</div>
+      <div class="chips"><div class="chip hi"><span>Год</span><b>1986</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Жизнь сладка!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="us-stats">
+      <div class="us-money"><small>В кармане</small><b id="usMoney">50 коп.</b></div>
+      <div class="us-bars">
+        <label>🍞 Сытость<span><i id="usFull"></i></span></label>
+        <label>⚡ Силы<span><i id="usEnergy"></i></span></label>
+        <label>😊 Настроение<span><i id="usMood"></i></span></label>
+      </div>
+      <div class="us-money"><small>Пятёрок</small><b id="usFives">0</b></div>
+    </div>
+    <div class="ct-stage"><canvas id="usCanvas" width="360" height="240" aria-label="Жизнь в 1986 году"></canvas></div>
+    <div class="cs-shop us-acts" id="usActs"></div>
+    <div class="dx-places us-places" id="usPlaces" aria-label="Куда пойти"></div>
+    <p class="hint">1986 год, ты — школьник. Утром мама даёт 30 копеек (и ещё по 10 за каждую пятёрку). Ходи в школу, покупай пломбир и лимонад «Буратино» в гастрономе, пей газировку из автомата за 1–3 копейки, собирай бутылки и сдавай их, копи на велосипед «Школьник» и магнитофон. Следи за сытостью, силами и настроением, вечером — спать! <button type="button" class="linkish" id="usReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -5899,7 +5948,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6174,7 +6223,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -9482,6 +9531,318 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     };
   })();
 
+  /* ================= Жизнь сладка! — a Soviet kid's life in 1986 ================= */
+  const Ussr = (() => {
+    const cv = $("#usCanvas"), ctx = cv.getContext("2d");
+    const START = new Date(1986, 8, 1); // Monday, 1 September 1986
+    const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+    const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
+    const PLACES = [
+      ["home", "🏠", "Квартира"], ["school", "🏫", "Школа"], ["shop", "🛒", "Гастроном"], ["yard", "🌳", "Двор"],
+      ["soda", "🥤", "Газировка"], ["kino", "🎬", "Кинотеатр"], ["glass", "🍾", "Стеклотара"], ["toys", "🧸", "Детский мир"],
+    ];
+    // food: [id, name, icon, kopecks, fullness, mood, bottle?]
+    const FOOD = [
+      ["baton", "Батон", "🍞", 22, 30, 2, ""], ["milk", "Молоко в бутылке", "🥛", 28, 20, 3, "milk"], ["plombir", "Пломбир в стаканчике", "🍦", 20, 10, 15, ""],
+      ["eskimo", "Эскимо", "🍫", 11, 6, 10, ""], ["buratino", "Лимонад «Буратино»", "🍾", 30, 5, 12, "lemon"], ["mishka", "Конфеты «Мишка на Севере»", "🍬", 35, 6, 14, ""],
+      ["sgush", "Сгущёнка", "🥫", 55, 15, 16, ""], ["pelmeni", "Пельмени", "🥟", 50, 40, 6, ""], ["kolbasa", "Докторская колбаса", "🌭", 70, 35, 8, ""],
+      ["tort", "Торт «Птичье молоко»", "🎂", 250, 30, 30, ""],
+    ];
+    const DEFICIT = ["sgush", "tort", "kolbasa", "mishka"];
+    // toys: [id, name, icon, kopecks, text]
+    const TOYS = [
+      ["badge", "Значок «Олимпийский мишка»", "🧸", 15, "приколешь на форму"], ["ball", "Мяч футбольный", "⚽", 250, "+ веселее во дворе"], ["rubik", "Кубик Рубика", "🎲", 400, "собери все грани"],
+      ["bike", "Велосипед «Школьник»", "🚲", 2500, "катайся по двору"], ["tape", "Магнитофон «Электроника»", "📻", 6000, "музыка дома"],
+    ];
+    const FILMS = ["Мультсборник", "«Приключения Электроника»", "«Гостья из будущего»", "«Кин-дза-дза!»", "«Москва слезам не верит»", "Сказка «Морозко»"];
+    function fresh() { return { day: 0, hour: 8, money: 100, full: 70, energy: 90, mood: 70, fives: 0, grades: [], bottles: { milk: 0, lemon: 0 }, fridge: {}, toys: [], homework: false, stock: {}, stockDay: -1, log: 0 }; }
+    let S = store.get("ussrLife", null); if (!S || typeof S.money !== "number") S = fresh();
+    let place = "home", visible = false, raf = 0, T0 = performance.now(), W = 360, H = 240, dpr = 1, U = 1;
+    let fx = null, quiz = null, soda = 0, sodaSyrup = false, warnF = false, warnE = false;
+
+    // ---------- time & money ----------
+    const today = () => { const d = new Date(START); d.setDate(d.getDate() + S.day); return d; };
+    const wd = () => today().getDay();
+    function dateStr() { const d = today(); return `${WD[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`; }
+    function kop(k) { k = Math.round(k); const r = Math.floor(k / 100), c = k % 100; return r ? (c ? `${r} р. ${c} коп.` : `${r} р.`) : `${c} коп.`; }
+    const clamp = (v) => Math.max(0, Math.min(100, v));
+    function spend(h) {
+      S.hour += h; S.full = clamp(S.full - 5 * h); S.energy = clamp(S.energy - 5 * h);
+      if (S.full < 20) S.mood = clamp(S.mood - 4 * h);
+    }
+    function restock() {
+      if (S.stockDay === S.day) return;
+      S.stockDay = S.day; S.stock = {};
+      FOOD.forEach((f) => { S.stock[f[0]] = DEFICIT.includes(f[0]) ? Math.random() < .45 : true; });
+    }
+    const say = (t, kind) => Hero.say("ussr", kind || "good", t);
+
+    // ---------- sound ----------
+    let AC = null;
+    function beep(f, d, type) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type || "square"; o.frequency.value = f; g.gain.setValueAtTime(.05, AC.currentTime); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d + .02); } catch (e) { /* optional */ } }
+    function coin() { beep(1800, .12, "triangle"); setTimeout(() => beep(2400, .15, "triangle"), 70); }
+    function bell() { [880, 660, 880, 660].forEach((f, i) => setTimeout(() => beep(f, .18, "sine"), i * 160)); }
+
+    // ---------- actions per place ----------
+    function actions() {
+      const late = S.hour >= 22, A = [];
+      const add = (ico, t, note, ok, fn) => A.push({ ico, t, note, ok, fn });
+      if (late && place !== "home") { add("🌙", "Уже поздно — пора домой", "мама волнуется", true, () => go("home")); return A; }
+      if (place === "home") {
+        add("🛏️", "Лечь спать", late ? "уже 22:00 — спать!" : "утром мама даст 30 коп. на карманные расходы", true, sleep);
+        const food = Object.keys(S.fridge).filter((k) => S.fridge[k] > 0);
+        food.forEach((id) => { const f = FOOD.find((q) => q[0] === id); add(f[2], `Съесть: ${f[1]}`, `в холодильнике ${S.fridge[id]} шт.`, !late, () => eat(f, true)); });
+        add("📺", "Смотреть мультфильмы по телевизору", "1 час · настроение +", !late && S.hour >= 15, () => { spend(1); S.mood = clamp(S.mood + 15); fx = { k: "tv", t: 3 }; say("По «Рубину» показывают мультики! Красота."); });
+        add("📖", "Делать уроки", S.homework ? "уроки сделаны ✓" : "2 часа · завтра легче получить пятёрку", !late && !S.homework, () => { spend(2); S.homework = true; S.mood = clamp(S.mood - 3); say("Уроки сделаны! Завтра пятёрка будет моя."); });
+        if (S.toys.includes("tape")) add("📻", "Включить магнитофон", "1 час · настроение ++", !late, () => { spend(1); S.mood = clamp(S.mood + 20); fx = { k: "music", t: 3 }; say("Кассета играет — дискотека дома!"); });
+        if (S.toys.includes("rubik")) add("🎲", "Собирать кубик Рубика", "1 час", !late, () => { spend(1); const ok = Math.random() < .35; S.mood = clamp(S.mood + (ok ? 20 : 4)); say(ok ? "Собрал кубик Рубика! Все грани одного цвета!" : "Почти собрал… одна грань не сходится."); });
+      } else if (place === "school") {
+        const open = wd() !== 0 && S.hour < 14;
+        if (quiz) quiz.opts.forEach((o) => add("✏️", String(o), "ответ", true, () => answer(o)));
+        else {
+          add("🔔", "Пойти на урок", open ? "1 час · учительница спросит у доски" : wd() === 0 ? "воскресенье — школа закрыта" : "уроки закончились в 14:00", open && S.energy > 5, lesson);
+          add("🥯", "Булочка в буфете", "5 коп. · сытость +", open && S.money >= 5, () => { S.money -= 5; S.full = clamp(S.full + 18); coin(); say("Свежая булочка с маком из буфета!"); });
+        }
+      } else if (place === "shop") {
+        restock();
+        FOOD.forEach((f) => { const has = S.stock[f[0]]; add(f[2], f[1], has ? kop(f[3]) : "Дефицит! Сегодня не завезли", has && S.money >= f[3], () => buy(f)); });
+      } else if (place === "yard") {
+        add("⚽", "Играть в футбол", S.toys.includes("ball") ? "своим мячом! 2 часа · настроение ++" : "2 часа · мяч у Петьки", S.energy > 15, () => { spend(2); S.mood = clamp(S.mood + (S.toys.includes("ball") ? 25 : 14)); fx = { k: "ball", t: 3 }; say(Math.random() < .5 ? "Гол! Ты забил прямо в «девятку»!" : "Сыграли 5:4 — наша взяла!"); });
+        add("🟦", "Прыгать в классики", "1 час · настроение +", S.energy > 8, () => { spend(1); S.mood = clamp(S.mood + 10); say("Прыг-скок — дошёл до «неба»!"); });
+        add("🔍", "Искать пустые бутылки", "1 час · их можно сдать", S.energy > 8, findBottles);
+        add("👵", "Помочь бабушке донести сумки", "1 час · бабушка даст монетку", S.energy > 10, () => { spend(1); const k = [10, 15, 20][Math.floor(Math.random() * 3)]; S.money += k; S.mood = clamp(S.mood + 6); coin(); say(`Бабушка с пятого этажа сказала «спасибо, внучок» и дала ${kop(k)}!`); });
+        if (S.toys.includes("bike")) add("🚲", "Кататься на велосипеде «Школьник»", "1 час · настроение ++", S.energy > 10, () => { spend(1); S.mood = clamp(S.mood + 22); fx = { k: "bike", t: 3 }; say("Вжух! Самый быстрый велосипед во дворе!"); });
+      } else if (place === "soda") {
+        add("🥤", "Газировка с сиропом", "3 коп.", S.money >= 3 && soda <= 0, () => drink(true));
+        add("💧", "Газировка без сиропа", "1 коп.", S.money >= 1 && soda <= 0, () => drink(false));
+      } else if (place === "kino") {
+        const film = FILMS[S.day % FILMS.length];
+        add("🎟️", `Сеанс: ${film}`, `10 коп. · 2 часа · ${S.hour >= 21 ? "сеансы закончились" : "настроение +++"}`, S.money >= 10 && S.hour < 21, () => { S.money -= 10; spend(2); S.mood = clamp(S.mood + 30); fx = { k: "film", t: 3.5 }; coin(); say(`Посмотрел ${film}! Вот это кино!`); });
+        add("🍦", "Мороженое в фойе", "20 коп.", S.money >= 20, () => { S.money -= 20; S.full = clamp(S.full + 8); S.mood = clamp(S.mood + 12); coin(); say("Пломбир в вафельном стаканчике — жизнь сладка!"); });
+      } else if (place === "glass") {
+        const n = S.bottles.milk + S.bottles.lemon, sum = S.bottles.milk * 15 + S.bottles.lemon * 12;
+        add("🍾", n ? `Сдать бутылки (${n} шт.)` : "Бутылок нет", n ? `молочная — 15 коп., лимонадная — 12 коп. · получишь ${kop(sum)}` : "найди во дворе или купи молоко / лимонад", n > 0, () => { S.money += sum; S.bottles = { milk: 0, lemon: 0 }; coin(); spend(1); fx = { k: "glass", t: 2 }; say(`Приёмщица пересчитала бутылки и выдала ${kop(sum)}!`); });
+      } else if (place === "toys") {
+        TOYS.forEach((t) => { const own = S.toys.includes(t[0]); add(t[2], t[1], own ? "уже есть ✓" : `${kop(t[3])} · ${t[4]}`, !own && S.money >= t[3], () => { S.money -= t[3]; S.toys.push(t[0]); S.mood = clamp(S.mood + 25); coin(); say(`Ура! Купил: ${t[1]}!`, "win"); if (t[0] === "bike") Hero.grant(50); if (t[0] === "tape") Hero.grant(100); }); });
+      }
+      return A;
+    }
+    function buy(f) {
+      S.money -= f[3]; coin();
+      if (f[6]) S.bottles[f[6]]++;
+      if (["baton", "pelmeni", "kolbasa", "milk", "sgush", "tort"].includes(f[0])) { S.fridge[f[0]] = (S.fridge[f[0]] || 0) + 1; say(`Купил: ${f[1]} — отнесу домой в холодильник.${f[6] ? " Бутылку потом можно сдать!" : ""}`); }
+      else eat(f, false);
+    }
+    function eat(f, fromFridge) {
+      if (fromFridge) { S.fridge[f[0]]--; if (!S.fridge[f[0]]) delete S.fridge[f[0]]; }
+      S.full = clamp(S.full + f[4]); S.mood = clamp(S.mood + f[5]);
+      say(`${f[2]} ${f[1]} — вкуснотища!${f[6] && !fromFridge ? " Пустую бутылку — в сетку, сдам потом." : ""}`);
+    }
+    function findBottles() {
+      spend(1); const n = Math.floor(Math.random() * 3);
+      for (let i = 0; i < n; i++) S.bottles[Math.random() < .5 ? "milk" : "lemon"]++;
+      say(n ? `Нашёл ${n} пуст${n === 1 ? "ую бутылку" : "ые бутылки"} у гаражей! Сдам в стеклотару.` : "Обошёл весь двор — бутылок нет, кто-то уже собрал.", n ? "good" : "bad");
+    }
+    function drink(syrup) {
+      S.money -= syrup ? 3 : 1; soda = 2; sodaSyrup = syrup; coin();
+      setTimeout(() => { S.full = clamp(S.full + 3); S.mood = clamp(S.mood + (syrup ? 10 : 4)); say(syrup ? "Газировка с грушевым сиропом из гранёного стакана — вкус детства!" : "Холодная газировка без сиропа. Освежает!"); ui(); }, 1800);
+    }
+    function lesson() {
+      spend(1);
+      const kind = Math.floor(Math.random() * 3); let q, ans;
+      if (kind === 0) { const a = 2 + Math.floor(Math.random() * 8), b = 2 + Math.floor(Math.random() * 8); q = `${a} × ${b} = ?`; ans = a * b; }
+      else if (kind === 1) { const a = 10 + Math.floor(Math.random() * 80), b = 5 + Math.floor(Math.random() * 40); q = `${a} + ${b} = ?`; ans = a + b; }
+      else { const a = 30 + Math.floor(Math.random() * 60), b = 5 + Math.floor(Math.random() * 25); q = `${a} − ${b} = ?`; ans = a - b; }
+      const opts = new Set([ans]); while (opts.size < 3) opts.add(ans + (Math.floor(Math.random() * 9) - 4 || 3));
+      quiz = { q, ans, opts: [...opts].sort(() => Math.random() - .5) };
+      bell(); say("Звонок! Учительница вызывает тебя к доске.");
+    }
+    function answer(o) {
+      const ok = o === quiz.ans, g = ok ? (S.homework || Math.random() < .6 ? 5 : 4) : (S.homework ? 3 : 2);
+      S.grades.push(g); if (S.grades.length > 30) S.grades.shift();
+      if (g === 5) { S.fives++; S.mood = clamp(S.mood + 12); }
+      if (g <= 2) S.mood = clamp(S.mood - 12);
+      say(ok ? `Правильно! В дневник — «${g}»${g === 5 ? ". Мама будет рада!" : "."}` : `Неверно, было ${quiz.ans}. В дневник — «${g}»…`, ok ? "good" : "bad");
+      if (S.fives === 10) { Hero.grant(30); say("10 пятёрок! Тебя повесили на Доску почёта! +30 монет", "win"); }
+      quiz = null; S.homework = false;
+    }
+    function sleep() {
+      fx = { k: "night", t: 2.2 };
+      S.day++; S.hour = 8; S.energy = 100; S.full = clamp(S.full - 15); quiz = null;
+      const last = S.grades.slice(-3), fives = last.filter((g) => g === 5).length;
+      const pocket = 30 + fives * 10;
+      S.money += pocket;
+      setTimeout(() => say(`Доброе утро! ${dateStr()}. Мама дала ${kop(pocket)}${fives ? ` (+${fives * 10} коп. за пятёрки)` : ""}.${wd() === 0 ? " Сегодня воскресенье — в школу не надо!" : " Пора в школу!"}`), 600);
+      place = "home"; S.stockDay = -1;
+      if (S.day % 7 === 0) Hero.grant(10);
+    }
+    function go(p) { place = p; quiz = place === "school" ? quiz : null; const n = PLACES.find((q) => q[0] === p); if (p !== "home" && S.hour < 22) spend(.5); say({ home: "Дома: ковёр на стене, сервант и телевизор «Рубин».", school: "Школа №1. Пионеры в красных галстуках бегут на урок.", shop: "Гастроном! Очередь небольшая. Что берём?", yard: "Двор: хрущёвки, качели, песочница и бабушки на лавочке.", soda: "Автомат с газировкой! Гранёный стакан ждёт.", kino: "Кинотеатр «Родина». Детский сеанс — 10 копеек!", glass: "Пункт приёма стеклотары. «Бутылки только чистые!»", toys: "«Детский мир» — тут всё самое интересное!" }[p] || n[2]); render(); }
+
+    // ---------- drawing ----------
+    function fit() { const w = Math.min(440, cv.parentElement.clientWidth || 360); dpr = window.devicePixelRatio || 1; W = w; H = Math.round(w * .66); U = W / 360; cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px"; }
+    function rect(x, y, w, h, c) { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); }
+    function txt(t, x, y, sz, c, al, wt) { ctx.font = `${wt || 800} ${Math.round(sz * U)}px Manrope, sans-serif`; ctx.textAlign = al || "center"; ctx.textBaseline = "middle"; ctx.fillStyle = c; ctx.fillText(t, x, y); }
+    function emo(e, x, y, sz) { ctx.font = `${Math.round(sz * U)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#000"; ctx.fillText(e, x, y); }
+    function me(x, y, s) { const im = Hero.img(), z = s * U; ctx.save(); ctx.beginPath(); ctx.arc(x, y, z / 2, 0, 7); ctx.clip(); if (im.complete && im.naturalWidth) ctx.drawImage(im, x - z / 2, y - z / 2, z, z); else rect(x - z / 2, y - z / 2, z, z, Hero.accent()); ctx.restore(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, z / 2, 0, 7); ctx.stroke(); /* red pioneer scarf */ ctx.fillStyle = "#d8202a"; ctx.beginPath(); ctx.moveTo(x - z * .28, y + z * .42); ctx.lineTo(x + z * .28, y + z * .42); ctx.lineTo(x, y + z * .7); ctx.fill(); }
+    const night = () => S.hour >= 20 || S.hour < 7;
+    function sky() { const g = ctx.createLinearGradient(0, 0, 0, H); if (night()) { g.addColorStop(0, "#0e1430"); g.addColorStop(1, "#2a2a4a"); } else if (S.hour >= 17) { g.addColorStop(0, "#5a6aa8"); g.addColorStop(1, "#f0a878"); } else { g.addColorStop(0, "#9cc8e8"); g.addColorStop(1, "#e4eef4"); } ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    function khrush(x, y, w, h, seed) {
+      rect(x, y, w, h, "#c9c4b8"); ctx.strokeStyle = "rgba(90,90,90,.35)"; ctx.lineWidth = 1;
+      for (let f = 0; f < 5; f++) for (let c = 0; c < Math.floor(w / (18 * U)); c++) { const wx = x + 5 * U + c * 18 * U, wy = y + 6 * U + f * h / 5; ctx.strokeRect(wx - 2 * U, wy - 2 * U, 14 * U, h / 5 - 4 * U); rect(wx, wy, 10 * U, h / 5 - 10 * U, night() && ((f * 3 + c + seed) % 4 < 2) ? "#ffd27a" : "#6a7a8a"); if (f > 0 && c % 3 === 1) rect(wx - 3 * U, wy + h / 5 - 10 * U, 16 * U, 3 * U, "#8a8478"); }
+    }
+    function drawHome(t) {
+      const fy = H * .72;
+      rect(0, 0, W, fy, "#e8d8a8"); for (let i = 0; i < 18; i++) for (let j = 0; j < 8; j++) { ctx.fillStyle = "rgba(160,110,60,.18)"; ctx.beginPath(); ctx.arc(i * W / 18 + (j % 2) * W / 36, j * fy / 8 + 8 * U, 2.2 * U, 0, 7); ctx.fill(); }
+      rect(0, fy, W, H - fy, "#a0703f"); ctx.strokeStyle = "rgba(60,30,10,.3)"; for (let i = 0; i < 12; i++) { ctx.beginPath(); ctx.moveTo(i * W / 12, fy); ctx.lineTo(i * W / 12 - 20 * U, H); ctx.stroke(); }
+      // carpet on the wall
+      const cx = W * .04, cy = H * .1, cw = W * .36, ch = H * .44;
+      rect(cx, cy, cw, ch, "#8a1f2a"); ctx.strokeStyle = "#e8b84a"; ctx.lineWidth = 2; ctx.strokeRect(cx + 4 * U, cy + 4 * U, cw - 8 * U, ch - 8 * U);
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) { const px = cx + cw * (.2 + c * .3), py = cy + ch * (.2 + r * .3); ctx.fillStyle = (r + c) % 2 ? "#e8b84a" : "#2a4a7a"; ctx.beginPath(); ctx.moveTo(px, py - 9 * U); ctx.lineTo(px + 9 * U, py); ctx.lineTo(px, py + 9 * U); ctx.lineTo(px - 9 * U, py); ctx.fill(); }
+      // sofa under the carpet
+      rect(cx - 4 * U, fy - 30 * U, cw + 8 * U, 22 * U, "#4a6a8a"); rect(cx - 4 * U, fy - 44 * U, cw + 8 * U, 16 * U, "#5a7a9a"); rect(cx - 6 * U, fy - 8 * U, 6 * U, 8 * U, "#3a2a1a"); rect(cx + cw, fy - 8 * U, 6 * U, 8 * U, "#3a2a1a");
+      // sideboard with crystal
+      const sx = W * .44, sw = W * .24; rect(sx, H * .14, sw, fy - H * .14, "#6a4424"); rect(sx + 4 * U, H * .17, sw - 8 * U, H * .26, "rgba(200,230,255,.35)");
+      for (let i = 0; i < 4; i++) { ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.beginPath(); ctx.moveTo(sx + 12 * U + i * sw * .22, H * .3); ctx.lineTo(sx + 6 * U + i * sw * .22, H * .22); ctx.lineTo(sx + 18 * U + i * sw * .22, H * .22); ctx.fill(); }
+      rect(sx + 4 * U, H * .45, sw - 8 * U, fy - H * .48, "#5a3818");
+      // TV «Рубин»
+      const tx = W * .72, tw = W * .24, ty = H * .3;
+      rect(tx + tw * .2, fy - 30 * U, 4 * U, 30 * U, "#3a2a1a"); rect(tx + tw * .75, fy - 30 * U, 4 * U, 30 * U, "#3a2a1a");
+      rect(tx, ty, tw, fy - 30 * U - ty, "#7a4a24"); rect(tx + 6 * U, ty + 6 * U, tw * .7, fy - 42 * U - ty, "#1a1a1a");
+      const sxx = tx + 9 * U, syy = ty + 9 * U, sww = tw * .7 - 6 * U, shh = fy - 48 * U - ty;
+      if (fx && fx.k === "tv") { for (let i = 0; i < 5; i++) rect(sxx + i * sww / 5, syy, sww / 5 + 1, shh, ["#ff5a5a", "#ffd84d", "#5ce1e6", "#9be15d", "#ff5ad1"][(i + Math.floor(t * 3)) % 5]); emo("🐺", sxx + sww * .3 + Math.sin(t * 4) * 8 * U, syy + shh * .6, 16); emo("🐰", sxx + sww * .75, syy + shh * .6, 14); }
+      else { ctx.fillStyle = "#3a4a4a"; ctx.fillRect(sxx, syy, sww, shh); }
+      ctx.fillStyle = "#c9a26b"; ctx.beginPath(); ctx.arc(tx + tw * .87, ty + 16 * U, 4 * U, 0, 7); ctx.arc(tx + tw * .87, ty + 30 * U, 4 * U, 0, 7); ctx.fill();
+      txt("РУБИН", tx + tw * .4, fy - 36 * U, 6, "#e8c890");
+      if (fx && fx.k === "music") for (let i = 0; i < 4; i++) emo("♪", W * (.45 + i * .1), H * .1 + Math.sin(t * 5 + i) * 6 * U, 14);
+      // window
+      rect(W * .74, H * .04, W * .2, H * .2, night() ? "#14183a" : "#a8c8e8"); ctx.strokeStyle = "#f4f0e6"; ctx.lineWidth = 3 * U; ctx.strokeRect(W * .74, H * .04, W * .2, H * .2); ctx.beginPath(); ctx.moveTo(W * .84, H * .04); ctx.lineTo(W * .84, H * .24); ctx.stroke();
+      me(W * .52, H * .86, 38);
+    }
+    function drawSchool(t) {
+      rect(0, 0, W, H, "#d8e4c8"); rect(0, H * .72, W, H * .28, "#b88a5a");
+      // chalkboard
+      rect(W * .12, H * .08, W * .76, H * .38, "#3a2a1a"); rect(W * .14, H * .1, W * .72, H * .34, "#2f5a3a");
+      const d = today(); txt(`${d.getDate()} ${MONTHS[d.getMonth()]}. Классная работа`, W * .5, H * .16, 9, "#f4f4e8", "center", 600);
+      if (quiz) txt(quiz.q, W * .5, H * .3, 22, "#ffffff"); else txt(wd() === 0 ? "Воскресенье" : S.hour < 14 ? "Урок математики" : "Уроки окончены", W * .5, H * .3, 15, "#f4f4e8");
+      rect(W * .14, H * .44, W * .72, 4 * U, "#6a4424");
+      // teacher and desks
+      ctx.fillStyle = "#3a4a8a"; ctx.fillRect(W * .82, H * .46, 18 * U, 34 * U); ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(W * .82 + 9 * U, H * .44, 8 * U, 0, 7); ctx.fill(); ctx.fillStyle = "#8a5a3a"; ctx.beginPath(); ctx.arc(W * .82 + 9 * U, H * .42, 9 * U, Math.PI, 0); ctx.fill();
+      for (let i = 0; i < 3; i++) { rect(W * (.08 + i * .3), H * .76, W * .22, 8 * U, "#7a5a3a"); rect(W * (.08 + i * .3) + 4 * U, H * .76 + 8 * U, 4 * U, 18 * U, "#4a3a2a"); rect(W * (.08 + i * .3) + W * .22 - 8 * U, H * .76 + 8 * U, 4 * U, 18 * U, "#4a3a2a"); }
+      // pioneers
+      for (let i = 0; i < 4; i++) { if (i === 1) continue; const px = W * (.12 + i * .22), py = H * .7; ctx.fillStyle = "#2a3a5a"; ctx.fillRect(px - 8 * U, py - 6 * U, 16 * U, 18 * U); ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(px, py - 12 * U, 7 * U, 0, 7); ctx.fill(); ctx.fillStyle = "#d8202a"; ctx.beginPath(); ctx.moveTo(px - 6 * U, py - 5 * U); ctx.lineTo(px + 6 * U, py - 5 * U); ctx.lineTo(px, py + 4 * U); ctx.fill(); }
+      me(W * .34, H * .66, 30);
+      const g = S.grades.slice(-5); if (g.length) txt(`Дневник: ${g.join(" ")}`, W * .5, H * .96, 10, "#3a2a1a");
+    }
+    function drawShop(t) {
+      rect(0, 0, W, H, "#e8e0c8"); rect(0, 16 * U, W, H * .11, "#2a5a8a"); txt("ГАСТРОНОМ", W * .5, 16 * U + H * .055, 13, "#ffffff");
+      // shelves
+      for (let r = 0; r < 3; r++) { rect(W * .05, H * (.22 + r * .14), W * .9, 4 * U, "#8a5a34"); const row = ["🥫🥫🍾🍾🥛🥛🥫🍾", "🍞🍞🥖🍞🧈🧀🍞🥖", "🍬🍫🍬🍬🍫🍬🍬🍫"][r]; [...row].filter((c) => c.trim()).forEach((e, i) => emo(e, W * (.1 + (i % 8) * .115), H * (.17 + r * .14), 12)); }
+      // counter and scales
+      rect(0, H * .66, W, H * .34, "#c9a26b"); rect(0, H * .66, W, 6 * U, "#e8dcc0");
+      rect(W * .6, H * .58, 40 * U, 8 * U, "#c9ccd6"); ctx.fillStyle = "#e8e8f0"; ctx.beginPath(); ctx.arc(W * .6 + 20 * U, H * .55, 9 * U, 0, 7); ctx.fill();
+      // saleswoman
+      ctx.fillStyle = "#fff"; ctx.fillRect(W * .78, H * .5, 22 * U, 24 * U); ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(W * .78 + 11 * U, H * .46, 8 * U, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillRect(W * .78 + 2 * U, H * .38, 18 * U, 6 * U);
+      // queue
+      for (let i = 0; i < 3; i++) { const px = W * (.1 + i * .1), py = H * .9; ctx.fillStyle = ["#6a4a3a", "#3a4a6a", "#5a3a5a"][i]; ctx.fillRect(px - 7 * U, py - 30 * U, 14 * U, 26 * U); ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(px, py - 36 * U, 6 * U, 0, 7); ctx.fill(); }
+      me(W * .42, H * .84, 34);
+      txt("Касса", W * .25, H * .74, 9, "#5a3a1a");
+    }
+    function drawYard(t) {
+      sky();
+      khrush(W * .02, H * .1, W * .5, H * .5, 1); khrush(W * .56, H * .2, W * .42, H * .4, 4);
+      rect(0, H * .6, W, H * .4, "#7aa85a");
+      // swing, sandbox, rocket climbing frame, bench with grandmas
+      ctx.strokeStyle = "#c43c3c"; ctx.lineWidth = 3 * U; ctx.beginPath(); ctx.moveTo(W * .1, H * .9); ctx.lineTo(W * .14, H * .64); ctx.lineTo(W * .26, H * .64); ctx.lineTo(W * .3, H * .9); ctx.stroke();
+      const sw = Math.sin(t * 2) * .35; ctx.strokeStyle = "#555"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(W * .2, H * .64); ctx.lineTo(W * .2 + Math.sin(sw) * 30 * U, H * .64 + Math.cos(sw) * 30 * U); ctx.stroke(); rect(W * .2 + Math.sin(sw) * 30 * U - 8 * U, H * .64 + Math.cos(sw) * 30 * U, 16 * U, 3 * U, "#8a5a34");
+      rect(W * .36, H * .82, W * .18, H * .08, "#e8d098"); ctx.strokeStyle = "#8a5a34"; ctx.lineWidth = 3 * U; ctx.strokeRect(W * .36, H * .82, W * .18, H * .08);
+      ctx.strokeStyle = "#2f6fd6"; ctx.lineWidth = 2.5 * U; ctx.beginPath(); ctx.moveTo(W * .62, H * .92); ctx.lineTo(W * .64, H * .66); ctx.lineTo(W * .66, H * .6); ctx.lineTo(W * .68, H * .66); ctx.lineTo(W * .7, H * .92); ctx.stroke(); for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(W * .635, H * (.7 + i * .055)); ctx.lineTo(W * .695, H * (.7 + i * .055)); ctx.stroke(); }
+      rect(W * .76, H * .8, W * .2, 5 * U, "#6a4424"); for (let i = 0; i < 2; i++) { const px = W * (.8 + i * .1), py = H * .8; ctx.fillStyle = ["#5a3a5a", "#3a5a4a"][i]; ctx.fillRect(px - 8 * U, py - 20 * U, 16 * U, 20 * U); ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(px, py - 26 * U, 6 * U, 0, 7); ctx.fill(); ctx.fillStyle = ["#d8202a", "#2f6fd6"][i]; ctx.beginPath(); ctx.arc(px, py - 28 * U, 7 * U, Math.PI, 0); ctx.fill(); }
+      if (fx && fx.k === "ball") emo("⚽", W * (.3 + ((t * .4) % .5)), H * (.9 - Math.abs(Math.sin(t * 5)) * .15), 16);
+      if (fx && fx.k === "bike") emo("🚲", W * ((t * .25) % 1), H * .93, 22);
+      me(W * .46, H * .74, 32);
+    }
+    function drawSoda(t) {
+      sky(); khrush(W * .55, H * .12, W * .44, H * .5, 2); rect(0, H * .62, W, H * .38, "#9a9a9a");
+      // the red vending machine
+      const mx = W * .16, mw = W * .3, my = H * .1;
+      rect(mx, my, mw, H * .76, "#c8282a"); rect(mx + 4 * U, my + 6 * U, mw - 8 * U, 18 * U, "#f4f0e6");
+      txt("ГАЗИРОВАННАЯ", mx + mw / 2, my + 11 * U, 7, "#c8282a"); txt("ВОДА", mx + mw / 2, my + 19 * U, 7, "#c8282a");
+      rect(mx + mw * .2, my + 32 * U, mw * .6, 14 * U, "#2a2a2a"); txt("1 коп   3 коп", mx + mw / 2, my + 39 * U, 7, "#ffd84d");
+      rect(mx + mw * .2, my + H * .36, mw * .6, H * .26, "#3a1a1a");
+      // glass filling
+      const gx = mx + mw / 2, gy = my + H * .58, gw = 14 * U, gh = 24 * U;
+      if (soda > 0) { soda = Math.max(0, soda - 1 / 60); const k = Math.min(1, (2 - soda) / 1.4); ctx.fillStyle = sodaSyrup ? "rgba(255,200,60,.85)" : "rgba(220,240,255,.8)"; ctx.fillRect(gx - gw / 2 + 2, gy - gh * k, gw - 4, gh * k); if (k < 1) { ctx.fillStyle = sodaSyrup ? "#ffc83a" : "#dff2ff"; ctx.fillRect(gx - 1.5, my + H * .38, 3, gy - gh * k - my - H * .38); } for (let i = 0; i < 5; i++) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(gx - 4 * U + i * 2 * U, gy - ((t * 40 + i * 9) % (gh * k + 1)), 1, 0, 7); ctx.fill(); } }
+      ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.5; ctx.strokeRect(gx - gw / 2, gy - gh, gw, gh); for (let i = 1; i < 4; i++) { ctx.beginPath(); ctx.moveTo(gx - gw / 2 + i * gw / 4, gy - gh); ctx.lineTo(gx - gw / 2 + i * gw / 4, gy); ctx.stroke(); }
+      me(W * .6, H * .8, 36);
+    }
+    function drawKino(t) {
+      sky(); rect(W * .1, H * .14, W * .8, H * .56, "#d8c8a8");
+      for (let i = 0; i < 6; i++) rect(W * (.14 + i * .135), H * .3, 10 * U, H * .4, "#f4ece0");
+      rect(W * .06, H * .08, W * .88, H * .1, "#8a1f2a"); txt("КИНОТЕАТР «РОДИНА»", W / 2, H * .13, 12, "#ffd84d");
+      const film = FILMS[S.day % FILMS.length];
+      rect(W * .34, H * .22, W * .32, H * .3, "#1a2a4a"); txt("СЕГОДНЯ", W / 2, H * .27, 8, "#ffd84d"); txt(film.replace(/[«»]/g, ""), W / 2, H * .37, 8, "#fff"); emo("🎞️", W / 2, H * .46, 16);
+      rect(0, H * .7, W, H * .3, "#9a9a9a");
+      if (fx && fx.k === "film") { ctx.fillStyle = "rgba(0,0,0,.8)"; ctx.fillRect(0, 0, W, H); ctx.fillStyle = "rgba(255,255,220,.15)"; ctx.beginPath(); ctx.moveTo(W * .5, H); ctx.lineTo(W * .1, H * .1); ctx.lineTo(W * .9, H * .1); ctx.fill(); rect(W * .15, H * .1, W * .7, H * .5, `hsl(${(t * 40) % 360},40%,45%)`); txt(film, W / 2, H * .35, 12, "#fff"); }
+      me(W * .5, H * .84, 34);
+    }
+    function drawGlass(t) {
+      sky(); rect(0, H * .66, W, H * .34, "#9a9a9a"); khrush(W * .6, H * .14, W * .38, H * .52, 3);
+      rect(W * .08, H * .24, W * .44, H * .44, "#4a7a5a"); rect(W * .06, H * .18, W * .48, H * .08, "#2a4a3a"); txt("ПРИЁМ СТЕКЛОТАРЫ", W * .3, H * .22, 9, "#fff");
+      rect(W * .18, H * .34, W * .24, H * .16, "#2a2a2a"); txt("Окошко", W * .3, H * .42, 7, "#aaa");
+      for (let i = 0; i < 4; i++) { rect(W * (.1 + i * .1), H * .58, W * .09, H * .1, "#8a6a3a"); for (let j = 0; j < 3; j++) emo("🍾", W * (.12 + i * .1 + j * .025), H * .58, 9); }
+      const n = S.bottles.milk + S.bottles.lemon; txt(`У тебя бутылок: ${n}`, W * .3, H * .78, 10, "#12132a");
+      me(W * .62, H * .82, 34);
+    }
+    function drawToys(t) {
+      rect(0, 0, W, H, "#f4e8d0"); rect(0, 16 * U, W, H * .11, "#2f6fd6"); txt("ДЕТСКИЙ МИР", W / 2, 16 * U + H * .055, 13, "#ffd84d");
+      TOYS.forEach((ty, i) => { const x = W * (.12 + i * .19), y = H * .45; rect(x - 26 * U, y + 22 * U, 52 * U, 6 * U, "#8a5a34"); emo(ty[2], x, y, 30); txt(kop(ty[3]), x, y + 36 * U, 8, "#3a2a1a"); if (S.toys.includes(ty[0])) txt("✓ есть", x, y - 26 * U, 8, "#2fa84a"); });
+      me(W * .5, H * .86, 34);
+    }
+    function draw(t) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ({ home: drawHome, school: drawSchool, shop: drawShop, yard: drawYard, soda: drawSoda, kino: drawKino, glass: drawGlass, toys: drawToys })[place](t);
+      if (fx) { fx.t -= 1 / 60; if (fx.k === "night") { ctx.fillStyle = `rgba(8,10,30,${Math.min(.9, fx.t)})`; ctx.fillRect(0, 0, W, H); txt("Спокойной ночи… 🌙", W / 2, H / 2, 14, "#fff"); } if (fx.t <= 0) fx = null; }
+      ctx.fillStyle = "rgba(18,12,6,.6)"; ctx.fillRect(0, 0, W, 16 * U);
+      txt(`${dateStr()} · ${String(Math.floor(S.hour)).padStart(2, "0")}:${S.hour % 1 ? "30" : "00"}`, 6 * U, 8 * U, 8.5, "#f4e6c8", "left");
+    }
+    function frame(now) { raf = 0; if (!visible) return; draw((now - T0) / 1000); raf = requestAnimationFrame(frame); }
+
+    // ---------- UI ----------
+    function bar(id, v) { const el = $(id); el.style.width = v + "%"; el.style.background = v < 25 ? "#ff5a5a" : v < 50 ? "#ffb547" : "#9be15d"; }
+    function ui() {
+      $("#usMoney").textContent = kop(S.money);
+      bar("#usFull", S.full); bar("#usEnergy", S.energy); bar("#usMood", S.mood);
+      $("#usFives").textContent = String(S.fives);
+      $$("#usPlaces button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === place)));
+    }
+    function render() {
+      ui();
+      const box = $("#usActs"); box.innerHTML = "";
+      actions().forEach((a) => {
+        const b = document.createElement("button"); b.type = "button"; b.disabled = !a.ok;
+        b.innerHTML = "<i></i><span><b></b><small></small></span>";
+        b.querySelector("i").textContent = a.ico; b.querySelector("b").textContent = a.t; b.querySelector("small").textContent = a.note;
+        b.addEventListener("click", () => { if (!a.ok) return; a.fn(); if (S.energy < 10 && place !== "home" && !warnE) { warnE = true; say("Сил совсем нет… пора домой спать.", "bad"); } if (S.full < 15 && !warnF) { warnF = true; say("Живот урчит — надо поесть!", "bad"); } if (S.full >= 30) warnF = false; if (S.energy >= 30) warnE = false; store.set("ussrLife", S); render(); updateHub(); });
+        box.appendChild(b);
+      });
+    }
+    function build() {
+      const box = $("#usPlaces"); box.innerHTML = "";
+      PLACES.forEach(([id, ico, n]) => { const b = document.createElement("button"); b.type = "button"; b.dataset.p = id; b.innerHTML = "<i></i>"; b.querySelector("i").textContent = ico; b.append(n); b.addEventListener("click", () => { if (place !== id) go(id); store.set("ussrLife", S); }); box.appendChild(b); });
+    }
+    build();
+    let resetArm = 0;
+    $("#usReset").addEventListener("click", (e) => { const b = e.currentTarget; if (Date.now() - resetArm > 4000) { resetArm = Date.now(); b.textContent = "Точно? Нажми ещё раз"; setTimeout(() => { b.textContent = "Начать сначала"; }, 4000); return; } resetArm = 0; b.textContent = "Начать сначала"; S = fresh(); place = "home"; quiz = null; store.set("ussrLife", S); render(); say("Снова 1 сентября 1986 года!", "start"); });
+    window.addEventListener("resize", () => { if (visible) fit(); });
+
+    return {
+      enter() { visible = true; fit(); render(); say(S.day === 0 && S.hour === 8 ? "1 сентября 1986 года! Ты — школьник в красном галстуке. Сходи в школу, в гастроном и во двор!" : `${dateStr()}. Жизнь сладка!`, "start"); if (!raf) raf = requestAnimationFrame(frame); },
+      leave() { visible = false; store.set("ussrLife", S); },
+      key() {},
+      best: () => (S.day ? `${S.day + 1} дн.` : "—"),
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -10072,7 +10433,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -10324,6 +10685,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       { go: "comp", ico: "💻", t: "COMPUTER TYCOON", s: "Бесконечные деньги: собери ноутбук мечты с 8K-экраном и голограммой!", bg: "linear-gradient(135deg,#3a6ad8,#d84aa8)", fx: ["💻", "🖥️", "📷", "🔊"] },
       { go: "cash", ico: "🪙", t: "CASH SIMULATOR", s: "1896 год: ларёк у пятиэтажки, бублики по 3 копейки — стань купцом 1-й гильдии!", bg: "linear-gradient(135deg,#8a5a34,#2a1a0a)", fx: ["🥯", "🪙", "🍵", "🏪"] },
       { go: "menu", ico: "🍽️", t: "СВОЁ МЕНЮ", s: "Напиши «пицца» — и на тарелке появится пицца! Составь меню своего кафе.", bg: "linear-gradient(135deg,#c8303a,#f4c860)", fx: ["🍅", "🍕", "🍲", "🍰"] },
+      { go: "ussr", ico: "🍦", t: "ЖИЗНЬ СЛАДКА!", s: "1986 год: пломбир за 20 копеек, газировка из автомата и велосипед «Школьник» — проживи день советского школьника!", bg: "linear-gradient(135deg,#c8282a,#ffb547)", fx: ["🍦", "🥤", "🚲", "⭐"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
       { go: "mk", ico: "🥊", t: "MORTAL KOMBAT", s: "Скорпион, Саб-Зиро, Терминатор… Выбери бойца. FIGHT!", bg: "linear-gradient(135deg,#1a0c14,#a01f2f)", fx: ["🔥", "❄️", "💥", "⚡"] },
       { go: "cook", ico: "👨‍🍳", t: "ГОТОВИТЬ", s: "Сковорода, фритюрница, блендер — накорми всех клиентов на три звезды!", bg: "linear-gradient(135deg,#ff8a3d,#2a2f45)", fx: ["🍟", "🍳", "🥤", "🍲"] },
@@ -10363,7 +10725,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -10389,7 +10751,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -13207,8 +13569,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "ideas", "events", "chars", "gear", "chats", "talk"];
   let current = "hub";
 
   function updateHub() {
@@ -13236,6 +13598,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#hubComp").textContent = Comp.best();
     $("#hubCash").textContent = Cash.best();
     $("#hubMenu").textContent = MenuGame.best();
+    $("#hubUssr").textContent = Ussr.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -13253,7 +13616,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "talk") Talk.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
