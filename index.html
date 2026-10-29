@@ -281,6 +281,21 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .snap-mem { flex: 1; overflow-y: auto; padding: 8px 12px 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; align-content: start; }
 .snap-mem img { width: 100%; aspect-ratio: 1 / 1; border-radius: 10px; display: block; object-fit: cover; }
 .snap-mem p { grid-column: 1 / -1; text-align: center; font-weight: 700; font-size: 13px; }
+.gal-grid { flex: 1; overflow-y: auto; padding: 8px 12px 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; align-content: start; }
+.gal-grid button { padding: 0; border: 0; background: #fff; border-radius: 10px; overflow: hidden; cursor: pointer; text-align: left; color: #12132a; font: 700 10px Manrope, sans-serif; }
+.gal-grid img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+.gal-grid span { display: block; padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gal-grid p { grid-column: 1 / -1; text-align: center; font-weight: 700; font-size: 13px; }
+.gal-one { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 8px 12px 12px; overflow-y: auto; }
+.gal-one img { width: 100%; border-radius: 12px; display: block; background: #000; }
+.gal-one b { font-size: 13px; }
+.gal-one small { color: #4a4a30; font-size: 11px; font-weight: 700; }
+.gal-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.gal-acts .btn { flex: 1; min-width: 0; }
+.gal-note { font-size: 12px; color: #12132a; font-weight: 700; min-height: 1em; }
+.gal-toast { position: fixed; left: 50%; top: calc(12px + env(safe-area-inset-top)); width: max-content; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 14px; background: #12132a; color: #fff; border: 2px solid var(--amber); font-weight: 800; font-size: 13px; box-shadow: 0 8px 24px rgba(0,0,0,.4); max-width: calc(100vw - 32px); }
+.gal-toast[hidden] { display: none; }
+.gal-toast button { border: 0; border-radius: 10px; padding: 7px 10px; background: var(--amber); color: #12132a; font: 800 12px Manrope, sans-serif; cursor: pointer; white-space: nowrap; }
 .calls, .call { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #f2f4f8; }
 .calls .snap-top { background: #fff; padding-top: 6px; padding-bottom: 8px; }
 .calls-list { flex: 1; overflow-y: auto; padding: 6px 10px 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -2206,6 +2221,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
           <button class="ph-app" type="button" id="phSnapApp"><i style="background:#fffc00;color:#12132a">😋</i>V3 Snap</button>
           <button class="ph-app" type="button" id="phMemApp"><i style="background:#fff">🖼️</i>Воспоминания</button>
           <button class="ph-app" type="button" id="phCallApp"><i style="background:#2fa84a">📞</i>Звонки</button>
+          <button class="ph-app" type="button" id="phGalApp"><i style="background:linear-gradient(135deg,#ff5ad1,#ffd84d,#5ce1e6)">📷</i>Галерея</button>
         </div>
       </div>
       <div class="snap" id="snapApp" hidden>
@@ -2231,6 +2247,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <form class="call-form" id="callForm"><input id="callInput" type="text" maxlength="200" placeholder="Скажи что-нибудь…" autocomplete="off"><button type="submit" class="btn small">➤</button></form>
         <button class="call-end" type="button" id="callEnd" aria-label="Положить трубку">📞</button>
       </div>
+      <div class="snap" id="galView" hidden>
+        <div class="snap-top"><button type="button" id="galHome">‹ Домой</button><b>ГАЛЕРЕЯ</b><span id="galCount">0</span></div>
+        <div class="gal-grid" id="galGrid"></div>
+      </div>
+      <div class="snap" id="galOneView" hidden>
+        <div class="snap-top"><button type="button" id="galBack">‹ Галерея</button><b>ФОТО</b><span></span></div>
+        <div class="gal-one">
+          <img id="galImg" alt="">
+          <b id="galCap"></b><small id="galDate"></small>
+          <div class="gal-acts"><button class="btn small" type="button" id="galSave">⬇️ На телефон</button><button class="btn small ghost" type="button" id="galDel">🗑 Удалить</button></div>
+          <div class="gal-note" id="galNote" aria-live="polite"></div>
+        </div>
+      </div>
       <div class="snap" id="snapMemView" hidden>
         <div class="snap-top"><button type="button" id="snapMemBack">‹ Назад</button><b>ВОСПОМИНАНИЯ</b><span></span></div>
         <div class="snap-mem" id="snapMem"></div>
@@ -2238,6 +2267,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     </div>
   </div>
 </div>
+
+<div class="gal-toast" id="galToast" hidden role="status"><span id="galToastT">📷 Фото сохранено в Галерею</span><button type="button" id="galToastOpen">Открыть</button></div>
 
 <!-- ===== Room service (Marina Beach Hotel) ===== -->
 <div class="shop" id="rsModal" hidden role="dialog" aria-modal="true" aria-labelledby="rsTitle">
@@ -5563,6 +5594,66 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   })();
 
   // ---------- Phone with V3 Snap: feed the faces ----------
+  /* ================= Галерея: photos taken in the games ================= */
+  const Gallery = (() => {
+    const MAX = 30;
+    let list = store.get("gallery", []); if (!Array.isArray(list)) list = [];
+    let toastT = 0, dl = null, dlAsked = false;
+    function add(canvas, place) {
+      let src = "";
+      try {
+        const w = Math.min(560, canvas.width), h = Math.round(w * canvas.height / canvas.width);
+        const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(canvas, 0, 0, w, h);
+        src = c.toDataURL("image/jpeg", .78);
+      } catch (e) { return; }
+      list.unshift({ src, place, t: Date.now() }); list = list.slice(0, MAX);
+      try { store.set("gallery", list); } catch (e) { while (list.length > 1) { list.pop(); try { store.set("gallery", list); break; } catch (er) { /* keep dropping */ } } }
+      toast("📷 Фото сохранено в Галерею");
+      if (!$("#galView").hidden) render();
+    }
+    function toast(msg) {
+      const el = $("#galToast"); $("#galToastT").textContent = msg; el.hidden = false;
+      clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 4500);
+    }
+    function when(t) { return new Date(t).toLocaleString("ru-RU", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }); }
+    function render() {
+      const box = $("#galGrid"); box.innerHTML = ""; $("#galCount").textContent = String(list.length);
+      if (!list.length) { const p = document.createElement("p"); p.textContent = "Пока пусто. Сделай фото на Бурдж Халифе, на Каскаде в Ереване или в Москва-Сити — оно появится здесь."; box.appendChild(p); return; }
+      list.forEach((m, i) => {
+        const b = document.createElement("button"); b.type = "button";
+        const im = document.createElement("img"); im.src = m.src; im.alt = m.place; im.loading = "lazy";
+        const sp = document.createElement("span"); sp.textContent = m.place;
+        b.append(im, sp); b.addEventListener("click", () => one(i)); box.appendChild(b);
+      });
+    }
+    let cur = -1;
+    function one(i) {
+      cur = i; const m = list[i]; if (!m) return;
+      $("#galImg").src = m.src; $("#galImg").alt = m.place; $("#galCap").textContent = m.place; $("#galDate").textContent = when(m.t); $("#galNote").textContent = "";
+      Phone.view("galone");
+    }
+    async function saveCur() {
+      const m = list[cur]; if (!m) return;
+      const note = $("#galNote");
+      const blob = await (await fetch(m.src)).blob();
+      const d = new Date(m.t), stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}_${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
+      const name = `V3-${m.place.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "")}-${stamp}.jpg`;
+      if (!dlAsked) { dlAsked = true; try { dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch (e) { dl = null; } }
+      if (dl) {
+        try { await dl.save({ filename: name, data: blob }); note.textContent = "Готово! Фото сохранено на телефон ✓"; }
+        catch (e) { note.textContent = e && e.code === "declined" ? "Сохранение отменено." : e && e.code === "rate_limited" ? "Подожди секунду и попробуй ещё раз." : "Здесь сохранить на телефон не получилось — фото осталось в Галерее."; }
+        return;
+      }
+      try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); note.textContent = "Фото скачивается ⬇️"; }
+      catch (e) { note.textContent = "Здесь сохранить на телефон не получилось — фото осталось в Галерее."; }
+    }
+    function delCur() { if (cur < 0) return; list.splice(cur, 1); store.set("gallery", list); cur = -1; Phone.view("gal"); }
+    $("#galToastOpen").addEventListener("click", () => { $("#galToast").hidden = true; Phone.open("gal"); });
+    $("#galSave").addEventListener("click", saveCur);
+    $("#galDel").addEventListener("click", delCur);
+    return { add, render, count: () => list.length };
+  })();
+
   const Phone = (() => {
     const modal = $("#phoneModal"), cv = $("#snapCanvas"), ctx = cv.getContext("2d");
     const W = 300, H = 300, CX = 150, CY = 150;
@@ -5650,7 +5741,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         mem.unshift({ src: c.toDataURL("image/jpeg", .7), t: Date.now(), name: FACES[face].name });
         mem = mem.slice(0, 12); store.set("snapMem", mem);
       } catch (e) { /* the photo still flashes even if it cannot be saved */ }
-      talk("Снап! Сохранено в Воспоминания 📸"); top();
+      Gallery.add(cv, `V3 Snap · ${FACES[face].name}`);
+      talk("Снап! Сохранено в Воспоминания и Галерею 📸"); top();
     }
 
     // ---------- drawing ----------
@@ -5749,6 +5841,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function view(which) {
       $("#phHome").hidden = which !== "home"; $("#snapApp").hidden = which !== "snap"; $("#snapMemView").hidden = which !== "mem";
       $("#callsView").hidden = which !== "calls"; $("#callView").hidden = which !== "call";
+      $("#galView").hidden = which !== "gal"; $("#galOneView").hidden = which !== "galone";
+      if (which === "gal") Gallery.render();
       if (which !== "call") Calls.hang(true);
       if (which === "calls") Calls.list();
       if (which === "snap") { lenses(); foods(); top(); if (!say) pick(face); last = 0; if (!raf) raf = requestAnimationFrame(loop); }
@@ -5767,6 +5861,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#phSnapApp").addEventListener("click", () => view("snap"));
     $("#phMemApp").addEventListener("click", () => view("mem"));
     $("#phCallApp").addEventListener("click", () => view("calls"));
+    $("#phGalApp").addEventListener("click", () => view("gal"));
+    $("#galHome").addEventListener("click", () => view("home"));
+    $("#galBack").addEventListener("click", () => view("gal"));
     $("#callsHome").addEventListener("click", () => view("home"));
     $("#snapHome").addEventListener("click", () => view("home"));
     $("#snapMemBtn").addEventListener("click", () => view("mem"));
@@ -5856,7 +5953,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       return { list, hang, call };
     })();
 
-    return { open, close };
+    return { view, open, close };
   })();
 
   const Dubai = (() => {
@@ -6001,7 +6098,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function circleW(x, y, r) { ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
 
     // ---------- Burj Khalifa at night: glass elevator up, then the city far below through the window ----------
-    let pano = null, panoKey = "", panX = .3, panV = 0, panDrag = null, photoT = 0, roads = [], snap = null;
+    let pano = null, panoKey = "", panX = .3, panV = 0, panDrag = null, photoT = 0, roads = [], snap = null, shotWait = 0;
     const srnd = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
     function buildPano() {
       const PW = Math.round(W * 2.4), PH = H, c = document.createElement("canvas"); c.width = Math.round(PW * dpr); c.height = Math.round(PH * dpr);
@@ -6584,7 +6681,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       audio();
       if (scene === "burj") {
         if (ride < 1 && !riding) { riding = true; }
-        else if (ride >= 1 && !photo) { photo = true; flashT = .5; photoT = 3.2; snap = null; giveStamp("burj"); Hero.say("dubai", "win", "Селфи на фоне ночного Дубая с высоты 555 метров!"); }
+        else if (ride >= 1 && !photo) { photo = true; flashT = .5; photoT = 3.2; snap = null; shotWait = .55; giveStamp("burj"); Hero.say("dubai", "win", "Селфи на фоне ночного Дубая с высоты 555 метров!"); }
         else if (photo) { ride = 0; photo = false; }
       } else if (scene === "mall") {
         if (!night && !fall) { fall = true; Hero.say("dubai", "good", "Водопад Dubai Mall! Вода падает со стены высотой в 4 этажа. Брось монетку — загадай желание!"); }
@@ -6644,6 +6741,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "deira") drawDeira(t, dt);
       else if (scene === "marina") drawMarina(t, dt);
       if (scene === "burj" && riding) updateAction();
+      if (shotWait > 0 && (shotWait -= dt) <= 0) { if (scene === "burj") Gallery.add(cv, "Бурдж Халифа · 555 м"); }
       raf = requestAnimationFrame(frame);
     }
     function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
@@ -6678,7 +6776,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const TOP = 572; // steps of the Cascade
     let place = null, scene = "map", travel = null, stamps = store.get("yvStamps", {});
     if (!stamps || typeof stamps !== "object") stamps = {};
-    let steps = 0, hop = 0, atTop = false, photo = false, flashT = 0;
+    let steps = 0, hop = 0, atTop = false, photo = false, flashT = 0, shotWait = 0;
     let show = 0;
     let bought = 0, flyers = [], vMsg = "", goods = [];
     const lv = { phase: "dough", roll: 0, bake: 0, good: 0, msg: "", fly: 0 };
@@ -7133,7 +7231,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       audio();
       if (scene === "cascade") {
         if (!atTop) climb();
-        else if (!photo) { photo = true; flashT = .5; giveStamp("cascade"); Hero.say("yerevan", "win", "Фото с Каскада на фоне Арарата!"); }
+        else if (!photo) { photo = true; flashT = .5; shotWait = .6; giveStamp("cascade"); Hero.say("yerevan", "win", "Фото с Каскада на фоне Арарата!"); }
         else { steps = 0; atTop = false; photo = false; }
       } else if (scene === "square") { if (show <= 0) { show = 12; dance(); Hero.say("yerevan", "good", "Музыка! Фонтаны начинают петь!"); } }
       else if (scene === "vern") { duduk(); vMsg = "Звучит дудук — самый армянский инструмент 🎵"; }
@@ -7167,6 +7265,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "vern") drawVern(t, dt);
       else if (scene === "hotel") drawHotel(t, dt);
       else if (scene === "lavash") { const f = lv.fly; drawLavash(t, dt); if (f > 0 && lv.fly === 0) updateAction(); }
+      if (shotWait > 0 && (shotWait -= dt) <= 0) { if (scene === "cascade") Gallery.add(cv, "Каскад · вид на Арарат"); }
       raf = requestAnimationFrame(frame);
     }
     function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
@@ -7219,7 +7318,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const rk = { a: Math.PI / 2, v: 0, laps: 0, lastA: Math.PI / 2, total: 0 };
     let snow = [];
     // Moscow City
-    let ride = 0, riding = false, photo = false, flashT = 0, cityLights = [];
+    let ride = 0, riding = false, photo = false, flashT = 0, cityLights = [], shotWait = 0;
     // Moskvich Hotel
     const ht = { phase: "lobby", key: 0, fade: 0, done: {}, spots: [], fx: "", fxT: 0, bites: 0, tv: false };
 
@@ -7724,7 +7823,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "hotel") { if (ht.phase === "lobby") hotelTask("desk"); else { ht.bites = 0; Hero.say("moscow", "good", "Завтрак принесли: блины с мёдом, сырники, ягоды и чай!"); } }
       else if (scene === "city") {
         if (ride < 1 && !riding) riding = true;
-        else if (ride >= 1 && !photo) { photo = true; flashT = .5; giveStamp("city"); Hero.say("moscow", "win", "Селфи над ночной Москвой с высоты 354 метра!"); }
+        else if (ride >= 1 && !photo) { photo = true; flashT = .5; shotWait = .6; giveStamp("city"); Hero.say("moscow", "win", "Селфи над ночной Москвой с высоты 354 метра!"); }
         else if (photo) { ride = 0; photo = false; }
       }
       updateAction();
@@ -7755,6 +7854,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       else if (scene === "park") drawPark(t, dt);
       else if (scene === "hotel") drawHotel(t, dt);
       else if (scene === "city") { const was = riding; drawCity(t, dt); if (was) updateAction(); }
+      if (shotWait > 0 && (shotWait -= dt) <= 0) { if (scene === "city") Gallery.add(cv, "Москва-Сити · 354 м"); }
       raf = requestAnimationFrame(frame);
     }
     function loop() { if (!raf && visible) { lastT = 0; raf = requestAnimationFrame(frame); } }
