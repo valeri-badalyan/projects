@@ -2025,7 +2025,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <b class="cs-flat-h">🛋️ Обустроить квартиру</b>
       <div class="cs-shop" id="csFurn"></div>
     </div>
-    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★, нажми на него или на «Зайти в квартиру»). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. Каждый покупатель платит 23 р. 67 коп. (с каждым новым ларьком — вдвое больше). <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
+    <p class="hint">Ты живёшь в пятиэтажке (твоё окно — со звёздочкой ★, нажми на него или на «Зайти в квартиру»). Нажимай на покупателей у ларька — они платят копейками. Продукты тратятся каждый день: не забывай покупать запас. Работники обслуживают сами, каждый новый ларёк удваивает доход. Каждый покупатель платит 23 р. 67 коп., а когда заработаешь 10 000 р., начнут приходить купцы в цилиндрах — они платят по 1000 р. (с каждым новым ларьком — вдвое больше). <button type="button" class="linkish" id="csReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -8664,6 +8664,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const GOODS = [["Бублик", 3, "🥯"], ["Ситный хлеб", 5, "🍞"], ["Стакан чаю", 4, "🍵"], ["Пирожок", 3, "🥟"], ["Крынка молока", 6, "🥛"], ["Фунт сахару", 12, "🍬"], ["Квас", 2, "🍺"], ["Мёд", 10, "🍯"], ["Яблоки", 5, "🍎"], ["Селёдка", 7, "🐟"]];
     const TITLES = [[0, "Бедный жилец"], [100000, "Лавочник"], [1000000, "Торговец"], [10000000, "Купец 3-й гильдии"], [100000000, "Купец 1-й гильдии"]];
     const PAY = 2367; // every customer pays 23 р. 67 коп.
+    const MERCH_PAY = 100000, MERCH_FROM = 1000000; // after 10 000 р. earned, merchants come and pay 1000 р.
     const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
     function fresh() { return { money: 100, total: 0, stock: 14, equip: 0, stalls: 1, day: .33, served: 0, milestone: 0 }; }
     let S = store.get("cashSim", null); if (!S || typeof S.money !== "number") S = fresh();
@@ -8699,6 +8700,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function person() {
       const lady = Math.random() < .45;
       const g = GOODS[Math.floor(Math.random() * GOODS.length)];
+      if (S.total >= MERCH_FROM && Math.random() < .35) return { x: -20, tx: 0, merchant: true, lady: false, coat: "#5a3418", hat: "#141418", good: ["Всё оптом!", 0, "🎩"], wait: 0, mood: 1, bob: Math.random() * 6, out: false };
       return { x: -20, tx: 0, lady, coat: COATS[Math.floor(Math.random() * COATS.length)], hat: lady ? ["#c9a0a0", "#e8d8c0", "#8a7aa0"][Math.floor(Math.random() * 3)] : "#2a2a2a", good: g, wait: 0, mood: 1, bob: Math.random() * 6, out: false };
     }
     function drawPerson(p, t) {
@@ -8711,8 +8713,18 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       if (p.lady) { ctx.moveTo(x - 5 * s, y - 34 * s); ctx.lineTo(x + 5 * s, y - 34 * s); ctx.lineTo(x + 11 * s, y - 4 * s); ctx.lineTo(x - 11 * s, y - 4 * s); }
       else { ctx.moveTo(x - 7 * s, y - 34 * s); ctx.lineTo(x + 7 * s, y - 34 * s); ctx.lineTo(x + 8 * s, y - 12 * s); ctx.lineTo(x - 8 * s, y - 12 * s); }
       ctx.fill();
+      if (p.merchant) {
+        ctx.fillStyle = p.coat; ctx.beginPath(); ctx.ellipse(x, y - 22 * s, 12 * s, 15 * s, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = "#f0e8d8"; ctx.fillRect(x - 12 * s, y - 10 * s, 24 * s, 4 * s); ctx.beginPath(); ctx.ellipse(x, y - 34 * s, 9 * s, 4 * s, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = "#ffd84d"; ctx.lineWidth = 1.2 * s; ctx.beginPath(); ctx.moveTo(x - 6 * s, y - 24 * s); ctx.quadraticCurveTo(x, y - 18 * s, x + 6 * s, y - 24 * s); ctx.stroke();
+      }
       // head
       ctx.fillStyle = "#e8c4a0"; ctx.beginPath(); ctx.arc(x, y - 40 * s, 6 * s, 0, 7); ctx.fill();
+      if (p.merchant) {
+        ctx.fillStyle = "#6a4424"; ctx.beginPath(); ctx.moveTo(x - 6 * s, y - 39 * s); ctx.quadraticCurveTo(x, y - 26 * s, x + 6 * s, y - 39 * s); ctx.fill();
+        ctx.fillStyle = "#141418"; ctx.fillRect(x - 6 * s, y - 58 * s, 12 * s, 14 * s); ctx.fillRect(x - 9 * s, y - 45 * s, 18 * s, 2.5 * s); ctx.fillStyle = "#8a1f2a"; ctx.fillRect(x - 6 * s, y - 48 * s, 12 * s, 2 * s);
+        return;
+      }
       // hat: bonnet or peaked cap
       ctx.fillStyle = p.hat;
       if (p.lady) { ctx.beginPath(); ctx.arc(x, y - 42 * s, 7.5 * s, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 9 * s, y - 43 * s, 18 * s, 2.5 * s); }
@@ -8944,10 +8956,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       for (let i = 0; i < Math.min(workers(), 4); i++) worker(W * (.62 + i * .045), t, i);
       // customers
       walkers.forEach((p) => drawPerson(p, t));
-      queue.forEach((p, i) => { drawPerson(p, t); if (i === 0 && S.stock > 0 && Math.abs(p.tx - p.x) < 3) { ctx.fillStyle = "rgba(255,255,255,.92)"; const bx = p.x + 6 * U, by = H * .86 - 64 * U; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, 74 * U, 18 * U, 6) : ctx.rect(bx, by, 74 * U, 18 * U); ctx.fill(); ctx.fillStyle = "#12132a"; ctx.font = `800 ${Math.round(8 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(`${p.good[2]} ${p.good[0]}`, bx + 37 * U, by + 9 * U); } });
+      queue.forEach((p, i) => { drawPerson(p, t); if (i === 0 && S.stock > 0 && Math.abs(p.tx - p.x) < 3) { ctx.fillStyle = "rgba(255,255,255,.92)"; const bx = p.x + 6 * U, by = H * .86 - 64 * U; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, 74 * U, 18 * U, 6) : ctx.rect(bx, by, 74 * U, 18 * U); ctx.fill(); ctx.fillStyle = "#12132a"; ctx.font = `800 ${Math.round(8 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(p.merchant ? "🎩 Купец: всё оптом!" : `${p.good[2]} ${p.good[0]}`, bx + 37 * U, by + 9 * U); } });
       drawCab(t, dt);
       coins = coins.filter((c) => (c.t += dt) < 1);
-      coins.forEach((c) => { ctx.globalAlpha = 1 - c.t; ctx.fillStyle = "#ffd84d"; ctx.font = `900 ${Math.round(11 * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.fillText(`+${rub(c.v)}`, c.x, c.y - c.t * 40 * U); ctx.globalAlpha = 1; });
+      coins.forEach((c) => { ctx.globalAlpha = 1 - c.t; ctx.fillStyle = c.big ? "#fff3a0" : "#ffd84d"; ctx.font = `900 ${Math.round((c.big ? 15 : 11) * U)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.fillText(`+${rub(c.v)}`, c.x, c.y - c.t * 40 * U); ctx.globalAlpha = 1; });
       if (isNight()) { ctx.fillStyle = "rgba(10,14,40,.25)"; ctx.fillRect(0, 0, W, H); }
       // sepia tint, like an old photo
       ctx.fillStyle = "rgba(120,80,30,.08)"; ctx.fillRect(0, 0, W, H);
@@ -8961,9 +8973,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function serve(byWorker) {
       const p = queue[0]; if (!p || S.stock <= 0) return;
       queue.shift();
-      const v = PAY * mult();
+      const v = (p.merchant ? MERCH_PAY : PAY) * mult();
+      if (p.merchant && !S.merchSaid) { S.merchSaid = true; Hero.say("cash", "win", "Пришли купцы! Каждый покупает оптом и платит 1000 рублей!"); }
       S.money += v; S.total += v; S.served++;
-      coins.push({ x: p.x, y: H * .86 - 70 * U, v, t: 0 });
+      coins.push({ x: p.x, y: H * .86 - 70 * U, v, t: 0, big: !!p.merchant });
       p.out = true; p.moving = true; walkers.push(p);
       if (!byWorker) clink();
       milestones();
