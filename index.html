@@ -1250,6 +1250,91 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 @keyframes toastin { from { transform: translate(-50%, -20px); opacity: 0; } }
 
+/* ---------- V3 Management (owner only) ---------- */
+.manage-btn { background: linear-gradient(110deg, #2a1660, #7a3cff); color: #fff; border: 2px solid #c77dff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.manage-btn small { font: 700 10px var(--mono); letter-spacing: .12em; color: #e6d4ff; }
+.mg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.mg-card { padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mg-card h3 { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.mg-card h3 b { color: var(--lime); font-family: var(--mono); letter-spacing: 0; }
+.mg-big { font: 800 30px var(--mono); color: var(--fg); line-height: 1; }
+.mg-sub { font-size: 12px; color: var(--muted); margin: 0; }
+.mg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.mg-row .btn { flex: 1 1 auto; }
+.mg-list { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow: auto; margin: 0; padding: 0; list-style: none; }
+.mg-list li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--bg); font-size: 13px; }
+.mg-list li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-list li small { color: var(--muted); flex: none; }
+.mg-list button { all: unset; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; width: 100%; }
+.mg-list button b { font-family: var(--mono); color: var(--amber); }
+.mg-card textarea { font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 70px; resize: vertical; box-sizing: border-box; }
+.mg-card textarea:focus { outline: none; border-color: #c77dff; }
+.mg-status { min-height: 18px; font-size: 13px; font-weight: 700; color: var(--lime); }
+.mg-status.err { color: var(--amber); }
+.ann-bar { position: fixed; z-index: 69; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100vw - 32px)); box-sizing: border-box;
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #1c0f3f; border: 2px solid #c77dff; box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: toastin .25s ease-out; }
+.ann-bar span { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.4; }
+.ann-bar span b { display: block; font: 800 10px var(--mono); letter-spacing: .14em; color: #c77dff; margin-bottom: 2px; }
+.mg-ban-row { display: flex; align-items: center; gap: 8px; }
+.mg-ban-row select { font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; flex: 1; min-width: 0; }
+.mg-list li .mg-act { all: unset; cursor: pointer; flex: none; font: 800 12px var(--mono); padding: 4px 10px; border-radius: 999px; background: var(--coral); color: #fff; }
+.mg-list li .mg-act.ok { background: var(--lime); color: var(--bg); }
+.mg-list li .mg-act:disabled { opacity: .4; cursor: default; }
+.soccer-btn { background: linear-gradient(110deg, #155a35, #2fa868); color: #fff; border: 2px solid #9be15d; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.soccer-btn small { font: 700 10px var(--mono); letter-spacing: .12em; color: #d8ffd0; }
+.sc-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.sc-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.sc-tabs button { flex: none; padding: 8px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font: 700 13px inherit; font-family: inherit; cursor: pointer; }
+.sc-tabs button[aria-selected="true"] { background: var(--lime); border-color: var(--lime); color: var(--bg); }
+.sc-body { display: flex; flex-direction: column; gap: 12px; }
+.sc-card { padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sc-card h3 { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.sc-name input, .sc-row select { font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; width: 100%; box-sizing: border-box; }
+.sc-row { display: flex; gap: 8px; align-items: center; }
+.sc-row > * { flex: 1; }
+.sc-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.sc-stats div { background: var(--bg); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; }
+.sc-stats small { font-size: 11px; color: var(--muted); }
+.sc-stats b { font: 800 18px var(--mono); }
+.sc-vs { margin: 0; font-weight: 800; font-size: 16px; }
+.sc-res { font-family: var(--mono); padding: 0 8px; border-radius: 8px; flex: none; }
+.sc-res.w { background: var(--lime); color: var(--bg); } .sc-res.d { background: var(--line); } .sc-res.l { background: var(--coral); color: #fff; }
+.sc-pitch { width: 100%; max-width: 360px; display: block; margin: 0 auto; border-radius: 10px; }
+.sc-players { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.sc-players li { display: flex; align-items: center; gap: 6px; padding: 4px; border-radius: 12px; background: var(--bg); border: 2px solid transparent; }
+.sc-players li.on { border-color: var(--amber); }
+.sc-pl { all: unset; cursor: pointer; flex: 1; min-width: 0; display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto; column-gap: 8px; padding: 4px; }
+div.sc-pl { cursor: default; }
+.sc-pl .sc-r { grid-row: span 2; align-self: center; text-align: center; font: 800 16px/34px var(--mono); border-radius: 8px; background: var(--panel-2); color: var(--amber); }
+.sc-pl span { font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-pl small { font-size: 12px; color: var(--muted); }
+.sc-mini { flex: none; min-width: 40px; height: 36px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font: 700 13px inherit; font-family: inherit; cursor: pointer; padding: 0 8px; }
+.sc-mini.buy { background: var(--lime); border-color: var(--lime); color: var(--bg); }
+.sc-mini:disabled { opacity: .4; cursor: default; }
+.sc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sc-table th { font-size: 11px; color: var(--muted); text-align: center; padding: 4px 2px; }
+.sc-table td { text-align: center; padding: 6px 2px; border-top: 1px solid var(--line); font-family: var(--mono); }
+.sc-table td:nth-child(2) { text-align: left; font-family: inherit; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.sc-table td:last-child { font-weight: 800; color: var(--amber); }
+.sc-table tr.me td { background: rgba(255, 181, 71, .12); }
+.sc-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.sc-board { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 12px; border-radius: 12px; background: #0b2a16; text-align: center; }
+.sc-board .t { font-weight: 800; font-size: 13px; }
+.sc-board b { font: 800 30px var(--mono); color: #fff; }
+.sc-board small { grid-column: 1 / -1; font: 700 13px var(--mono); color: var(--lime); }
+.sc-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow: auto; }
+.sc-feed li { font-size: 13px; padding: 6px 8px; border-radius: 8px; background: var(--bg); }
+.sc-feed li.goal { background: rgba(155, 225, 93, .18); font-weight: 800; }
+.sc-feed li.bad { background: rgba(255, 107, 122, .15); }
+.sc-feed li.card { color: #ffd84d; }
+.sc-feed li.sys { color: var(--muted); }
+.ban-screen { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; background: radial-gradient(circle at 50% 30%, #3a0d1a, #0b0612 70%); color: #fff; }
+.ban-screen .ban-ico { font-size: 64px; line-height: 1; }
+.ban-screen h2 { margin: 0; font-size: 24px; color: var(--coral); }
+.ban-screen p { margin: 0; max-width: 320px; color: #e8d8e0; line-height: 1.45; }
+.ban-screen b { font: 800 22px var(--mono); color: var(--amber); }
+.ann-bar button { all: unset; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; color: var(--muted); }
+
 /* ---------- Body type picker ---------- */
 .build-box { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; }
 .build-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -1388,6 +1473,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn wide idea-btn" type="button" id="ideaOpen">Дать идею</button>
       <button class="btn ghost inbox-btn" type="button" id="inboxBtn" data-go="ideas" hidden>Ящик идей<span class="badge" id="inboxBadge" hidden>0</span></button>
     </div>
+    <button class="btn wide manage-btn" type="button" id="manageBtn" data-go="manage" hidden>👑 V3 Management <small>ТОЛЬКО ДЛЯ ТЕБЯ</small></button>
+    <button class="btn wide soccer-btn" type="button" id="soccerBtn" data-go="soccer" hidden>⚽ Soccer Team Management <small>ТОЛЬКО ДЛЯ ТЕБЯ</small></button>
     <a class="btn wide fdm1-btn" id="fdm1Btn" href="https://claude.ai/artifact/UwofzseJzdYCgJQCFyFpqM" target="_blank" rel="noopener">FDM1 <span aria-hidden="true">↗</span></a>
     <p class="lead">Выбери картридж</p>
     <div class="carts">
@@ -1991,6 +2078,101 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <p class="shop-note" id="ideasNote">Идеи игроков видишь только ты. Новые подсвечены зелёным.</p>
     <div class="idea-list" id="ideaList"></div>
   </section>
+
+  <!-- ===== V3 Management (owner only) ===== -->
+  <section id="manage" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3 Management</div>
+      <div class="chip hi"><span>Владелец</span><b>👑</b></div>
+    </div>
+    <p class="shop-note">Панель управления V3 Games. Её видишь только ты — у игроков этой кнопки нет.</p>
+    <div class="mg-grid">
+      <div class="mg-card">
+        <h3>Сейчас в сети <b id="mgOnlineN">0</b></h3>
+        <ul class="mg-list" id="mgOnline"></ul>
+      </div>
+      <div class="mg-card">
+        <h3>Бан игроков <b id="mgBanN">0</b></h3>
+        <div class="mg-ban-row"><span class="mg-sub">Срок:</span>
+          <select id="mgBanTime" aria-label="Срок бана">
+            <option value="600000">10 минут</option>
+            <option value="3600000">1 час</option>
+            <option value="86400000">1 день</option>
+            <option value="604800000">7 дней</option>
+            <option value="0">Навсегда</option>
+          </select>
+        </div>
+        <ul class="mg-list" id="mgBanPeers"></ul>
+        <p class="mg-sub">Забаненные:</p>
+        <ul class="mg-list" id="mgBanList"></ul>
+        <div class="mg-status" id="mgBanStatus" role="status"></div>
+      </div>
+      <div class="mg-card">
+        <h3>Объявление всем</h3>
+        <textarea id="mgAnnText" maxlength="200" placeholder="Например: «Сегодня в 18:00 турнир в Змейке!»"></textarea>
+        <div class="mg-row">
+          <button class="btn" type="button" id="mgAnnSend">📣 Отправить</button>
+          <button class="btn ghost" type="button" id="mgAnnStop">Снять</button>
+        </div>
+        <div class="mg-status" id="mgAnnStatus" role="status"></div>
+        <p class="mg-sub">Видят все, кто сейчас в V3 Games. Новые игроки получат его, пока у тебя открыта страница.</p>
+      </div>
+      <div class="mg-card">
+        <h3>Ящик идей <b id="mgIdeasNew">0 новых</b></h3>
+        <div class="mg-big" id="mgIdeasTotal">0</div>
+        <p class="mg-sub">идей от игроков всего</p>
+        <button class="btn ghost" type="button" data-go="ideas">Открыть ящик</button>
+      </div>
+      <div class="mg-card">
+        <h3>Мой кошелёк</h3>
+        <div class="mg-big">◎ <span id="mgCoins">0</span></div>
+        <div class="mg-row">
+          <button class="btn ghost small" type="button" data-mg-coins="1000">+1 000</button>
+          <button class="btn ghost small" type="button" data-mg-coins="10000">+10 000</button>
+          <button class="btn ghost small" type="button" data-mg-coins="100000">+100 000</button>
+        </div>
+        <p class="mg-sub">Монеты только у тебя на этом устройстве.</p>
+      </div>
+      <div class="mg-card">
+        <h3>Реклама у меня</h3>
+        <button class="btn ghost" type="button" id="mgAds"></button>
+        <p class="mg-sub">Донатов сделано: <b id="mgDon">0</b></p>
+      </div>
+      <div class="mg-card">
+        <h3>Мои рекорды <b id="mgGamesN">0</b></h3>
+        <ul class="mg-list" id="mgBest"></ul>
+      </div>
+    </div>
+  </section>
+  <!-- ===== Soccer Team Management (owner only) ===== -->
+  <section id="soccer" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Soccer Team Management</div>
+    </div>
+    <div class="chips sc-chips">
+      <div class="chip hi"><span>Бюджет</span><b id="scBudget">0</b></div>
+      <div class="chip"><span>Тур</span><b id="scRound">1</b></div>
+      <div class="chip"><span>Место</span><b id="scPlace">1</b></div>
+    </div>
+    <div class="sc-tabs" id="scTabs" role="tablist">
+      <button type="button" role="tab" data-t="club">🏟️ Клуб</button>
+      <button type="button" role="tab" data-t="squad">👕 Состав</button>
+      <button type="button" role="tab" data-t="match">⚽ Матч</button>
+      <button type="button" role="tab" data-t="table">📊 Таблица</button>
+      <button type="button" role="tab" data-t="market">💰 Трансферы</button>
+    </div>
+    <div class="sc-body" id="scBody"></div>
+  </section>
+
+  <div class="ban-screen" id="banScreen" role="alertdialog" aria-labelledby="banTitle" hidden>
+    <div class="ban-ico" aria-hidden="true">🚫</div>
+    <h2 id="banTitle">Ты забанен</h2>
+    <p>Владелец V3 Games закрыл тебе доступ к играм.</p>
+    <p id="banLeft"></p>
+  </div>
+  <div class="ann-bar" id="annBar" role="status" hidden><span><b>📣 ОБЪЯВЛЕНИЕ V3</b><em id="annText" style="font-style:normal"></em></span><button type="button" id="annClose" aria-label="Закрыть">✕</button></div>
 
   <!-- ===== Just Dubai! ===== -->
   <section id="dubai" class="screen" hidden>
@@ -11504,7 +11686,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       try { await navigator.clipboard.writeText(msg); status.className = "idea-status ok"; status.textContent = "Скопировано!"; }
       catch (e) { text.focus(); text.select(); status.textContent = "Выдели текст и скопируй вручную."; }
     });
-    return { openInbox, isOpen: () => !modal.hidden, close };
+    return { openInbox, isOpen: () => !modal.hidden, close, stats: () => ({ total: all.length, fresh: all.filter((it) => (it.t || 0) > seen).length }), owner: () => ready.then(() => owner) };
   })();
 
   /* ================= Fix the monitor ================= */
@@ -11776,12 +11958,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       // a short break every third time you come back to the menu from a game
       fromGame() { if (adFree) return; backs++; store.set("adBacks", backs); if (backs % 3 === 0) setTimeout(() => showFull(false), 250); },
       isOpen: () => !$("#adFull").hidden,
+      free: () => adFree,
+      setFree(v) { adFree = !!v; store.set("adFree", adFree); banner(); },
     };
   })();
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -11833,7 +12017,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       mine.push([Date.now().toString(36) + Math.random().toString(36).slice(2, 4), Date.now(), text]); mine = mine.slice(-15); store.set("talkMine", mine);
       push(); collect(); renderLog();
     }
-    function update() {
+    const watchers = [];
+    function update(ev) {
+      watchers.forEach((f) => { try { f(ev); } catch (e) {} });
       const fresh = collect();
       if (fresh && $("#talk").hidden) unread += fresh;
       if (!$("#talk").hidden) { unread = 0; renderLog(); }
@@ -11854,7 +12040,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#tkNick").value = nick;
     $("#tkNick").addEventListener("change", () => { nick = $("#tkNick").value.replace(/\s+/g, " ").trim().slice(0, 16); store.set("talkNick", nick); push(); });
     renderOnline();
-    return { me: () => ({ n: myName(), c: color }), enter() { unread = 0; collect(); renderLog(); renderOnline(); push(); setTimeout(() => { const b = $("#tkLog"); b.scrollTop = b.scrollHeight; }, 30); } };
+    return { room: () => room, peers: online, GNAME, onPeers: (f) => watchers.push(f), me: () => ({ n: myName(), c: color }), enter() { unread = 0; collect(); renderLog(); renderOnline(); push(); setTimeout(() => { const b = $("#tkLog"); b.scrollTop = b.scrollHeight; }, 30); } };
   })();
 
   /* ================= V3 Craft: voxel sandbox (Three.js r128) ================= */
@@ -14627,7 +14813,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -14674,15 +14860,505 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     if (name === "talk") Talk.enter();
+    if (name === "manage" && window.__mg) window.__mg.enter();
+    if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
     window.scrollTo(0, 0);
   }
   $$("[data-go]").forEach((el) => el.addEventListener("click", () => show(el.dataset.go)));
+
+  /* ================= V3 Management: owner-only control panel ================= */
+  // The hub button and screen appear only for the page owner (checked through the artifact runtime).
+  // Announcements go out on the admin-only room topic "v3ann", so only the owner (or an Editor) can send them.
+  const Manage = (() => {
+    let owner = false, room = null, ann = store.get("mgAnn", null), lastPush = 0, myId = null;
+    // bans the owner gave: { <user id>: { n: name, until: ms (0 = forever), t: when } }
+    let bans = store.get("mgBans", {}); if (!bans || typeof bans !== "object") bans = {};
+    const isOn = () => !$("#manage").hidden;
+    const fmtN = (n) => Number(n || 0).toLocaleString("ru-RU");
+    function status(msg, err) { const st = $("#mgAnnStatus"); st.textContent = msg; st.className = "mg-status" + (err ? " err" : ""); }
+
+    // ---- everyone: show the owner's announcement ----
+    function showAnn(d) {
+      if (!d || typeof d.text !== "string" || !d.text.trim()) { $("#annBar").hidden = true; return; }
+      if (store.get("annSeen", 0) === d.t) return;   // already closed by this player
+      $("#annText").textContent = d.text.slice(0, 200);
+      $("#annBar").hidden = false; $("#annBar").dataset.t = d.t || 0;
+    }
+    $("#annClose").addEventListener("click", () => { store.set("annSeen", +$("#annBar").dataset.t || 0); $("#annBar").hidden = true; });
+
+    // ---- everyone: obey the owner's ban list ----
+    // The list arrives on the admin-only topic "v3ban"; a banned player also keeps the ban on the
+    // device, so it holds while the owner is offline. An updated list without you lifts it.
+    let myBan = store.get("myBan", null), banT = 0;
+    const banActive = () => !!(myBan && (!myBan.until || myBan.until > Date.now()));
+    function left(ms) {
+      const m = Math.ceil(ms / 60000);
+      if (m < 60) return m + " мин";
+      const h = Math.floor(m / 60); if (h < 24) return h + " ч " + (m % 60) + " мин";
+      const d = Math.floor(h / 24); return d + " д " + (h % 24) + " ч";
+    }
+    function applyBan() {
+      clearInterval(banT);
+      if (!banActive()) { if (myBan) { myBan = null; store.set("myBan", null); } $("#banScreen").hidden = true; return; }
+      if (current !== "hub") show("hub");
+      $("#banScreen").hidden = false;
+      const tick = () => {
+        if (!banActive()) { applyBan(); return; }
+        $("#banLeft").innerHTML = myBan.until ? "До разбана: <b></b>" : "<b>Навсегда</b>";
+        if (myBan.until) $("#banLeft").querySelector("b").textContent = left(myBan.until - Date.now());
+      };
+      tick(); banT = setInterval(tick, 15000);
+    }
+    function onBanList(d) {
+      if (!d || !Array.isArray(d.bans) || !myId || owner) return;
+      const me = d.bans.find((b) => Array.isArray(b) && b[0] === myId);
+      myBan = me ? { until: +me[1] || 0 } : null;
+      store.set("myBan", myBan); applyBan();
+    }
+    applyBan();
+
+    // ---- owner: ban / unban ----
+    function cleanBans() { Object.keys(bans).forEach((id) => { const b = bans[id]; if (!b || (b.until && b.until <= Date.now())) delete bans[id]; }); }
+    function pushBans() {
+      if (!owner || !room) return;
+      cleanBans();
+      room.emit("v3ban", { bans: Object.keys(bans).map((id) => [id, bans[id].until || 0]), t: Date.now() }).catch(() => {});
+    }
+    function banStatus(msg, err) { const st = $("#mgBanStatus"); st.textContent = msg; st.className = "mg-status" + (err ? " err" : ""); }
+    function ban(pr) {
+      if (!pr.by) { banStatus("У этого игрока нет постоянного id — забанить нельзя.", true); return; }
+      const dur = +$("#mgBanTime").value || 0, name = String((pr.presence && pr.presence.n) || "Игрок").slice(0, 16);
+      bans[pr.by] = { n: name, until: dur ? Date.now() + dur : 0, t: Date.now() };
+      store.set("mgBans", bans); pushBans(); render();
+      banStatus(`${name} забанен ${dur ? "на " + $("#mgBanTime").selectedOptions[0].textContent : "навсегда"}.`);
+    }
+    function unban(id) {
+      const n = bans[id] ? bans[id].n : "Игрок";
+      delete bans[id]; store.set("mgBans", bans); pushBans(); render();
+      banStatus(`${n} разбанен.`);
+    }
+    function renderBans() {
+      cleanBans();
+      const peers = $("#mgBanPeers"); peers.innerHTML = "";
+      const others = Talk.peers().filter((p) => !p.isMe && p.kind !== "agent");
+      if (!others.length) peers.innerHTML = `<li><span>${room ? "Других игроков в сети нет" : "Игроки видны на опубликованной странице"}</span></li>`;
+      others.forEach((pr) => {
+        const li = document.createElement("li"), sp = document.createElement("span"), bt = document.createElement("button");
+        sp.textContent = String(pr.presence.n).slice(0, 16) + (pr.guest ? " (гость)" : "");
+        bt.type = "button"; bt.className = "mg-act";
+        if (pr.by && bans[pr.by]) { bt.textContent = "Разбан"; bt.classList.add("ok"); bt.addEventListener("click", () => unban(pr.by)); }
+        else { bt.textContent = "🚫 Бан"; bt.disabled = !pr.by; if (!pr.by) bt.title = "Нет id игрока"; bt.addEventListener("click", () => ban(pr)); }
+        li.append(sp, bt); peers.appendChild(li);
+      });
+      const list = $("#mgBanList"), ids = Object.keys(bans); list.innerHTML = "";
+      $("#mgBanN").textContent = ids.length;
+      if (!ids.length) list.innerHTML = "<li><span>Никого</span></li>";
+      ids.sort((a, b) => bans[b].t - bans[a].t).forEach((id) => {
+        const b = bans[id], li = document.createElement("li"), sp = document.createElement("span"), sm = document.createElement("small"), bt = document.createElement("button");
+        sp.textContent = b.n; sm.textContent = b.until ? left(b.until - Date.now()) : "навсегда";
+        bt.type = "button"; bt.className = "mg-act ok"; bt.textContent = "Разбан"; bt.addEventListener("click", () => unban(id));
+        li.append(sp, sm, bt); list.appendChild(li);
+      });
+    }
+
+    // ---- owner: send / repeat for newcomers ----
+    function pushAnn() {
+      if (!owner || !room) return;
+      lastPush = Date.now();
+      room.emit("v3ann", ann && ann.text ? { text: ann.text, t: ann.t } : { text: "", t: Date.now() })
+        .catch((e) => { if (isOn()) status(e && e.code === "not_permitted" ? "Нет права отправлять объявления." : "Не отправилось — проверь интернет.", true); });
+    }
+    $("#mgAnnSend").addEventListener("click", () => {
+      const text = $("#mgAnnText").value.replace(/\s+/g, " ").trim().slice(0, 200);
+      if (text.length < 2) { status("Напиши текст объявления.", true); return; }
+      if (!room) { status("Объявления работают на опубликованной странице V3 Games.", true); return; }
+      ann = { text, t: Date.now() }; store.set("mgAnn", ann);
+      pushAnn(); status(`Отправлено ${Talk.peers().filter((p) => !p.isMe).length} игрокам в сети ✓`);
+    });
+    $("#mgAnnStop").addEventListener("click", () => {
+      ann = null; store.set("mgAnn", null); $("#mgAnnText").value = "";
+      pushAnn(); status("Объявление снято.");
+    });
+
+    // ---- panel ----
+    function render() {
+      if (!isOn()) return;
+      const list = Talk.peers(), box = $("#mgOnline");
+      $("#mgOnlineN").textContent = list.length; box.innerHTML = "";
+      if (!room) box.innerHTML = "<li><span>Список игроков виден на опубликованной странице</span></li>";
+      else if (!list.length) box.innerHTML = "<li><span>Пока никого</span></li>";
+      list.slice().sort((a, b) => (b.isMe ? 1 : 0) - (a.isMe ? 1 : 0)).forEach((pr) => {
+        const li = document.createElement("li"); li.innerHTML = "<span></span><small></small>";
+        li.querySelector("span").textContent = (pr.isMe ? "Ты · " : "") + String(pr.presence.n).slice(0, 16) + (pr.guest ? " (гость)" : "");
+        li.querySelector("small").textContent = Talk.GNAME[pr.presence.g] || "";
+        box.appendChild(li);
+      });
+      const st = Ideas.stats();
+      $("#mgIdeasTotal").textContent = st.total; $("#mgIdeasNew").textContent = `${st.fresh} новых`;
+      $("#mgCoins").textContent = fmtN(Hero.coins());
+      $("#mgAds").textContent = Ads.free() ? "🚫 Реклама выключена — включить" : "📺 Реклама включена — выключить";
+      $("#mgDon").textContent = store.get("donated", { count: 0 }).count || 0;
+      const best = $("#mgBest"); best.innerHTML = "";
+      const keys = Object.keys(GAMES); $("#mgGamesN").textContent = keys.length + " игр";
+      keys.forEach((k) => {
+        let v = 0; try { v = GAMES[k].best ? GAMES[k].best() : (GAMES[k].wins ? GAMES[k].wins() : 0); } catch (e) { v = 0; }
+        const li = document.createElement("li"), b = document.createElement("button"); b.type = "button";
+        b.innerHTML = "<span></span><b></b>"; b.querySelector("span").textContent = Talk.GNAME[k] || k; b.querySelector("b").textContent = v;
+        b.addEventListener("click", () => show(k)); li.appendChild(b); best.appendChild(li);
+      });
+      if (ann && ann.text && !$("#mgAnnText").value) $("#mgAnnText").value = ann.text;
+      renderBans();
+    }
+    $$("[data-mg-coins]").forEach((b) => b.addEventListener("click", () => { Hero.grant(+b.dataset.mgCoins); updateHub(); render(); }));
+    $("#mgAds").addEventListener("click", () => { Ads.setFree(!Ads.free()); render(); });
+
+    // ---- start: wait for the runtime, then decide who sees what ----
+    (async () => {
+      owner = !!(await Ideas.owner().catch(() => false));
+      if (!owner) {
+        try { const user = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; owner = !!(user && await user.isOwner()); } catch (e) { owner = false; }
+      }
+      $("#manageBtn").hidden = !owner;
+      Soccer.setOwner(owner);
+      if (!owner && current === "soccer") show("hub");
+      try { const u = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; myId = u ? await u.id() : null; } catch (e) { myId = null; }
+      if (owner && myBan) { myBan = null; store.set("myBan", null); applyBan(); }   // the owner can never lock themself out
+      if (!owner && current === "manage") show("hub");
+      // the chat module connects to the room; pick it up when it is ready
+      const t0 = Date.now();
+      const wait = setInterval(() => {
+        const r = Talk.room();
+        if (!r && Date.now() - t0 < 20000) return;
+        clearInterval(wait); room = r; if (!room) return;
+        room.on("v3ann", (m) => showAnn(m.data));
+        room.on("v3ban", (m) => onBanList(m.data));
+        Talk.onPeers((ch) => { if (owner && ch && ch.joined && ch.joined.some((p) => !p.isMe) && Date.now() - lastPush > 1500) setTimeout(() => { pushAnn(); pushBans(); }, 800); render(); });
+        if (owner) { if (ann && ann.text) pushAnn(); pushBans(); setInterval(() => { if (ann && ann.text) pushAnn(); pushBans(); }, 30000); }
+        render();
+      }, 400);
+    })();
+
+    return { enter() { if (!owner) { setTimeout(() => show("hub"), 0); return; } status(""); render(); } };
+  })();
+  window.__mg = Manage;
+
+  /* ================= Soccer Team Management (owner only) ================= */
+  // A football manager: squad, formation, league of 8 clubs (14 rounds), live matches, transfers, training.
+  const Soccer = (() => {
+    const SAVE = "stm";
+    const POS = ["GK", "DEF", "MID", "FWD"], PNAME = { GK: "ВРТ", DEF: "ЗАЩ", MID: "ПЗЩ", FWD: "НАП" };
+    const FORMS = { "4-4-2": [4, 4, 2], "4-3-3": [4, 3, 3], "3-5-2": [3, 5, 2], "5-3-2": [5, 3, 2], "4-5-1": [4, 5, 1] };
+    const FIRST = ["Арам", "Давид", "Марк", "Лео", "Тимур", "Карим", "Нико", "Артём", "Самуэль", "Омар", "Эрик", "Рафаэль", "Гор", "Иван", "Лука", "Хьюго", "Мати", "Юсуф", "Алекс", "Тео", "Дани", "Рубен", "Сергей", "Вардан"];
+    const LAST = ["Петросян", "Силва", "Фернандес", "Мюллер", "Ковач", "Алиев", "Гарсия", "Росси", "Новак", "Мартин", "Смирнов", "Аветисян", "Бенали", "Коста", "Янсен", "Оливейра", "Лопес", "Ким", "Брандт", "Мору", "Саркисян", "Дюбуа", "Хаддад", "Орлов"];
+    const RIVALS = [["Ереван Юнайтед", "#e0403a"], ["Дубай Фалконс", "#d9a520"], ["Москва Стар", "#3a6ad8"], ["Арарат Сити", "#5ce1e6"], ["Каскад ФК", "#9be15d"], ["Метро Рейнджерс", "#ff8ad1"], ["Роботы Валерия", "#c77dff"]];
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const money = (n) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".0", "") + " млн" : Math.round(n / 1e3) + " тыс") + " €";
+    let S = null, uid = 0, tab = "club", live = null, owner = false;
+
+    function player(pos, lo, hi) {
+      const age = rnd(18, 34), r = rnd(lo, hi);
+      return { id: ++uid, n: pick(FIRST) + " " + pick(LAST), pos, r, age, fit: 100, g: 0 };
+    }
+    const value = (p) => Math.round(Math.max(.3, Math.pow(Math.max(p.r - 40, 1) / 10, 2.6) * (p.age < 24 ? 1.5 : p.age > 30 ? .6 : 1)) * 1e5 / 1e5) * 1e5;
+    function fixtures(n) {
+      const ids = [...Array(n).keys()], rounds = [];
+      for (let r = 0; r < n - 1; r++) {
+        const m = [];
+        for (let i = 0; i < n / 2; i++) { const a = ids[i], b = ids[n - 1 - i]; m.push(r % 2 ? [b, a] : [a, b]); }
+        rounds.push(m); ids.splice(1, 0, ids.pop());
+      }
+      return rounds.concat(rounds.map((m) => m.map(([a, b]) => [b, a])));
+    }
+    function newSeason(keep) {
+      const teams = [{ name: keep ? S.club : "V3 FC", col: "#ffb547", me: true }].concat(RIVALS.map(([name, col]) => ({ name, col, str: rnd(60, 72) })));
+      teams.forEach((t) => Object.assign(t, { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }));
+      if (keep) teams.forEach((t, i) => { if (!t.me) t.str = Math.min(84, S.teams[i] ? S.teams[i].str + rnd(0, 2) : t.str); });
+      return teams;
+    }
+    function fresh() {
+      uid = 0;
+      const squad = [player("GK", 64, 72), player("GK", 55, 62)];
+      for (let i = 0; i < 6; i++) squad.push(player("DEF", 58, 72));
+      for (let i = 0; i < 6; i++) squad.push(player("MID", 58, 73));
+      for (let i = 0; i < 4; i++) squad.push(player("FWD", 58, 74));
+      S = { club: "V3 FC", budget: 30e6, season: 1, round: 0, form: "4-4-2", squad, start: [], teams: null, fx: fixtures(8), market: [], train: 3, last: [], cups: 0, uid };
+      S.teams = newSeason(false); autoPick(); refreshMarket();
+    }
+    function load() {
+      const d = store.get(SAVE, null);
+      if (d && Array.isArray(d.squad) && Array.isArray(d.teams)) { S = d; uid = d.uid || 1000; } else fresh();
+    }
+    function save() { S.uid = uid; store.set(SAVE, S); }
+    const byId = (id) => S.squad.find((p) => p.id === id);
+    const eff = (p) => p.r * (.88 + .12 * p.fit / 100);
+    function needs() { const f = FORMS[S.form]; return { GK: 1, DEF: f[0], MID: f[1], FWD: f[2] }; }
+    function autoPick() {
+      const need = needs(), start = [];
+      POS.forEach((pos) => S.squad.filter((p) => p.pos === pos).sort((a, b) => eff(b) - eff(a)).slice(0, need[pos]).forEach((p) => start.push(p.id)));
+      const rest = S.squad.filter((p) => !start.includes(p.id) && p.pos !== "GK").sort((a, b) => eff(b) - eff(a));
+      while (start.length < 11 && rest.length) start.push(rest.shift().id);
+      S.start = start;
+    }
+    function strength() {
+      const xi = S.start.map(byId).filter(Boolean);
+      if (!xi.length) return 30;
+      const need = needs(); let miss = 0;
+      POS.forEach((pos) => { miss += Math.abs(need[pos] - xi.filter((p) => p.pos === pos).length); });
+      let s = xi.reduce((a, p) => a + eff(p), 0) / 11 - miss * 1.5;
+      if (!xi.some((p) => p.pos === "GK")) s -= 12;
+      return Math.max(30, s);
+    }
+    function refreshMarket() {
+      const lvl = 60 + Math.min(S.season * 2, 14);
+      S.market = POS.flatMap((pos) => [player(pos, lvl - 4, lvl + 10), player(pos, lvl - 8, lvl + 6)]).map((p) => Object.assign(p, { age: rnd(18, 31) }));
+    }
+    // goals for one side over 18 five-minute chunks
+    const chance = (a, b) => .072 * Math.pow(a / b, 3.2);
+    function simQuick(a, b) {
+      let ga = 0, gb = 0;
+      for (let i = 0; i < 18; i++) { if (Math.random() < chance(a + 1.5, b)) ga++; if (Math.random() < chance(b, a + 1.5)) gb++; }
+      return [ga, gb];
+    }
+    function record(i, j, gi, gj) {
+      const A = S.teams[i], B = S.teams[j];
+      A.p++; B.p++; A.gf += gi; A.ga += gj; B.gf += gj; B.ga += gi;
+      if (gi > gj) { A.w++; B.l++; A.pts += 3; } else if (gi < gj) { B.w++; A.l++; B.pts += 3; } else { A.d++; B.d++; A.pts++; B.pts++; }
+    }
+    const table = () => S.teams.map((t, i) => ({ ...t, i })).sort((a, b) => b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga) || b.gf - a.gf);
+    const myMatch = () => S.round < S.fx.length ? S.fx[S.round].find((m) => m.includes(0)) : null;
+
+    // ---------- rendering ----------
+    const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+    function chips() {
+      $("#scBudget").textContent = money(S.budget);
+      $("#scRound").textContent = S.round < S.fx.length ? `${S.round + 1}/${S.fx.length}` : "финиш";
+      const me = table().findIndex((t) => t.me) + 1; $("#scPlace").textContent = me + "-е";
+    }
+    function render() {
+      if (!S) return;
+      chips();
+      $$("#scTabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.t === tab ? "true" : "false"));
+      const box = $("#scBody"); box.innerHTML = "";
+      ({ club: renderClub, squad: renderSquad, match: renderMatch, table: renderTable, market: renderMarket })[tab](box);
+    }
+    function renderClub(box) {
+      const c = el("div", "sc-card");
+      c.append(el("h3", "", "Клуб"));
+      const row = el("div", "sc-name"), inp = el("input"); inp.value = S.club; inp.maxLength = 22; inp.setAttribute("aria-label", "Название клуба");
+      inp.addEventListener("change", () => { S.club = inp.value.trim().slice(0, 22) || "V3 FC"; S.teams[0].name = S.club; save(); render(); });
+      row.append(inp); c.append(row);
+      const st = el("div", "sc-stats");
+      [["Сезон", S.season], ["Сила состава", Math.round(strength())], ["Трофеи", "🏆".repeat(Math.min(S.cups, 5)) + (S.cups > 5 ? "×" + S.cups : "") || "0"], ["Игроков", S.squad.length]].forEach(([k, v]) => { const d = el("div"); d.append(el("small", "", k), el("b", "", v)); st.append(d); });
+      c.append(st); box.append(c);
+      const m = myMatch(), n = el("div", "sc-card");
+      n.append(el("h3", "", "Следующий матч"));
+      if (m) {
+        const h = S.teams[m[0]], a = S.teams[m[1]];
+        n.append(el("p", "sc-vs", `${h.name}  —  ${a.name}`), el("p", "mg-sub", m[0] === 0 ? "Дома: +бонус к силе и 2 млн € за билеты" : "В гостях"));
+        const b = el("button", "btn", "⚽ К матчу"); b.type = "button"; b.addEventListener("click", () => { tab = "match"; render(); }); n.append(b);
+      } else {
+        n.append(el("p", "sc-vs", "Сезон окончен!"));
+        const b = el("button", "btn", "Новый сезон"); b.type = "button"; b.addEventListener("click", nextSeason); n.append(b);
+      }
+      box.append(n);
+      if (S.last.length) {
+        const l = el("div", "sc-card"); l.append(el("h3", "", "Последние матчи"));
+        const ul = el("ul", "mg-list"); S.last.slice(-5).reverse().forEach((r) => { const li = el("li"); li.append(el("span", "", r.t), el("b", "sc-res " + r.k, r.s)); ul.append(li); });
+        l.append(ul); box.append(l);
+      }
+      const r = el("button", "btn ghost small", "Начать карьеру заново"); r.type = "button";
+      r.addEventListener("click", () => { if (confirm("Удалить клуб и начать заново?")) { fresh(); save(); render(); } });
+      box.append(r);
+    }
+    function pitch() {
+      const need = needs(), xi = S.start.map(byId).filter(Boolean);
+      const rows = [["FWD", 18], ["MID", 45], ["DEF", 72], ["GK", 90]];
+      const svg = [`<svg viewBox="0 0 100 100" class="sc-pitch" role="img" aria-label="Схема ${S.form}"><rect width="100" height="100" fill="#1f7a3e"/>`,
+        ...[0, 1, 2, 3, 4].map((i) => `<rect y="${i * 20}" width="100" height="10" fill="#238a46"/>`),
+        `<g fill="none" stroke="#e8fff0" stroke-opacity=".6" stroke-width=".6"><rect x="3" y="3" width="94" height="94"/><line x1="3" y1="50" x2="97" y2="50"/><circle cx="50" cy="50" r="9"/><rect x="25" y="82" width="50" height="15"/><rect x="25" y="3" width="50" height="15"/></g>`];
+      rows.forEach(([pos, y]) => {
+        const ps = xi.filter((p) => p.pos === pos), n = Math.max(need[pos], ps.length);
+        for (let i = 0; i < n; i++) {
+          const x = (100 / (n + 1)) * (i + 1), p = ps[i];
+          svg.push(`<circle cx="${x}" cy="${y}" r="4.6" fill="${p ? "#ffb547" : "#0006"}" stroke="#fff" stroke-width=".6"/>`);
+          if (p) svg.push(`<text x="${x}" y="${y + 1.5}" text-anchor="middle" font-size="4" font-weight="800" fill="#12132a">${p.r}</text><text x="${x}" y="${y + 9}" text-anchor="middle" font-size="3.4" fill="#fff">${p.n.split(" ")[1].replace(/[<&>]/g, "")}</text>`);
+        }
+      });
+      return svg.join("") + "</svg>";
+    }
+    function renderSquad(box) {
+      const c = el("div", "sc-card");
+      const top = el("div", "sc-row"), sel = el("select"); sel.setAttribute("aria-label", "Схема");
+      Object.keys(FORMS).forEach((f) => { const o = el("option", "", f); o.value = f; o.selected = f === S.form; sel.append(o); });
+      sel.addEventListener("change", () => { S.form = sel.value; autoPick(); save(); render(); });
+      const auto = el("button", "btn ghost small", "Авто состав"); auto.type = "button"; auto.addEventListener("click", () => { autoPick(); save(); render(); });
+      top.append(sel, auto); c.append(top);
+      const pw = el("div"); pw.innerHTML = pitch(); c.append(pw);
+      c.append(el("p", "mg-sub", `В старте ${S.start.length}/11 · сила ${Math.round(strength())}. Нажми на игрока — в старт или на скамейку. Тренировок в этом туре: ${S.train}.`));
+      box.append(c);
+      POS.forEach((pos) => {
+        const g = el("div", "sc-card"); g.append(el("h3", "", { GK: "Вратари", DEF: "Защитники", MID: "Полузащитники", FWD: "Нападающие" }[pos]));
+        const ul = el("ul", "sc-players");
+        S.squad.filter((p) => p.pos === pos).sort((a, b) => b.r - a.r).forEach((p) => {
+          const li = el("li", S.start.includes(p.id) ? "on" : ""), main = el("button", "sc-pl"); main.type = "button";
+          main.append(el("b", "sc-r", p.r), el("span", "", p.n), el("small", "", `${p.age} л · ⚡${p.fit}%${p.g ? " · ⚽" + p.g : ""}`));
+          main.addEventListener("click", () => {
+            if (S.start.includes(p.id)) S.start = S.start.filter((id) => id !== p.id);
+            else if (S.start.length < 11) S.start.push(p.id);
+            else return toast("В старте уже 11. Сначала посади кого-то на скамейку.");
+            save(); render();
+          });
+          const tr = el("button", "sc-mini", "💪"); tr.type = "button"; tr.title = "Тренировать"; tr.disabled = !S.train || p.r >= 95;
+          tr.addEventListener("click", () => {
+            if (!S.train) return; S.train--;
+            const up = Math.random() < (p.age < 23 ? .8 : p.age < 29 ? .55 : .3) ? rnd(1, 2) : 0;
+            p.r = Math.min(95, p.r + up); p.fit = Math.max(40, p.fit - 6);
+            toast(up ? `${p.n}: рейтинг +${up} → ${p.r}` : `${p.n} потренировался, но без прогресса`); save(); render();
+          });
+          const sell = el("button", "sc-mini", "💰"); sell.type = "button"; sell.title = `Продать за ${money(value(p) * .8)}`;
+          sell.addEventListener("click", () => {
+            if (S.squad.length <= 14) return toast("Нужно минимум 14 игроков в команде.");
+            if (!confirm(`Продать ${p.n} за ${money(value(p) * .8)}?`)) return;
+            S.budget += Math.round(value(p) * .8); S.squad = S.squad.filter((q) => q !== p); S.start = S.start.filter((id) => id !== p.id); save(); render();
+          });
+          li.append(main, tr, sell); ul.append(li);
+        });
+        g.append(ul); box.append(g);
+      });
+    }
+    function renderTable(box) {
+      const c = el("div", "sc-card"); c.append(el("h3", "", `Лига V3 · сезон ${S.season}`));
+      const t = el("table", "sc-table");
+      t.innerHTML = "<thead><tr><th>#</th><th>Клуб</th><th>И</th><th>В</th><th>Н</th><th>П</th><th>Р</th><th>О</th></tr></thead>";
+      const tb = el("tbody");
+      table().forEach((r, i) => {
+        const tr = el("tr", r.me ? "me" : "");
+        [i + 1, r.name, r.p, r.w, r.d, r.l, (r.gf - r.ga > 0 ? "+" : "") + (r.gf - r.ga), r.pts].forEach((v, k) => { const td = el("td", "", v); if (k === 1) { td.prepend(el("i", "sc-dot")); td.firstChild.style.background = r.col; } tr.append(td); });
+        tb.append(tr);
+      });
+      t.append(tb); c.append(t); c.append(el("p", "mg-sub", "1-е место — чемпион: кубок и 25 млн €. Призовые за 2-е и 3-е — 12 и 6 млн €."));
+      box.append(c);
+    }
+    function renderMarket(box) {
+      const c = el("div", "sc-card"); c.append(el("h3", "", "Трансферный рынок"));
+      c.append(el("p", "mg-sub", `Бюджет ${money(S.budget)}. Новые игроки появляются каждый тур. В команде максимум 25.`));
+      const ul = el("ul", "sc-players");
+      if (!S.market.length) ul.append(el("li", "", "Рынок пуст до следующего тура"));
+      S.market.forEach((p) => {
+        const li = el("li"), main = el("div", "sc-pl"), price = value(p);
+        main.append(el("b", "sc-r", p.r), el("span", "", p.n), el("small", "", `${PNAME[p.pos]} · ${p.age} л · ${money(price)}`));
+        const buy = el("button", "sc-mini buy", "Купить"); buy.type = "button"; buy.disabled = S.budget < price || S.squad.length >= 25;
+        buy.addEventListener("click", () => {
+          if (S.budget < price || S.squad.length >= 25) return;
+          S.budget -= price; S.squad.push(p); S.market = S.market.filter((q) => q !== p);
+          toast(`${p.n} подписал контракт с ${S.club}!`); save(); render();
+        });
+        li.append(main, buy); ul.append(li);
+      });
+      c.append(ul); box.append(c);
+    }
+
+    // ---------- match ----------
+    function renderMatch(box) {
+      const m = myMatch();
+      const c = el("div", "sc-card");
+      if (!m) { c.append(el("p", "sc-vs", "Сезон окончен — открой «Клуб», чтобы начать новый.")); box.append(c); return; }
+      const home = m[0] === 0, opp = S.teams[home ? m[1] : m[0]];
+      const board = el("div", "sc-board");
+      board.innerHTML = `<span class="t"></span><b id="scScore">0 : 0</b><span class="t"></span><small id="scMin">0'</small>`;
+      board.querySelectorAll(".t")[0].textContent = S.teams[m[0]].name; board.querySelectorAll(".t")[1].textContent = S.teams[m[1]].name;
+      c.append(board);
+      const ms = Math.round(strength()), os = opp.str;
+      c.append(el("p", "mg-sub", `Сила: ${S.club} ${ms} · ${opp.name} ${os}${home ? " · домашний бонус" : ""}`));
+      const feed = el("ul", "sc-feed"); feed.id = "scFeed"; c.append(feed);
+      const row = el("div", "sc-row");
+      const go = el("button", "btn", live ? "Идёт матч…" : "▶ Начать матч"); go.type = "button"; go.id = "scGo"; go.disabled = !!live || S.start.length < 11;
+      go.addEventListener("click", startMatch);
+      const skip = el("button", "btn ghost", "⏩ Сразу итог"); skip.type = "button"; skip.id = "scSkip"; skip.disabled = !live;
+      skip.addEventListener("click", () => { if (live) live.fast = true; });
+      row.append(go, skip); c.append(row);
+      if (S.start.length < 11) c.append(el("p", "mg-sub", "Нужно 11 игроков в старте — открой «Состав»."));
+      const tired = S.start.map(byId).filter((p) => p && p.fit < 75);
+      if (tired.length && !live) c.append(el("p", "mg-sub", `⚡ Устали: ${tired.map((p) => p.n.split(" ")[1]).join(", ")} — дай им отдохнуть в «Составе» (кнопка «Авто состав»).`));
+      box.append(c);
+    }
+    function say(text, cls) { const f = $("#scFeed"); if (!f) return; const li = el("li", cls || "", text); f.prepend(li); }
+    function scorer() {
+      const xi = S.start.map(byId).filter(Boolean), w = { GK: 0, DEF: 1, MID: 3, FWD: 6 };
+      const pool = xi.flatMap((p) => Array(w[p.pos]).fill(p)); return pool.length ? pick(pool) : xi[0];
+    }
+    function startMatch() {
+      const m = myMatch(); if (!m || live || S.start.length < 11) return;
+      const home = m[0] === 0, oi = home ? m[1] : m[0], opp = S.teams[oi];
+      const me = strength() + (home ? 1.5 : 0), them = opp.str + (home ? 0 : 1.5);
+      live = { m, home, oi, me: 0, op: 0, chunk: 0, fast: false, scorers: [] };
+      $("#scGo").disabled = true; $("#scGo").textContent = "Идёт матч…"; $("#scSkip").disabled = false;
+      say("Свисток! Матч начался.", "sys");
+      const step = () => {
+        const L = live, min = (L.chunk + 1) * 5;
+        if (Math.random() < chance(me, them)) { L.me++; const p = scorer(); p.g = (p.g || 0) + 1; L.scorers.push(p.n); say(`${min}' ⚽ ГОЛ! ${p.n} забивает за ${S.club}!`, "goal"); }
+        else if (Math.random() < .12) say(`${min}' ${pick(["Опасный удар", "Штанга!", "Удар мимо", "Вратарь соперника тащит"])} — ${scorer().n}`);
+        if (Math.random() < chance(them, me)) { L.op++; say(`${min}' Гол ${opp.name}…`, "bad"); }
+        else if (Math.random() < .07) say(`${min}' Жёлтая карточка — ${pick(S.start.map(byId).filter(Boolean)).n}`, "card");
+        if (L.chunk === 8) say("Перерыв.", "sys");
+        L.chunk++;
+        const sc = $("#scScore"), mn = $("#scMin");
+        const [h, a] = L.home ? [L.me, L.op] : [L.op, L.me];
+        if (sc) sc.textContent = `${h} : ${a}`; if (mn) mn.textContent = Math.min(90, min) + "'";
+        if (L.chunk >= 18) return finish();
+        setTimeout(step, L.fast ? 0 : 380);
+      };
+      setTimeout(step, 300);
+    }
+    function finish() {
+      const L = live; live = null;
+      const [h, a] = L.home ? [L.me, L.op] : [L.op, L.me];
+      record(L.m[0], L.m[1], h, a);
+      // the rest of the round
+      S.fx[S.round].forEach(([i, j]) => { if (i === 0 || j === 0) return; const [x, y] = simQuick(S.teams[i].str, S.teams[j].str); record(i, j, x, y); });
+      const win = L.me > L.op, draw = L.me === L.op;
+      let cash = 1.5e6 + (L.home ? 2e6 : 0) + (win ? 2e6 : draw ? .7e6 : 0);
+      S.budget += cash;
+      S.last.push({ t: `${S.teams[L.m[0]].name} — ${S.teams[L.m[1]].name}`, s: `${h}:${a}`, k: win ? "w" : draw ? "d" : "l" }); S.last = S.last.slice(-10);
+      S.squad.forEach((p) => { p.fit = S.start.includes(p.id) ? Math.max(55, p.fit - rnd(3, 7)) : Math.min(100, p.fit + 15); });
+      S.round++; S.train = 3; refreshMarket();
+      say(`Финальный свисток: ${h}:${a}. ${win ? "Победа! 🎉" : draw ? "Ничья." : "Поражение."} +${money(cash)}`, win ? "goal" : "sys");
+      if (win) Hero.earn(30);
+      if (S.round >= S.fx.length) seasonEnd();
+      save(); chips();
+      // swap the start button for one that only moves on to the next round
+      const g = $("#scGo"), nx = g.cloneNode(false);
+      nx.textContent = S.round < S.fx.length ? "Следующий тур →" : "Сезон окончен"; nx.disabled = false;
+      nx.addEventListener("click", () => { tab = S.round < S.fx.length ? "match" : "club"; render(); });
+      g.replaceWith(nx); $("#scSkip").disabled = true;
+    }
+    function seasonEnd() {
+      const place = table().findIndex((t) => t.me) + 1, prize = [25e6, 12e6, 6e6][place - 1] || 2e6;
+      S.budget += prize; if (place === 1) { S.cups++; Hero.earn(500); }
+      toast(place === 1 ? `🏆 ${S.club} — чемпион! +${money(prize)}` : `Сезон окончен: ${place}-е место. +${money(prize)}`);
+    }
+    function nextSeason() {
+      S.season++; S.round = 0; S.fx = fixtures(8); S.teams = newSeason(true);
+      S.squad.forEach((p) => { p.age++; p.fit = 100; p.g = 0; if (p.age > 31) p.r = Math.max(45, p.r - rnd(0, 3)); else if (p.age < 24) p.r = Math.min(95, p.r + rnd(0, 3)); });
+      refreshMarket(); save(); tab = "club"; render();
+    }
+    function toast(msg) { const t = el("div", "toast", msg); t.setAttribute("role", "status"); t.addEventListener("click", () => t.remove()); document.body.append(t); setTimeout(() => t.remove(), 3500); }
+
+    $$("#scTabs button").forEach((b) => b.addEventListener("click", () => { if (live) return toast("Дождись конца матча."); tab = b.dataset.t; render(); }));
+    return {
+      setOwner(v) { owner = !!v; $("#soccerBtn").hidden = !owner; },
+      enter() { if (!owner) { setTimeout(() => show("hub"), 0); return; } if (!S) load(); render(); },
+    };
+  })();
+
+  window.__sc = Soccer;
 
   /* ================= Donate shop ================= */
   const shop = $("#shop");
