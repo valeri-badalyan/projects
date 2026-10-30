@@ -10243,7 +10243,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       [/(зоо|питом|животн|кошк|собак|аквариум)/, "Зоомагазин", "#6aa83a", ["🐶", "🐱", "🐠", "🦜", "🐹", "🦴"], "🐾"],
       [/(косметик|парфюм|духи|макияж|золотое яблоко|летуаль|рив гош)/, "Косметика", "#c43c9a", ["💄", "💅", "🧴", "🌸", "🪞", "💋"], "💄"],
       [/(игры|игров|геймер|приставк|playstation|xbox|nintendo)/, "Видеоигры", "#7b5cff", ["🎮", "🕹️", "👾", "🎧", "💿", "🏆"], "🎮"],
-      [/(кино|кинотеатр|синема)/, "Кинотеатр", "#1a1a3a", ["🎬", "🍿", "🎟️", "🥤", "🎞️", "⭐"], "🎬"],
+      [/(кино|кинотеатр|синема|cinema|синема\s*стар|кинозал|imax|аймакс)/, "Кинотеатр", "#1a1a3a", ["🎬", "🍿", "🎟️", "🥤", "🎞️", "⭐"], "🎬"],
       [/(музык|гитар|инструмент)/, "Музыка", "#3a3a5a", ["🎸", "🎹", "🥁", "🎺", "🎻", "🎤"], "🎸"],
       [/(мебел|диван|икеа|ikea|интерьер)/, "Мебель", "#a0785a", ["🛋️", "🪑", "🛏️", "🚪", "🪞", "💡"], "🛋️"],
       [/(парикмах|барбер|салон красот)/, "Парикмахерская", "#4a8ac8", ["✂️", "💇", "💈", "🪮", "🧴", "💆"], "💈"],
@@ -10380,7 +10380,27 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       pops = pops.filter((q) => (q.t += dt) < 1.4);
       pops.forEach((q) => { for (let i = 0; i < 10; i++) { const a = i * .628 + q.t; emo(["🎉", "✨", "🎈"][i % 3], q.x + Math.cos(a) * q.t * 40 * U, q.y + Math.sin(a) * q.t * 30 * U - q.t * 20 * U, 10); } });
     }
+    function drawCinema(t) {
+      const s = inside, k = s.k;
+      ctx.fillStyle = "#14101e"; ctx.fillRect(0, 0, W, H);
+      rr(0, 0, W, 34 * U, 0, k.col); txt(s.name, W / 2 + 10 * U, 17 * U, 13, "#fff", 900);
+      ctx.font = `900 ${Math.round(13 * U)}px Manrope, sans-serif`; const tw = ctx.measureText(s.name).width; drawLogo(ctx, W / 2 + 10 * U - tw / 2 - 16 * U, 17 * U, 12 * U, logoOf(s));
+      // red curtains and the big screen with a film playing
+      const sx = W * .14, sw = W * .72, sy = 44 * U, sh = 92 * U;
+      ctx.fillStyle = "#8a1020"; ctx.fillRect(sx - 18 * U, sy - 6 * U, 20 * U, sh + 12 * U); ctx.fillRect(sx + sw - 2 * U, sy - 6 * U, 20 * U, sh + 12 * U);
+      const hue = (t * 30) % 360, g = ctx.createLinearGradient(sx, sy, sx + sw, sy + sh); g.addColorStop(0, `hsl(${hue},60%,45%)`); g.addColorStop(1, `hsl(${(hue + 80) % 360},60%,30%)`);
+      ctx.fillStyle = g; ctx.fillRect(sx, sy, sw, sh);
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(sx + sw * (.25 + .5 * ((t * .08) % 1)), sy + sh * .35, 9 * U, 0, 7); ctx.fill();
+      emo(["🚀", "🦖", "🦸", "🐉"][Math.floor(t / 4) % 4], sx + sw * (.75 - .5 * ((t * .1) % 1)), sy + sh * .62 + Math.sin(t * 3) * 6 * U, 26);
+      // light beam from the projector
+      ctx.fillStyle = "rgba(255,255,220,.06)"; ctx.beginPath(); ctx.moveTo(W / 2, H); ctx.lineTo(sx, sy + sh); ctx.lineTo(sx + sw, sy + sh); ctx.fill();
+      // rows of seats
+      for (let r = 0; r < 3; r++) { const y = 156 * U + r * 26 * U, n = 8 + r, w2 = (W - 30 * U) / n; for (let i = 0; i < n; i++) { const x = 15 * U + i * w2; rr(x + 2 * U, y, w2 - 4 * U, 18 * U, 5 * U, "#b8202f"); rr(x + 2 * U, y + 12 * U, w2 - 4 * U, 8 * U, 3 * U, "#8a1020"); } }
+      const im = Hero.img(), z = 26 * U, mx = W * .5, my = 170 * U; ctx.save(); ctx.beginPath(); ctx.arc(mx, my, z / 2, 0, 7); ctx.clip(); if (im.complete && im.naturalWidth) ctx.drawImage(im, mx - z / 2, my - z / 2, z, z); else { ctx.fillStyle = Hero.accent(); ctx.fillRect(mx - z / 2, my - z / 2, z, z); } ctx.restore();
+      emo("🍿", mx + 20 * U, my + 6 * U, 16); emo("🥤", mx - 20 * U, my + 6 * U, 14);
+    }
     function drawInside(t) {
+      if (inside.k.cat === "Кинотеатр") return drawCinema(t);
       const s = inside, k = s.k;
       ctx.fillStyle = "#f4f0e8"; ctx.fillRect(0, 0, W, H);
       rr(0, 0, W, 34 * U, 0, k.col); txt(s.name, W / 2 + 10 * U, 17 * U, 13, "#fff", 900);
@@ -10447,11 +10467,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#tcOpen").addEventListener("click", openShop);
     $("#tcAsk").addEventListener("click", askClaude);
     $("#tcMallName").addEventListener("input", (e) => { data.name = e.target.value.slice(0, 30); save(); });
-    $("#tcEnter").addEventListener("click", () => { const s = data.shops.find((q) => q.slot === sel); if (!s) return; inside = s; fit(); $("#tcInfo").hidden = true; $("#tcOut").hidden = false; Hero.say("tc", "good", `Ты в магазине «${s.name}». ${s.k.goods.slice(0, 4).join(" ")} — выбирай!`); });
+    $("#tcEnter").addEventListener("click", () => { const s = data.shops.find((q) => q.slot === sel); if (!s) return; inside = s; fit(); $("#tcInfo").hidden = true; $("#tcOut").hidden = false; Hero.say("tc", "good", s.k.cat === "Кинотеатр" ? `Ты в зале «${s.name}». Попкорн в руках — фильм начинается! 🍿` : `Ты в магазине «${s.name}». ${s.k.goods.slice(0, 4).join(" ")} — выбирай!`); });
     $("#tcRelogo").addEventListener("click", () => { const s = data.shops.find((q) => q.slot === sel); if (!s) return; s.logoSeed = (s.logoSeed || 0) + 1; save(); info(); Hero.say("tc", "good", `Новый логотип для «${s.name}»!`); });
     $("#tcOut").addEventListener("click", () => { inside = null; $("#tcOut").hidden = true; fit(); info(); });
     $("#tcClose").addEventListener("click", () => { const i = data.shops.findIndex((q) => q.slot === sel); if (i < 0) return; const n = data.shops[i].name; data.shops.splice(i, 1); sel = -1; save(); info(); fit(); setPreview($("#tcName").value); $("#tcCount").textContent = String(data.shops.length); Hero.say("tc", "good", `Магазин «${n}» закрылся. Место сдаётся!`); updateHub(); });
-    const ideas = ["VEGA", "UNO Official", "McDonalds", "Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
+    const ideas = ["CinemaStar", "VEGA", "UNO Official", "McDonalds", "Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
     ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#tcName").value = s; setPreview(s); }); $("#tcIdeas").appendChild(b); });
     window.addEventListener("resize", () => { if (visible) fit(); });
     (async () => { try { sampleFn = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { sampleFn = null; } if (visible) setPreview($("#tcName").value); })();
