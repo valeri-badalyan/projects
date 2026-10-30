@@ -15086,7 +15086,7 @@ div.sc-pl { cursor: default; }
     const STARS = [
       ["Тер Штеген", "GK", 88, 34], ["Ван Дейк", "DEF", 89, 35],
       ["Педри", "MID", 89, 23], ["Родри", "MID", 91, 30], ["Бекхэм", "MID", 88, 31], ["Ямаль", "MID", 90, 19],
-      ["Месси", "FWD", 93, 31], ["Роналду", "FWD", 92, 31], ["Неймар", "FWD", 89, 31], ["Салах", "FWD", 90, 31], ["Я", "FWD", 95, 18],
+      ["Месси", "FWD", 93, 31], ["Роналду", "FWD", 92, 31], ["Неймар", "FWD", 89, 31], ["Салах", "FWD", 90, 31], ["Я", "FWD", 113, 18],
     ];
     function starSquad() {
       const squad = STARS.map(([n, pos, r, age]) => ({ id: ++uid, n, pos, r, age, fit: 100, g: 0, star: true }));
@@ -15109,6 +15109,8 @@ div.sc-pl { cursor: default; }
         S = d; uid = d.uid || 1000;
         // older saves: swap the random squad for the star eleven, keep the season and the money
         if (!S.stars) { S.squad = starSquad(); S.form = "1-4-5"; S.stars = 1; autoPick(); save(); }
+        // the owner's own rating: 113 OVR
+        const me = S.squad.find((p) => p.star && p.n === "Я"); if (me && me.r !== 113) { me.r = 113; save(); }
       } else fresh();
     }
     function save() { S.uid = uid; store.set(SAVE, S); }
