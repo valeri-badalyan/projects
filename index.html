@@ -10225,7 +10225,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       [/(adidas|адидас|nike|найк|puma|пума|reebok|рибок)/, "Спортивная одежда", "#1a1a22", ["👟", "👕", "🧢", "⚽", "🎽", "🧦"], "👟"],
       [/(brands?\s*for\s*less|brends?\s*for\s*less|брендс?\s*фор\s*лес|bfl)/, "Одежда со скидкой", "#e3263a", ["👕", "👗", "👖", "🧥", "👟", "🏷️"], "🏷️"],
       [/(игрушк|детск.*мир|лего|lego|кукл|машинк)/, "Игрушки", "#ff8a3d", ["🧸", "🚗", "🪀", "🪁", "🧩", "🎈"], "🧸"],
-      [/(электрон|техник|телефон|смартфон|компьют|ноутбук|гаджет|apple|samsung|xiaomi|dns|видео|эльдорадо|айфон)/, "Электроника", "#2f6fd6", ["📱", "💻", "🎧", "⌚", "📷", "🖥️"], "📱"],
+      [/(электрон|техник|телефон|смартфон|компьют|ноутбук|гаджет|apple|samsung|xiaomi|dns|видео|эльдорадо|айфон|(^|[^a-zа-я])(vega|вега)(?![a-zа-я]))/, "Электроника", "#2f6fd6", ["📱", "💻", "🎧", "⌚", "📷", "🖥️"], "📱"],
       [/(одежд|мод|бутик|джинс|платья|футболк|zara|h&m|uniqlo|глория|шуб)/, "Одежда", "#c43c7a", ["👕", "👗", "👖", "🧥", "👚", "🧣"], "👗"],
       [/(обув|кроссов|ботин|туфл|кеды|сапог)/, "Обувь", "#8a5a34", ["👟", "👠", "👢", "🥾", "👞", "🩴"], "👟"],
       [/(спорт|фитнес|футбол|мяч|велосипед|декатлон)/, "Спорт", "#2fa84a", ["⚽", "🏀", "🎾", "🚲", "🏋️", "🥊"], "⚽"],
@@ -10451,7 +10451,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#tcRelogo").addEventListener("click", () => { const s = data.shops.find((q) => q.slot === sel); if (!s) return; s.logoSeed = (s.logoSeed || 0) + 1; save(); info(); Hero.say("tc", "good", `Новый логотип для «${s.name}»!`); });
     $("#tcOut").addEventListener("click", () => { inside = null; $("#tcOut").hidden = true; fit(); info(); });
     $("#tcClose").addEventListener("click", () => { const i = data.shops.findIndex((q) => q.slot === sel); if (i < 0) return; const n = data.shops[i].name; data.shops.splice(i, 1); sel = -1; save(); info(); fit(); setPreview($("#tcName").value); $("#tcCount").textContent = String(data.shops.length); Hero.say("tc", "good", `Магазин «${n}» закрылся. Место сдаётся!`); updateHub(); });
-    const ideas = ["UNO Official", "McDonalds", "Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
+    const ideas = ["VEGA", "UNO Official", "McDonalds", "Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
     ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#tcName").value = s; setPreview(s); }); $("#tcIdeas").appendChild(b); });
     window.addEventListener("resize", () => { if (visible) fit(); });
     (async () => { try { sampleFn = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { sampleFn = null; } if (visible) setPreview($("#tcName").value); })();
