@@ -15090,7 +15090,7 @@ div.sc-pl { cursor: default; }
       ["Месси", "FWD", 93, 31], ["Роналду", "FWD", 92, 31], ["Неймар", "FWD", 89, 31], ["Салах", "FWD", 90, 31], ["Я", "FWD", 113, 18],
     ];
     function starSquad() {
-      const squad = STARS.map(([n, pos, r, age]) => ({ id: ++uid, n, pos, r, age, fit: 100, g: 0, star: true }));
+      const squad = STARS.map(([n, pos, r, age]) => ({ id: ++uid, n, pos, r, age, fit: 100, g: n === "Я" ? 120 : 0, star: true }));
       // a small bench so tired stars can rest
       squad.push(player("GK", 60, 68));
       for (let i = 0; i < 3; i++) squad.push(player("DEF", 62, 72));
@@ -15113,6 +15113,7 @@ div.sc-pl { cursor: default; }
         // the owner's own rating: 113 OVR
         if (!S.budgetSet) { S.budget = BUDGET; S.budgetSet = 1; save(); }
         const me = S.squad.find((p) => p.star && p.n === "Я"); if (me && me.r !== 113) { me.r = 113; save(); }
+        if (me && !S.goalsSet) { me.g = Math.max(me.g || 0, 120); S.goalsSet = 1; save(); }
       } else fresh();
     }
     function save() { S.uid = uid; store.set(SAVE, S); }
@@ -15366,7 +15367,7 @@ div.sc-pl { cursor: default; }
     }
     function nextSeason() {
       S.season++; S.round = 0; S.fx = fixtures(8); S.teams = newSeason(true);
-      S.squad.forEach((p) => { p.age++; p.fit = 100; p.g = 0; if (p.star) { /* legends keep their level */ } else if (p.age > 31) p.r = Math.max(45, p.r - rnd(0, 3)); else if (p.age < 24) p.r = Math.min(95, p.r + rnd(0, 3)); });
+      S.squad.forEach((p) => { p.age++; p.fit = 100; if (!(p.star && p.n === "Я")) p.g = 0; /* my 120+ goals stay */ if (p.star) { /* legends keep their level */ } else if (p.age > 31) p.r = Math.max(45, p.r - rnd(0, 3)); else if (p.age < 24) p.r = Math.min(95, p.r + rnd(0, 3)); });
       refreshMarket(); save(); tab = "club"; render();
     }
     function toast(msg) { const t = el("div", "toast", msg); t.setAttribute("role", "status"); t.addEventListener("click", () => t.remove()); document.body.append(t); setTimeout(() => t.remove(), 3500); }
