@@ -2271,10 +2271,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn ghost" type="button" id="vcMode">⚔️ Выживание</button>
       <button class="btn" type="button" id="vcMPBtn">👥 Мультиплеер</button>
       <button class="btn ghost" type="button" id="vcDay">🌙 Ночь</button>
+      <button class="btn ghost" type="button" id="vcXray" aria-pressed="false">👁️ X-Ray</button>
       <button class="btn ghost" type="button" id="vcSpawn">🏠 На спавн</button>
       <button class="btn ghost" type="button" id="vcReset">🌍 Новый мир</button>
     </div>
-    <p class="hint">В выживании держи ⛏️, чтобы ломать: руды нужно копать киркой. Ломанные блоки и добыча с мобов попадают в инвентарь; в «Крафте» делай доски, палки, кирки, мечи, а в «Печи» плавь руду. 🧱 — поставить блок, съесть еду или выстрелить из лука. Ночью появляются зомби, скелеты, пауки и криперы! Компьютер: WASD, пробел, мышь, E — инвентарь, 1–9 — слоты.</p>
+    <p class="hint">В выживании держи ⛏️, чтобы ломать: руды нужно копать киркой. Ломанные блоки и добыча с мобов попадают в инвентарь; в «Крафте» делай доски, палки, кирки, мечи, а в «Печи» плавь руду. 🧱 — поставить блок, съесть еду или выстрелить из лука. Ночью появляются зомби, скелеты, пауки и криперы! 👁️ X-Ray делает землю и камень прозрачными — видно, где руды и алмазы. Компьютер: WASD, пробел, мышь, E — инвентарь, X — X-Ray, 1–9 — слоты.</p>
   </section>
 
   <!-- ===== My Mine ===== -->
@@ -10887,6 +10888,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const ID = {}; BL.forEach((b, i) => { if (b) ID[b[0]] = i; });
     const BEDROCK = ID["Коренная порода"], WATER = ID["Вода"], LAVA = ID["Лава"], TNT = ID["TNT"];
     const kind = (t) => (BL[t] && BL[t][4]) || "s";
+    // X-Ray: ordinary ground becomes invisible so ores, lava and buildings show through
+    let xray = false;
+    const XRAY_HIDE = new Set(["Трава", "Земля", "Камень", "Булыжник", "Песок", "Гравий", "Снег", "Глина", "Песчаник", "Мшистый камень", "Коренная порода", "Вода", "Лёд"].map((n) => BL.findIndex((b) => b && b[0] === n)).filter((i) => i > 0));
+    const ORES = new Set(["Угольная руда", "Железная руда", "Золотая руда", "Алмазная руда"].map((n) => BL.findIndex((b) => b && b[0] === n)));
     const solid = (t) => t && t !== WATER && t !== LAVA;
     const HOTBAR = BL.map((b, i) => i).filter((i) => i && i !== BEDROCK);
     // ---------- pixel textures (procedural 16x16) ----------
@@ -11045,13 +11050,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const atlW = COLS * PX, atlH = ROWS * PX, eps = .5 / atlW, epsV = .5 / atlH;
       for (let y = 0; y < SY; y++) for (let z = cz * CH; z < cz * CH + CH; z++) for (let x = cx * CH; x < cx * CH + CH; x++) {
         const t = world[wi(x, y, z)]; if (!t) continue;
+        if (xray && XRAY_HIDE.has(t)) continue;
         const k = kind(t), W = k === "w" ? 1 : 0, A = out[W];
         for (const F of FACES) {
-          const n = get(x + F.d[0], y + F.d[1], z + F.d[2]);
+          let n = get(x + F.d[0], y + F.d[1], z + F.d[2]);
+          if (xray && XRAY_HIDE.has(n)) n = 0;
           if (n) { const nk = kind(n); if (nk === "s" || nk === "l") continue; if (n === t && (k === "w" || k === "c" && t !== ID["Листва"])) continue; if (k === "w" && nk !== "w" && n !== 0 && solid(n) && nk !== "c") continue; }
           if (k === "w" && F.d[1] === -1) continue;
           const ti = faceTile(t, F.f), tu = (ti % COLS) * PX / atlW, tv = Math.floor(ti / COLS) * PX / atlH, du = PX / atlW, dv = PX / atlH;
-          const lit = k === "l" ? 1.15 : F.sh * (y < 4 ? .8 : 1);
+          const lit = xray && ORES.has(t) ? 1.35 : k === "l" ? 1.15 : F.sh * (y < 4 ? .8 : 1);
           const base = A.length ? A[A.length - 1].i + 4 : 0;
           const q = { p: [], u: [], c: [], i: base };
           const topDrop = k === "w" && F.d[1] === 1 && get(x, y + 1, z) !== WATER ? .12 : 0;
@@ -11621,6 +11628,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#vcStart").addEventListener("click", () => { if (!ready) { init(); return; } ov.hidden = true; playing = true; hearts(); hotbar();
       if (!store.get("vcPhantomGiven", false)) { store.set("vcPhantomGiven", true); if (!count("phantom")) { addItem("phantom", 1, true); toast("🎁 Новый предмет: Прозрачный инструмент!"); } } Hero.say("craft", "start", mode === "creative" ? "Творчество: строй что хочешь!" : "Выживание: добывай ресурсы, крафти инструменты. Ночью — мобы!"); });
     $("#vcSpawn").addEventListener("click", spawn);
+    function setXray(on) {
+      xray = on; const b = $("#vcXray"); b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "👁️ X-Ray: вкл" : "👁️ X-Ray";
+      b.classList.toggle("ghost", !on);
+      if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz);
+      toast(on ? "X-Ray: земля прозрачная — видно руды!" : "X-Ray выключен");
+    }
+    $("#vcXray").addEventListener("click", () => setXray(!xray));
+    document.addEventListener("keydown", (e) => { if (current === "craft" && (e.key === "x" || e.key === "X" || e.key === "ч" || e.key === "Ч") && !(e.target && e.target.closest && e.target.closest("input, textarea"))) setXray(!xray); });
     $("#vcReset").addEventListener("click", () => { if (!confirm("Создать новый мир? Все постройки пропадут.")) return; mods = {}; ghosts = {}; store.set("vcGhost", ghosts); seed = (Math.random() * 1e6) | 0; store.set("vcMods", mods); store.set("vcSeed", seed); generate(); if (ready) for (let cx = 0; cx < SX / CH; cx++) for (let cz = 0; cz < SZ / CH; cz++) rebuild(cx, cz); mobs.slice().forEach(removeMob); inv = starter(); hp = 20; hotbar(); hearts(); saveInv(); spawn(); Hero.say("craft", "good", "Новый мир создан! 🌍"); });
     $("#vcDay").addEventListener("click", () => { const ph = (dayT % DAY_LEN) / DAY_LEN; dayT += ((ph > .62 ? 1 : .63) - ph) * DAY_LEN; });
     let gMarks = [];
@@ -11644,7 +11659,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         const pr = $("#vcProg"); if (brk && brk.need > 0) { pr.style.opacity = 1; pr.style.background = `conic-gradient(rgba(255,255,255,.85) ${Math.min(1, brk.prog / brk.need) * 360}deg, rgba(0,0,0,.25) 0)`; pr.style.mask = pr.style.webkitMask = "radial-gradient(circle, transparent 13px, #000 14px)"; } else pr.style.opacity = 0;
         const sk = shake > 0 ? (shake -= dt, (Math.random() - .5) * shake * .3) : 0;
         cam.position.set(P.x + sk, P.y + EYE + sk, P.z); cam.rotation.order = "YXZ"; cam.rotation.set(P.pitch, P.yaw, 0);
-        const sky = night ? 0x0d1430 : 0x8fcbe8; scene.background.setHex(sky); scene.fog.color.setHex(sky);
+        const sky = xray ? 0x080a16 : night ? 0x0d1430 : 0x8fcbe8; scene.background.setHex(sky); scene.fog.color.setHex(sky); scene.fog.far = xray ? 90 : 60;
         matSolid.color.setScalar(night ? .45 : 1); matWater.color.setScalar(night ? .45 : 1); if (lights) lights.intensity = night ? .15 : .55;
         sun.material.color.setHex(night ? 0xe8eeff : 0xfff4b0); sun.position.set(P.x + 30, P.y + 40, P.z - 20); sun.lookAt(cam.position);
         scene.children.forEach((c) => { if (c.userData.cloud) { c.position.x += dt * .6; if (c.position.x > SX + 20) c.position.x = -20; } });
