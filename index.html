@@ -1223,6 +1223,33 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 }
 @keyframes toastin { from { transform: translate(-50%, -20px); opacity: 0; } }
 
+/* ---------- V3 Management (owner only) ---------- */
+.manage-btn { background: linear-gradient(110deg, #2a1660, #7a3cff); color: #fff; border: 2px solid #c77dff; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.manage-btn small { font: 700 10px var(--mono); letter-spacing: .12em; color: #e6d4ff; }
+.mg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.mg-card { padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mg-card h3 { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.mg-card h3 b { color: var(--lime); font-family: var(--mono); letter-spacing: 0; }
+.mg-big { font: 800 30px var(--mono); color: var(--fg); line-height: 1; }
+.mg-sub { font-size: 12px; color: var(--muted); margin: 0; }
+.mg-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.mg-row .btn { flex: 1 1 auto; }
+.mg-list { display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow: auto; margin: 0; padding: 0; list-style: none; }
+.mg-list li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--bg); font-size: 13px; }
+.mg-list li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-list li small { color: var(--muted); flex: none; }
+.mg-list button { all: unset; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; width: 100%; }
+.mg-list button b { font-family: var(--mono); color: var(--amber); }
+.mg-card textarea { font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 70px; resize: vertical; box-sizing: border-box; }
+.mg-card textarea:focus { outline: none; border-color: #c77dff; }
+.mg-status { min-height: 18px; font-size: 13px; font-weight: 700; color: var(--lime); }
+.mg-status.err { color: var(--amber); }
+.ann-bar { position: fixed; z-index: 69; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: min(440px, calc(100vw - 32px)); box-sizing: border-box;
+  display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #1c0f3f; border: 2px solid #c77dff; box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: toastin .25s ease-out; }
+.ann-bar span { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.4; }
+.ann-bar span b { display: block; font: 800 10px var(--mono); letter-spacing: .14em; color: #c77dff; margin-bottom: 2px; }
+.ann-bar button { all: unset; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; color: var(--muted); }
+
 /* ---------- Body type picker ---------- */
 .build-box { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; }
 .build-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -1361,6 +1388,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn wide idea-btn" type="button" id="ideaOpen">Дать идею</button>
       <button class="btn ghost inbox-btn" type="button" id="inboxBtn" data-go="ideas" hidden>Ящик идей<span class="badge" id="inboxBadge" hidden>0</span></button>
     </div>
+    <button class="btn wide manage-btn" type="button" id="manageBtn" data-go="manage" hidden>👑 V3 Management <small>ТОЛЬКО ДЛЯ ТЕБЯ</small></button>
     <a class="btn wide fdm1-btn" id="fdm1Btn" href="https://claude.ai/artifact/UwofzseJzdYCgJQCFyFpqM" target="_blank" rel="noopener">FDM1 <span aria-hidden="true">↗</span></a>
     <p class="lead">Выбери картридж</p>
     <div class="carts">
@@ -1954,6 +1982,58 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <p class="shop-note" id="ideasNote">Идеи игроков видишь только ты. Новые подсвечены зелёным.</p>
     <div class="idea-list" id="ideaList"></div>
   </section>
+
+  <!-- ===== V3 Management (owner only) ===== -->
+  <section id="manage" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3 Management</div>
+      <div class="chip hi"><span>Владелец</span><b>👑</b></div>
+    </div>
+    <p class="shop-note">Панель управления V3 Games. Её видишь только ты — у игроков этой кнопки нет.</p>
+    <div class="mg-grid">
+      <div class="mg-card">
+        <h3>Сейчас в сети <b id="mgOnlineN">0</b></h3>
+        <ul class="mg-list" id="mgOnline"></ul>
+      </div>
+      <div class="mg-card">
+        <h3>Объявление всем</h3>
+        <textarea id="mgAnnText" maxlength="200" placeholder="Например: «Сегодня в 18:00 турнир в Змейке!»"></textarea>
+        <div class="mg-row">
+          <button class="btn" type="button" id="mgAnnSend">📣 Отправить</button>
+          <button class="btn ghost" type="button" id="mgAnnStop">Снять</button>
+        </div>
+        <div class="mg-status" id="mgAnnStatus" role="status"></div>
+        <p class="mg-sub">Видят все, кто сейчас в V3 Games. Новые игроки получат его, пока у тебя открыта страница.</p>
+      </div>
+      <div class="mg-card">
+        <h3>Ящик идей <b id="mgIdeasNew">0 новых</b></h3>
+        <div class="mg-big" id="mgIdeasTotal">0</div>
+        <p class="mg-sub">идей от игроков всего</p>
+        <button class="btn ghost" type="button" data-go="ideas">Открыть ящик</button>
+      </div>
+      <div class="mg-card">
+        <h3>Мой кошелёк</h3>
+        <div class="mg-big">◎ <span id="mgCoins">0</span></div>
+        <div class="mg-row">
+          <button class="btn ghost small" type="button" data-mg-coins="1000">+1 000</button>
+          <button class="btn ghost small" type="button" data-mg-coins="10000">+10 000</button>
+          <button class="btn ghost small" type="button" data-mg-coins="100000">+100 000</button>
+        </div>
+        <p class="mg-sub">Монеты только у тебя на этом устройстве.</p>
+      </div>
+      <div class="mg-card">
+        <h3>Реклама у меня</h3>
+        <button class="btn ghost" type="button" id="mgAds"></button>
+        <p class="mg-sub">Донатов сделано: <b id="mgDon">0</b></p>
+      </div>
+      <div class="mg-card">
+        <h3>Мои рекорды <b id="mgGamesN">0</b></h3>
+        <ul class="mg-list" id="mgBest"></ul>
+      </div>
+    </div>
+  </section>
+  <div class="ann-bar" id="annBar" role="status" hidden><span><b>📣 ОБЪЯВЛЕНИЕ V3</b><em id="annText" style="font-style:normal"></em></span><button type="button" id="annClose" aria-label="Закрыть">✕</button></div>
 
   <!-- ===== Just Dubai! ===== -->
   <section id="dubai" class="screen" hidden>
@@ -11118,7 +11198,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       try { await navigator.clipboard.writeText(msg); status.className = "idea-status ok"; status.textContent = "Скопировано!"; }
       catch (e) { text.focus(); text.select(); status.textContent = "Выдели текст и скопируй вручную."; }
     });
-    return { openInbox, isOpen: () => !modal.hidden, close };
+    return { openInbox, isOpen: () => !modal.hidden, close, stats: () => ({ total: all.length, fresh: all.filter((it) => (it.t || 0) > seen).length }), owner: () => ready.then(() => owner) };
   })();
 
   /* ================= Fix the monitor ================= */
@@ -11389,12 +11469,14 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       // a short break every third time you come back to the menu from a game
       fromGame() { if (adFree) return; backs++; store.set("adBacks", backs); if (backs % 3 === 0) setTimeout(() => showFull(false), 250); },
       isOpen: () => !$("#adFull").hidden,
+      free: () => adFree,
+      setFree(v) { adFree = !!v; store.set("adFree", adFree); banner(); },
     };
   })();
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -11446,7 +11528,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       mine.push([Date.now().toString(36) + Math.random().toString(36).slice(2, 4), Date.now(), text]); mine = mine.slice(-15); store.set("talkMine", mine);
       push(); collect(); renderLog();
     }
-    function update() {
+    const watchers = [];
+    function update(ev) {
+      watchers.forEach((f) => { try { f(ev); } catch (e) {} });
       const fresh = collect();
       if (fresh && $("#talk").hidden) unread += fresh;
       if (!$("#talk").hidden) { unread = 0; renderLog(); }
@@ -11467,7 +11551,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#tkNick").value = nick;
     $("#tkNick").addEventListener("change", () => { nick = $("#tkNick").value.replace(/\s+/g, " ").trim().slice(0, 16); store.set("talkNick", nick); push(); });
     renderOnline();
-    return { me: () => ({ n: myName(), c: color }), enter() { unread = 0; collect(); renderLog(); renderOnline(); push(); setTimeout(() => { const b = $("#tkLog"); b.scrollTop = b.scrollHeight; }, 30); } };
+    return { room: () => room, peers: online, GNAME, onPeers: (f) => watchers.push(f), me: () => ({ n: myName(), c: color }), enter() { unread = 0; collect(); renderLog(); renderOnline(); push(); setTimeout(() => { const b = $("#tkLog"); b.scrollTop = b.scrollHeight; }, 30); } };
   })();
 
   /* ================= V3 Craft: voxel sandbox (Three.js r128) ================= */
@@ -14240,7 +14324,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "ideas", "events", "chars", "gear", "chats", "talk", "manage"];
   let current = "hub";
 
   function updateHub() {
@@ -14286,6 +14370,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     if (name === "talk") Talk.enter();
+    if (name === "manage" && window.__mg) window.__mg.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
     $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc";
@@ -14295,6 +14380,99 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     window.scrollTo(0, 0);
   }
   $$("[data-go]").forEach((el) => el.addEventListener("click", () => show(el.dataset.go)));
+
+  /* ================= V3 Management: owner-only control panel ================= */
+  // The hub button and screen appear only for the page owner (checked through the artifact runtime).
+  // Announcements go out on the admin-only room topic "v3ann", so only the owner (or an Editor) can send them.
+  const Manage = (() => {
+    let owner = false, room = null, ann = store.get("mgAnn", null), lastPush = 0;
+    const isOn = () => !$("#manage").hidden;
+    const fmtN = (n) => Number(n || 0).toLocaleString("ru-RU");
+    function status(msg, err) { const st = $("#mgAnnStatus"); st.textContent = msg; st.className = "mg-status" + (err ? " err" : ""); }
+
+    // ---- everyone: show the owner's announcement ----
+    function showAnn(d) {
+      if (!d || typeof d.text !== "string" || !d.text.trim()) { $("#annBar").hidden = true; return; }
+      if (store.get("annSeen", 0) === d.t) return;   // already closed by this player
+      $("#annText").textContent = d.text.slice(0, 200);
+      $("#annBar").hidden = false; $("#annBar").dataset.t = d.t || 0;
+    }
+    $("#annClose").addEventListener("click", () => { store.set("annSeen", +$("#annBar").dataset.t || 0); $("#annBar").hidden = true; });
+
+    // ---- owner: send / repeat for newcomers ----
+    function pushAnn() {
+      if (!owner || !room) return;
+      lastPush = Date.now();
+      room.emit("v3ann", ann && ann.text ? { text: ann.text, t: ann.t } : { text: "", t: Date.now() })
+        .catch((e) => { if (isOn()) status(e && e.code === "not_permitted" ? "Нет права отправлять объявления." : "Не отправилось — проверь интернет.", true); });
+    }
+    $("#mgAnnSend").addEventListener("click", () => {
+      const text = $("#mgAnnText").value.replace(/\s+/g, " ").trim().slice(0, 200);
+      if (text.length < 2) { status("Напиши текст объявления.", true); return; }
+      if (!room) { status("Объявления работают на опубликованной странице V3 Games.", true); return; }
+      ann = { text, t: Date.now() }; store.set("mgAnn", ann);
+      pushAnn(); status(`Отправлено ${Talk.peers().filter((p) => !p.isMe).length} игрокам в сети ✓`);
+    });
+    $("#mgAnnStop").addEventListener("click", () => {
+      ann = null; store.set("mgAnn", null); $("#mgAnnText").value = "";
+      pushAnn(); status("Объявление снято.");
+    });
+
+    // ---- panel ----
+    function render() {
+      if (!isOn()) return;
+      const list = Talk.peers(), box = $("#mgOnline");
+      $("#mgOnlineN").textContent = list.length; box.innerHTML = "";
+      if (!room) box.innerHTML = "<li><span>Список игроков виден на опубликованной странице</span></li>";
+      else if (!list.length) box.innerHTML = "<li><span>Пока никого</span></li>";
+      list.slice().sort((a, b) => (b.isMe ? 1 : 0) - (a.isMe ? 1 : 0)).forEach((pr) => {
+        const li = document.createElement("li"); li.innerHTML = "<span></span><small></small>";
+        li.querySelector("span").textContent = (pr.isMe ? "Ты · " : "") + String(pr.presence.n).slice(0, 16) + (pr.guest ? " (гость)" : "");
+        li.querySelector("small").textContent = Talk.GNAME[pr.presence.g] || "";
+        box.appendChild(li);
+      });
+      const st = Ideas.stats();
+      $("#mgIdeasTotal").textContent = st.total; $("#mgIdeasNew").textContent = `${st.fresh} новых`;
+      $("#mgCoins").textContent = fmtN(Hero.coins());
+      $("#mgAds").textContent = Ads.free() ? "🚫 Реклама выключена — включить" : "📺 Реклама включена — выключить";
+      $("#mgDon").textContent = store.get("donated", { count: 0 }).count || 0;
+      const best = $("#mgBest"); best.innerHTML = "";
+      const keys = Object.keys(GAMES); $("#mgGamesN").textContent = keys.length + " игр";
+      keys.forEach((k) => {
+        let v = 0; try { v = GAMES[k].best ? GAMES[k].best() : (GAMES[k].wins ? GAMES[k].wins() : 0); } catch (e) { v = 0; }
+        const li = document.createElement("li"), b = document.createElement("button"); b.type = "button";
+        b.innerHTML = "<span></span><b></b>"; b.querySelector("span").textContent = Talk.GNAME[k] || k; b.querySelector("b").textContent = v;
+        b.addEventListener("click", () => show(k)); li.appendChild(b); best.appendChild(li);
+      });
+      if (ann && ann.text && !$("#mgAnnText").value) $("#mgAnnText").value = ann.text;
+    }
+    $$("[data-mg-coins]").forEach((b) => b.addEventListener("click", () => { Hero.grant(+b.dataset.mgCoins); updateHub(); render(); }));
+    $("#mgAds").addEventListener("click", () => { Ads.setFree(!Ads.free()); render(); });
+
+    // ---- start: wait for the runtime, then decide who sees what ----
+    (async () => {
+      owner = !!(await Ideas.owner().catch(() => false));
+      if (!owner) {
+        try { const user = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; owner = !!(user && await user.isOwner()); } catch (e) { owner = false; }
+      }
+      $("#manageBtn").hidden = !owner;
+      if (!owner && current === "manage") show("hub");
+      // the chat module connects to the room; pick it up when it is ready
+      const t0 = Date.now();
+      const wait = setInterval(() => {
+        const r = Talk.room();
+        if (!r && Date.now() - t0 < 20000) return;
+        clearInterval(wait); room = r; if (!room) return;
+        room.on("v3ann", (m) => showAnn(m.data));
+        Talk.onPeers((ch) => { if (owner && ch && ch.joined && ch.joined.some((p) => !p.isMe) && Date.now() - lastPush > 1500) setTimeout(pushAnn, 800); render(); });
+        if (owner) { if (ann && ann.text) pushAnn(); setInterval(() => { if (ann && ann.text) pushAnn(); }, 30000); }
+        render();
+      }, 400);
+    })();
+
+    return { enter() { if (!owner) { setTimeout(() => show("hub"), 0); return; } status(""); render(); } };
+  })();
+  window.__mg = Manage;
 
   /* ================= Donate shop ================= */
   const shop = $("#shop");
