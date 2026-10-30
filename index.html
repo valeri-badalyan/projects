@@ -10229,7 +10229,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       [/(спорт|фитнес|футбол|мяч|велосипед|декатлон)/, "Спорт", "#2fa84a", ["⚽", "🏀", "🎾", "🚲", "🏋️", "🥊"], "⚽"],
       [/(продукт|супермаркет|гастроном|магнит|пятёрочк|пятерочк|перекр|ашан|овощ|фрукт)/, "Продукты", "#3a9a3a", ["🍎", "🥖", "🥛", "🧀", "🥕", "🍌"], "🛒"],
       [/(пицц)/, "Пиццерия", "#d8282a", ["🍕", "🍕", "🥤", "🧀", "🍅", "🍕"], "🍕"],
-      [/(бургер|макдон|kfc|кфс|фастфуд|фаст-фуд|вкусно и точка|ростикс)/, "Фастфуд", "#e8a020", ["🍔", "🍟", "🥤", "🌭", "🍗", "🍦"], "🍔"],
+      [/(бургер|макдон|макдак|mc\s*donald|mcdonald|мак\s*дональд|kfc|кфс|фастфуд|фаст-фуд|вкусно и точка|ростикс|burger)/, "Фастфуд", "#e8a020", ["🍔", "🍟", "🥤", "🌭", "🍗", "🍦"], "🍔"],
       [/(суши|ролл|япон)/, "Суши-бар", "#1a1a22", ["🍣", "🍱", "🥢", "🍙", "🍤", "🍵"], "🍣"],
       [/(кафе|кофе|кофейн|старбакс|starbucks|чайн)/, "Кафе", "#7a4a24", ["☕", "🥐", "🍰", "🧁", "🍵", "🥤"], "☕"],
       [/(морожен|джелат)/, "Мороженое", "#ff8ad1", ["🍦", "🍨", "🍧", "🍦", "🍓", "🍫"], "🍦"],
@@ -10436,7 +10436,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     $("#tcRelogo").addEventListener("click", () => { const s = data.shops.find((q) => q.slot === sel); if (!s) return; s.logoSeed = (s.logoSeed || 0) + 1; save(); info(); Hero.say("tc", "good", `Новый логотип для «${s.name}»!`); });
     $("#tcOut").addEventListener("click", () => { inside = null; $("#tcOut").hidden = true; fit(); info(); });
     $("#tcClose").addEventListener("click", () => { const i = data.shops.findIndex((q) => q.slot === sel); if (i < 0) return; const n = data.shops[i].name; data.shops.splice(i, 1); sel = -1; save(); info(); fit(); setPreview($("#tcName").value); $("#tcCount").textContent = String(data.shops.length); Hero.say("tc", "good", `Магазин «${n}» закрылся. Место сдаётся!`); updateHub(); });
-    const ideas = ["Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
+    const ideas = ["McDonalds", "Adidas Shop", "Brands for Less", "Детский мир", "Пиццерия", "Кроссовки", "Электроника", "Мороженое", "Зоомагазин", "Книги", "Кинотеатр"];
     ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#tcName").value = s; setPreview(s); }); $("#tcIdeas").appendChild(b); });
     window.addEventListener("resize", () => { if (visible) fit(); });
     (async () => { try { sampleFn = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { sampleFn = null; } if (visible) setPreview($("#tcName").value); })();
