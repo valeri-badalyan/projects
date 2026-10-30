@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>V3 Doccer Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap">
+<style>
+:root {
+  --bg: #12132a; --panel: #1c1d3a; --panel-2: #26284a; --line: rgba(255,255,255,.12);
+  --text: #f3f2ff; --muted: #a3a5c9; --amber: #ffb547; --amber-2: #ff8a1a; --red: #ff5a6a; --green: #4fd18b;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 600 15px/1.4 Manrope, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; overflow-x: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+.logo { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, var(--amber), var(--amber-2)); color: #1b1300; font-weight: 800; font-size: 24px; box-shadow: 0 8px 24px rgba(255,138,26,.3); }
+.logo.sm { width: 34px; height: 34px; border-radius: 10px; font-size: 13px; box-shadow: none; }
+
+/* ---------- lock screen ---------- */
+#lock { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px 16px; text-align: center; }
+#lock h1 { margin: 10px 0 0; font-size: 22px; }
+#lock .sub { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.dots { display: flex; gap: 14px; height: 18px; }
+.dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); transition: .15s; }
+.dots i.on { background: var(--amber); border-color: var(--amber); transform: scale(1.1); }
+.dots.bad { animation: shake .4s; } .dots.bad i { border-color: var(--red); }
+@keyframes shake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.lmsg { margin: 0; min-height: 20px; color: var(--muted); font-size: 14px; }
+.lmsg.err { color: var(--red); }
+.pad { display: grid; grid-template-columns: repeat(3, 76px); gap: 14px; }
+.pad button { height: 76px; border-radius: 50%; border: 2px solid var(--line); background: var(--panel); font-size: 26px; font-weight: 800; transition: transform .08s, background .15s; }
+.pad button:active { transform: scale(.93); background: var(--panel-2); }
+.pad button.flat { border-color: transparent; background: none; font-size: 22px; }
+.pad button:disabled { opacity: .35; }
+.owner { color: var(--muted); font-size: 12px; margin: 0; }
+
+/* ---------- main ---------- */
+.wrap { max-width: 760px; margin: 0 auto; padding: 12px 16px 40px; }
+.top { display: flex; align-items: center; gap: 10px; padding: 4px 0 10px; }
+.top .ttl { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.top .ttl b { font-size: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top .ttl small { display: block; color: var(--muted); font-size: 11px; font-weight: 600; }
+.ibtn { flex: none; width: 42px; height: 42px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); font-size: 18px; display: grid; place-items: center; }
+.ibtn:active { background: var(--panel-2); }
+.search { display: flex; gap: 8px; }
+.search input, .search select, .field input, .field select { min-width: 0; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); outline: none; }
+.search input { flex: 1; }
+.search input:focus, .field input:focus, .note-title:focus, .note-text:focus { border-color: var(--amber); }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding: 12px 0 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button { flex: none; padding: 7px 12px; border-radius: 99px; border: 2px solid var(--line); background: var(--panel); font-size: 13px; font-weight: 800; white-space: nowrap; }
+.chips button[aria-pressed="true"] { border-color: var(--amber); background: rgba(255,181,71,.15); color: var(--amber); }
+.chips button.add { border-style: dashed; color: var(--muted); }
+.folderbar { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 8px 10px; border-radius: 12px; background: var(--panel); font-size: 13px; }
+.folderbar b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.folderbar button { border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 800; padding: 4px 6px; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 14px; border-radius: 14px; border: 0; background: linear-gradient(135deg, var(--amber), var(--amber-2)); color: #1b1300; font-weight: 800; text-align: center; }
+.btn.ghost { background: var(--panel); color: var(--text); border: 2px solid var(--line); }
+.btn.danger { background: var(--red); color: #fff; }
+.btn:active { filter: brightness(.92); }
+.btn:disabled { opacity: .5; }
+.stats { margin: 12px 2px 6px; color: var(--muted); font-size: 12px; }
+.list { display: flex; flex-direction: column; gap: 8px; }
+.doc { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 10px 12px; border-radius: 14px; border: 2px solid transparent; background: var(--panel); text-align: left; }
+.doc:active { border-color: var(--line); background: var(--panel-2); }
+.doc .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--panel-2); overflow: hidden; }
+.doc .nm { display: block; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc .mt { display: block; color: var(--muted); font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc .fav { color: var(--amber); font-size: 16px; }
+.empty { padding: 40px 16px; text-align: center; color: var(--muted); }
+.empty div { font-size: 44px; margin-bottom: 6px; }
+.drop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(18,19,42,.88); border: 3px dashed var(--amber); font-size: 20px; font-weight: 800; color: var(--amber); pointer-events: none; }
+
+/* ---------- viewer ---------- */
+#viewer { position: fixed; inset: 0; z-index: 10; background: var(--bg); overflow-y: auto; }
+.tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; }
+.tools button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); font-size: 11px; font-weight: 800; color: var(--muted); }
+.tools button i { font-style: normal; font-size: 18px; }
+.tools button.del { color: var(--red); }
+.note-title { width: 100%; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); font-size: 18px; font-weight: 800; outline: none; }
+.note-text { width: 100%; min-height: 55vh; margin-top: 8px; padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); font: 600 15px/1.55 Manrope, sans-serif; resize: vertical; outline: none; }
+.saved { margin: 6px 2px 0; color: var(--muted); font-size: 12px; }
+.preview { border-radius: 14px; overflow: hidden; background: var(--panel); }
+.preview img, .preview video { display: block; max-width: 100%; margin: 0 auto; }
+.preview iframe { display: block; width: 100%; height: 72vh; border: 0; background: #fff; }
+.preview audio { display: block; width: 100%; padding: 14px; }
+.preview pre { margin: 0; padding: 14px; max-height: 70vh; overflow: auto; font: 500 13px/1.5 ui-monospace, monospace; white-space: pre-wrap; word-break: break-word; }
+.preview .none { padding: 40px 16px; text-align: center; color: var(--muted); }
+.preview .none div { font-size: 52px; }
+.info { margin-top: 10px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 12px; border-radius: 14px; background: var(--panel); font-size: 13px; }
+.info span { color: var(--muted); }
+.info b { overflow-wrap: anywhere; }
+
+/* ---------- sheet / toast ---------- */
+.sheet { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.55); }
+.sheet-card { width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; padding: 18px 16px calc(18px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0; background: var(--panel); border-top: 2px solid var(--line); animation: up .2s ease-out; }
+@media (min-width: 600px) { .sheet { align-items: center; } .sheet-card { border-radius: 22px; border: 2px solid var(--line); } }
+@keyframes up { from { transform: translateY(30px); opacity: 0; } }
+.sheet-card h3 { margin: 0 0 4px; font-size: 18px; }
+.sheet-card p { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+.sheet-card .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; font-size: 12px; color: var(--muted); }
+.sheet-card .field input { background: var(--panel-2); color: var(--text); font-size: 15px; }
+.sheet-card .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.sheet-card .opts { display: flex; flex-direction: column; gap: 6px; }
+.sheet-card .opts button { padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel-2); text-align: left; font-weight: 800; }
+.sheet-card .opts button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+.sheet-card .opts button.del { color: var(--red); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 40; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 12px; background: #2f3160; box-shadow: 0 8px 24px rgba(0,0,0,.4); font-size: 14px; font-weight: 800; transition: opacity .2s; }
+.toast.off { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- ===== Lock ===== -->
+<section id="lock">
+  <div>
+    <div class="logo">V3</div>
+    <h1>Doccer Management</h1>
+    <p class="sub">Личный сейф документов</p>
+  </div>
+  <div class="dots" id="dots"></div>
+  <p class="lmsg" id="lmsg">Введи пароль</p>
+  <div class="pad" id="pad"></div>
+  <p class="owner">🔐 Только для владельца · данные зашифрованы на этом устройстве</p>
+</section>
+
+<!-- ===== Main ===== -->
+<section id="app" hidden>
+  <div class="wrap">
+    <header class="top">
+      <div class="ttl"><span class="logo sm">V3</span><div><b>Doccer Management</b><small>Мои документы</small></div></div>
+      <button class="ibtn" type="button" id="setBtn" aria-label="Настройки">⚙️</button>
+      <button class="ibtn" type="button" id="lockBtn" aria-label="Заблокировать">🔒</button>
+    </header>
+    <div class="search">
+      <input id="q" type="search" placeholder="🔍 Поиск по документам" autocomplete="off">
+      <select id="sort" aria-label="Сортировка">
+        <option value="new">Новые</option>
+        <option value="old">Старые</option>
+        <option value="az">А–Я</option>
+        <option value="size">Размер</option>
+      </select>
+    </div>
+    <nav class="chips" id="chips"></nav>
+    <div class="folderbar" id="folderbar" hidden><span>📁</span><b id="fbName"></b><button type="button" id="fbRename">Переименовать</button><button type="button" id="fbDelete">Удалить</button></div>
+    <div class="actions">
+      <button class="btn" type="button" id="newNote">📝 Новая заметка</button>
+      <button class="btn ghost" type="button" id="upBtn">⬆️ Загрузить файлы</button>
+      <input type="file" id="fileIn" multiple hidden>
+    </div>
+    <p class="stats" id="stats"></p>
+    <div class="list" id="list"></div>
+    <div class="empty" id="empty" hidden><div>🗂️</div><b id="emptyT">Пока пусто</b><br><span id="emptyS">Создай заметку или загрузи файл</span></div>
+  </div>
+</section>
+
+<!-- ===== Viewer ===== -->
+<section id="viewer" hidden>
+  <div class="wrap">
+    <header class="top">
+      <button class="ibtn" type="button" id="vBack" aria-label="Назад">←</button>
+      <div class="ttl"><div style="min-width:0"><b id="vName"></b><small id="vSub"></small></div></div>
+      <button class="ibtn" type="button" id="vFav" aria-label="Избранное">☆</button>
+    </header>
+    <div class="tools">
+      <button type="button" id="vRename"><i>✏️</i>Имя</button>
+      <button type="button" id="vMove"><i>📁</i>Папка</button>
+      <button type="button" id="vDown"><i>⬇️</i>Скачать</button>
+      <button type="button" id="vDel" class="del"><i>🗑️</i>Удалить</button>
+    </div>
+    <div id="vBody"></div>
+  </div>
+</section>
+
+<div class="sheet" id="sheet" hidden><div class="sheet-card" id="sheetCard"></div></div>
+<div class="drop" id="drop" hidden>Отпусти, чтобы добавить файлы</div>
+<div class="toast off" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+  const te = new TextEncoder(), td = new TextDecoder();
+
+  /* ---------- password ---------- */
+  // Only a PBKDF2 hash of the password is kept here, never the password itself.
+  // The same derivation also gives the AES key that encrypts every document.
+  const ITER = 150000;
+  const DEFAULT_AUTH = { salt: "djMtZG9jY2VyLW1hbmFnZW1lbnQtMjAyNg==", ver: "6fd58c64f8cd179c5f100bc3810902a7e6d3d67e0239f2105fe68a421c7046a8", len: 4 };
+  const AUTO_LOCK_MS = 5 * 60 * 1000;   // no taps for 5 minutes
+  const AWAY_LOCK_MS = 60 * 1000;       // app hidden for over a minute
+
+  const b64e = (buf) => { const u = buf instanceof Uint8Array ? buf : new Uint8Array(buf); let s = ""; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+  const b64d = (s) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+  const hex = (u) => Array.from(u, (b) => b.toString(16).padStart(2, "0")).join("");
+
+  async function derive(pin, salt) {
+    const base = await crypto.subtle.importKey("raw", te.encode(pin), "PBKDF2", false, ["deriveBits"]);
+    const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: b64d(salt), iterations: ITER }, base, 512));
+    const key = await crypto.subtle.importKey("raw", bits.slice(32), "AES-GCM", false, ["encrypt", "decrypt"]);
+    return { ver: hex(bits.slice(0, 32)), key };
+  }
+  async function seal(key, buf) { const iv = crypto.getRandomValues(new Uint8Array(12)); return { iv, data: await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, buf) }; }
+  const unseal = (key, box) => crypto.subtle.decrypt({ name: "AES-GCM", iv: box.iv }, key, box.data);
+  const sealJSON = (key, obj) => seal(key, te.encode(JSON.stringify(obj)));
+  const unsealJSON = async (key, box) => JSON.parse(td.decode(await unseal(key, box)));
+
+  /* ---------- storage (IndexedDB) ---------- */
+  // docs: id -> encrypted metadata (name, folder, note text…); files: id -> encrypted file body; meta: auth + folders
+  const DB = (() => {
+    let dbp = null;
+    const open = () => dbp || (dbp = new Promise((res, rej) => {
+      const r = indexedDB.open("v3-doccer", 1);
+      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore("docs", { keyPath: "id" }); d.createObjectStore("files"); d.createObjectStore("meta"); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+    const done = (t) => new Promise((res, rej) => { t.oncomplete = () => res(); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error || new Error("abort")); });
+    async function read(store, fn) { const t = (await open()).transaction(store, "readonly"); const r = fn(t.objectStore(store)); await done(t); return r.result; }
+    // ops: [store, "put"|"delete", value, key?]
+    async function write(ops) {
+      const stores = [...new Set(ops.map((o) => o[0]))];
+      const t = (await open()).transaction(stores, "readwrite");
+      ops.forEach(([s, op, v, k]) => { const st = t.objectStore(s); if (op === "put") (k === undefined ? st.put(v) : st.put(v, k)); else if (op === "delete") st.delete(v); else if (op === "clear") st.clear(); });
+      return done(t);
+    }
+    return {
+      get: (s, k) => read(s, (st) => st.get(k)),
+      all: (s) => read(s, (st) => st.getAll()),
+      keys: (s) => read(s, (st) => st.getAllKeys()),
+      write,
+    };
+  })();
+
+  /* ---------- state ---------- */
+  let KEY = null, auth = DEFAULT_AUTH;
+  let docs = [], folders = [];
+  let view = "all", query = "", sort = "new", openDoc = null, urls = [];
+  let lastAct = Date.now(), hiddenAt = 0;
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+  const fmtSize = (n) => n < 1024 ? n + " Б" : n < 1048576 ? (n / 1024).toFixed(n < 10240 ? 1 : 0) + " КБ" : (n / 1048576).toFixed(1) + " МБ";
+  function fmtDate(t) {
+    const d = new Date(t), now = new Date();
+    const o = { day: "numeric", month: "short" }; if (d.getFullYear() !== now.getFullYear()) o.year = "numeric";
+    if (d.toDateString() === now.toDateString()) return "сегодня, " + d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleDateString("ru-RU", o);
+  }
+  function icon(d) {
+    if (d.kind === "note") return "📝";
+    const m = d.mime || "", n = (d.name || "").toLowerCase();
+    if (m.startsWith("image/")) return "🖼️";
+    if (m === "application/pdf" || n.endsWith(".pdf")) return "📕";
+    if (m.startsWith("audio/")) return "🎵";
+    if (m.startsWith("video/")) return "🎬";
+    if (/zip|rar|7z|tar|gzip/.test(m) || /\.(zip|rar|7z|gz)$/.test(n)) return "🗜️";
+    if (/word|opendocument\.text/.test(m) || /\.docx?$/.test(n)) return "📘";
+    if (/sheet|excel|csv/.test(m) || /\.(xlsx?|csv)$/.test(n)) return "📗";
+    if (/presentation|powerpoint/.test(m) || /\.pptx?$/.test(n)) return "📙";
+    if (m.startsWith("text/") || /json|xml|javascript/.test(m)) return "📄";
+    return "📦";
+  }
+  const isText = (d) => (d.mime || "").startsWith("text/") || /json|xml|javascript/.test(d.mime || "") || /\.(txt|md|csv|json|log|xml|html?|css|js)$/i.test(d.name || "");
+  const folderName = (id) => (folders.find((f) => f.id === id) || {}).name || "";
+
+  let toastT = 0;
+  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.remove("off"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add("off"), 2200); }
+
+  /* ---------- sheet dialogs ---------- */
+  function sheet(build) {
+    return new Promise((resolve) => {
+      const s = $("#sheet"), c = $("#sheetCard");
+      c.replaceChildren(); s.hidden = false;
+      const close = (v) => { s.hidden = true; c.replaceChildren(); s.onclick = null; resolve(v); };
+      s.onclick = (e) => { if (e.target === s) close(null); };
+      build(c, close);
+    });
+  }
+  function ask({ title, text, value = "", placeholder = "", ok = "Готово", type = "text" }) {
+    return sheet((c, close) => {
+      c.append(el("h3", "", title)); if (text) c.append(el("p", "", text));
+      const f = el("label", "field"), inp = el("input"); inp.type = type; inp.value = value; inp.placeholder = placeholder;
+      if (type === "password") { inp.inputMode = "numeric"; inp.autocomplete = "off"; }
+      f.append(inp); c.append(f);
+      const row = el("div", "row"), no = el("button", "btn ghost", "Отмена"), yes = el("button", "btn", ok);
+      no.type = yes.type = "button"; row.append(no, yes); c.append(row);
+      no.onclick = () => close(null);
+      yes.onclick = () => close(inp.value.trim());
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") yes.click(); });
+      setTimeout(() => { inp.focus(); inp.select(); }, 60);
+    });
+  }
+  function confirmBox({ title, text, ok = "Удалить" }) {
+    return sheet((c, close) => {
+      c.append(el("h3", "", title)); if (text) c.append(el("p", "", text));
+      const row = el("div", "row"), no = el("button", "btn ghost", "Отмена"), yes = el("button", "btn danger", ok);
+      no.type = yes.type = "button"; row.append(no, yes); c.append(row);
+      no.onclick = () => close(false); yes.onclick = () => close(true);
+    });
+  }
+  function choose({ title, text, options }) {
+    return sheet((c, close) => {
+      c.append(el("h3", "", title)); if (text) c.append(el("p", "", text));
+      const box = el("div", "opts");
+      options.forEach((o) => { const b = el("button", o.cls || "", o.label); b.type = "button"; if (o.on) b.setAttribute("aria-pressed", "true"); b.onclick = () => close(o.value); box.append(b); });
+      const cancel = el("button", "", "Отмена"); cancel.type = "button"; cancel.style.color = "var(--muted)"; cancel.onclick = () => close(null); box.append(cancel);
+      c.append(box);
+    });
+  }
+
+  /* ---------- lock screen ---------- */
+  let pin = "", busy = false;
+  const failInfo = () => { try { return JSON.parse(localStorage.getItem("doccer-fails")) || { n: 0, until: 0 }; } catch (e) { return { n: 0, until: 0 }; } };
+  const setFail = (v) => { try { localStorage.setItem("doccer-fails", JSON.stringify(v)); } catch (e) {} };
+  function drawDots() {
+    const d = $("#dots"); d.replaceChildren();
+    const n = Math.max(auth.len || 4, pin.length);
+    for (let i = 0; i < n; i++) { const dot = el("i"); if (i < pin.length) dot.className = "on"; d.append(dot); }
+  }
+  function lmsg(t, err) { const m = $("#lmsg"); m.textContent = t; m.classList.toggle("err", !!err); }
+  function buildPad() {
+    const pad = $("#pad");
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "⌫"].forEach((k) => {
+      const b = el("button", k === "⌫" || k === "" ? "flat" : "", k); b.type = "button";
+      if (k === "") { b.disabled = true; b.style.visibility = "hidden"; }
+      b.addEventListener("click", () => press(k));
+      pad.append(b);
+    });
+  }
+  function lockedFor() { const f = failInfo(); return Math.max(0, f.until - Date.now()); }
+  let waitT = 0;
+  function showWait() {
+    clearInterval(waitT);
+    const tick = () => { const ms = lockedFor(); if (ms <= 0) { clearInterval(waitT); lmsg("Введи пароль"); return; } lmsg(`Слишком много попыток. Подожди ${Math.ceil(ms / 1000)} с`, true); };
+    tick(); waitT = setInterval(tick, 500);
+  }
+  function press(k) {
+    if (busy || lockedFor() > 0) return;
+    if (k === "⌫") pin = pin.slice(0, -1);
+    else if (/^\d$/.test(k) && pin.length < 8) pin += k;
+    drawDots();
+    if (pin.length >= (auth.len || 4)) tryUnlock();
+  }
+  async function tryUnlock() {
+    busy = true; lmsg("Проверяю…");
+    try {
+      const { ver, key } = await derive(pin, auth.salt);
+      if (ver !== auth.ver) {
+        const f = failInfo(); f.n++; if (f.n % 5 === 0) f.until = Date.now() + 30000 * (f.n / 5); setFail(f);
+        $("#dots").classList.remove("bad"); void $("#dots").offsetWidth; $("#dots").classList.add("bad");
+        pin = ""; setTimeout(drawDots, 350);
+        if (lockedFor() > 0) showWait(); else lmsg("Неверный пароль", true);
+        return;
+      }
+      setFail({ n: 0, until: 0 });
+      KEY = key; pin = "";
+      await loadAll();
+      $("#lock").hidden = true; $("#app").hidden = false;
+      lastAct = Date.now(); render();
+      try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    } catch (e) {
+      console.error(e); pin = ""; drawDots(); lmsg("Ошибка: " + (e.message || e), true);
+    } finally { busy = false; }
+  }
+  function lock() {
+    KEY = null; docs = []; folders = []; openDoc = null; query = ""; $("#q").value = "";
+    clearUrls(); $("#vBody").replaceChildren();
+    $("#sheet").hidden = true; $("#sheetCard").replaceChildren();
+    $("#viewer").hidden = true; $("#app").hidden = true; $("#lock").hidden = false;
+    $("#list").replaceChildren();
+    pin = ""; drawDots(); if (lockedFor() > 0) showWait(); else lmsg("Введи пароль");
+  }
+
+  /* ---------- data ---------- */
+  async function loadAll() {
+    const recs = await DB.all("docs");
+    docs = [];
+    for (const r of recs) { try { docs.push(await unsealJSON(KEY, r.m)); } catch (e) { console.warn("cannot open doc", r.id); } }
+    const fb = await DB.get("meta", "folders");
+    folders = fb ? await unsealJSON(KEY, fb) : [];
+  }
+  async function saveMeta(d) { await DB.write([["docs", "put", { id: d.id, m: await sealJSON(KEY, d) }]]); }
+  async function saveFolders() { await DB.write([["meta", "put", await sealJSON(KEY, folders), "folders"]]); }
+  async function readFile(d) { const box = await DB.get("files", d.id); if (!box) throw new Error("файл не найден"); return unseal(KEY, box); }
+
+  async function addFiles(list) {
+    const files = Array.from(list || []); if (!files.length || !KEY) return;
+    const folder = view.startsWith("f:") ? view.slice(2) : "";
+    let ok = 0;
+    toast(`Шифрую ${files.length > 1 ? files.length + " файла(ов)" : "файл"}…`);
+    for (const f of files) {
+      try {
+        const buf = await f.arrayBuffer(), now = Date.now();
+        const d = { id: uid(), kind: "file", name: f.name || "файл", mime: f.type || "", size: f.size, folder, fav: false, created: now, updated: now };
+        await DB.write([["files", "put", await seal(KEY, buf), d.id], ["docs", "put", { id: d.id, m: await sealJSON(KEY, d) }]]);
+        docs.push(d); ok++;
+      } catch (e) { console.error(e); toast(`Не удалось сохранить «${f.name}»`); }
+    }
+    if (view === "notes" || view === "fav") view = "all";
+    render(); if (ok) toast(ok === 1 ? "Файл добавлен 🔐" : `Добавлено файлов: ${ok} 🔐`);
+  }
+  async function newNote() {
+    const now = Date.now();
+    const d = { id: uid(), kind: "note", name: "", text: "", size: 0, folder: view.startsWith("f:") ? view.slice(2) : "", fav: false, created: now, updated: now };
+    docs.push(d); await saveMeta(d);
+    if (view === "files" || view === "fav") view = "all";
+    openViewer(d);
+  }
+  async function removeDoc(d) {
+    await DB.write([["docs", "delete", d.id], ["files", "delete", d.id]]);
+    docs = docs.filter((x) => x !== d);
+  }
+
+  /* ---------- list ---------- */
+  function visibleDocs() {
+    const q = query.toLowerCase();
+    let out = docs.filter((d) => {
+      if (view === "fav" && !d.fav) return false;
+      if (view === "notes" && d.kind !== "note") return false;
+      if (view === "files" && d.kind !== "file") return false;
+      if (view.startsWith("f:") && d.folder !== view.slice(2)) return false;
+      if (q && !((d.name || "").toLowerCase().includes(q) || (d.text || "").toLowerCase().includes(q))) return false;
+      return true;
+    });
+    const nm = (d) => (d.name || "Без названия").toLowerCase();
+    if (sort === "new") out.sort((a, b) => b.updated - a.updated);
+    else if (sort === "old") out.sort((a, b) => a.created - b.created);
+    else if (sort === "az") out.sort((a, b) => nm(a).localeCompare(nm(b), "ru"));
+    else if (sort === "size") out.sort((a, b) => (b.size || 0) - (a.size || 0));
+    return out;
+  }
+  function renderChips() {
+    const c = $("#chips"); c.replaceChildren();
+    const add = (id, label) => { const b = el("button", "", label); b.type = "button"; b.setAttribute("aria-pressed", String(view === id)); b.onclick = () => { view = id; render(); }; c.append(b); };
+    add("all", `Все · ${docs.length}`);
+    add("fav", "★ Избранное");
+    add("notes", "📝 Заметки");
+    add("files", "📎 Файлы");
+    folders.forEach((f) => add("f:" + f.id, `📁 ${f.name} · ${docs.filter((d) => d.folder === f.id).length}`));
+    const nb = el("button", "add", "+ Папка"); nb.type = "button"; nb.onclick = newFolder; c.append(nb);
+    const act = c.querySelector('[aria-pressed="true"]'); if (act) act.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  function render() {
+    if (!KEY) return;
+    if (view.startsWith("f:") && !folders.some((f) => "f:" + f.id === view)) view = "all";
+    renderChips();
+    const fb = $("#folderbar"); fb.hidden = !view.startsWith("f:"); if (!fb.hidden) $("#fbName").textContent = folderName(view.slice(2));
+    const list = $("#list"), items = visibleDocs(); list.replaceChildren();
+    items.forEach((d) => {
+      const b = el("button", "doc"); b.type = "button";
+      const where = d.folder ? " · 📁 " + folderName(d.folder) : "";
+      const sub = d.kind === "note" ? ((d.text || "").replace(/\s+/g, " ").slice(0, 60) || "Пустая заметка") : fmtSize(d.size || 0);
+      const txt = el("span"); txt.append(el("span", "nm", d.name || "Без названия"), el("span", "mt", `${fmtDate(d.updated)} · ${sub}${where}`));
+      b.append(el("span", "ico", icon(d)), txt, el("span", "fav", d.fav ? "★" : ""));
+      b.onclick = () => openViewer(d);
+      list.append(b);
+    });
+    const total = docs.reduce((s, d) => s + (d.size || 0), 0);
+    $("#stats").textContent = `${items.length} из ${docs.length} · всего ${fmtSize(total)} · 🔐 AES-256`;
+    $("#empty").hidden = items.length > 0;
+    $("#emptyT").textContent = query ? "Ничего не найдено" : docs.length ? "Здесь пусто" : "Пока пусто";
+    $("#emptyS").textContent = query ? "Попробуй другой запрос" : "Создай заметку или загрузи файл";
+  }
+
+  /* ---------- folders ---------- */
+  async function newFolder() {
+    const name = await ask({ title: "Новая папка", placeholder: "Например: Паспорт и документы", ok: "Создать" });
+    if (!name) return;
+    const f = { id: uid(), name: name.slice(0, 40) }; folders.push(f); await saveFolders();
+    view = "f:" + f.id; render(); toast("Папка создана");
+  }
+  $("#fbRename").onclick = async () => {
+    const f = folders.find((x) => "f:" + x.id === view); if (!f) return;
+    const name = await ask({ title: "Переименовать папку", value: f.name }); if (!name) return;
+    f.name = name.slice(0, 40); await saveFolders(); render();
+  };
+  $("#fbDelete").onclick = async () => {
+    const f = folders.find((x) => "f:" + x.id === view); if (!f) return;
+    const inside = docs.filter((d) => d.folder === f.id);
+    const ok = await confirmBox({ title: `Удалить папку «${f.name}»?`, text: inside.length ? `${inside.length} документ(ов) из неё останутся во «Все».` : "Папка пустая." });
+    if (!ok) return;
+    for (const d of inside) { d.folder = ""; await saveMeta(d); }
+    folders = folders.filter((x) => x !== f); await saveFolders(); view = "all"; render(); toast("Папка удалена");
+  };
+
+  /* ---------- viewer ---------- */
+  let saveT = 0, dirty = false;
+  function clearUrls() { urls.forEach((u) => URL.revokeObjectURL(u)); urls = []; }
+  function vHeader() {
+    const d = openDoc; if (!d) return;
+    $("#vName").textContent = d.name || "Без названия";
+    $("#vSub").textContent = (d.kind === "note" ? "Заметка" : fmtSize(d.size || 0)) + (d.folder ? " · 📁 " + folderName(d.folder) : "");
+    $("#vFav").textContent = d.fav ? "★" : "☆"; $("#vFav").style.color = d.fav ? "var(--amber)" : "";
+    $("#vRename").hidden = d.kind === "note";
+  }
+  async function flush() { clearTimeout(saveT); if (dirty && openDoc && KEY) { dirty = false; await saveMeta(openDoc); } }
+  async function openViewer(d) {
+    openDoc = d; clearUrls();
+    const body = $("#vBody"); body.replaceChildren();
+    $("#app").hidden = true; $("#viewer").hidden = false; $("#viewer").scrollTop = 0; vHeader();
+    if (d.kind === "note") {
+      const t = el("input", "note-title"); t.placeholder = "Заголовок"; t.value = d.name || "";
+      const a = el("textarea", "note-text"); a.placeholder = "Пиши здесь… Всё сохраняется само и шифруется."; a.value = d.text || "";
+      const st = el("p", "saved", "🔐 Сохранено");
+      const changed = () => {
+        d.name = t.value.trim(); d.text = a.value; d.size = te.encode(a.value).length; d.updated = Date.now();
+        dirty = true; st.textContent = "Сохраняю…"; vHeader();
+        clearTimeout(saveT); saveT = setTimeout(async () => { await flush(); st.textContent = "🔐 Сохранено"; }, 600);
+      };
+      t.addEventListener("input", changed); a.addEventListener("input", changed);
+      body.append(t, a, st);
+      if (!d.name && !d.text) setTimeout(() => t.focus(), 80);
+      return;
+    }
+    const pv = el("div", "preview"); pv.append(el("div", "none", "Расшифровываю…")); body.append(pv);
+    const info = el("div", "info");
+    [["Тип", d.mime || "неизвестно"], ["Размер", fmtSize(d.size || 0)], ["Добавлен", new Date(d.created).toLocaleString("ru-RU")]].forEach(([k, v]) => info.append(el("span", "", k), el("b", "", v)));
+    body.append(info);
+    try {
+      const buf = await readFile(d); if (openDoc !== d) return;
+      const m = d.mime || "";
+      const url = () => { const u = URL.createObjectURL(new Blob([buf], { type: m || "application/octet-stream" })); urls.push(u); return u; };
+      let node;
+      if (m.startsWith("image/")) { node = el("img"); node.src = url(); node.alt = d.name; }
+      else if (m === "application/pdf") { node = el("iframe"); node.src = url(); node.title = d.name; }
+      else if (m.startsWith("video/")) { node = el("video"); node.controls = true; node.playsInline = true; node.src = url(); }
+      else if (m.startsWith("audio/")) { node = el("audio"); node.controls = true; node.src = url(); }
+      else if (isText(d)) { node = el("pre", "", td.decode(buf.byteLength > 2e6 ? buf.slice(0, 2e6) : buf)); }
+      else { node = el("div", "none"); node.append(el("div", "", icon(d)), el("p", "", "Предпросмотр недоступен. Нажми «Скачать», чтобы открыть файл.")); }
+      pv.replaceChildren(node);
+    } catch (e) { pv.replaceChildren(el("div", "none", "Не удалось открыть: " + (e.message || e))); }
+  }
+  async function closeViewer() { await flush(); openDoc = null; clearUrls(); $("#vBody").replaceChildren(); $("#viewer").hidden = true; $("#app").hidden = false; render(); }
+
+  $("#vBack").onclick = closeViewer;
+  $("#vFav").onclick = async () => { const d = openDoc; if (!d) return; d.fav = !d.fav; vHeader(); await saveMeta(d); toast(d.fav ? "В избранном ★" : "Убрано из избранного"); };
+  $("#vRename").onclick = async () => {
+    const d = openDoc; if (!d) return;
+    const name = await ask({ title: "Новое имя", value: d.name }); if (!name) return;
+    d.name = name.slice(0, 120); d.updated = Date.now(); vHeader(); await saveMeta(d);
+  };
+  $("#vMove").onclick = async () => {
+    const d = openDoc; if (!d) return;
+    const opts = [{ label: "Без папки", value: "-", on: !d.folder }, ...folders.map((f) => ({ label: "📁 " + f.name, value: f.id, on: d.folder === f.id })), { label: "+ Новая папка", value: "+" }];
+    let v = await choose({ title: "Переместить в папку", options: opts }); if (v == null) return;
+    if (v === "+") { const name = await ask({ title: "Новая папка", ok: "Создать" }); if (!name) return; const f = { id: uid(), name: name.slice(0, 40) }; folders.push(f); await saveFolders(); v = f.id; }
+    d.folder = v === "-" ? "" : v; await saveMeta(d); vHeader(); toast(d.folder ? "Перемещено в «" + folderName(d.folder) + "»" : "Убрано из папки");
+  };
+  $("#vDown").onclick = async () => {
+    const d = openDoc; if (!d) return;
+    try {
+      await flush();
+      const blob = d.kind === "note" ? new Blob([(d.name ? d.name + "\n\n" : "") + (d.text || "")], { type: "text/plain;charset=utf-8" }) : new Blob([await readFile(d)], { type: d.mime || "application/octet-stream" });
+      const u = URL.createObjectURL(blob), a = el("a"); a.href = u; a.download = d.kind === "note" ? (d.name || "заметка").replace(/[\\/:*?"<>|]/g, "_") + ".txt" : d.name;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000);
+    } catch (e) { toast("Не удалось скачать"); }
+  };
+  $("#vDel").onclick = async () => {
+    const d = openDoc; if (!d) return;
+    const ok = await confirmBox({ title: "Удалить документ?", text: `«${d.name || "Без названия"}» будет удалён навсегда.` }); if (!ok) return;
+    dirty = false; clearTimeout(saveT); await removeDoc(d); openDoc = null; await closeViewer(); toast("Удалено");
+  };
+
+  /* ---------- settings ---------- */
+  async function settings() {
+    const est = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate().catch(() => null) : null;
+    const v = await choose({
+      title: "Настройки",
+      text: `Документов: ${docs.length} · папок: ${folders.length}${est ? ` · занято на устройстве ${fmtSize(est.usage || 0)}` : ""}. Всё хранится только в этом браузере и зашифровано твоим паролем. Блокировка — через 5 минут без действий.`,
+      options: [
+        { label: "🔑 Сменить пароль", value: "pin" },
+        { label: "💾 Сохранить резервную копию", value: "export" },
+        { label: "📥 Загрузить резервную копию", value: "import" },
+        { label: "🗑️ Удалить все документы", value: "wipe", cls: "del" },
+      ],
+    });
+    if (v === "pin") changePin();
+    else if (v === "export") exportBackup();
+    else if (v === "import") importBackup();
+    else if (v === "wipe") wipe();
+  }
+  async function changePin() {
+    const cur = await ask({ title: "Текущий пароль", type: "password", ok: "Дальше" }); if (cur == null) return;
+    if ((await derive(cur, auth.salt)).ver !== auth.ver) { toast("Неверный текущий пароль"); return; }
+    const p1 = await ask({ title: "Новый пароль", text: "От 4 до 8 цифр.", type: "password", ok: "Дальше" }); if (p1 == null) return;
+    if (!/^\d{4,8}$/.test(p1)) { toast("Нужно от 4 до 8 цифр"); return; }
+    const p2 = await ask({ title: "Повтори новый пароль", type: "password", ok: "Сменить" }); if (p2 == null) return;
+    if (p1 !== p2) { toast("Пароли не совпали"); return; }
+    toast("Перешифровываю документы…");
+    try {
+      const salt = b64e(crypto.getRandomValues(new Uint8Array(16)));
+      const { ver, key } = await derive(p1, salt);
+      const ops = [["docs", "clear"], ["files", "clear"]];
+      for (const d of docs) ops.push(["docs", "put", { id: d.id, m: await sealJSON(key, d) }]);
+      for (const id of await DB.keys("files")) { const box = await DB.get("files", id); ops.push(["files", "put", await seal(key, await unseal(KEY, box)), id]); }
+      ops.push(["meta", "put", await sealJSON(key, folders), "folders"]);
+      const na = { salt, ver, len: p1.length }; ops.push(["meta", "put", na, "auth"]);
+      await DB.write(ops);
+      auth = na; KEY = key; toast("Пароль изменён 🔑");
+    } catch (e) { console.error(e); toast("Не получилось сменить пароль"); }
+  }
+  async function exportBackup() {
+    toast("Готовлю копию…");
+    try {
+      const pack = (box) => ({ iv: b64e(box.iv), data: b64e(box.data) });
+      const out = { app: "v3-doccer", v: 1, at: Date.now(), auth, folders: null, docs: [] };
+      const fb = await DB.get("meta", "folders"); if (fb) out.folders = pack(fb);
+      for (const r of await DB.all("docs")) { const f = await DB.get("files", r.id); out.docs.push({ id: r.id, m: pack(r.m), f: f ? pack(f) : null }); }
+      const blob = new Blob([JSON.stringify(out)], { type: "application/json" });
+      const u = URL.createObjectURL(blob), a = el("a"); a.href = u; a.download = `v3-doccer-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000);
+      toast("Копия сохранена (она тоже зашифрована)");
+    } catch (e) { console.error(e); toast("Не удалось сохранить копию"); }
+  }
+  function importBackup() {
+    const inp = el("input"); inp.type = "file"; inp.accept = ".json,application/json";
+    inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (data.app !== "v3-doccer" || !Array.isArray(data.docs)) throw new Error("bad");
+        const unpack = (p) => ({ iv: b64d(p.iv), data: b64d(p.data).buffer });
+        const ops = []; let added = 0, skipped = 0;
+        for (const r of data.docs) {
+          const m = unpack(r.m); let d;
+          try { d = await unsealJSON(KEY, m); } catch (e) { skipped++; continue; }
+          if (docs.some((x) => x.id === d.id)) continue;
+          ops.push(["docs", "put", { id: r.id, m }]); if (r.f) ops.push(["files", "put", unpack(r.f), r.id]);
+          docs.push(d); added++;
+        }
+        if (data.folders) { try { const fs = await unsealJSON(KEY, unpack(data.folders)); fs.forEach((f) => { if (!folders.some((x) => x.id === f.id)) folders.push(f); }); ops.push(["meta", "put", await sealJSON(KEY, folders), "folders"]); } catch (e) {} }
+        if (ops.length) await DB.write(ops);
+        render();
+        toast(skipped && !added ? "Копия сделана с другим паролем" : `Восстановлено: ${added}${skipped ? `, пропущено: ${skipped}` : ""}`);
+      } catch (e) { console.error(e); toast("Это не резервная копия V3 Doccer"); }
+    };
+    inp.click();
+  }
+  async function wipe() {
+    if (!(await confirmBox({ title: "Удалить всё?", text: `Все ${docs.length} документов и папки будут удалены навсегда. Пароль останется прежним.` }))) return;
+    const word = await ask({ title: "Точно?", text: "Напиши УДАЛИТЬ, чтобы подтвердить.", ok: "Удалить всё" });
+    if (word == null || word.toUpperCase() !== "УДАЛИТЬ") { toast("Отменено"); return; }
+    await DB.write([["docs", "clear"], ["files", "clear"], ["meta", "delete", "folders"]]);
+    docs = []; folders = []; view = "all"; render(); toast("Всё удалено");
+  }
+
+  /* ---------- wiring ---------- */
+  $("#lockBtn").onclick = async () => { await flush(); lock(); };
+  $("#setBtn").onclick = settings;
+  $("#newNote").onclick = newNote;
+  $("#upBtn").onclick = () => $("#fileIn").click();
+  $("#fileIn").onchange = (e) => { addFiles(e.target.files); e.target.value = ""; };
+  $("#q").addEventListener("input", (e) => { query = e.target.value.trim(); render(); });
+  $("#sort").addEventListener("change", (e) => { sort = e.target.value; render(); });
+
+  let dragN = 0;
+  addEventListener("dragenter", (e) => { if (!KEY || !e.dataTransfer || ![...e.dataTransfer.types].includes("Files")) return; dragN++; $("#drop").hidden = false; });
+  addEventListener("dragleave", () => { if (--dragN <= 0) { dragN = 0; $("#drop").hidden = true; } });
+  addEventListener("dragover", (e) => { if (KEY) e.preventDefault(); });
+  addEventListener("drop", (e) => { e.preventDefault(); dragN = 0; $("#drop").hidden = true; if (KEY && e.dataTransfer) addFiles(e.dataTransfer.files); });
+
+  addEventListener("keydown", (e) => {
+    lastAct = Date.now();
+    if (!$("#lock").hidden) { if (/^\d$/.test(e.key)) press(e.key); else if (e.key === "Backspace") press("⌫"); return; }
+    if (e.key === "Escape") { if (!$("#sheet").hidden) $("#sheet").click(); else if (!$("#viewer").hidden) closeViewer(); }
+  });
+  ["pointerdown", "input", "scroll"].forEach((ev) => addEventListener(ev, () => { lastAct = Date.now(); }, { passive: true, capture: true }));
+  setInterval(() => { if (KEY && Date.now() - lastAct > AUTO_LOCK_MS) flush().then(lock); }, 5000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { hiddenAt = Date.now(); flush(); }
+    else if (KEY && hiddenAt && Date.now() - hiddenAt > AWAY_LOCK_MS) lock();
+  });
+  addEventListener("pagehide", () => { flush(); });
+
+  /* ---------- start ---------- */
+  (async () => {
+    buildPad(); drawDots();
+    if (!window.crypto || !crypto.subtle || !window.indexedDB) { lmsg("Этот браузер не поддерживает шифрование. Открой страницу по https.", true); return; }
+    try { const a = await DB.get("meta", "auth"); if (a && a.salt && a.ver) auth = a; } catch (e) { console.error(e); }
+    drawDots(); if (lockedFor() > 0) showWait();
+  })();
+})();
+</script>
+</body>
+</html>
