@@ -236,6 +236,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .slot.dragging canvas { opacity: 0; }
 #zombieCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: none; cursor: crosshair; background: #0b0f0e; }
 #vr .gtitle { font-size: 15px; }
+.docs-wrap { width: 100%; height: min(82vh, 860px); border-radius: 12px; overflow: hidden; background: #12132a; border: 2px solid var(--line); }
+.docs-wrap iframe { display: block; width: 100%; height: 100%; border: 0; background: #12132a; }
 .ghost-wrap { position: relative; width: 100%; height: min(78vh, 760px); border-radius: 12px; overflow: hidden; background: #0e0b17; border: 2px solid var(--line); }
 .ghost-wrap iframe { display: block; width: 100%; height: 100%; border: 0; background: #0e0b17; }
 .ghost-wrap.full {
@@ -1634,6 +1636,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         </span>
         <span class="cart-stat"><span class="stat-label">Магазинов</span><span class="stat-val" id="hubTc">—</span></span>
       </button>
+      <button class="cart" data-go="docs" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#12132a"/><path d="M14 14h22l10 10v28a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V17a3 3 0 0 1 3-3z" fill="#e8e6ff"/><path d="M36 14v10h10z" fill="#a3a5c9"/><rect x="17" y="28" width="22" height="3" rx="1.5" fill="#a3a5c9"/><rect x="17" y="34" width="18" height="3" rx="1.5" fill="#a3a5c9"/><rect x="17" y="40" width="14" height="3" rx="1.5" fill="#a3a5c9"/><rect x="36" y="38" width="20" height="16" rx="3" fill="#ffb547"/><path d="M40 38v-4a6 6 0 0 1 12 0v4" fill="none" stroke="#ffb547" stroke-width="3"/><circle cx="46" cy="45" r="2.5" fill="#1b1300"/><rect x="45" y="46" width="2" height="4" fill="#1b1300"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">V3 Doccer Management</span>
+          <span class="cart-desc">Личный сейф документов: заметки, фото, PDF и любые файлы по папкам — под паролем и с шифрованием.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Доступ</span><span class="stat-val">🔒</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2251,6 +2263,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <button class="btn wide" type="button" id="enPublish">🚀 Опубликовать в Enthernet</button>
     </div>
     <p class="hint">Собери сайт из блоков: шапка, баннер, товары, мини-игра, видео, галерея, отзывы, лайки… Нажми на блок в окне браузера, чтобы поменять тексты. Выбери цвета и шрифт, придумай адрес — и опубликуй! Чем разнообразнее и подходящее сайт, тем выше оценка и больше посетителей.</p>
+  </section>
+
+  <section id="docs" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3 Doccer Management</div>
+      <div class="chips"><div class="chip hi"><span>Доступ</span><b>🔒</b></div></div>
+    </div>
+    <div class="docs-wrap"><iframe id="docsFrame" title="V3 Doccer Management"></iframe></div>
+    <div class="row-actions">
+      <a class="btn ghost" href="apps/doccer.html" target="_blank" rel="noopener">Открыть отдельно</a>
+    </div>
+    <p class="hint">Только для владельца: вход по паролю, документы шифруются и хранятся только в этом браузере. При выходе в меню сейф закрывается.</p>
   </section>
 
   <section id="tc" class="screen" hidden>
@@ -14238,9 +14263,20 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     return { render, greet, refreshBadge };
   })();
 
+  /* ================= V3 Doccer Management ================= */
+  // Private document safe, its own page (apps/doccer.html) shown in a frame.
+  // The frame is emptied on leave, so the safe is locked again every time.
+  const Docs = (() => {
+    const frame = $("#docsFrame");
+    return {
+      enter() { frame.src = "apps/doccer.html"; },
+      leave() { frame.src = "about:blank"; },
+    };
+  })();
+
   /* ================= Navigation ================= */
   const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "ideas", "events", "chars", "gear", "chats", "talk"];
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "ideas", "events", "chars", "gear", "chats", "talk", "docs"];
   let current = "hub";
 
   function updateHub() {
@@ -14277,6 +14313,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const fromGame = !!GAMES[current] && name === "hub";
     if (GAMES[current] && current !== name) GAMES[current].leave();
     if (window.Pair) window.Pair.cancel();
+    if (current === "docs" && name !== "docs") Docs.leave();
     SCREENS.forEach((s) => { $("#" + s).hidden = s !== name; });
     current = name;
     if (GAMES[name]) GAMES[name].enter();
@@ -14286,9 +14323,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     if (name === "ideas") Ideas.openInbox();
     if (name === "events") Events.render();
     if (name === "talk") Talk.enter();
+    if (name === "docs") Docs.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc";
+    $("#cop").hidden = name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "docs";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
