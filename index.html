@@ -2124,7 +2124,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
     <div class="us-stats">
-      <div class="us-money"><small>В кармане</small><b id="usMoney">50 коп.</b></div>
+      <div class="us-money"><small>В кармане</small><b id="usMoney">∞</b></div>
       <div class="us-bars">
         <label>🍞 Сытость<span><i id="usFull"></i></span></label>
         <label>⚡ Силы<span><i id="usEnergy"></i></span></label>
@@ -2135,7 +2135,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     <div class="ct-stage"><canvas id="usCanvas" width="360" height="240" aria-label="Жизнь в 1986 году"></canvas></div>
     <div class="cs-shop us-acts" id="usActs"></div>
     <div class="dx-places us-places" id="usPlaces" aria-label="Куда пойти"></div>
-    <p class="hint">1986 год, ты — школьник. Утром мама даёт 30 копеек (и ещё по 10 за каждую пятёрку). Ходи в школу, покупай пломбир и лимонад «Буратино» в гастрономе, пей газировку из автомата за 1–3 копейки, собирай бутылки и сдавай их, копи на велосипед «Школьник» и магнитофон. Следи за сытостью, силами и настроением, вечером — спать! <button type="button" class="linkish" id="usReset">Начать сначала</button></p>
+    <p class="hint">1986 год, ты — школьник. Денег в кармане бесконечно — покупай что хочешь! Ходи в школу, покупай пломбир и лимонад «Буратино» в гастрономе, пей газировку из автомата за 1–3 копейки, собирай бутылки и сдавай их, копи на велосипед «Школьник» и магнитофон. Следи за сытостью, силами и настроением, вечером — спать! <button type="button" class="linkish" id="usReset">Начать сначала</button></p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -9557,6 +9557,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     const FILMS = ["Мультсборник", "«Приключения Электроника»", "«Гостья из будущего»", "«Кин-дза-дза!»", "«Москва слезам не верит»", "Сказка «Морозко»"];
     function fresh() { return { day: 0, hour: 8, money: 100, full: 70, energy: 90, mood: 70, fives: 0, grades: [], bottles: { milk: 0, lemon: 0 }, fridge: {}, toys: [], homework: false, stock: {}, stockDay: -1, log: 0 }; }
     let S = store.get("ussrLife", null); if (!S || typeof S.money !== "number") S = fresh();
+    const BIG = 1e12; // infinite money for every player
+    const topUp = () => { S.money = BIG; };
+    topUp();
     let place = "home", visible = false, raf = 0, T0 = performance.now(), W = 360, H = 240, dpr = 1, U = 1;
     let fx = null, quiz = null, soda = 0, sodaSyrup = false, warnF = false, warnE = false;
 
@@ -9589,7 +9592,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const add = (ico, t, note, ok, fn) => A.push({ ico, t, note, ok, fn });
       if (late && place !== "home") { add("🌙", "Уже поздно — пора домой", "мама волнуется", true, () => go("home")); return A; }
       if (place === "home") {
-        add("🛏️", "Лечь спать", late ? "уже 22:00 — спать!" : "утром мама даст 30 коп. на карманные расходы", true, sleep);
+        add("🛏️", "Лечь спать", late ? "уже 22:00 — спать!" : "утром силы восстановятся", true, sleep);
         const food = Object.keys(S.fridge).filter((k) => S.fridge[k] > 0);
         food.forEach((id) => { const f = FOOD.find((q) => q[0] === id); add(f[2], `Съесть: ${f[1]}`, `в холодильнике ${S.fridge[id]} шт.`, !late, () => eat(f, true)); });
         add("📺", "Смотреть мультфильмы по телевизору", "1 час · настроение +", !late && S.hour >= 15, () => { spend(1); S.mood = clamp(S.mood + 15); fx = { k: "tv", t: 3 }; say("По «Рубину» показывают мультики! Красота."); });
@@ -9672,7 +9675,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const last = S.grades.slice(-3), fives = last.filter((g) => g === 5).length;
       const pocket = 30 + fives * 10;
       S.money += pocket;
-      setTimeout(() => say(`Доброе утро! ${dateStr()}. Мама дала ${kop(pocket)}${fives ? ` (+${fives * 10} коп. за пятёрки).` : ""}${wd() === 0 ? " Сегодня воскресенье — в школу не надо!" : " Пора в школу!"}`), 600);
+      setTimeout(() => say(`Доброе утро! ${dateStr()}. ${fives ? `Мама рада твоим пятёркам (${fives})!` : "Мама приготовила завтрак."}${wd() === 0 ? " Сегодня воскресенье — в школу не надо!" : " Пора в школу!"}`), 600);
       place = "home"; S.stockDay = -1;
       if (S.day % 7 === 0) Hero.grant(10);
     }
@@ -9810,7 +9813,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     // ---------- UI ----------
     function bar(id, v) { const el = $(id); el.style.width = v + "%"; el.style.background = v < 25 ? "#ff5a5a" : v < 50 ? "#ffb547" : "#9be15d"; }
     function ui() {
-      $("#usMoney").textContent = kop(S.money);
+      topUp(); $("#usMoney").textContent = "∞";
       bar("#usFull", S.full); bar("#usEnergy", S.energy); bar("#usMood", S.mood);
       $("#usFives").textContent = String(S.fives);
       $$("#usPlaces button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === place)));
