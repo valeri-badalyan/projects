@@ -15053,7 +15053,7 @@ div.sc-pl { cursor: default; }
   const Soccer = (() => {
     const SAVE = "stm";
     const POS = ["GK", "DEF", "MID", "FWD"], PNAME = { GK: "ВРТ", DEF: "ЗАЩ", MID: "ПЗЩ", FWD: "НАП" };
-    const FORMS = { "4-4-2": [4, 4, 2], "4-3-3": [4, 3, 3], "3-5-2": [3, 5, 2], "5-3-2": [5, 3, 2], "4-5-1": [4, 5, 1] };
+    const FORMS = { "1-4-5": [1, 4, 5], "4-4-2": [4, 4, 2], "4-3-3": [4, 3, 3], "3-5-2": [3, 5, 2], "5-3-2": [5, 3, 2], "4-5-1": [4, 5, 1] };
     const FIRST = ["Арам", "Давид", "Марк", "Лео", "Тимур", "Карим", "Нико", "Артём", "Самуэль", "Омар", "Эрик", "Рафаэль", "Гор", "Иван", "Лука", "Хьюго", "Мати", "Юсуф", "Алекс", "Тео", "Дани", "Рубен", "Сергей", "Вардан"];
     const LAST = ["Петросян", "Силва", "Фернандес", "Мюллер", "Ковач", "Алиев", "Гарсия", "Росси", "Новак", "Мартин", "Смирнов", "Аветисян", "Бенали", "Коста", "Янсен", "Оливейра", "Лопес", "Ким", "Брандт", "Мору", "Саркисян", "Дюбуа", "Хаддад", "Орлов"];
     const RIVALS = [["Ереван Юнайтед", "#e0403a"], ["Дубай Фалконс", "#d9a520"], ["Москва Стар", "#3a6ad8"], ["Арарат Сити", "#5ce1e6"], ["Каскад ФК", "#9be15d"], ["Метро Рейнджерс", "#ff8ad1"], ["Роботы Валерия", "#c77dff"]];
@@ -15082,18 +15082,34 @@ div.sc-pl { cursor: default; }
       if (keep) teams.forEach((t, i) => { if (!t.me) t.str = Math.min(84, S.teams[i] ? S.teams[i].str + rnd(0, 2) : t.str); });
       return teams;
     }
+    // the owner's dream team: the starting eleven of the club
+    const STARS = [
+      ["Тер Штеген", "GK", 88, 34], ["Ван Дейк", "DEF", 89, 35],
+      ["Педри", "MID", 89, 23], ["Родри", "MID", 91, 30], ["Бекхэм", "MID", 88, 31], ["Ямаль", "MID", 90, 19],
+      ["Месси", "FWD", 93, 31], ["Роналду", "FWD", 92, 31], ["Неймар", "FWD", 89, 31], ["Салах", "FWD", 90, 31], ["Я", "FWD", 95, 18],
+    ];
+    function starSquad() {
+      const squad = STARS.map(([n, pos, r, age]) => ({ id: ++uid, n, pos, r, age, fit: 100, g: 0, star: true }));
+      // a small bench so tired stars can rest
+      squad.push(player("GK", 60, 68));
+      for (let i = 0; i < 3; i++) squad.push(player("DEF", 62, 72));
+      for (let i = 0; i < 2; i++) squad.push(player("MID", 62, 72));
+      squad.push(player("FWD", 62, 72));
+      return squad;
+    }
     function fresh() {
       uid = 0;
-      const squad = [player("GK", 64, 72), player("GK", 55, 62)];
-      for (let i = 0; i < 6; i++) squad.push(player("DEF", 58, 72));
-      for (let i = 0; i < 6; i++) squad.push(player("MID", 58, 73));
-      for (let i = 0; i < 4; i++) squad.push(player("FWD", 58, 74));
-      S = { club: "V3 FC", budget: 30e6, season: 1, round: 0, form: "4-4-2", squad, start: [], teams: null, fx: fixtures(8), market: [], train: 3, last: [], cups: 0, uid };
+      const squad = starSquad();
+      S = { club: "V3 FC", budget: 30e6, season: 1, round: 0, form: "1-4-5", squad, start: [], teams: null, fx: fixtures(8), market: [], train: 3, last: [], cups: 0, uid, stars: 1 };
       S.teams = newSeason(false); autoPick(); refreshMarket();
     }
     function load() {
       const d = store.get(SAVE, null);
-      if (d && Array.isArray(d.squad) && Array.isArray(d.teams)) { S = d; uid = d.uid || 1000; } else fresh();
+      if (d && Array.isArray(d.squad) && Array.isArray(d.teams)) {
+        S = d; uid = d.uid || 1000;
+        // older saves: swap the random squad for the star eleven, keep the season and the money
+        if (!S.stars) { S.squad = starSquad(); S.form = "1-4-5"; S.stars = 1; autoPick(); save(); }
+      } else fresh();
     }
     function save() { S.uid = uid; store.set(SAVE, S); }
     const byId = (id) => S.squad.find((p) => p.id === id);
@@ -15188,7 +15204,7 @@ div.sc-pl { cursor: default; }
         for (let i = 0; i < n; i++) {
           const x = (100 / (n + 1)) * (i + 1), p = ps[i];
           svg.push(`<circle cx="${x}" cy="${y}" r="4.6" fill="${p ? "#ffb547" : "#0006"}" stroke="#fff" stroke-width=".6"/>`);
-          if (p) svg.push(`<text x="${x}" y="${y + 1.5}" text-anchor="middle" font-size="4" font-weight="800" fill="#12132a">${p.r}</text><text x="${x}" y="${y + 9}" text-anchor="middle" font-size="3.4" fill="#fff">${p.n.split(" ")[1].replace(/[<&>]/g, "")}</text>`);
+          if (p) svg.push(`<text x="${x}" y="${y + 1.5}" text-anchor="middle" font-size="4" font-weight="800" fill="#12132a">${p.r}</text><text x="${x}" y="${y + 9}" text-anchor="middle" font-size="3.4" fill="#fff">${p.n.split(" ").pop().replace(/[<&>]/g, "")}</text>`);
         }
       });
       return svg.join("") + "</svg>";
@@ -15286,7 +15302,7 @@ div.sc-pl { cursor: default; }
       row.append(go, skip); c.append(row);
       if (S.start.length < 11) c.append(el("p", "mg-sub", "Нужно 11 игроков в старте — открой «Состав»."));
       const tired = S.start.map(byId).filter((p) => p && p.fit < 75);
-      if (tired.length && !live) c.append(el("p", "mg-sub", `⚡ Устали: ${tired.map((p) => p.n.split(" ")[1]).join(", ")} — дай им отдохнуть в «Составе» (кнопка «Авто состав»).`));
+      if (tired.length && !live) c.append(el("p", "mg-sub", `⚡ Устали: ${tired.map((p) => p.n.split(" ").pop()).join(", ")} — дай им отдохнуть в «Составе» (кнопка «Авто состав»).`));
       box.append(c);
     }
     function say(text, cls) { const f = $("#scFeed"); if (!f) return; const li = el("li", cls || "", text); f.prepend(li); }
@@ -15346,7 +15362,7 @@ div.sc-pl { cursor: default; }
     }
     function nextSeason() {
       S.season++; S.round = 0; S.fx = fixtures(8); S.teams = newSeason(true);
-      S.squad.forEach((p) => { p.age++; p.fit = 100; p.g = 0; if (p.age > 31) p.r = Math.max(45, p.r - rnd(0, 3)); else if (p.age < 24) p.r = Math.min(95, p.r + rnd(0, 3)); });
+      S.squad.forEach((p) => { p.age++; p.fit = 100; p.g = 0; if (p.star) { /* legends keep their level */ } else if (p.age > 31) p.r = Math.max(45, p.r - rnd(0, 3)); else if (p.age < 24) p.r = Math.min(95, p.r + rnd(0, 3)); });
       refreshMarket(); save(); tab = "club"; render();
     }
     function toast(msg) { const t = el("div", "toast", msg); t.setAttribute("role", "status"); t.addEventListener("click", () => t.remove()); document.body.append(t); setTimeout(() => t.remove(), 3500); }
