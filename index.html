@@ -15059,7 +15059,8 @@ div.sc-pl { cursor: default; }
     const RIVALS = [["Ереван Юнайтед", "#e0403a"], ["Дубай Фалконс", "#d9a520"], ["Москва Стар", "#3a6ad8"], ["Арарат Сити", "#5ce1e6"], ["Каскад ФК", "#9be15d"], ["Метро Рейнджерс", "#ff8ad1"], ["Роботы Валерия", "#c77dff"]];
     const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
     const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-    const money = (n) => (n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".0", "") + " млн" : Math.round(n / 1e3) + " тыс") + " €";
+    const BUDGET = 123e9; // the club budget: 123 billion dollars
+    const money = (n) => { const f = (v, d) => (+v.toFixed(d)).toLocaleString("ru-RU"); return (n >= 1e9 ? f(n / 1e9, 2) + " млрд" : n >= 1e6 ? f(n / 1e6, n >= 1e7 ? 0 : 1) + " млн" : Math.round(n / 1e3) + " тыс") + " $"; };
     let S = null, uid = 0, tab = "club", live = null, owner = false;
 
     function player(pos, lo, hi) {
@@ -15100,7 +15101,7 @@ div.sc-pl { cursor: default; }
     function fresh() {
       uid = 0;
       const squad = starSquad();
-      S = { club: "V3 FC", budget: 30e6, season: 1, round: 0, form: "1-4-5", squad, start: [], teams: null, fx: fixtures(8), market: [], train: 3, last: [], cups: 0, uid, stars: 1 };
+      S = { club: "V3 FC", budget: BUDGET, budgetSet: 1, season: 1, round: 0, form: "1-4-5", squad, start: [], teams: null, fx: fixtures(8), market: [], train: 3, last: [], cups: 0, uid, stars: 1 };
       S.teams = newSeason(false); autoPick(); refreshMarket();
     }
     function load() {
@@ -15110,6 +15111,7 @@ div.sc-pl { cursor: default; }
         // older saves: swap the random squad for the star eleven, keep the season and the money
         if (!S.stars) { S.squad = starSquad(); S.form = "1-4-5"; S.stars = 1; autoPick(); save(); }
         // the owner's own rating: 113 OVR
+        if (!S.budgetSet) { S.budget = BUDGET; S.budgetSet = 1; save(); }
         const me = S.squad.find((p) => p.star && p.n === "Я"); if (me && me.r !== 113) { me.r = 113; save(); }
       } else fresh();
     }
@@ -15179,7 +15181,7 @@ div.sc-pl { cursor: default; }
       n.append(el("h3", "", "Следующий матч"));
       if (m) {
         const h = S.teams[m[0]], a = S.teams[m[1]];
-        n.append(el("p", "sc-vs", `${h.name}  —  ${a.name}`), el("p", "mg-sub", m[0] === 0 ? "Дома: +бонус к силе и 2 млн € за билеты" : "В гостях"));
+        n.append(el("p", "sc-vs", `${h.name}  —  ${a.name}`), el("p", "mg-sub", m[0] === 0 ? "Дома: +бонус к силе и 2 млн $ за билеты" : "В гостях"));
         const b = el("button", "btn", "⚽ К матчу"); b.type = "button"; b.addEventListener("click", () => { tab = "match"; render(); }); n.append(b);
       } else {
         n.append(el("p", "sc-vs", "Сезон окончен!"));
@@ -15261,7 +15263,7 @@ div.sc-pl { cursor: default; }
         [i + 1, r.name, r.p, r.w, r.d, r.l, (r.gf - r.ga > 0 ? "+" : "") + (r.gf - r.ga), r.pts].forEach((v, k) => { const td = el("td", "", v); if (k === 1) { td.prepend(el("i", "sc-dot")); td.firstChild.style.background = r.col; } tr.append(td); });
         tb.append(tr);
       });
-      t.append(tb); c.append(t); c.append(el("p", "mg-sub", "1-е место — чемпион: кубок и 25 млн €. Призовые за 2-е и 3-е — 12 и 6 млн €."));
+      t.append(tb); c.append(t); c.append(el("p", "mg-sub", "1-е место — чемпион: кубок и 25 млн $. Призовые за 2-е и 3-е — 12 и 6 млн $."));
       box.append(c);
     }
     function renderMarket(box) {
