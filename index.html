@@ -9240,6 +9240,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         const big = /биг[^а-я]*мак/.test(n), dbl = big || /(двойн|дабл|double)/.test(n);
         return { items: ["🍔"], vessel: "burger", liquid: null, hot: true, many: false, patties: dbl ? 2 : 1, cheese: big || /(чиз|сыр)/.test(n), mid: big, bacon: /бекон/.test(n), chicken: /(чикен|курин|куриц)/.test(n) };
       }
+      if (/^(картошк[аи]\s*|картофель\s*)?фри(?![а-я])/.test(n)) return { items: ["🍟"], vessel: "fries", liquid: null, hot: true, many: false };
+      if (/(хлопь|мюсли|колечк|подушечк|гранол)/.test(n)) return { items: ["🥣"], vessel: "cereal", liquid: "#fbfaf4", hot: false, many: false, choco: /(шокол|какао)/.test(n) };
+      if (/йогурт/.test(n)) { const col = /клубни/.test(n) ? "#ffb0c8" : /(черни|голуби)/.test(n) ? "#b08ad8" : /(персик|абрикос|манго)/.test(n) ? "#ffc890" : /(малин|вишн)/.test(n) ? "#ff8aa8" : /банан/.test(n) ? "#fff0a0" : "#fbf8f0"; const berry = /(черни|голуби)/.test(n) ? "🫐" : /персик|абрикос/.test(n) ? "🍑" : /банан/.test(n) ? "🍌" : /малин|вишн/.test(n) ? "🍒" : "🍓"; return { items: [berry], vessel: "yogurt", liquid: col, hot: false, many: false, berry: berry, _b: /(черни|голуби)/.test(n) ? "🫐" : /персик|абрикос/.test(n) ? "🍑" : /банан/.test(n) ? "🍌" : /малин|вишн/.test(n) ? "🍒" : "🍓" }; }
       if (/(наггет|наггец|нагетс)/.test(n)) return { items: ["🍗"], vessel: "nuggets", liquid: null, hot: true, many: false };
       const found = []; const hints = new Set();
       // a stem counts only at the start of a word; a shorter stem inside a longer match is ignored (сыр in сырники)
@@ -9263,6 +9266,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
     function guessCat(spec, name) {
       if (!spec) return null;
       const n = low(name);
+      if (spec.vessel === "fries") return "hot";
+      if (spec.vessel === "cereal" || spec.vessel === "yogurt") return "dessert";
       if (spec.vessel === "cup" || spec.vessel === "glass") return "drink";
       if (spec.vessel === "bowl" && !/(каш|овсян|морожен)/.test(n)) return "soup";
       if (/(салат|нарезк)/.test(n)) return "salad";
@@ -9288,7 +9293,41 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         return;
       }
       const v = spec.vessel;
-      if (v === "burger") {
+      if (v === "fries") {
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy + 6 * k, R, R * .42, 0, 0, 7); ctx.fill();
+        const bx = cx - R * .2, bw2 = R * .62, by = cy + 16 * k, bh = 54 * k;
+        // fries sticking out, one after another
+        const N = 16;
+        for (let i = 0; i < N; i++) { const d = Math.min(1, Math.max(0, appear * (N + 2) - i)); if (d <= 0) continue; const fx2 = bx - bw2 * .42 + (i % 8) * bw2 * .12 + (i >= 8 ? bw2 * .06 : 0), lean = ((i * 7) % 5 - 2) * .06, hgt = (34 + ((i * 13) % 5) * 6) * k * d; ctx.save(); ctx.translate(fx2, by - bh * .7); ctx.rotate(lean); const fg = ctx.createLinearGradient(-4 * k, 0, 4 * k, 0); fg.addColorStop(0, "#e8a82a"); fg.addColorStop(.5, "#ffd84d"); fg.addColorStop(1, "#d8941a"); ctx.fillStyle = fg; ctx.fillRect(-4 * k, -hgt, 8 * k, hgt + 10 * k); ctx.restore(); }
+        // red carton
+        ctx.fillStyle = "#d8282a"; ctx.beginPath(); ctx.moveTo(bx - bw2 / 2, by - bh); ctx.quadraticCurveTo(bx, by - bh + 12 * k, bx + bw2 / 2, by - bh); ctx.lineTo(bx + bw2 * .4, by); ctx.lineTo(bx - bw2 * .4, by); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.fillRect(bx - bw2 * .3, by - bh + 14 * k, 5 * k, bh - 18 * k);
+        ctx.fillStyle = "#fff"; ctx.beginPath(); for (let j = 0; j < 10; j++) { const an = -Math.PI / 2 + j * Math.PI / 5, r2 = j % 2 ? 4 * k : 9 * k; ctx.lineTo(bx + Math.cos(an) * r2, by - bh * .45 + Math.sin(an) * r2); } ctx.closePath(); ctx.fill();
+        // ketchup
+        const sx = cx + R * .55, sy = cy + 6 * k; ctx.fillStyle = "#f4f4f8"; ctx.beginPath(); ctx.ellipse(sx, sy + 6 * k, 20 * k, 8 * k, 0, 0, 7); ctx.fill(); ctx.fillRect(sx - 20 * k, sy - 4 * k, 40 * k, 10 * k);
+        ctx.fillStyle = "#c81a1a"; ctx.beginPath(); ctx.ellipse(sx, sy - 4 * k, 18 * k, 6 * k, 0, 0, 7); ctx.fill();
+        if (appear >= 1) for (let i = 0; i < 3; i++) { const fx3 = cx + R * (.3 + i * .12), fy3 = cy + 14 * k + i * 3 * k; ctx.save(); ctx.translate(fx3, fy3); ctx.rotate(-.3 + i * .4); ctx.fillStyle = "#f0b830"; ctx.fillRect(-14 * k, -3 * k, 28 * k, 6 * k); ctx.restore(); }
+      } else if (v === "cereal") {
+        // bowl of milk with colourful rings, a spoon in it
+        ctx.fillStyle = "#4a8ad8"; ctx.beginPath(); ctx.ellipse(cx, cy - 10 * k, R * .9, R * .36, 0, 0, Math.PI); ctx.lineTo(cx - R * .55, cy + 24 * k); ctx.quadraticCurveTo(cx, cy + 34 * k, cx + R * .55, cy + 24 * k); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = "#e8f0fa"; ctx.beginPath(); ctx.ellipse(cx, cy - 10 * k, R * .9, R * .36, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = spec.choco ? "#d8b890" : "#fbfaf4"; ctx.globalAlpha = a; ctx.beginPath(); ctx.ellipse(cx, cy - 8 * k, R * .8, R * .3, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+        const cols = spec.choco ? ["#5a3418", "#7a4a24", "#4a2a10"] : ["#ff5a7a", "#ffd84d", "#5cd17a", "#ff9a3a", "#7b5cff", "#5ce1e6"];
+        for (let i = 0; i < 28; i++) { const d = Math.min(1, Math.max(0, appear * 30 - i)); if (d <= 0) continue; const an = i * 2.39996, rr2 = Math.sqrt((i + .5) / 28) * R * .74; const x = cx + Math.cos(an) * rr2, y = cy - 8 * k + Math.sin(an) * rr2 * .37 - (1 - d) * 18 * k; ctx.strokeStyle = cols[i % cols.length]; ctx.lineWidth = 3.4 * k; ctx.beginPath(); ctx.ellipse(x, y, 5 * k, 3 * k, (i % 3) * .5, 0, 7); ctx.stroke(); }
+        ctx.save(); ctx.translate(cx + R * .45, cy - 22 * k); ctx.rotate(-.6); ctx.fillStyle = "#c9ccd6"; ctx.fillRect(-3 * k, -46 * k, 6 * k, 46 * k); ctx.beginPath(); ctx.ellipse(0, 4 * k, 9 * k, 6 * k, 0, 0, 7); ctx.fill(); ctx.restore();
+      } else if (v === "yogurt") {
+        // a tub of yogurt with berries and a spoon
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy + 14 * k, R * .7, R * .28, 0, 0, 7); ctx.fill();
+        const tw = R * .5, th = 60 * k, ty = cy + 14 * k;
+        ctx.fillStyle = "#f4f4f8"; ctx.beginPath(); ctx.moveTo(cx - tw, ty - th); ctx.lineTo(cx - tw * .78, ty); ctx.quadraticCurveTo(cx, ty + 8 * k, cx + tw * .78, ty); ctx.lineTo(cx + tw, ty - th); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = spec.liquid === "#fbf8f0" ? "#5ab0e8" : spec.liquid; ctx.fillRect(cx - tw * .9, ty - th * .62, tw * 1.8, th * .3);
+        ctx.fillStyle = "#fff"; ctx.font = `900 ${Math.round(10 * k)}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ЙОГУРТ", cx, ty - th * .47);
+        ctx.fillStyle = "#e0e0ea"; ctx.beginPath(); ctx.ellipse(cx, ty - th, tw, tw * .3, 0, 0, 7); ctx.fill();
+        ctx.fillStyle = spec.liquid; ctx.globalAlpha = a; ctx.beginPath(); ctx.ellipse(cx, ty - th + 2 * k, tw * .9, tw * .25, 0, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+        ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(cx - tw * .2, ty - th + 2 * k, tw * .25, .3, 2.6); ctx.stroke();
+        if (appear >= .6) { emo(spec.berry || "🍓", cx - tw * .3, ty - th - 4 * k, 20 * k); emo(spec.berry || "🍓", cx + tw * .25, ty - th - 2 * k, 18 * k); }
+        ctx.save(); ctx.translate(cx + tw * .55, ty - th - 6 * k); ctx.rotate(.5); ctx.fillStyle = "#c9ccd6"; ctx.fillRect(-2.5 * k, -40 * k, 5 * k, 40 * k); ctx.restore();
+      } else if (v === "burger") {
         // paper wrap on a plate, then the burger built layer by layer from the bottom
         ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.ellipse(cx, cy + 6 * k, R, R * .42, 0, 0, 7); ctx.fill();
         ctx.fillStyle = "#f4e8d0"; ctx.beginPath(); ctx.moveTo(cx - R * .7, cy + 10 * k); ctx.lineTo(cx - R * .55, cy - 4 * k); ctx.lineTo(cx + R * .55, cy - 4 * k); ctx.lineTo(cx + R * .7, cy + 10 * k); ctx.closePath(); ctx.fill();
@@ -9407,7 +9446,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         ctx.fillStyle = "#fffdf2"; ctx.beginPath(); ctx.ellipse(cx + R * .12, cy - 10 * k, R * .14, R * .06, 0, 0, 7); ctx.fill();
         ctx.fillStyle = "#3a9a3a"; for (let i = 0; i < 9; i++) { const an = i * 2.4, rr2 = R * (.2 + (i % 3) * .15); ctx.fillRect(cx + Math.cos(an) * rr2, cy - 8 * k + Math.sin(an) * rr2 * .32, 3 * k, 2 * k); }
       }
-      if (!["cup", "glass", "pan", "lula", "lahma", "burger", "nuggets"].includes(v)) {
+      if (!["cup", "glass", "pan", "lula", "lahma", "burger", "nuggets", "fries", "cereal", "yogurt"].includes(v)) {
         const its = v === "bowl" ? spec.items.filter((e) => e !== "🍲" && e !== "🥣") : spec.items, pos = [];
         if (its.length === 1 && spec.many) { const n = 5; for (let i = 0; i < n; i++) { const an = i / n * Math.PI * 2 + .4; pos.push([its[0], cx + Math.cos(an) * R * .38, cy - 4 * k + Math.sin(an) * R * .15, 34 * k]); } pos.push([its[0], cx, cy - 6 * k, 38 * k]); }
         else if (its.length === 1) pos.push([its[0], cx, cy - 10 * k, 62 * k]);
@@ -9508,7 +9547,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       const cb = $("#mnCats"); cb.innerHTML = "";
       CATS.forEach(([id, t]) => { const b = document.createElement("button"); b.type = "button"; b.dataset.cat = id; b.textContent = t; b.addEventListener("click", () => { cat = id; $("#mnName").dataset.catTouched = "1"; renderCats(); }); cb.appendChild(b); });
       renderCats();
-      const ideas = ["Чизбургер", "Биг-Мак", "Мак'наггетс", "Пепси", "Шакшука", "Люля-кебаб", "Ламаджо", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
+      const ideas = ["Картошка фри", "Хлопья с молоком", "Клубничный йогурт", "Чизбургер", "Биг-Мак", "Мак'наггетс", "Пепси", "Шакшука", "Люля-кебаб", "Ламаджо", "Салат из помидоров и огурцов", "Борщ", "Пицца Маргарита", "Блины с мёдом", "Стейк с картошкой фри", "Капучино", "Апельсиновый сок", "Шоколадный торт", "Суши", "Яичница с беконом"];
       const ib = $("#mnIdeas"); ib.innerHTML = "";
       ideas.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => { $("#mnName").value = s; delete $("#mnName").dataset.catTouched; setPreview(s); $("#mnPrice").focus(); }); ib.appendChild(b); });
     }
