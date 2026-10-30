@@ -1248,6 +1248,16 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #1c0f3f; border: 2px solid #c77dff; box-shadow: 0 10px 30px rgba(0,0,0,.5); animation: toastin .25s ease-out; }
 .ann-bar span { flex: 1; min-width: 0; overflow-wrap: anywhere; line-height: 1.4; }
 .ann-bar span b { display: block; font: 800 10px var(--mono); letter-spacing: .14em; color: #c77dff; margin-bottom: 2px; }
+.mg-ban-row { display: flex; align-items: center; gap: 8px; }
+.mg-ban-row select { font: inherit; font-size: 16px; color: var(--fg); background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; flex: 1; min-width: 0; }
+.mg-list li .mg-act { all: unset; cursor: pointer; flex: none; font: 800 12px var(--mono); padding: 4px 10px; border-radius: 999px; background: var(--coral); color: #fff; }
+.mg-list li .mg-act.ok { background: var(--lime); color: var(--bg); }
+.mg-list li .mg-act:disabled { opacity: .4; cursor: default; }
+.ban-screen { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; background: radial-gradient(circle at 50% 30%, #3a0d1a, #0b0612 70%); color: #fff; }
+.ban-screen .ban-ico { font-size: 64px; line-height: 1; }
+.ban-screen h2 { margin: 0; font-size: 24px; color: var(--coral); }
+.ban-screen p { margin: 0; max-width: 320px; color: #e8d8e0; line-height: 1.45; }
+.ban-screen b { font: 800 22px var(--mono); color: var(--amber); }
 .ann-bar button { all: unset; cursor: pointer; font-size: 18px; line-height: 1; padding: 2px 4px; color: var(--muted); }
 
 /* ---------- Body type picker ---------- */
@@ -1997,6 +2007,22 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         <ul class="mg-list" id="mgOnline"></ul>
       </div>
       <div class="mg-card">
+        <h3>Бан игроков <b id="mgBanN">0</b></h3>
+        <div class="mg-ban-row"><span class="mg-sub">Срок:</span>
+          <select id="mgBanTime" aria-label="Срок бана">
+            <option value="600000">10 минут</option>
+            <option value="3600000">1 час</option>
+            <option value="86400000">1 день</option>
+            <option value="604800000">7 дней</option>
+            <option value="0">Навсегда</option>
+          </select>
+        </div>
+        <ul class="mg-list" id="mgBanPeers"></ul>
+        <p class="mg-sub">Забаненные:</p>
+        <ul class="mg-list" id="mgBanList"></ul>
+        <div class="mg-status" id="mgBanStatus" role="status"></div>
+      </div>
+      <div class="mg-card">
         <h3>Объявление всем</h3>
         <textarea id="mgAnnText" maxlength="200" placeholder="Например: «Сегодня в 18:00 турнир в Змейке!»"></textarea>
         <div class="mg-row">
@@ -2033,6 +2059,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       </div>
     </div>
   </section>
+  <div class="ban-screen" id="banScreen" role="alertdialog" aria-labelledby="banTitle" hidden>
+    <div class="ban-ico" aria-hidden="true">🚫</div>
+    <h2 id="banTitle">Ты забанен</h2>
+    <p>Владелец V3 Games закрыл тебе доступ к играм.</p>
+    <p id="banLeft"></p>
+  </div>
   <div class="ann-bar" id="annBar" role="status" hidden><span><b>📣 ОБЪЯВЛЕНИЕ V3</b><em id="annText" style="font-style:normal"></em></span><button type="button" id="annClose" aria-label="Закрыть">✕</button></div>
 
   <!-- ===== Just Dubai! ===== -->
@@ -14385,7 +14417,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   // The hub button and screen appear only for the page owner (checked through the artifact runtime).
   // Announcements go out on the admin-only room topic "v3ann", so only the owner (or an Editor) can send them.
   const Manage = (() => {
-    let owner = false, room = null, ann = store.get("mgAnn", null), lastPush = 0;
+    let owner = false, room = null, ann = store.get("mgAnn", null), lastPush = 0, myId = null;
+    // bans the owner gave: { <user id>: { n: name, until: ms (0 = forever), t: when } }
+    let bans = store.get("mgBans", {}); if (!bans || typeof bans !== "object") bans = {};
     const isOn = () => !$("#manage").hidden;
     const fmtN = (n) => Number(n || 0).toLocaleString("ru-RU");
     function status(msg, err) { const st = $("#mgAnnStatus"); st.textContent = msg; st.className = "mg-status" + (err ? " err" : ""); }
@@ -14398,6 +14432,81 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
       $("#annBar").hidden = false; $("#annBar").dataset.t = d.t || 0;
     }
     $("#annClose").addEventListener("click", () => { store.set("annSeen", +$("#annBar").dataset.t || 0); $("#annBar").hidden = true; });
+
+    // ---- everyone: obey the owner's ban list ----
+    // The list arrives on the admin-only topic "v3ban"; a banned player also keeps the ban on the
+    // device, so it holds while the owner is offline. An updated list without you lifts it.
+    let myBan = store.get("myBan", null), banT = 0;
+    const banActive = () => !!(myBan && (!myBan.until || myBan.until > Date.now()));
+    function left(ms) {
+      const m = Math.ceil(ms / 60000);
+      if (m < 60) return m + " мин";
+      const h = Math.floor(m / 60); if (h < 24) return h + " ч " + (m % 60) + " мин";
+      const d = Math.floor(h / 24); return d + " д " + (h % 24) + " ч";
+    }
+    function applyBan() {
+      clearInterval(banT);
+      if (!banActive()) { if (myBan) { myBan = null; store.set("myBan", null); } $("#banScreen").hidden = true; return; }
+      if (current !== "hub") show("hub");
+      $("#banScreen").hidden = false;
+      const tick = () => {
+        if (!banActive()) { applyBan(); return; }
+        $("#banLeft").innerHTML = myBan.until ? "До разбана: <b></b>" : "<b>Навсегда</b>";
+        if (myBan.until) $("#banLeft").querySelector("b").textContent = left(myBan.until - Date.now());
+      };
+      tick(); banT = setInterval(tick, 15000);
+    }
+    function onBanList(d) {
+      if (!d || !Array.isArray(d.bans) || !myId || owner) return;
+      const me = d.bans.find((b) => Array.isArray(b) && b[0] === myId);
+      myBan = me ? { until: +me[1] || 0 } : null;
+      store.set("myBan", myBan); applyBan();
+    }
+    applyBan();
+
+    // ---- owner: ban / unban ----
+    function cleanBans() { Object.keys(bans).forEach((id) => { const b = bans[id]; if (!b || (b.until && b.until <= Date.now())) delete bans[id]; }); }
+    function pushBans() {
+      if (!owner || !room) return;
+      cleanBans();
+      room.emit("v3ban", { bans: Object.keys(bans).map((id) => [id, bans[id].until || 0]), t: Date.now() }).catch(() => {});
+    }
+    function banStatus(msg, err) { const st = $("#mgBanStatus"); st.textContent = msg; st.className = "mg-status" + (err ? " err" : ""); }
+    function ban(pr) {
+      if (!pr.by) { banStatus("У этого игрока нет постоянного id — забанить нельзя.", true); return; }
+      const dur = +$("#mgBanTime").value || 0, name = String((pr.presence && pr.presence.n) || "Игрок").slice(0, 16);
+      bans[pr.by] = { n: name, until: dur ? Date.now() + dur : 0, t: Date.now() };
+      store.set("mgBans", bans); pushBans(); render();
+      banStatus(`${name} забанен ${dur ? "на " + $("#mgBanTime").selectedOptions[0].textContent : "навсегда"}.`);
+    }
+    function unban(id) {
+      const n = bans[id] ? bans[id].n : "Игрок";
+      delete bans[id]; store.set("mgBans", bans); pushBans(); render();
+      banStatus(`${n} разбанен.`);
+    }
+    function renderBans() {
+      cleanBans();
+      const peers = $("#mgBanPeers"); peers.innerHTML = "";
+      const others = Talk.peers().filter((p) => !p.isMe && p.kind !== "agent");
+      if (!others.length) peers.innerHTML = `<li><span>${room ? "Других игроков в сети нет" : "Игроки видны на опубликованной странице"}</span></li>`;
+      others.forEach((pr) => {
+        const li = document.createElement("li"), sp = document.createElement("span"), bt = document.createElement("button");
+        sp.textContent = String(pr.presence.n).slice(0, 16) + (pr.guest ? " (гость)" : "");
+        bt.type = "button"; bt.className = "mg-act";
+        if (pr.by && bans[pr.by]) { bt.textContent = "Разбан"; bt.classList.add("ok"); bt.addEventListener("click", () => unban(pr.by)); }
+        else { bt.textContent = "🚫 Бан"; bt.disabled = !pr.by; if (!pr.by) bt.title = "Нет id игрока"; bt.addEventListener("click", () => ban(pr)); }
+        li.append(sp, bt); peers.appendChild(li);
+      });
+      const list = $("#mgBanList"), ids = Object.keys(bans); list.innerHTML = "";
+      $("#mgBanN").textContent = ids.length;
+      if (!ids.length) list.innerHTML = "<li><span>Никого</span></li>";
+      ids.sort((a, b) => bans[b].t - bans[a].t).forEach((id) => {
+        const b = bans[id], li = document.createElement("li"), sp = document.createElement("span"), sm = document.createElement("small"), bt = document.createElement("button");
+        sp.textContent = b.n; sm.textContent = b.until ? left(b.until - Date.now()) : "навсегда";
+        bt.type = "button"; bt.className = "mg-act ok"; bt.textContent = "Разбан"; bt.addEventListener("click", () => unban(id));
+        li.append(sp, sm, bt); list.appendChild(li);
+      });
+    }
 
     // ---- owner: send / repeat for newcomers ----
     function pushAnn() {
@@ -14445,6 +14554,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         b.addEventListener("click", () => show(k)); li.appendChild(b); best.appendChild(li);
       });
       if (ann && ann.text && !$("#mgAnnText").value) $("#mgAnnText").value = ann.text;
+      renderBans();
     }
     $$("[data-mg-coins]").forEach((b) => b.addEventListener("click", () => { Hero.grant(+b.dataset.mgCoins); updateHub(); render(); }));
     $("#mgAds").addEventListener("click", () => { Ads.setFree(!Ads.free()); render(); });
@@ -14456,6 +14566,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         try { const user = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; owner = !!(user && await user.isOwner()); } catch (e) { owner = false; }
       }
       $("#manageBtn").hidden = !owner;
+      try { const u = window.claude && typeof window.claude.use === "function" ? await window.claude.use("user") : null; myId = u ? await u.id() : null; } catch (e) { myId = null; }
+      if (owner && myBan) { myBan = null; store.set("myBan", null); applyBan(); }   // the owner can never lock themself out
       if (!owner && current === "manage") show("hub");
       // the chat module connects to the room; pick it up when it is ready
       const t0 = Date.now();
@@ -14464,8 +14576,9 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
         if (!r && Date.now() - t0 < 20000) return;
         clearInterval(wait); room = r; if (!room) return;
         room.on("v3ann", (m) => showAnn(m.data));
-        Talk.onPeers((ch) => { if (owner && ch && ch.joined && ch.joined.some((p) => !p.isMe) && Date.now() - lastPush > 1500) setTimeout(pushAnn, 800); render(); });
-        if (owner) { if (ann && ann.text) pushAnn(); setInterval(() => { if (ann && ann.text) pushAnn(); }, 30000); }
+        room.on("v3ban", (m) => onBanList(m.data));
+        Talk.onPeers((ch) => { if (owner && ch && ch.joined && ch.joined.some((p) => !p.isMe) && Date.now() - lastPush > 1500) setTimeout(() => { pushAnn(); pushBans(); }, 800); render(); });
+        if (owner) { if (ann && ann.text) pushAnn(); pushBans(); setInterval(() => { if (ann && ann.text) pushAnn(); pushBans(); }, 30000); }
         render();
       }, 400);
     })();
