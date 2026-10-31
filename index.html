@@ -871,6 +871,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mg-pad button { height: 64px; border-radius: 16px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; touch-action: none; cursor: pointer; user-select: none; -webkit-user-select: none; }
 .mg-pad button span { font-size: 22px; line-height: 1; }
 .mg-pad button:active { transform: scale(.95); }
+.vrec-stage { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 4 / 3; max-height: 52vh; border-radius: 14px; overflow: hidden; background: #111; }
+.vrec-stage canvas { display: block; width: 100%; height: 100%; }
+.vrec-ctl { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 640px; margin: 8px auto 0; }
+.vrec-ctl .btn { margin: 0; } .vrec-ctl .btn:disabled { opacity: .45; }
+.vrec-ctl #vrRec { grid-column: 1 / -1; background: linear-gradient(135deg, #ff2d55, #a3172a); color: #fff; }
+.vrec-robo { display: flex; gap: 6px; } .vrec-robo .btn { flex: 1; } .vrec-robo #vrRoboV { flex: 0 0 auto; }
+#vrRobo.hot { box-shadow: 0 0 0 3px var(--amber); }
+.vrec-status { max-width: 640px; margin: 6px auto 0; text-align: center; font-weight: 800; font-size: 13px; }
+.vrec-score { max-width: 640px; margin: 4px auto 0; text-align: center; } .vrec-score b { display: block; font-size: 16px; } .vrec-score small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.vrec-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-width: 640px; margin: 10px auto 0; }
+.vrec-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); text-align: left; cursor: pointer; }
+.vrec-card span { font-size: 20px; } .vrec-card b { font-size: 12px; line-height: 1.25; } .vrec-card small { font-size: 11px; color: var(--muted); }
+.vrec-card.on { border-color: var(--amber); }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1861,6 +1874,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Глав</span><span class="stat-val" id="hubMorger">—</span></span>
       </button>
+      <button class="cart" data-go="voicerec" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="vrbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff2d55"/><stop offset="1" stop-color="#5a1aa8"/></linearGradient></defs><rect width="64" height="64" fill="url(#vrbg)"/><rect x="24" y="10" width="16" height="28" rx="8" fill="#f4f4f8"/><rect x="27" y="14" width="10" height="2" fill="#bbb"/><rect x="27" y="19" width="10" height="2" fill="#bbb"/><rect x="27" y="24" width="10" height="2" fill="#bbb"/><path d="M18 30 a14 14 0 0 0 28 0" fill="none" stroke="#fff" stroke-width="3"/><rect x="30.5" y="44" width="3" height="8" fill="#fff"/><rect x="22" y="52" width="20" height="3" rx="1.5" fill="#fff"/><circle cx="52" cy="12" r="5" fill="#ff2d55" stroke="#fff" stroke-width="1.5"/><path d="M6 46 q4 -6 8 0 t8 0" fill="none" stroke="#ffd84d" stroke-width="2"/><path d="M42 50 q4 -6 8 0 t8 0" fill="none" stroke="#ffd84d" stroke-width="2"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Voice Rec</span>
+          <span class="cart-desc">Озвучь популярные мемы своим голосом: «Это фиаско, братан», «Поехали!», «Ты не пройдёшь!» — запись, звёзды и просмотр озвучки.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Звёзд</span><span class="stat-val" id="hubVoicerec">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2692,6 +2715,31 @@ div.sc-pl { cursor: default; }
       <button type="button" id="mgJump"><span>⬆️</span>Прыжок</button>
     </div>
     <p class="hint">⬆️ Прыжок — через камни, брёвна, заборы и ямы. ⬇️ Пригнуться — под ветками, сталактитами и летучими мышами. ⚡ Рывок — тратит синюю шкалу, отрывает от монстров. Можно и по экрану: тап — прыжок, свайп вниз — пригнуться, свайп вправо — рывок. Собирай монеты ◎ и амулеты 🧿 (монстры отстают). Каждое столкновение — монстры ближе. Компьютер: пробел/↑ — прыжок, ↓ — пригнуться, Shift/→ — рывок.</p>
+  </section>
+
+  <!-- ===== Voice Rec ===== -->
+  <section id="voicerec" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Voice Rec</div>
+      <div class="chips"><div class="chip hi"><span>Звёзд</span><b id="vrStars">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Мотор!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="vrec-stage" id="vrecStage"><canvas id="vrCanvas" aria-label="Сцена мема"></canvas></div>
+    <p class="vrec-status" id="vrStatus" aria-live="polite"></p>
+    <div class="vrec-score" id="vrScore" aria-live="polite"></div>
+    <div class="vrec-ctl">
+      <button class="btn" type="button" id="vrRec">🎙 Записать</button>
+      <button class="btn ghost" type="button" id="vrPlay" disabled>▶ Смотреть озвучку</button>
+      <button class="btn ghost" type="button" id="vrRand">🎲 Случайный мем</button>
+      <div class="vrec-robo" style="grid-column: 1 / -1"><button class="btn ghost" type="button" id="vrRobo">🤖 Озвучить роботом</button><button class="btn ghost" type="button" id="vrRoboV" aria-label="Сменить голос робота">Обычный</button></div>
+    </div>
+    <div class="vrec-list" id="vrList"></div>
+    <p class="hint">Выбери мем, нажми 🎙 — после отсчёта 3-2-1 скажи фразу с выражением (4,5 секунды). Игра слушает слова, эмоции и тайминг и ставит до 3 звёзд. ▶ — посмотреть, как герой говорит твоим голосом. Если микрофон недоступен — 🤖 озвучит робот (кнопка рядом меняет голос: бас, писк, робот). Запись не сохраняется и никуда не отправляется.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -6505,7 +6553,7 @@ div.sc-pl { cursor: default; }
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6780,7 +6828,7 @@ div.sc-pl { cursor: default; }
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -13550,6 +13598,232 @@ div.sc-pl { cursor: default; }
     };
   })();
 
+  /* ================= Voice Rec (dub popular memes) ================= */
+  const VoiceRec = (() => {
+    const cv = $("#vrCanvas"), ctx = cv.getContext("2d");
+    // Scenes are drawn here from simple shapes; only the famous phrases come from memes.
+    const MEMES = [
+      { id: "fiasko", t: "Это фиаско, братан!", ch: "bro", bg: ["#3a4a6a", "#8a9ab8"], prop: "car", ico: "🤦" },
+      { id: "dosvid", t: "Ты кто такой? Давай, до свидания!", ch: "man", bg: ["#5a3a2a", "#c89a6a"], prop: "door", ico: "👋" },
+      { id: "shock", t: "Шок! Сенсация!", ch: "anchor", bg: ["#1a2a5a", "#3a6ad8"], prop: "news", ico: "📰" },
+      { id: "nichego", t: "Ничего не понял, но очень интересно.", ch: "cat", bg: ["#2a3a2a", "#7aa86a"], prop: "book", ico: "🤓" },
+      { id: "poehali", t: "Поехали!", ch: "astro", bg: ["#05081a", "#2a3a7a"], prop: "rocket", ico: "🚀" },
+      { id: "tak", t: "А что, так можно было?", ch: "kid", bg: ["#5a2a5a", "#d07ab8"], prop: "lightbulb", ico: "😮" },
+      { id: "krasav", t: "Красавчик!", ch: "bro", bg: ["#2a5a3a", "#6ad08a"], prop: "thumb", ico: "👍" },
+      { id: "pushisty", t: "Я не толстый, я пушистый!", ch: "fatcat", bg: ["#5a4a2a", "#e8c87a"], prop: "fish", ico: "🐱" },
+      { id: "zashel", t: "Это я удачно зашёл!", ch: "man", bg: ["#4a2a1a", "#d0884a"], prop: "feast", ico: "🍗" },
+      { id: "dengi", t: "Денег нет, но вы держитесь!", ch: "official", bg: ["#2a2a3a", "#6a6a8a"], prop: "podium", ico: "💸" },
+      { id: "rabota", t: "Опять работать?!", ch: "dog", bg: ["#3a2a4a", "#9a7ac8"], prop: "alarm", ico: "😴" },
+      { id: "odezhda", t: "Мне нужна твоя одежда, сапоги и мотоцикл.", ch: "robot", bg: ["#1a0a0a", "#6a2a2a"], prop: "moto", ico: "🤖" },
+      { id: "projdesh", t: "Ты не пройдёшь!", ch: "wizard", bg: ["#1a1a2a", "#e8602a"], prop: "bridge", ico: "🧙" },
+    ];
+    const ROBO = [{ n: "Обычный", p: 1, r: 1 }, { n: "Бас", p: 0.3, r: 0.85 }, { n: "Писк", p: 2, r: 1.25 }, { n: "Робот", p: 0.6, r: 0.75 }];
+    let best = store.get("vrBest", {}) || {}, cur = null, W = 0, H = 0, dpr = 1, raf = 0, visible = false, t = 0, last = 0;
+    let mode = "idle", level = 0, recUrl = null, recBlob = null, said = "", recStart = 0, levels = [], audioEl = null, an = null, srcNode = null, AC = null, stream = null, rec = null, sr = null, roboI = 0, roboTalk = 0, countdown = 0;
+    const REC_LEN = 4.5;
+
+    function resize() { const r = cv.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1); W = Math.max(240, r.width || 360); H = Math.max(160, r.height || 270); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+    function ac() { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); return AC; }
+    function beep(f, d) { try { const a = ac(), o = a.createOscillator(), g = a.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.06, a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + d); o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + d + 0.02); } catch (e) { /* optional */ } }
+
+    // ---------- drawing ----------
+    function drawChar(c, x, y, s, mouth) {
+      const g = ctx, bob = Math.sin(t * 3) * 2 * s;
+      g.save(); g.translate(x, y + bob); g.scale(s, s);
+      const skin = { bro: "#e8b08a", man: "#e0a880", anchor: "#f0c8a0", kid: "#f4c8a8", official: "#e8c0a0", wizard: "#e8c8b0", astro: "#f0c8a0" }[c] || "#e8b08a";
+      const body = { bro: "#2a4ad8", man: "#5a3a2a", anchor: "#1a2a4a", kid: "#e8402a", official: "#2a2a34", wizard: "#8a8a9a", astro: "#e8e8f0", robot: "#1a1a1a" }[c] || "#444";
+      const head = (r, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(0, -100, r, r * 1.1, 0, 0, 7); g.fill(); };
+      const eyes = (dx, y0, col) => { const bl = Math.sin(t * 1.3) > 0.97; g.fillStyle = col || "#1a1a1a"; for (const sx of [-dx, dx]) { if (bl) g.fillRect(sx - 5, y0, 10, 2); else { g.beginPath(); g.arc(sx, y0, 4.5, 0, 7); g.fill(); } } };
+      const mouthAt = (y0, w, col) => { g.fillStyle = col || "#5a1010"; g.beginPath(); g.ellipse(0, y0, w, 2 + mouth * 13, 0, 0, 7); g.fill(); if (mouth > 0.3) { g.fillStyle = "#e86a7a"; g.beginPath(); g.ellipse(0, y0 + mouth * 6, w * 0.6, mouth * 5, 0, 0, 7); g.fill(); } };
+      if (c === "cat" || c === "fatcat") {
+        const fat = c === "fatcat" ? 1.5 : 1;
+        g.fillStyle = c === "cat" ? "#8a8a9a" : "#e89a4a"; g.beginPath(); g.ellipse(0, -30, 46 * fat, 50, 0, 0, 7); g.fill();
+        g.beginPath(); g.ellipse(0, -100, 46, 40, 0, 0, 7); g.fill();
+        for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 40, -120); g.lineTo(sx * 30, -160); g.lineTo(sx * 12, -132); g.fill(); }
+        g.fillStyle = "#fff"; for (const sx of [-17, 17]) { g.beginPath(); g.ellipse(sx, -108, 11, 13, 0, 0, 7); g.fill(); }
+        g.fillStyle = "#2a2a2a"; for (const sx of [-17, 17]) { g.beginPath(); g.ellipse(sx + 2, -106, 5, 8, 0, 0, 7); g.fill(); }
+        if (c === "cat") { g.strokeStyle = "#222"; g.lineWidth = 3; for (const sx of [-17, 17]) { g.beginPath(); g.arc(sx, -108, 15, 0, 7); g.stroke(); } g.beginPath(); g.moveTo(-2, -108); g.lineTo(2, -108); g.stroke(); }
+        g.fillStyle = "#e86a7a"; g.beginPath(); g.moveTo(-5, -92); g.lineTo(5, -92); g.lineTo(0, -86); g.fill();
+        g.strokeStyle = "#333"; g.lineWidth = 1.5; for (const sx of [-1, 1]) for (const k of [-4, 2]) { g.beginPath(); g.moveTo(sx * 14, -88 + k); g.lineTo(sx * 46, -92 + k * 2); g.stroke(); }
+        g.save(); g.translate(0, 8); mouthAt(-78, 8); g.restore();
+      } else if (c === "dog") {
+        g.fillStyle = "#c8945a"; g.beginPath(); g.ellipse(0, -30, 50, 45, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(0, -100, 44, 40, 0, 0, 7); g.fill();
+        g.fillStyle = "#8a5a2a"; for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(sx * 44, -96, 12, 30, sx * 0.3, 0, 7); g.fill(); }
+        g.fillStyle = "#e8d8c0"; g.beginPath(); g.ellipse(0, -84, 22, 16, 0, 0, 7); g.fill(); g.fillStyle = "#1a1a1a"; g.beginPath(); g.ellipse(0, -92, 8, 6, 0, 0, 7); g.fill();
+        g.strokeStyle = "#1a1a1a"; g.lineWidth = 3; for (const sx of [-16, 16]) { g.beginPath(); g.arc(sx, -110, 6, 0.2, Math.PI - 0.2); g.stroke(); }
+        mouthAt(-76, 7);
+      } else if (c === "robot") {
+        g.fillStyle = "#2a2a30"; g.fillRect(-45, -70, 90, 80); g.fillStyle = "#1a1a1a"; g.fillRect(-12, -76, 24, 10);
+        g.fillStyle = "#3a3a44"; g.fillRect(-38, -140, 76, 66); g.fillStyle = "#111"; g.fillRect(-34, -122, 68, 16);
+        g.fillStyle = "#ff2020"; g.beginPath(); g.arc(-14, -114, 5, 0, 7); g.arc(14, -114, 5, 0, 7); g.fill();
+        g.fillStyle = "rgba(255,40,40,.3)"; g.beginPath(); g.arc(14, -114, 12, 0, 7); g.fill();
+        g.fillStyle = "#111"; g.fillRect(-16, -96 , 32, 4 + mouth * 12); g.fillStyle = "#666"; for (let k = -12; k <= 12; k += 6) g.fillRect(k, -96, 2, 4 + mouth * 12);
+        g.fillStyle = "#1a1a1a"; g.beginPath(); g.ellipse(0, -138, 40, 8, 0, Math.PI, 0); g.fill();
+      } else {
+        g.fillStyle = body; g.beginPath(); g.moveTo(-50, 10); g.quadraticCurveTo(-52, -60, -30, -68); g.lineTo(30, -68); g.quadraticCurveTo(52, -60, 50, 10); g.fill();
+        if (c === "official" || c === "anchor") { g.fillStyle = "#fff"; g.beginPath(); g.moveTo(-12, -68); g.lineTo(0, -40); g.lineTo(12, -68); g.fill(); g.fillStyle = c === "anchor" ? "#c8202a" : "#2a3a8a"; g.beginPath(); g.moveTo(-4, -62); g.lineTo(4, -62); g.lineTo(6, -36); g.lineTo(0, -30); g.lineTo(-6, -36); g.fill(); }
+        if (c === "bro") { g.strokeStyle = "#fff"; g.lineWidth = 3; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 40, -60); g.lineTo(sx * 46, 8); g.stroke(); } }
+        if (c === "wizard") { g.fillStyle = "#e8e8f0"; g.beginPath(); g.moveTo(-20, -80); g.quadraticCurveTo(0, -10, 20, -80); g.fill(); }
+        if (c === "astro") { g.fillStyle = "rgba(180,220,255,.35)"; g.beginPath(); g.arc(0, -100, 52, 0, 7); g.fill(); g.strokeStyle = "#ccc"; g.lineWidth = 5; g.stroke(); }
+        head(36, skin);
+        if (c === "bro") { g.fillStyle = "#2a1a10"; g.fillRect(-36, -142, 72, 16); }
+        if (c === "man") { g.fillStyle = "#1a1a1a"; g.beginPath(); g.ellipse(0, -132, 50, 8, 0, 0, 7); g.fill(); g.fillRect(-28, -164, 56, 32); g.fillStyle = "#3a2a1a"; g.beginPath(); g.ellipse(0, -84, 24, 12, 0, 0, Math.PI); g.fill(); }
+        if (c === "anchor" || c === "official") { g.fillStyle = c === "anchor" ? "#2a1a10" : "#b0b0b8"; g.beginPath(); g.ellipse(0, -130, 38, 16, 0, Math.PI, 0); g.fill(); }
+        if (c === "kid") { g.fillStyle = "#e8a83a"; g.beginPath(); g.ellipse(0, -128, 38, 18, 0, Math.PI, 0); g.fill(); g.fillStyle = "#d0805a"; for (const sx of [-18, -12, 12, 18]) g.fillRect(sx, -92, 2.5, 2.5); }
+        if (c === "wizard") { g.fillStyle = "#8a8a9a"; g.beginPath(); g.moveTo(-44, -124); g.lineTo(0, -210); g.lineTo(44, -124); g.fill(); g.fillStyle = "#e8e8f0"; g.beginPath(); g.moveTo(-30, -92); g.quadraticCurveTo(0, -20, 30, -92); g.fill(); }
+        eyes(13, -106);
+        g.strokeStyle = "#3a2010"; g.lineWidth = 3; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 7, -116 - (c === "kid" ? 6 : 0)); g.lineTo(sx * 20, -118 - (c === "kid" ? 8 : 0) + (c === "wizard" ? sx * 3 : 0)); g.stroke(); }
+        mouthAt(c === "wizard" ? -82 : -84, c === "kid" ? 7 : 9);
+      }
+      g.restore();
+    }
+    function drawProp(p, s) {
+      const g = ctx, gy = H * 0.86;
+      g.save();
+      if (p === "car") { g.translate(W * 0.78, gy); g.rotate(0.25); g.fillStyle = "#c8202a"; g.fillRect(-60 * s, -40 * s, 120 * s, 32 * s); g.fillRect(-35 * s, -64 * s, 70 * s, 26 * s); g.fillStyle = "#222"; for (const x of [-35, 35]) { g.beginPath(); g.arc(x * s, -6 * s, 14 * s, 0, 7); g.fill(); } g.fillStyle = "#888"; g.beginPath(); g.arc(70 * s, -60 * s + Math.sin(t * 4) * 4, 10 * s, 0, 7); g.arc(82 * s, -74 * s + Math.sin(t * 3) * 5, 14 * s, 0, 7); g.fill(); }
+      else if (p === "door") { g.fillStyle = "#3a2010"; g.fillRect(W * 0.72, gy - 170 * s, 70 * s, 170 * s); g.fillStyle = "#ffd84d"; g.beginPath(); g.arc(W * 0.72 + 58 * s, gy - 80 * s, 5 * s, 0, 7); g.fill(); }
+      else if (p === "news") { g.fillStyle = "#c8202a"; g.fillRect(0, H * 0.78, W, H * 0.1); g.fillStyle = "#fff"; g.font = `900 ${16 * s}px Manrope, sans-serif`; g.textAlign = "left"; g.textBaseline = "middle"; const tx = W - ((t * 60) % (W + 300)); g.fillText("СРОЧНО • СРОЧНО • СРОЧНО • СРОЧНО", tx, H * 0.83); g.fillStyle = "#fff"; g.fillRect(W * 0.04, H * 0.06, 52 * s, 20 * s); g.fillStyle = "#c8202a"; g.font = `900 ${11 * s}px Manrope, sans-serif`; g.fillText("LIVE", W * 0.04 + 10 * s, H * 0.06 + 10 * s); }
+      else if (p === "book") { g.fillStyle = "#e8e0c8"; g.fillRect(W * 0.5 - 50 * s, gy - 34 * s, 100 * s, 34 * s); g.strokeStyle = "#8a7a5a"; g.beginPath(); g.moveTo(W * 0.5, gy - 34 * s); g.lineTo(W * 0.5, gy); g.stroke(); for (let k = 0; k < 4; k++) { g.fillStyle = "#8a7a5a"; g.fillRect(W * 0.5 - 44 * s, gy - 28 * s + k * 7 * s, 36 * s, 2 * s); g.fillRect(W * 0.5 + 8 * s, gy - 28 * s + k * 7 * s, 36 * s, 2 * s); } }
+      else if (p === "rocket") { g.translate(W * 0.8, gy - 40 * s + Math.sin(t * 20) * 1.5); g.fillStyle = "#e8e8f0"; g.beginPath(); g.moveTo(0, -120 * s); g.quadraticCurveTo(30 * s, -60 * s, 22 * s, 0); g.lineTo(-22 * s, 0); g.quadraticCurveTo(-30 * s, -60 * s, 0, -120 * s); g.fill(); g.fillStyle = "#c8202a"; g.fillRect(-22 * s, -10 * s, 44 * s, 10 * s); g.fillStyle = "#ffb547"; g.beginPath(); g.moveTo(-16 * s, 0); g.lineTo(0, (30 + Math.random() * 20) * s); g.lineTo(16 * s, 0); g.fill(); for (let k = 0; k < 30; k++) { g.fillStyle = "#fff"; g.fillRect(((k * 97) % 360 - 300) * s, ((k * 53) % 200 - 180) * s, 2, 2); } }
+      else if (p === "lightbulb") { g.fillStyle = `rgba(255,230,120,${0.6 + Math.sin(t * 6) * 0.3})`; g.beginPath(); g.arc(W * 0.5 + 60 * s, H * 0.18, 18 * s, 0, 7); g.fill(); g.fillStyle = "#888"; g.fillRect(W * 0.5 + 52 * s, H * 0.18 + 14 * s, 16 * s, 10 * s); }
+      else if (p === "thumb") { g.font = `${48 * s}px sans-serif`; g.textAlign = "center"; g.fillText("👍", W * 0.78, gy - 60 * s + Math.sin(t * 4) * 6); g.fillText("✨", W * 0.2, H * 0.25); }
+      else if (p === "fish") { g.font = `${36 * s}px sans-serif`; g.textAlign = "center"; g.fillText("🐟", W * 0.8, gy - 20 * s); g.fillText("🍕", W * 0.18, gy - 16 * s); }
+      else if (p === "feast") { g.fillStyle = "#6a3a1a"; g.fillRect(W * 0.55, gy - 40 * s, W * 0.4, 12 * s); g.font = `${28 * s}px sans-serif`; g.textAlign = "center"; ["🍗", "🎂", "🍇", "🍷"].forEach((e, k) => g.fillText(e, W * 0.6 + k * W * 0.09, gy - 48 * s)); }
+      else if (p === "podium") { g.fillStyle = "#5a3a20"; g.fillRect(W * 0.5 - 60 * s, gy - 70 * s, 120 * s, 70 * s); g.fillStyle = "#ffd84d"; g.beginPath(); g.arc(W * 0.5, gy - 40 * s, 14 * s, 0, 7); g.fill(); g.strokeStyle = "#222"; g.lineWidth = 3 * s; g.beginPath(); g.moveTo(W * 0.5, gy - 70 * s); g.lineTo(W * 0.5 + 10 * s, gy - 100 * s); g.stroke(); }
+      else if (p === "alarm") { g.font = `${40 * s}px sans-serif`; g.textAlign = "center"; g.save(); g.translate(W * 0.8, gy - 40 * s); g.rotate(Math.sin(t * 30) * 0.15); g.fillText("⏰", 0, 0); g.restore(); g.font = `${20 * s}px sans-serif`; g.fillText("💤", W * 0.62, H * 0.3 + Math.sin(t * 2) * 6); }
+      else if (p === "moto") { g.translate(W * 0.8, gy); g.fillStyle = "#1a1a1a"; for (const x of [-40, 40]) { g.beginPath(); g.arc(x * s, -16 * s, 18 * s, 0, 7); g.fill(); } g.fillStyle = "#3a3a44"; g.fillRect(-40 * s, -44 * s, 80 * s, 18 * s); g.fillStyle = "#888"; g.fillRect(28 * s, -66 * s, 6 * s, 26 * s); }
+      else if (p === "bridge") { g.fillStyle = "#3a2a2a"; g.fillRect(0, gy, W, H - gy); g.fillStyle = `rgba(255,${120 + Math.sin(t * 8) * 40},40,.5)`; g.beginPath(); g.ellipse(W * 0.85, gy - 60 * s, 50 * s, 80 * s, 0, 0, 7); g.fill(); g.strokeStyle = "#5a4a3a"; g.lineWidth = 6 * s; g.beginPath(); g.moveTo(W * 0.62, gy); g.lineTo(W * 0.66, gy - 200 * s); g.stroke(); g.fillStyle = "#fff"; g.beginPath(); g.arc(W * 0.66, gy - 205 * s, 6 * s, 0, 7); g.fill(); }
+      g.restore();
+    }
+    function draw() {
+      if (!cur) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, cur.bg[0]); g.addColorStop(1, cur.bg[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(0, H * 0.86, W, H * 0.14);
+      const s = H / 300;
+      drawProp(cur.prop, s);
+      const mouth = clampM(mode === "play" ? level * 3.2 : mode === "robo" ? roboTalk : mode === "rec" ? level * 3.2 : 0);
+      drawChar(cur.ch, W * 0.42, H * 0.86, s, mouth);
+      // subtitle with karaoke highlight
+      const words = cur.t.split(" "), prog = mode === "rec" ? (t - recStart) / (REC_LEN * 0.85) : mode === "play" && audioEl ? audioEl.currentTime / Math.max(1, audioEl.duration || REC_LEN) : mode === "robo" ? Math.min(1, (t - recStart) / 2.5) : 0;
+      ctx.font = `900 ${Math.min(20, W / 18)}px Manrope, sans-serif`; ctx.textBaseline = "middle";
+      const total = ctx.measureText(cur.t).width; let x = Math.max(8, (W - total) / 2), y = H * 0.94;
+      if (total > W - 16) { ctx.font = `900 ${Math.min(15, W / 24)}px Manrope, sans-serif`; x = Math.max(6, (W - ctx.measureText(cur.t).width) / 2); }
+      ctx.textAlign = "left";
+      words.forEach((wd, i) => { const on = prog * words.length > i; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,.8)"; ctx.strokeText(wd, x, y); ctx.fillStyle = on ? "#ffd84d" : "#fff"; ctx.fillText(wd, x, y); x += ctx.measureText(wd + " ").width; });
+      if (mode === "rec") { ctx.fillStyle = "#ff2d55"; ctx.beginPath(); ctx.arc(20, 20, 7 + Math.sin(t * 8) * 1.5, 0, 7); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "900 12px Manrope, sans-serif"; ctx.fillText(`REC ${Math.max(0, REC_LEN - (t - recStart)).toFixed(1)}`, 32, 20); ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(W - 24, 10, 12, H * 0.5); ctx.fillStyle = "#33c45a"; const lh = Math.min(1, level * 4) * H * 0.5; ctx.fillRect(W - 24, 10 + H * 0.5 - lh, 12, lh); }
+      if (countdown > 0) { ctx.fillStyle = "rgba(0,0,0,.45)"; ctx.fillRect(0, 0, W, H); ctx.fillStyle = "#fff"; ctx.font = `900 ${H * 0.35}px Manrope, sans-serif`; ctx.textAlign = "center"; ctx.fillText(String(Math.ceil(countdown)), W / 2, H * 0.45); }
+      ctx.fillStyle = "rgba(255,255,255,.08)"; for (let i = 0; i < 3; i++) ctx.fillRect(0, ((t * 40 + i * 97) % H), W, 1);
+    }
+    const clampM = (v) => Math.max(0, Math.min(1, v));
+    function frame(ts) {
+      raf = 0; if (!visible) return;
+      const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts; t += dt;
+      if (countdown > 0) { const before = Math.ceil(countdown); countdown -= dt; if (countdown <= 0) { countdown = 0; beginRec(); } else if (Math.ceil(countdown) !== before) beep(660, 0.1); }
+      if (an) { const buf = new Uint8Array(an.fftSize); an.getByteTimeDomainData(buf); let sum = 0; for (const v of buf) { const d = (v - 128) / 128; sum += d * d; } level = level * 0.6 + Math.sqrt(sum / buf.length) * 0.4; if (mode === "rec") levels.push(level); }
+      else level *= 0.8;
+      if (mode === "robo") roboTalk = Math.max(0, Math.abs(Math.sin(t * 16)) * (0.5 + 0.5 * Math.sin(t * 5)));
+      if (mode === "rec" && t - recStart >= REC_LEN) stopRec();
+      if (mode === "play" && audioEl && audioEl.ended) { mode = "idle"; ui(); }
+      draw();
+      raf = requestAnimationFrame(frame);
+    }
+
+    // ---------- recording, recognition, playback ----------
+    function cleanupAudio() { try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) { /* ignore */ } try { if (sr) sr.abort(); } catch (e) { /* ignore */ } if (stream) stream.getTracks().forEach((tr) => tr.stop()); stream = null; an = null; if (audioEl) { audioEl.pause(); } }
+    async function startRec() {
+      if (mode !== "idle") return;
+      ac();
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+      catch (e) { status("🎙 Микрофон недоступен на этой странице. Попробуй «🤖 Озвучить роботом»."); $("#vrRobo").classList.add("hot"); return; }
+      countdown = 3; beep(660, 0.1); status("Приготовься…"); ui(true);
+    }
+    function beginRec() {
+      const a = ac(), src = a.createMediaStreamSource(stream); an = a.createAnalyser(); an.fftSize = 1024; src.connect(an);
+      const chunks = []; levels = []; said = "";
+      try { rec = new MediaRecorder(stream); } catch (e) { status("Запись не поддерживается в этом браузере."); cleanupAudio(); mode = "idle"; ui(); return; }
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = () => { recBlob = new Blob(chunks, { type: rec.mimeType || "audio/webm" }); if (recUrl) URL.revokeObjectURL(recUrl); recUrl = URL.createObjectURL(recBlob); score(); ui(); };
+      rec.start();
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SR) { try { sr = new SR(); sr.lang = "ru-RU"; sr.interimResults = true; sr.continuous = true; sr.onresult = (e) => { said = Array.from(e.results).map((r) => r[0].transcript).join(" "); }; sr.onerror = () => { /* recognition is optional */ }; sr.start(); } catch (e) { sr = null; } }
+      mode = "rec"; recStart = t; beep(880, 0.15); status("🎙 Говори!"); ui();
+    }
+    function stopRec() {
+      mode = "idle";
+      try { if (sr) sr.stop(); } catch (e) { /* ignore */ }
+      setTimeout(() => { try { if (rec && rec.state !== "inactive") rec.stop(); } catch (e) { /* ignore */ } if (stream) stream.getTracks().forEach((tr) => tr.stop()); stream = null; an = null; }, 350);
+      status("Обрабатываю…");
+    }
+    function play() {
+      if (!recUrl || mode !== "idle") return;
+      ac(); audioEl = new Audio(recUrl);
+      try { srcNode = AC.createMediaElementSource(audioEl); an = AC.createAnalyser(); an.fftSize = 1024; srcNode.connect(an); an.connect(AC.destination); } catch (e) { an = null; }
+      audioEl.onended = () => { an = null; mode = "idle"; ui(); };
+      audioEl.play().then(() => { mode = "play"; ui(); }).catch(() => { status("Не получилось проиграть запись."); });
+    }
+    function robo() {
+      if (mode !== "idle") return;
+      const S = window.speechSynthesis; if (!S) { status("На этом устройстве нет синтеза речи."); return; }
+      const R = ROBO[roboI], u = new SpeechSynthesisUtterance(cur.t); u.lang = "ru-RU"; u.pitch = R.p; u.rate = R.r;
+      const v = S.getVoices().find((x) => /^ru/i.test(x.lang)); if (v) u.voice = v;
+      u.onend = u.onerror = () => { mode = "idle"; roboTalk = 0; ui(); };
+      S.cancel(); S.speak(u); mode = "robo"; recStart = t; status(`🤖 Голос «${R.n}»`); ui();
+      const k = "robo_" + cur.id; if (!best[k]) { best[k] = 1; store.set("vrBest", best); Hero.earn(5); }
+    }
+    // score: how close the words are, how lively the voice is, how well it filled the time
+    const norm = (s) => s.toLowerCase().replace(/ё/g, "е").replace(/[^а-яa-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+    function score() {
+      const want = norm(cur.t), got = norm(said);
+      const voiced = levels.filter((v) => v > 0.02).length / Math.max(1, levels.length), peak = Math.max(0, ...levels);
+      let acc;
+      if (got.length) { const hit = want.filter((w) => got.some((g2) => g2 === w || (w.length > 4 && g2.slice(0, 4) === w.slice(0, 4)))).length; acc = hit / want.length; }
+      else acc = voiced > 0.12 ? 0.6 : 0.1;
+      const mean = levels.reduce((a, b) => a + b, 0) / Math.max(1, levels.length), varc = Math.sqrt(levels.reduce((a, b) => a + (b - mean) ** 2, 0) / Math.max(1, levels.length));
+      const emo = clampM(peak * 4) * 0.6 + clampM(varc * 12) * 0.4, timing = clampM(1 - Math.abs(voiced - 0.45) * 1.6);
+      const pts = Math.round(acc * 60 + emo * 25 + timing * 15), stars = pts >= 80 ? 3 : pts >= 55 ? 2 : pts >= 30 ? 1 : 0;
+      const prev = best[cur.id] || 0;
+      if (stars > prev) { Hero.earn((stars - prev) * 15); best[cur.id] = stars; store.set("vrBest", best); updateHub(); }
+      $("#vrScore").innerHTML = `<b>${"⭐".repeat(stars)}${"☆".repeat(3 - stars)} ${pts} очков</b><small>Слова ${Math.round(acc * 100)}% · Эмоции ${Math.round(emo * 100)}% · Тайминг ${Math.round(timing * 100)}%${got.length ? ` · Услышал: «${said.trim().slice(0, 60)}»` : ""}</small>`;
+      status(stars === 3 ? "🔥 Идеальная озвучка! Нажми ▶, чтобы посмотреть." : stars ? "Неплохо! ▶ — посмотреть, 🎙 — переписать." : "Громче и чётче! Попробуй ещё раз.");
+      Hero.say("voicerec", stars >= 2 ? "good" : "bad", stars === 3 ? "Голос как в оригинале!" : stars ? `${stars} звезды — уже мем!` : "Ещё дубль!");
+    }
+
+    // ---------- UI ----------
+    function status(s) { $("#vrStatus").textContent = s; }
+    function ui(busy) {
+      const idle = mode === "idle" && !busy && countdown <= 0;
+      $("#vrRec").disabled = !idle; $("#vrPlay").disabled = !idle || !recUrl; $("#vrRobo").disabled = !idle;
+      $("#vrRec").textContent = recUrl ? "🎙 Переписать" : "🎙 Записать";
+      $("#vrRoboV").textContent = ROBO[roboI].n;
+    }
+    function list() {
+      $("#vrList").innerHTML = MEMES.map((m) => `<button type="button" class="vrec-card${cur && cur.id === m.id ? " on" : ""}" data-m="${m.id}"><span>${m.ico}</span><b>${m.t}</b><small>${"⭐".repeat(best[m.id] || 0) || "—"}</small></button>`).join("");
+      const total = MEMES.reduce((a, m) => a + (best[m.id] || 0), 0); $("#vrStars").textContent = total;
+    }
+    function pick(id) {
+      cleanupAudio(); mode = "idle"; countdown = 0;
+      cur = MEMES.find((m) => m.id === id) || MEMES[0];
+      if (recUrl) URL.revokeObjectURL(recUrl); recUrl = null; said = ""; $("#vrScore").innerHTML = "";
+      status("Нажми 🎙 и озвучь фразу так, как в меме!"); list(); ui();
+    }
+    $("#vrList").addEventListener("click", (e) => { const b = e.target.closest("[data-m]"); if (b) { pick(b.dataset.m); $("#vrecStage").scrollIntoView({ behavior: "smooth", block: "nearest" }); } });
+    $("#vrRec").addEventListener("click", startRec);
+    $("#vrPlay").addEventListener("click", play);
+    $("#vrRobo").addEventListener("click", robo);
+    $("#vrRoboV").addEventListener("click", () => { roboI = (roboI + 1) % ROBO.length; ui(); });
+    $("#vrRand").addEventListener("click", () => { const o = MEMES.filter((m) => m !== cur); pick(o[(Math.random() * o.length) | 0].id); });
+    window.addEventListener("resize", () => { if (visible) resize(); });
+    if (/vrdebug/.test(location.hash)) window.__vr = { pick, get cur() { return cur; }, scoreWith(text, lv) { said = text; levels = lv; score(); }, get best() { return best; } };
+
+    return {
+      enter() { visible = true; resize(); if (!cur) pick(MEMES[0].id); else { list(); ui(); } last = 0; if (!raf) raf = requestAnimationFrame(frame); Hero.say("voicerec", "start", "Voice Rec: озвучь мем своим голосом!"); },
+      leave() { visible = false; cleanupAudio(); try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignore */ } mode = "idle"; countdown = 0; if (raf) cancelAnimationFrame(raf); raf = 0; ui(); },
+      key() {},
+      best: () => { const s = MEMES.reduce((a, m) => a + (best[m.id] || 0), 0); return s ? `${s}⭐` : "—"; },
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -14140,7 +14414,7 @@ div.sc-pl { cursor: default; }
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -14396,6 +14670,7 @@ div.sc-pl { cursor: default; }
       { go: "enth", ico: "🌐", t: "ENTHERNET", s: "Сделай свой сайт: магазин, блог или игровой портал — и собери тысячи посетителей!", bg: "linear-gradient(135deg,#1f8fd6,#7b5cff)", fx: ["🌐", "💻", "❤️", "🚀"] },
       { go: "tc", ico: "🏬", t: "ЧТО В ТЦ?", s: "Напиши «Игрушки» — и в твоём торговом центре откроется магазин игрушек!", bg: "linear-gradient(135deg,#3a8ad8,#ff8a3d)", fx: ["🏬", "🛍️", "🧸", "🍕"] },
       { go: "cod", ico: "🎖️", t: "CALL OF V3", s: "Роботы атакуют базу! Автомат, снайперка и волны врагов — в 3D.", bg: "linear-gradient(135deg,#3a4a2a,#c9a06a)", fx: ["🎖️", "🔥", "🤖", "💥"] },
+      { go: "voicerec", ico: "🎙", t: "VOICE REC", s: "Озвучь мемы своим голосом: «Поехали!», «Шок! Сенсация!» — и получи 3 звезды!", bg: "linear-gradient(135deg,#ff2d55,#5a1aa8)", fx: ["🎙", "😂", "⭐", "🎬"] },
       { go: "morger", ico: "🧔", t: "MORGER", s: "Морджер убегает от монстров Графа Мрака! 5 глав сюжета — успеешь к Башне Рассвета?", bg: "linear-gradient(135deg,#3a0f2a,#12081c)", fx: ["🧔", "👹", "🌅", "🏃"] },
       { go: "doccer", ico: "⚽", t: "DOCCER", s: "Месси, Роналду, Ямаль и Я со 113 OVR — футбол как по телевизору!", bg: "linear-gradient(135deg,#1f7a3e,#0b2a16)", fx: ["⚽", "🏆", "🥅", "🔥"] },
       { go: "soda", ico: "🥤", t: "V3 COLA", s: "Освежает! Свари свою газировку в «Производстве газировки».", bg: "linear-gradient(135deg,#c43c4f,#3a1608)", fx: ["🫧", "🫧", "🧊", "🫧"] },
@@ -14437,7 +14712,7 @@ div.sc-pl { cursor: default; }
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -14465,7 +14740,7 @@ div.sc-pl { cursor: default; }
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -17312,8 +17587,8 @@ div.sc-pl { cursor: default; }
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -17347,6 +17622,7 @@ div.sc-pl { cursor: default; }
     $("#hubCod").textContent = Cod.best();
     $("#hubDoccer").textContent = Doccer.best();
     $("#hubMorger").textContent = Morger.best();
+    $("#hubVoicerec").textContent = VoiceRec.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -17366,7 +17642,7 @@ div.sc-pl { cursor: default; }
     if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -18548,6 +18824,7 @@ div.sc-pl { cursor: default; }
     if (document.hidden && current === "cod") Cod.leave();
     if (document.hidden && current === "doccer") Doccer.leave();
     if (document.hidden && current === "morger") Morger.leave();
+    if (document.hidden && current === "voicerec") VoiceRec.leave();
     if (document.hidden && current === "enth") Enth.leave();
     if (!document.hidden && current === "enth") Enth.enter();
     if (document.hidden && current === "cash") Cash.leave();
