@@ -852,6 +852,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mg-line { animation: mgIn .35s cubic-bezier(.2,1.4,.4,1); cursor: pointer; }
 .mg-stage .mg-line.talk .mg-face { box-shadow: 0 0 0 3px #ffb547, 0 0 14px rgba(255,181,71,.55); transform: scale(1.04); }
 .mg-line p { min-height: 2.7em; }
+.mg-vnote { margin: 0; padding: 6px 8px; border-radius: 10px; background: rgba(0,0,0,.55); color: #ffd84d; font-size: 11px; font-weight: 700; line-height: 1.3; }
+.mg-vnote[hidden] { display: none; }
 .mg-k { border-color: rgba(255,45,85,.5); background: rgba(40,6,20,.94); } .mg-line.mg-k b { color: #ff6b7a; }
 .mg-line.mg-o b { color: #9be15d; } .mg-line.mg-e b { color: #5ce1e6; } .mg-line.mg-n b { color: #e8d2a0; }
 @keyframes mgIn { from { opacity: 0; transform: translateY(14px) scale(.95); } to { opacity: 1; transform: none; } }
@@ -12318,18 +12320,27 @@ div.sc-pl { cursor: default; }
       o: { pitch: 1.35, rate: 0.82, cps: 28, blip: 420 }, k: { pitch: 0.1, rate: 0.72, cps: 24, blip: 95 } };
     let voiceOn = store.get("mgVoice", true) !== false, said = false, talkUntil = 0, ruVoice = null;
     const SS = window.speechSynthesis || null;
-    function pickVoice() { try { const vs = SS ? SS.getVoices() : []; ruVoice = vs.find((v) => /^ru/i.test(v.lang) && /google|milena|yuri|irina|pavel/i.test(v.name)) || vs.find((v) => /^ru/i.test(v.lang)) || null; } catch (e) { ruVoice = null; } }
+    let speechBroken = false, fails = 0;
+    function pickVoice() { try { const vs = SS ? SS.getVoices() : []; ruVoice = vs.find((v) => /^ru/i.test(v.lang) && /google|milena|yuri|irina|pavel|dmitri|katya/i.test(v.name)) || vs.find((v) => /^ru/i.test(v.lang)) || null; } catch (e) { ruVoice = null; } }
     if (SS) { pickVoice(); try { SS.addEventListener("voiceschanged", pickVoice); } catch (e) { /* older browsers */ } }
     function hush() { said = false; try { if (SS) SS.cancel(); } catch (e) { /* ignore */ } }
+    // Real words through the browser's speech engine. A Russian voice is used when the device has one;
+    // otherwise the engine still reads the text with lang "ru-RU". Beeps are only a last resort.
     function speak(w, text) {
       said = false;
-      if (!voiceOn || !SS || !ruVoice) return false;
+      if (!voiceOn || !SS || speechBroken) return false;
       try {
-        SS.cancel();
-        const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}\p{N}\s.,!?…:;«»—-]/gu, ""));
-        u.lang = "ru-RU"; u.voice = ruVoice; u.pitch = VOICE[w].pitch; u.rate = VOICE[w].rate;
-        u.onstart = () => { said = true; }; u.onend = u.onerror = () => { said = false; };
-        SS.speak(u); return true;
+        if (!ruVoice) pickVoice();
+        if (SS.speaking || SS.pending) SS.cancel();
+        if (SS.paused) SS.resume();
+        const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}\p{N}\s.,!?…:;«»—-]/gu, " "));
+        u.lang = "ru-RU"; if (ruVoice) u.voice = ruVoice; u.pitch = VOICE[w].pitch; u.rate = VOICE[w].rate; u.volume = 1;
+        const line = story;
+        u.onstart = () => { said = true; fails = 0; if (line) line.started = true; };
+        u.onend = () => { said = false; };
+        u.onerror = (e) => { said = false; if (e && e.error !== "interrupted" && e.error !== "canceled" && line && !line.started) { line.voiced = false; if (e.error === "not-allowed" || e.error === "synthesis-unavailable" || e.error === "language-unavailable" || e.error === "voice-unavailable") speechBroken = true; } };
+        SS.speak(u);
+        return true;
       } catch (e) { return false; }
     }
     function drawFace(c, w, t, open, blink) {
@@ -12372,15 +12383,17 @@ div.sc-pl { cursor: default; }
     function showLine() {
       const [w, text] = story.lines[si], [, name] = WHO[w];
       const o = $("#mgOver"); o.hidden = false;
-      o.innerHTML = `<div class="mg-story"><div class="mg-top"><small>${story.title}</small><button type="button" class="mg-voice" data-mg="voice" aria-label="Голоса">${voiceOn ? "🔊" : "🔇"}</button></div><div class="mg-line mg-${w}" data-mg="skip"><canvas class="mg-face" id="mgFace" width="128" height="128"></canvas><div><b>${name}</b><p id="mgText"></p></div></div><button class="btn" type="button" data-mg="next">…</button></div>`;
+      o.innerHTML = `<div class="mg-story"><div class="mg-top"><small>${story.title}</small><button type="button" class="mg-voice" data-mg="voice" aria-label="Голоса">${voiceOn ? "🔊" : "🔇"}</button></div><div class="mg-line mg-${w}" data-mg="skip"><canvas class="mg-face" id="mgFace" width="128" height="128"></canvas><div><b>${name}</b><p id="mgText"></p></div></div><p class="mg-vnote" id="mgVoiceNote" hidden>🔈 Телефон не смог озвучить фразу. Включи русский голос: Android — «Синтез речи Google» → русский, iPhone — Настройки → Универсальный доступ → Устно → Голоса → Русский. Потом нажми 🔊 два раза.</p><button class="btn" type="button" data-mg="next">…</button></div>`;
       story.w = w; story.text = text; story.shown = 0; story.t = 0; story.blink = 1.5 + Math.random() * 2; story.lastCh = 0;
-      story.voiced = speak(w, text);
+      story.started = false; story.voiced = speak(w, text);
       talkUntil = 0; nextLabel();
     }
     function nextLabel() { const b = $('#mgOver [data-mg="next"]'); if (b && story) b.textContent = story.shown < story.text.length ? "Пропустить ⏩" : si < story.lines.length - 1 ? "Далее ▶" : "Бежать! 🏃"; }
     function storyTick(dt) {
       if (!story || story.text == null) return;
       const V = VOICE[story.w]; story.t += dt;
+      if (story.voiced && !story.started && story.t > 2.5) { story.voiced = false; fails += 1; if (fails >= 2) speechBroken = true; }
+      const note = $("#mgVoiceNote"); if (note) note.hidden = !(voiceOn && (!SS || speechBroken || (!story.voiced && story.t > 2.5)));
       if (story.shown < story.text.length) {
         story.shown = Math.min(story.text.length, story.shown + V.cps * dt);
         const n = Math.floor(story.shown), p = $("#mgText"); if (p) p.textContent = story.text.slice(0, n);
@@ -12414,7 +12427,7 @@ div.sc-pl { cursor: default; }
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.ch != null) return chapterIntro(+b.dataset.ch);
       const a = b.dataset.mg;
-      if (a === "voice") { voiceOn = !voiceOn; store.set("mgVoice", voiceOn); b.textContent = voiceOn ? "🔊" : "🔇"; if (!voiceOn) hush(); else if (story) story.voiced = speak(story.w, story.text); return; }
+      if (a === "voice") { voiceOn = !voiceOn; store.set("mgVoice", voiceOn); b.textContent = voiceOn ? "🔊" : "🔇"; speechBroken = false; fails = 0; if (!voiceOn) hush(); else if (story) { story.started = false; story.t = 0; story.voiced = speak(story.w, story.text); } return; }
       if (a === "next") {
         if (story && story.shown < story.text.length) { story.shown = story.text.length; const p = $("#mgText"); if (p) p.textContent = story.text; nextLabel(); return; }
         hush(); si++; if (si < story.lines.length) showLine(); else { const t = story.then; story = null; t(); }
