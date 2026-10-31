@@ -855,6 +855,12 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mg-line p { min-height: 2.7em; }
 .mg-vnote { margin: 0; padding: 6px 8px; border-radius: 10px; background: rgba(0,0,0,.55); color: #ffd84d; font-size: 11px; font-weight: 700; line-height: 1.3; }
 .mg-vnote[hidden] { display: none; }
+.mg-choice { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: rgba(20,12,34,.94); border: 1px solid rgba(255,216,77,.5); animation: mgIn .35s cubic-bezier(.2,1.4,.4,1); }
+.mg-choice b { font-size: 15px; color: #fff; } .mg-choice small { color: #c9b8ff; text-transform: none; letter-spacing: 0; }
+.mg-pick.good { background: linear-gradient(135deg, #2fbf5a, #16803a); color: #fff; }
+.mg-pick.evil { background: linear-gradient(135deg, #c8203a, #6a0a1c); color: #fff; }
+.mg-karma { color: #c9b8ff; }
+.mg-line.mg-t b { color: #b8b8c8; }
 .mg-k { border-color: rgba(255,45,85,.5); background: rgba(40,6,20,.94); } .mg-line.mg-k b { color: #ff6b7a; }
 .mg-line.mg-o b { color: #9be15d; } .mg-line.mg-e b { color: #5ce1e6; } .mg-line.mg-n b { color: #e8d2a0; }
 @keyframes mgIn { from { opacity: 0; transform: translateY(14px) scale(.95); } to { opacity: 1; transform: none; } }
@@ -12194,6 +12200,175 @@ div.sc-pl { cursor: default; }
         intro: [["k", "Хватит бегать! Ночь будет вечной!"], ["m", "Не будет. Я зажгу Маяк Рассвета!"], ["n", "Последний рывок. Граф Мрак летит за Морджером сам."]],
         outro: [["n", "Морджер взбегает на вершину и зажигает Маяк. Небо вспыхивает золотом."], ["k", "Неееет! Свет… он жжёт!"], ["n", "Монстры рассыпаются в пыль. Солнце встаёт над Вельмором."], ["e", "Дядя Морджер — герой!"], ["m", "Я просто лесоруб, который очень быстро бегал. 😄"]] },
     ];
+    // ---------- story: twists, good and evil choices, events during the run, three endings ----------
+    // A line is [who, text] or [who, text, "key:value"] (shown only after that choice).
+    // A choice is { choice: key, q, opts: [{ t, v: "good" | "evil", lines }] }; picked lines are inserted right after it.
+    let choices = store.get("mgChoices", {}) || {}, endings = store.get("mgEndings", []) || [];
+    const karma = () => ["erik", "cub", "borg", "ola"].filter((k) => choices[k] === "good").length;
+    const evilN = () => ["erik", "cub", "borg", "ola"].filter((k) => choices[k] === "evil").length;
+    const ENDS = { good: ["🌅", "Рассвет двух братьев"], bitter: ["🌗", "Свет без тепла"], dark: ["🌑", "Новый Граф"] };
+    CH[0].intro = [
+      ["n", "Деревня Вельмор. Тихая ночь… пока из-за холмов не пришли монстры Графа Мрака."],
+      ["m", "Что это за вой?! Дома горят!"],
+      ["e", "Дядя Морджер, беги к старой башне! Только Маяк Рассвета прогонит их!"],
+      ["m", "Я зажгу его. Держитесь!"],
+      ["k", "Лесоруб с фонарём… Как трогательно. Беги — мои гули любят догонялки."],
+    ];
+    CH[0].events = [
+      { at: 0.3, w: "e", text: "Дядя, сверни у колодца — там короче!", eff: "gap+" },
+      { at: 0.6, w: "k", text: "Гули, ломайте заборы у него на пути!", eff: "obst" },
+    ];
+    CH[0].outro = [
+      ["n", "На краю деревни Морджер слышит крик."],
+      ["e", "Дядя Морджер! Гуль тащит меня в подвал! Помогите!"],
+      { choice: "erik", q: "Монстры совсем рядом. Вернуться за Эриком?", opts: [
+        { t: "😇 Вернуться и спасти Эрика", v: "good", lines: [["m", "Держись, малыш!"], ["n", "Морджер бьёт гуля горящим фонарём. Огонь обжигает руку, но мальчик спасён."], ["e", "Спасибо! Возьми бабушкин оберег. Он светится, когда рядом друзья."]] },
+        { t: "😈 Бежать дальше — Маяк важнее", v: "evil", lines: [["m", "Прости, Эрик… Если я остановлюсь, погибнут все."], ["n", "Крик мальчика стихает за спиной. Морджер не оглядывается."], ["k", "Ха-ха! Сердце лесоруба холодеет. Мне это нравится…"]] },
+      ] },
+      ["n", "Дорога к башне ведёт через Шепчущий лес."],
+    ];
+    CH[1].intro = [
+      ["n", "Деревья шепчут его имя. Из темноты загораются жёлтые глаза."],
+      ["m", "Волки… Только не останавливаться."],
+      ["o", "Морджер! Я — Ола, лесная ведунья. Возьми мои амулеты — они отгоняют зверей. Ищи синий свет!"],
+      ["m", "Спасибо, Ола! Почему ты помогаешь мне?"],
+      ["o", "У меня есть свои причины… Беги!"],
+    ];
+    CH[1].events = [
+      { at: 0.25, w: "e", text: "Оберег Эрика вспыхнул! Волки отпрянули от света.", eff: "gap+", cond: "erik:good" },
+      { at: 0.25, w: "k", text: "Чувствуешь холод, лесоруб? Это мальчишка, которого ты бросил.", eff: "gap-", cond: "erik:evil" },
+      { at: 0.55, w: "n", text: "Вожак стаи срезает путь через овраг!", eff: "gap-" },
+      { at: 0.8, w: "o", text: "Держи амулет, Морджер!", eff: "amulet" },
+    ];
+    CH[1].outro = [
+      ["n", "У ручья в капкане скулит волчонок. Его мать — в стае, что гонится за Морджером."],
+      { choice: "cub", q: "Освободить волчонка?", opts: [
+        { t: "😇 Разжать капкан", v: "good", lines: [["m", "Тише, малыш. Сейчас…"], ["n", "Морджер разжимает капкан. Волчонок лижет ему руку и убегает к стае."], ["n", "Вой за спиной стихает. Волчица смотрит на Морджера долгим взглядом."]] },
+        { t: "😈 Пройти мимо", v: "evil", lines: [["m", "Пусть сидит. Меньше волков — мне легче."], ["n", "Волчица видит это. Её вой полон ярости."], ["o", "Ох, Морджер… Тьма легко входит в тех, кто бежит."]] },
+      ] },
+      ["o", "Дальше — Пещера костей. Береги голову!"],
+    ];
+    CH[2].intro = [
+      ["n", "В пещере пахнет сыростью. Под потолком шевелятся летучие мыши."],
+      ["m", "Кто-то большой идёт за мной… ТРОЛЛЬ!"],
+      ["k", "Беги, лесоруб, беги! Тьма всё равно догонит тебя!"],
+    ];
+    CH[2].events = [
+      { at: 0.35, w: "k", text: "Обвал! Пусть камни похоронят тебя!", eff: "obst" },
+      { at: 0.6, w: "n", text: "Из темноты выпрыгивает волчица — она пришла мстить за волчонка!", eff: "gap-", cond: "cub:evil" },
+      { at: 0.6, w: "n", text: "Волчица с волчонком перегородили путь троллю. Спасибо, друзья!", eff: "gap+", cond: "cub:good" },
+    ];
+    CH[2].outro = [
+      ["n", "У выхода тролля придавило обвалом. Он стонет — и вдруг говорит человеческим голосом."],
+      ["t", "Помоги… Я не монстр. Я Борг, кузнец из Вельмора. Граф проклял меня — как и всех гулей."],
+      ["m", "Гули… это наши соседи?!"],
+      { choice: "borg", q: "Освободить тролля Борга?", opts: [
+        { t: "😇 Сдвинуть камень", v: "good", lines: [["m", "Держись, Борг, сейчас!"], ["n", "Морджер рычагом сдвигает валун. Борг поднимается во весь рост."], ["t", "Я не забуду. Когда будет совсем тяжело — я приду."]] },
+        { t: "😈 Оставить его", v: "evil", lines: [["m", "Ты гнался за мной всю пещеру. Сиди тут."], ["t", "Ты… такой же, как он…"], ["k", "Да! Ещё шаг — и ты станешь моим!"]] },
+      ] },
+      ["n", "Впереди — старый мост над Бездной."],
+    ];
+    CH[3].intro = [
+      ["n", "Доски моста трещат. Внизу — бесконечная тьма."],
+      ["o", "Морджер… прости меня."],
+      ["m", "Ола? Что ты делаешь с канатами?!"],
+      ["o", "Граф держит в плену мою дочь Лиру. Он обещал отпустить её, если ты не дойдёшь до башни…"],
+      ["n", "Ведунья перерезает канат. Половина досок срывается в Бездну!"],
+      ["k", "Хорошая ведьма. Скарра, моя паучиха, принеси мне его!"],
+    ];
+    CH[3].events = [
+      { at: 0.3, w: "t", text: "Борг выбрался из пещеры! Он швыряет камни на мост!", eff: "obst", cond: "borg:evil" },
+      { at: 0.5, w: "k", text: "Скарра, плети паутину!", eff: "gap-" },
+      { at: 0.75, w: "e", text: "Оберег светит: впереди друг!", eff: "coins", cond: "erik:good" },
+    ];
+    CH[3].outro = [
+      ["n", "На том краю моста стоит Ола и плачет."],
+      { choice: "ola", q: "Что сделать с Олой?", opts: [
+        { t: "😇 Простить её", v: "good", lines: [["m", "Я понимаю тебя. Мы спасём Лиру вместе."], ["o", "Ты… простил меня? Тогда я проберусь в замок первой. Жди моего света!"]] },
+        { t: "😈 Прогнать предательницу", v: "evil", lines: [["m", "Предательница! Убирайся, пока цела."], ["o", "Я заслужила это…"], ["n", "Ола исчезает в тумане."]] },
+      ] },
+      ["m", "Башня уже видна!"],
+      ["k", "Ты не дойдёшь. Я встречу тебя сам."],
+    ];
+    CH[4].intro = [
+      ["k", "Хватит бегать! Ночь будет вечной!"],
+      ["m", "Не будет. Я зажгу Маяк Рассвета!"],
+      ["k", "Ты даже не знаешь, кто я, Морджер…"],
+      ["n", "Последний рывок. Граф Мрак летит за Морджером сам."],
+    ];
+    CH[4].events = [
+      { at: 0.2, w: "k", text: "Молния! Сгори!", eff: "gap-" },
+      { at: 0.4, w: "t", text: "Морджер! Я держу его — беги!", eff: "gap++", cond: "borg:good" },
+      { at: 0.55, w: "n", text: "Волчья стая бросается на Графа Мрака!", eff: "gap+", cond: "cub:good" },
+      { at: 0.7, w: "o", text: "Лира свободна! Лови мой свет, Морджер!", eff: "amulet", cond: "ola:good" },
+      { at: 0.85, w: "k", text: "Ты бросал друзей, как и я когда-то. Мы похожи, лесоруб!", eff: "gap-", cond: "evil2" },
+    ];
+    CH[4].outro = [
+      ["n", "Морджер взбегает на вершину. Факел у Маяка — в его руке."],
+      ["k", "Стой! …Неужели ты не узнаёшь меня, брат?"],
+      ["m", "Что?.."],
+      ["k", "Двадцать лет назад ты потерял брата Мартина в этой башне. Это был я. Тьма приняла меня, когда все отвернулись."],
+      ["m", "Мартин… Я искал тебя годами!"],
+      ["k", "Зажжёшь Маяк — и свет сожжёт меня вместе с проклятьем. Выбирай, брат."],
+      { choice: "end", q: "Последний выбор. Что сделает Морджер?", opts: [
+        { t: "😇 Обнять брата и зажечь Маяк вместе", v: "good", lines: () => (karma() >= 3 ? [
+          ["m", "Я больше не оставлю тебя. Мы зажжём его вместе."],
+          ["n", "Братья держат факел вдвоём. Маяк вспыхивает — но свет не жжёт Мартина: доброта Морджера защищает его."],
+          ["k", "Свет… он тёплый. Я свободен, брат."],
+          ["n", "Гули снова становятся жителями Вельмора. " + (choices.borg === "good" ? "Кузнец Борг обнимает свою семью. " : "") + (choices.ola === "good" ? "Ола и Лира машут с башни. " : "") + (choices.erik === "good" ? "Эрик бежит навстречу дяде." : "")],
+          ["e", "Дядя Морджер — герой! И его брат тоже!"],
+          ["n", "🌅 ХОРОШАЯ КОНЦОВКА: «Рассвет двух братьев»."],
+        ] : [
+          ["m", "Мы зажжём его вместе…"],
+          ["n", "Но в сердце Морджера слишком много холода. Свет ослепляет обоих."],
+          ["n", "Монстры исчезли, но братья пропали. Над башней горит вечный Маяк."],
+          ["n", "🌗 ГОРЬКАЯ КОНЦОВКА: «Свет без тепла». Будь добрее — и финал станет другим."],
+        ]), end: () => (karma() >= 3 ? "good" : "bitter") },
+        { t: "😈 Зажечь Маяк — Граф должен исчезнуть", v: "evil", lines: [
+          ["m", "Ты перестал быть моим братом, когда сжёг Вельмор."],
+          ["k", "Неееет! Свет… он жжёт!"],
+          ["n", "Граф рассыпается в пыль. Корона падает к ногам Морджера…"],
+          ["n", "Он поднимает её. Глаза Морджера на миг вспыхивают красным."],
+          ["n", "🌑 ТЁМНАЯ КОНЦОВКА: «Новый Граф»."],
+        ], end: () => "dark" },
+      ] },
+    ];
+    WHO.t = ["🧌", "Тролль Борг"];
+    const lineOk = (c) => !c || (c === "evil2" ? evilN() >= 2 : choices[c.split(":")[0]] === c.split(":")[1]);
+    // gameplay perks from earlier choices
+    function perks(i) { let g = 0, regen = 0; if (choices.erik === "good" && i >= 1) g += 3; if (choices.cub === "good" && i >= 2) regen += 0.4; if (choices.cub === "evil" && i >= 2) regen -= 0.2; return { g, regen }; }
+    let banner = null, evDone = [], perk = { g: 0, regen: 0 };
+    function runEvents() {
+      const C = CH[ci], f = dist / C.len;
+      (C.events || []).forEach((ev, k) => {
+        if (evDone[k] || f < ev.at) return; evDone[k] = true;
+        if (!lineOk(ev.cond)) return;
+        banner = { w: ev.w, text: ev.text, t: 0 };
+        if (voiceOn) speak(ev.w, ev.text);
+        if (ev.eff === "gap+") { gap = Math.min(34, gap + 9); }
+        else if (ev.eff === "gap++") { gap = 34; P.hurt = 0; }
+        else if (ev.eff === "gap-") { gap -= 7; shake = 0.3; tone(80, 0.5, "sawtooth", 0.05, 40); }
+        else if (ev.eff === "obst") { nextObs = Math.min(nextObs, 8); spawnObs(); nextObs = 22; }
+        else if (ev.eff === "amulet") { items.push({ x: Wu() + 8, y: 3, amulet: true }); }
+        else if (ev.eff === "coins") { for (let i = 0; i < 6; i++) items.push({ x: Wu() + 8 + i * 4, y: 3 }); }
+      });
+    }
+    function drawBanner() {
+      if (!banner) return;
+      banner.t += 1 / 60; if (banner.t > 4.5) { banner = null; return; }
+      const a = Math.min(1, banner.t * 4, (4.5 - banner.t) * 2), [ico, name] = WHO[banner.w];
+      ctx.font = "700 11px Manrope, sans-serif";
+      const lines = []; let line = ""; const maxW = W - 64;
+      for (const wd of banner.text.split(" ")) { if (ctx.measureText(line + wd).width > maxW && line) { lines.push(line); line = ""; } line += wd + " "; }
+      lines.push(line);
+      const h = 18 + lines.length * 13, y = H - h - 8;
+      ctx.globalAlpha = a; ctx.fillStyle = banner.w === "k" ? "rgba(50,4,18,.9)" : "rgba(12,8,26,.88)"; ctx.fillRect(8, y, W - 16, h);
+      ctx.fillStyle = banner.w === "k" ? "#ff6b7a" : "#ffb547"; ctx.fillRect(8, y, 3, h);
+      ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.font = "20px sans-serif"; ctx.fillText(ico, 16, y + h / 2);
+      ctx.font = "800 10px Manrope, sans-serif"; ctx.fillText(name, 44, y + 10);
+      ctx.fillStyle = "#fff"; ctx.font = "700 11px Manrope, sans-serif"; lines.forEach((l, i) => ctx.fillText(l, 44, y + 24 + i * 13));
+      ctx.globalAlpha = 1;
+    }
     let W = 0, H = 0, U = 1, dpr = 1, raf = 0, last = 0, visible = false;
     let state = "menu", ci = 0, dist = 0, spd = 0, gap = 30, stam = 100, coins = 0, hits = 0, tick = 0;
     let P = { y: 0, vy: 0, slide: 0, dash: 0, hurt: 0, run: 0, onGround: true };
@@ -12212,7 +12387,8 @@ div.sc-pl { cursor: default; }
     function startRun(i) {
       hush();
       ci = i; const C = CH[ci];
-      dist = 0; spd = C.spd; gap = 30; stam = 100; coins = 0; hits = 0; tick = 0;
+      perk = perks(ci); evDone = []; banner = null;
+      dist = 0; spd = C.spd; gap = 30 + perk.g; stam = 100; coins = 0; hits = 0; tick = 0;
       P = { y: 0, vy: 0, slide: 0, dash: 0, hurt: 0, run: 0, onGround: true };
       obs = []; items = []; parts = []; nextObs = 70; nextItem = 30; shake = 0;
       state = "run"; overlay(null); pad(true); last = 0;
@@ -12264,7 +12440,7 @@ div.sc-pl { cursor: default; }
       else P.onGround = false;
       if (P.y > 14) { hit({ k: "pit" }); P.y = 0; P.vy = -70; P.onGround = false; }
       // the monsters close in or fall back
-      gap += (P.dash > 0 ? 18 : C.regen) * dt - (P.hurt > 0.6 ? 6 * dt : 0);
+      gap += (P.dash > 0 ? 18 : C.regen + perk.regen) * dt - (P.hurt > 0.6 ? 6 * dt : 0);
       gap = Math.min(34, gap);
       if (gap <= 4) return caught();
       nextObs -= dx; if (nextObs <= 0) spawnObs();
@@ -12292,6 +12468,7 @@ div.sc-pl { cursor: default; }
       items = items.filter((it) => it.x > -10 && !it.got);
       parts.forEach((p) => { p.t += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt; }); parts = parts.filter((p) => p.t < 0.8);
       floats.forEach((f) => { f.t += dt; }); floats = floats.filter((f) => f.t < 1.6);
+      runEvents();
       if (dist >= C.len) win();
     }
     let floats = [];
@@ -12310,15 +12487,37 @@ div.sc-pl { cursor: default; }
       if (ci + 1 > done) { done = ci + 1; store.set("mgDone", done); }
       $("#mgChap").textContent = `${done}/${CH.length}`; updateHub();
       Hero.say("morger", "win", `Глава ${ci + 1} пройдена! +${reward} ◎`);
-      tell(CH[ci].outro, () => { if (ci < CH.length - 1) chapterIntro(ci + 1); else overlay("end"); }, `✅ Глава ${ci + 1} пройдена · монет +${reward}`);
+      tell(CH[ci].outro, () => { if (ci < CH.length - 1) chapterIntro(ci + 1); else overlay("end"); }, `✅ Глава ${ci + 1} пройдена · монет +${reward}`, ci < CH.length - 1 ? "Дальше ▶" : "Финал 🌅");
     }
-    function chapterIntro(i) { ci = i; state = "story"; pad(false); tell(CH[i].intro, () => startRun(i), `Глава ${i + 1}. ${CH[i].t}`); }
+    function chapterIntro(i) { if (i === 0) { choices = {}; store.set("mgChoices", choices); } ci = i; state = "story"; pad(false); tell(CH[i].intro, () => startRun(i), `Глава ${i + 1}. ${CH[i].t}`); }
 
     // ---------- story & overlays ----------
-    function tell(lines, then, title) { story = { lines, then, title }; si = 0; showLine(); }
+    function tell(lines, then, title, lastLabel) { story = { lines: lines.slice(), then, title, lastLabel }; si = -1; advance(); }
+    function advance() {
+      si++;
+      while (si < story.lines.length && Array.isArray(story.lines[si]) && !lineOk(story.lines[si][2])) si++;
+      if (si >= story.lines.length) { const t = story.then; story = null; t(); return; }
+      if (story.lines[si].choice) showChoice(); else showLine();
+    }
+    let lastEnd = null;
+    function showChoice() {
+      const c = story.lines[si], o = $("#mgOver"); o.hidden = false;
+      story.text = null;
+      o.innerHTML = `<div class="mg-story"><div class="mg-top"><small>${story.title}</small><button type="button" class="mg-voice" data-mg="voice" aria-label="Голоса">${voiceOn ? "🔊" : "🔇"}</button></div><div class="mg-choice"><b>🤔 ${c.q}</b><small>Карма: 😇 ${karma()} · 😈 ${evilN()}</small></div>${c.opts.map((op, k) => `<button class="btn mg-pick ${op.v}" type="button" data-pick="${k}">${op.t}</button>`).join("")}</div>`;
+      speak("n", c.q);
+    }
+    function pick(k) {
+      const c = story.lines[si], op = c.opts[k];
+      hush(); choices[c.choice] = op.v; store.set("mgChoices", choices);
+      if (op.v === "good") [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.25, "triangle", 0.05), i * 110)); else [220, 185, 147].forEach((f, i) => setTimeout(() => tone(f, 0.3, "sawtooth", 0.04), i * 140));
+      if (op.end) { lastEnd = op.end(); if (!endings.includes(lastEnd)) { endings.push(lastEnd); store.set("mgEndings", endings); } }
+      const ls = typeof op.lines === "function" ? op.lines() : op.lines;
+      story.lines.splice(si + 1, 0, ...ls);
+      advance();
+    }
     // ---------- talking: typewriter text, animated faces, voices ----------
     const VOICE = { n: { pitch: 0.95, rate: 0.95, cps: 34, blip: 330 }, m: { pitch: 0.75, rate: 1.05, cps: 40, blip: 180 }, e: { pitch: 1.9, rate: 1.15, cps: 46, blip: 620 },
-      o: { pitch: 1.35, rate: 0.82, cps: 28, blip: 420 }, k: { pitch: 0.1, rate: 0.72, cps: 24, blip: 95 } };
+      o: { pitch: 1.35, rate: 0.82, cps: 28, blip: 420 }, k: { pitch: 0.1, rate: 0.72, cps: 24, blip: 95 }, t: { pitch: 0.3, rate: 0.82, cps: 26, blip: 120 } };
     let voiceOn = store.get("mgVoice", true) !== false, said = false, talkUntil = 0, ruVoice = null;
     const SS = window.speechSynthesis || null;
     let speechBroken = false, fails = 0;
@@ -12347,7 +12546,7 @@ div.sc-pl { cursor: default; }
     function drawFace(c, w, t, open, blink) {
       const g = c.getContext("2d"), S = c.width; g.setTransform(S / 64, 0, 0, S / 64, 0, 0); g.clearRect(0, 0, 64, 64);
       const bob = open > 0.05 ? Math.sin(t * 9) * 1.2 : Math.sin(t * 2) * 0.6;
-      const bg = { n: "#3a2a4a", m: "#3a2a1c", e: "#1f3a5a", o: "#1f3a2a", k: "#3a0f2a" }[w];
+      const bg = { n: "#3a2a4a", m: "#3a2a1c", e: "#1f3a5a", o: "#1f3a2a", k: "#3a0f2a", t: "#2a2a36" }[w];
       g.fillStyle = bg; g.beginPath(); g.arc(32, 32, 32, 0, 7); g.fill();
       if (w === "n") {
         g.save(); g.translate(32, 34 + bob); g.rotate(Math.sin(t * 2) * 0.05);
@@ -12358,10 +12557,11 @@ div.sc-pl { cursor: default; }
         return;
       }
       g.save(); g.translate(0, bob);
-      const skin = { m: "#e0ac84", e: "#f1c7a3", o: "#d8b49a", k: "#d8d4e8" }[w];
+      const skin = { m: "#e0ac84", e: "#f1c7a3", o: "#d8b49a", k: "#d8d4e8", t: "#8a8a96" }[w];
       if (w === "k") { g.fillStyle = "#5a0f2a"; g.beginPath(); g.moveTo(8, 64); g.lineTo(14, 30); g.lineTo(32, 46); g.lineTo(50, 30); g.lineTo(56, 64); g.fill(); }
       if (w === "o") { g.fillStyle = "#2c5a3a"; g.beginPath(); g.arc(32, 30, 22, Math.PI, 0); g.lineTo(54, 64); g.lineTo(10, 64); g.fill(); }
-      g.fillStyle = w === "m" ? "#6b3f22" : w === "e" ? "#2f6fd6" : w === "o" ? "#3a6a4a" : "#2a1036"; g.fillRect(14, 50, 36, 14);
+      g.fillStyle = w === "m" ? "#6b3f22" : w === "e" ? "#2f6fd6" : w === "o" ? "#3a6a4a" : w === "t" ? "#4a3a2a" : "#2a1036"; g.fillRect(14, 50, 36, 14);
+      if (w === "t") { g.fillStyle = "rgba(0,0,0,.18)"; for (const [x, y] of [[22, 22], [41, 26], [26, 44], [38, 46]]) { g.beginPath(); g.arc(x, y, 2.4, 0, 7); g.fill(); } }
       g.fillStyle = skin; g.beginPath(); g.ellipse(32, 32, 14, 16, 0, 0, 7); g.fill();
       // hair / hats
       if (w === "m") { g.fillStyle = "#3a2a1c"; g.fillRect(14, 15, 36, 5); g.fillRect(20, 7, 24, 9); g.fillStyle = "#2a1a10"; g.beginPath(); g.moveTo(18, 34); g.quadraticCurveTo(32, 62, 46, 34); g.lineTo(42, 40); g.quadraticCurveTo(32, 46, 22, 40); g.fill(); }
@@ -12378,6 +12578,7 @@ div.sc-pl { cursor: default; }
       const my = w === "m" ? 41 : 42, mw = 4 + open * 2, mh = 0.8 + open * 5;
       g.fillStyle = "#5a1a1a"; g.beginPath(); g.ellipse(32, my, mw, mh, 0, 0, 7); g.fill();
       if (open > 0.25) { g.fillStyle = "#e36a7a"; g.beginPath(); g.ellipse(32, my + mh * 0.45, mw * 0.6, mh * 0.35, 0, 0, 7); g.fill(); }
+      if (w === "t") { g.fillStyle = "#f0e8d0"; for (const x of [27, 37]) { g.beginPath(); g.moveTo(x - 1.2, my + 1); g.lineTo(x, my - 4); g.lineTo(x + 1.2, my + 1); g.fill(); } }
       if (w === "k") { g.fillStyle = "#fff"; g.beginPath(); g.moveTo(29, my - mh + 0.2); g.lineTo(30, my - mh + 3); g.lineTo(31, my - mh + 0.2); g.moveTo(33, my - mh + 0.2); g.lineTo(34, my - mh + 3); g.lineTo(35, my - mh + 0.2); g.fill(); }
       g.restore();
     }
@@ -12389,7 +12590,7 @@ div.sc-pl { cursor: default; }
       story.started = false; story.voiced = speak(w, text);
       talkUntil = 0; nextLabel();
     }
-    function nextLabel() { const b = $('#mgOver [data-mg="next"]'); if (b && story) b.textContent = story.shown < story.text.length ? "Пропустить ⏩" : si < story.lines.length - 1 ? "Далее ▶" : "Бежать! 🏃"; }
+    function nextLabel() { const b = $('#mgOver [data-mg="next"]'); if (b && story) b.textContent = story.shown < story.text.length ? "Пропустить ⏩" : si < story.lines.length - 1 ? "Далее ▶" : story.lastLabel || "Бежать! 🏃"; }
     function storyTick(dt) {
       if (!story || story.text == null) return;
       const V = VOICE[story.w]; story.t += dt;
@@ -12414,11 +12615,13 @@ div.sc-pl { cursor: default; }
       if (kind === "menu") {
         o.innerHTML = `<div class="mg-menu"><h2>MORGER</h2><p>Лесоруб Морджер убегает от монстров Графа Мрака, чтобы зажечь Маяк Рассвета.</p>
           <div class="mg-chs">${CH.map((c, i) => `<button type="button" data-ch="${i}" ${i < unlocked ? "" : "disabled"}>${i < unlocked ? (i < done ? "✅" : "▶") : "🔒"} ${i + 1}. ${c.t}</button>`).join("")}</div>
+          <p class="mg-karma">Карма: 😇 ${karma()} · 😈 ${evilN()} · Концовки: ${endings.length}/3 ${endings.map((e) => ENDS[e][0]).join(" ")}</p>
           <button class="btn" type="button" data-ch="${Math.min(unlocked, CH.length) - 1}">${done ? "▶ Продолжить историю" : "▶ Начать историю"}</button>${modeRow()}</div>`;
       } else if (kind === "caught") {
         o.innerHTML = `<div class="mg-menu"><h2>ПОЙМАН!</h2><p>${CH[ci].mon.n} схватили Морджера. Пробег: ${Math.round(dist / 6)} из ${Math.round(CH[ci].len / 6)} м.</p><button class="btn" type="button" data-mg="retry">🔄 Ещё раз</button><button class="btn ghost" type="button" data-mg="menu">📖 Главы</button>${modeRow()}</div>`;
       } else if (kind === "end") {
-        o.innerHTML = `<div class="mg-menu"><h2>🌅 КОНЕЦ</h2><p>Маяк Рассвета горит, монстры исчезли. Морджер спас Вельмор!</p><button class="btn" type="button" data-mg="menu">📖 Главы</button></div>`;
+        const E = ENDS[lastEnd || "good"];
+        o.innerHTML = `<div class="mg-menu"><h2>${E[0]} КОНЕЦ</h2><p>Концовка: «${E[1]}»</p><p>Карма: 😇 ${karma()} · 😈 ${evilN()}</p><p>Найдено концовок: ${endings.length} из 3 ${endings.map((e) => ENDS[e][0]).join(" ")}${endings.length < 3 ? " — пройди историю иначе, чтобы открыть другие!" : " — ты видел всё!"}</p><button class="btn" type="button" data-ch="0">🔄 Новая история</button><button class="btn ghost" type="button" data-mg="menu">📖 Главы</button></div>`;
         state = "menu";
       }
     }
@@ -12427,11 +12630,12 @@ div.sc-pl { cursor: default; }
       if (!e.target.closest("button") && e.target.closest('[data-mg="skip"]') && story && story.shown < story.text.length) { story.shown = story.text.length; const p = $("#mgText"); if (p) p.textContent = story.text; nextLabel(); return; }
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.ch != null) return chapterIntro(+b.dataset.ch);
+      if (b.dataset.pick != null) return pick(+b.dataset.pick);
       const a = b.dataset.mg;
       if (a === "voice") { voiceOn = !voiceOn; store.set("mgVoice", voiceOn); b.textContent = voiceOn ? "🔊" : "🔇"; speechBroken = false; fails = 0; if (!voiceOn) hush(); else if (story) { story.started = false; story.t = 0; story.voiced = speak(story.w, story.text); } return; }
       if (a === "next") {
         if (story && story.shown < story.text.length) { story.shown = story.text.length; const p = $("#mgText"); if (p) p.textContent = story.text; nextLabel(); return; }
-        hush(); si++; if (si < story.lines.length) showLine(); else { const t = story.then; story = null; t(); }
+        hush(); advance();
       }
       else if (a === "mode") toggleMode();
       else if (a === "retry") startRun(ci);
@@ -12867,6 +13071,7 @@ div.sc-pl { cursor: default; }
       if (danger > 0) { const g = ctx.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 0.9); g.addColorStop(0, "rgba(200,0,30,0)"); g.addColorStop(1, `rgba(200,0,30,${0.55 * danger * (0.7 + 0.3 * Math.sin(tick * 10))})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
       if (danger > 0.4) { ctx.textAlign = "center"; ctx.font = "900 14px Manrope, sans-serif"; ctx.fillStyle = "#ff6b7a"; ctx.fillText(`${C.mon.n} близко! Рывок!`, W / 2, 56); }
       floats.forEach((f, i) => { ctx.globalAlpha = 1 - f.t / 1.6; ctx.textAlign = "center"; ctx.font = "900 14px Manrope, sans-serif"; ctx.fillStyle = f.col; ctx.fillText(f.text, W / 2, H * 0.32 - f.t * 20 - i * 16); ctx.globalAlpha = 1; });
+      drawBanner();
     }
     let lastDraw = 0;
     function draw() {
@@ -13327,7 +13532,7 @@ div.sc-pl { cursor: default; }
     document.addEventListener("keyup", (e) => { if (["ArrowDown", "KeyS"].includes(e.code)) keys.down = false; });
     window.addEventListener("resize", () => { if (visible) resize(); });
     $("#mgMode").addEventListener("click", toggleMode);
-    if (/mgdebug/.test(location.hash)) window.__mor = { get r3() { return R3; }, get failed3() { return failed3; }, startRun, chapterIntro, jump, slide, dash, get state() { return state; }, get dist() { return dist; }, get gap() { return gap; }, set gap(v) { gap = v; }, set dist(v) { dist = v; }, get obs() { return obs; }, step(n) { for (let i = 0; i < n && state === "run"; i++) update(1 / 60); }, next() { const b = document.querySelector('#mgOver [data-mg="next"]'); if (b) b.click(); }, get P() { return P; } };
+    if (/mgdebug/.test(location.hash)) window.__mor = { get choices() { return choices; }, get endings() { return endings; }, get banner() { return banner; }, get r3() { return R3; }, get failed3() { return failed3; }, startRun, chapterIntro, jump, slide, dash, get state() { return state; }, get dist() { return dist; }, get gap() { return gap; }, set gap(v) { gap = v; }, set dist(v) { dist = v; }, get obs() { return obs; }, step(n) { for (let i = 0; i < n && state === "run"; i++) update(1 / 60); }, next() { const b = document.querySelector('#mgOver [data-mg="next"]'); if (b) b.click(); }, get P() { return P; } };
 
     return {
       enter() {
