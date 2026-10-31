@@ -880,6 +880,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 #vrRobo.hot { box-shadow: 0 0 0 3px var(--amber); }
 .vrec-status { max-width: 640px; margin: 6px auto 0; text-align: center; font-weight: 800; font-size: 13px; }
 .vrec-score { max-width: 640px; margin: 4px auto 0; text-align: center; } .vrec-score b { display: block; font-size: 16px; } .vrec-score small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.vrec-mic { display: flex; flex-direction: column; gap: 6px; max-width: 640px; margin: 10px auto 0; padding: 12px; border-radius: 14px; background: rgba(255,45,85,.12); border: 1px solid rgba(255,45,85,.5); }
+.vrec-mic[hidden] { display: none; } .vrec-mic p { margin: 0; font-size: 13px; } .vrec-mic small { color: var(--muted); font-size: 11px; line-height: 1.4; } .vrec-mic .btn { margin: 0; }
 .vrec-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; max-width: 640px; margin: 10px auto 0; }
 .vrec-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); text-align: left; cursor: pointer; }
 .vrec-card span { font-size: 20px; } .vrec-card b { font-size: 12px; line-height: 1.25; } .vrec-card small { font-size: 11px; color: var(--muted); }
@@ -2738,6 +2740,12 @@ div.sc-pl { cursor: default; }
       <button class="btn ghost" type="button" id="vrRand">🎲 Случайный мем</button>
       <div class="vrec-robo" style="grid-column: 1 / -1"><button class="btn ghost" type="button" id="vrRobo">🤖 Озвучить роботом</button><button class="btn ghost" type="button" id="vrRoboV" aria-label="Сменить голос робота">Обычный</button></div>
     </div>
+    <div class="vrec-mic" id="vrMicHelp" hidden>
+      <b>🎙 Микрофон здесь заблокирован</b>
+      <p>Эта страница открыта внутри Claude, а он пока не разрешает играм пользоваться микрофоном. Скачай игру файлом и открой его в браузере — там микрофон заработает.</p>
+      <button class="btn" type="button" id="vrDownload">📥 Скачать игру с микрофоном</button>
+      <small>Android: открой скачанный файл <b>v3-games.html</b> в Chrome и разреши микрофон. iPhone: открой файл через «Файлы» → «Поделиться» → Safari. Прогресс в файле начнётся заново. Пока можно озвучивать 🤖 роботом.</small>
+    </div>
     <div class="vrec-list" id="vrList"></div>
     <p class="hint">Выбери мем, нажми 🎙 — после отсчёта 3-2-1 скажи фразу с выражением (4,5 секунды). Игра слушает слова, эмоции и тайминг и ставит до 3 звёзд. ▶ — посмотреть, как герой говорит твоим голосом. Если микрофон недоступен — 🤖 озвучит робот (кнопка рядом меняет голос: бас, писк, робот). Запись не сохраняется и никуда не отправляется.</p>
   </section>
@@ -3371,6 +3379,9 @@ div.sc-pl { cursor: default; }
 <script>
 (() => {
   "use strict";
+  // A clean copy of this page, taken before anything changes the DOM: Voice Rec offers it as a file,
+  // because a downloaded copy opened in the browser may use the microphone.
+  const PAGE_SRC = (() => { try { const d = document.documentElement.cloneNode(true); d.querySelectorAll("script").forEach((x) => { if (!(x.textContent || "").includes("const PAGE_SRC")) x.remove(); }); return "<!doctype html>\n" + d.outerHTML; } catch (e) { return ""; } })();
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
@@ -13735,7 +13746,7 @@ div.sc-pl { cursor: default; }
       if (mode !== "idle") return;
       ac();
       try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-      catch (e) { status("🎙 Микрофон недоступен на этой странице. Попробуй «🤖 Озвучить роботом»."); $("#vrRobo").classList.add("hot"); return; }
+      catch (e) { status("🎙 Микрофон недоступен на этой странице. Скачай игру файлом или озвучь 🤖 роботом."); $("#vrRobo").classList.add("hot"); micHelp(true); return; }
       countdown = 3; beep(660, 0.1); status("Приготовься…"); ui(true);
     }
     function beginRec() {
@@ -13808,6 +13819,18 @@ div.sc-pl { cursor: default; }
       status("Нажми 🎙 и озвучь фразу так, как в меме!"); list(); ui();
     }
     $("#vrList").addEventListener("click", (e) => { const b = e.target.closest("[data-m]"); if (b) { pick(b.dataset.m); $("#vrecStage").scrollIntoView({ behavior: "smooth", block: "nearest" }); } });
+    function micBlocked() { try { const p = document.permissionsPolicy || document.featurePolicy; if (p && p.allowsFeature) return !p.allowsFeature("microphone"); } catch (e) { /* ignore */ } return !(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); }
+    function micHelp(on) { $("#vrMicHelp").hidden = !on || !PAGE_SRC; }
+    async function download() {
+      const b = $("#vrDownload"), blob = new Blob([PAGE_SRC], { type: "text/html" });
+      try {
+        const dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null;
+        if (dl) { await dl.save({ filename: "v3-games.html", data: blob }); b.textContent = "✅ Файл сохранён — открой его в браузере"; return; }
+      } catch (e) { if (e && e.code === "declined") { b.textContent = "📥 Скачать игру с микрофоном"; return; } }
+      try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "v3-games.html"; document.body.appendChild(a); a.click(); a.remove(); b.textContent = "✅ Скачивание началось"; }
+      catch (e) { b.textContent = "Не получилось скачать здесь"; }
+    }
+    $("#vrDownload").addEventListener("click", download);
     $("#vrRec").addEventListener("click", startRec);
     $("#vrPlay").addEventListener("click", play);
     $("#vrRobo").addEventListener("click", robo);
@@ -13817,7 +13840,7 @@ div.sc-pl { cursor: default; }
     if (/vrdebug/.test(location.hash)) window.__vr = { pick, get cur() { return cur; }, scoreWith(text, lv) { said = text; levels = lv; score(); }, get best() { return best; } };
 
     return {
-      enter() { visible = true; resize(); if (!cur) pick(MEMES[0].id); else { list(); ui(); } last = 0; if (!raf) raf = requestAnimationFrame(frame); Hero.say("voicerec", "start", "Voice Rec: озвучь мем своим голосом!"); },
+      enter() { visible = true; resize(); micHelp(micBlocked() || (() => { try { return window.top !== window; } catch (e) { return true; } })()); if (!cur) pick(MEMES[0].id); else { list(); ui(); } last = 0; if (!raf) raf = requestAnimationFrame(frame); Hero.say("voicerec", "start", "Voice Rec: озвучь мем своим голосом!"); },
       leave() { visible = false; cleanupAudio(); try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* ignore */ } mode = "idle"; countdown = 0; if (raf) cancelAnimationFrame(raf); raf = 0; ui(); },
       key() {},
       best: () => { const s = MEMES.reduce((a, m) => a + (best[m.id] || 0), 0); return s ? `${s}⭐` : "—"; },
