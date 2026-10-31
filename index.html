@@ -801,7 +801,36 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .dc-btns button.off { opacity: .4; }
 .dc-btns button:active { transform: scale(.94); }
 .dc-menu { width: 100%; box-sizing: border-box; max-width: 640px; margin: 8px auto 0; display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
-.dc-res { margin: 0; text-align: center; font-weight: 800; }
+.dc-res { margin: 0; text-align: center; font-weight: 800; } .dc-res:empty { display: none; }
+#dcView { display: flex; flex-direction: column; gap: 8px; }
+.dc-mm { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dc-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 84px; padding: 10px 12px; border-radius: 14px; border: 2px solid var(--line); background: linear-gradient(135deg, rgba(51,151,74,.22), transparent 70%), var(--bg); color: var(--fg); text-align: left; cursor: pointer; }
+.dc-tile span { font-size: 24px; line-height: 1.1; } .dc-tile b { font-size: 15px; } .dc-tile small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.dc-tile.hot { background: linear-gradient(135deg, #1f7a3e, #0b2a16); border-color: #33974a; }
+.dc-tile.hot small { color: #c9f5d4; }
+.dc-back { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--muted); font-weight: 800; font-size: 13px; cursor: pointer; }
+.dc-h { margin: 0; font: 900 18px Manrope, sans-serif; }
+.dc-note { margin: 0; color: var(--muted); font-size: 13px; }
+.dc-champ { margin: 0; text-align: center; font-weight: 900; color: #ffd84d; }
+.dc-box { display: flex; flex-direction: column; gap: 4px; padding: 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.dc-box small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.dc-box > b { font-size: 15px; }
+.dc-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dc-task { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 12px; background: var(--bg); border: 1px solid var(--line); }
+.dc-task div { flex: 1; min-width: 0; } .dc-task b { display: block; font-size: 13px; } .dc-task small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.dc-task i { display: block; height: 5px; margin-top: 4px; border-radius: 9px; background: var(--line); overflow: hidden; } .dc-task i em { display: block; height: 100%; background: #33c45a; }
+.dc-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dc-tbl th, .dc-tbl td { padding: 4px 3px; text-align: center; border-bottom: 1px solid var(--line); }
+.dc-tbl th { color: var(--muted); font-size: 10px; } .dc-tbl td:nth-child(2), .dc-tbl th:nth-child(2) { text-align: left; }
+.dc-tbl tr.me td { background: rgba(255,216,77,.14); font-weight: 800; }
+.dc-club { display: flex; gap: 10px; align-items: center; }
+.dc-badge { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; border: 3px solid rgba(255,255,255,.3); color: #fff; font: 900 18px Manrope, sans-serif; }
+.dc-club > div:not(.dc-badge) { flex: 1; min-width: 0; } .dc-club small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.dc-club input { width: 100%; box-sizing: border-box; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 16px; }
+.dc-cols { display: flex; gap: 8px; } .dc-cols button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; } .dc-cols button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--amber); }
+.dc-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.dc-stats div { padding: 6px; border-radius: 10px; background: var(--bg); text-align: center; } .dc-stats b { display: block; font-size: 16px; } .dc-stats small { color: var(--muted); font-size: 10px; font-weight: 800; }
+.dc-box select { width: 100%; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 14px; }
 .dc-row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 8px; align-items: center; }
 .dc-row select { width: 100%; min-width: 0; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 14px; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
@@ -1780,7 +1809,7 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-body">
           <span class="cart-name">Doccer</span>
-          <span class="cart-desc">Футбол как по телевизору: камера со стороны трибуны, сборные с настоящими игроками. Удар, выбить, пас, вразрез, финт.</span>
+          <span class="cart-desc">Футбол как по телевизору: свой клуб, события дня, Лига чемпионов, Премьер Лига и Kick off турниров. Сборные и клубы с настоящими игроками.</span>
         </span>
         <span class="cart-stat"><span class="stat-label">Побед</span><span class="stat-val" id="hubDoccer">—</span></span>
       </button>
@@ -2589,11 +2618,9 @@ div.sc-pl { cursor: default; }
       </div>
     </div>
     <div class="dc-menu" id="dcMenu">
-      <p class="dc-res" id="dcResult">Выбери сборные и выходи на поле!</p>
-      <div class="dc-row"><select id="dcHome" aria-label="Твоя сборная"></select><b>VS</b><select id="dcAway" aria-label="Соперник"></select></div>
-      <div class="mk-diff" id="dcDiff"><button type="button" data-d="0">Лёгкий</button><button type="button" data-d="1">Нормальный</button><button type="button" data-d="2">Сложный</button></div>
-      <button class="btn" type="button" id="dcResume" hidden>▶ Продолжить</button>
-      <button class="btn" type="button" id="dcStart">⚽ Начать матч</button>
+      <p class="dc-res" id="dcResult"></p>
+      <button class="btn" type="button" id="dcResume" hidden>▶ Продолжить матч</button>
+      <div id="dcView"></div>
     </div>
     <p class="hint">Джойстик — бежать (жёлтый круг — твой игрок, он переключается сам). ⚽ Удар — только на половине соперника; джойстик вверх/вниз — в дальний/ближний угол. 🦵 Выбить — длинный удар, только на своей половине. ➡️ Пас — партнёру по направлению джойстика. ⚡ Вразрез — пас на ход в свободную зону. 🌀 Финт — защитники проваливаются. Без мяча: Отбор, Подкат, Смена игрока, Рывок. Матч — 2 тайма по 2,5 минуты. Компьютер: WASD/стрелки, пробел — удар/выбить/отбор, Z — пас, X — вразрез, C — финт.</p>
   </section>
@@ -11141,7 +11168,38 @@ div.sc-pl { cursor: default; }
         p: [["Тер Штеген", 22, 88], ["Киммих", 6, 87], ["Рюдигер", 2, 86], ["Тах", 4, 83], ["Раум", 3, 81], ["Андрих", 23, 81], ["Вирц", 17, 89], ["Мусиала", 10, 89], ["Заннэ", 19, 84], ["Хаверц", 7, 85], ["Гнабри", 20, 82]] },
       { id: "ARM", n: "Армения", fl: "🇦🇲", f: "433", k: kit("#d90012", "#0033a0", "#f2a800", "#222222"), alt: kit("#ffffff", "#ffffff", "#d90012", "#2fbf5a"),
         p: [["Чанчаревич", 1, 70], ["Ованнисян", 2, 68], ["Калисир", 4, 70], ["Арутюнян", 5, 69], ["Восканян", 3, 68], ["Спертсян", 7, 72], ["Байрамян", 8, 71], ["Мхитарян", 18, 80], ["Барсегян", 10, 74], ["Ранос", 9, 73], ["Бичахчян", 11, 71]] },
+      // Clubs (Champions League, Premier League, friendlies)
+      { id: "RMA", n: "Реал Мадрид", fl: "⚪", club: 1, f: "433", k: kit("#f4f4f4", "#f4f4f4", "#f4f4f4", "#2fbf5a"), alt: kit("#1f2a4a", "#1f2a4a", "#1f2a4a", "#ffd84d"),
+        p: [["Куртуа", 1, 89], ["Карвахаль", 2, 84], ["Милитао", 3, 85], ["Рюдигер", 22, 86], ["Каррерас", 18, 81], ["Чуамени", 14, 85], ["Беллингем", 5, 90], ["Валверде", 8, 88], ["Родриго", 11, 85], ["Мбаппе", 10, 92], ["Винисиус", 7, 90]] },
+      { id: "BAR", n: "Барселона", fl: "🔵", club: 1, f: "433", k: kit("#a50044", "#004d98", "#004d98", "#ffd84d", "#004d98"), alt: kit("#ffd84d", "#ffd84d", "#ffd84d", "#111111"),
+        p: [["Ж. Гарсия", 13, 82], ["Кунде", 23, 85], ["Араухо", 4, 83], ["Кубарси", 2, 84], ["Бальде", 3, 82], ["Де Йонг", 21, 86], ["Педри", 8, 90], ["Ольмо", 20, 84], ["Ямаль", 10, 90], ["Левандовски", 9, 88], ["Рафинья", 11, 88]] },
+      { id: "BAY", n: "Бавария", fl: "🔴", club: 1, f: "433", k: kit("#dc052d", "#dc052d", "#dc052d", "#2fbf5a"), alt: kit("#f4f4f4", "#f4f4f4", "#f4f4f4", "#111111"),
+        p: [["Нойер", 1, 87], ["Киммих", 6, 87], ["Упамекано", 2, 84], ["Та", 4, 83], ["Дэвис", 19, 84], ["Горецка", 8, 82], ["Мусиала", 10, 89], ["Олисе", 17, 87], ["Гнабри", 7, 82], ["Кейн", 9, 91], ["Л. Диас", 14, 86]] },
+      { id: "PSG", n: "ПСЖ", fl: "🗼", club: 1, f: "433", k: kit("#0a1f5c", "#0a1f5c", "#0a1f5c", "#ffd84d", "#da291c"), alt: kit("#f4f4f4", "#0a1f5c", "#f4f4f4", "#2fbf5a"),
+        p: [["Шевалье", 30, 83], ["Хакими", 2, 87], ["Маркиньос", 5, 86], ["Пачо", 51, 83], ["Н. Мендеш", 25, 86], ["Витинья", 17, 88], ["Ж. Невеш", 87, 86], ["Руис", 8, 84], ["Дембеле", 10, 90], ["Барколя", 29, 84], ["Кварацхелия", 7, 87]] },
+      { id: "MCI", n: "Манчестер Сити", fl: "🩵", club: 1, f: "433", k: kit("#6cabdd", "#ffffff", "#6cabdd", "#ffd84d"), alt: kit("#1c2c5b", "#1c2c5b", "#1c2c5b", "#2fbf5a"),
+        p: [["Доннарумма", 25, 88], ["Нунес", 27, 80], ["Р. Диаш", 3, 87], ["Гвардиол", 24, 85], ["Аит-Нури", 21, 80], ["Родри", 16, 91], ["Рейндерс", 4, 84], ["Фоден", 47, 86], ["Шерки", 10, 83], ["Холанд", 9, 91], ["Доку", 11, 84]] },
+      { id: "LIV", n: "Ливерпуль", fl: "🔴", club: 1, f: "433", k: kit("#c8102e", "#c8102e", "#c8102e", "#2fbf5a"), alt: kit("#f4f4f4", "#111111", "#f4f4f4", "#ffd84d"),
+        p: [["Алиссон", 1, 89], ["Фримпонг", 30, 83], ["Ван Дейк", 4, 89], ["Конате", 5, 85], ["Керкез", 6, 80], ["Гравенберх", 38, 85], ["Макаллистер", 10, 86], ["Собослаи", 8, 85], ["Салах", 11, 90], ["Исак", 9, 87], ["Вирц", 7, 88]] },
+      { id: "INT", n: "Интер", fl: "⚫", club: 1, f: "433", k: kit("#0068a8", "#111111", "#111111", "#ffd84d", "#111111"), alt: kit("#f4f4f4", "#f4f4f4", "#f4f4f4", "#2fbf5a"),
+        p: [["Зоммер", 1, 84], ["Дамфрис", 2, 84], ["Ачерби", 15, 83], ["Бастони", 95, 86], ["Димарко", 32, 85], ["Барелла", 23, 87], ["Чалханоглу", 20, 85], ["Мхитарян", 22, 82], ["Бонни", 14, 79], ["Лаутаро", 10, 88], ["Тюрам", 9, 84]] },
+      { id: "ARS", n: "Арсенал", fl: "🔴", club: 1, f: "433", k: kit("#ef0107", "#ffffff", "#ef0107", "#2fbf5a"), alt: kit("#ffd84d", "#1f2a6b", "#ffd84d", "#111111"),
+        p: [["Райя", 1, 86], ["Тимбер", 12, 84], ["Салиба", 2, 87], ["Габриэл", 6, 87], ["Калафьори", 33, 81], ["Райс", 41, 88], ["Субименди", 36, 86], ["Эдегор", 8, 87], ["Сака", 7, 88], ["Дьёкереш", 14, 85], ["Мартинелли", 11, 83]] },
+      { id: "CHE", n: "Челси", fl: "🔵", club: 1, f: "433", k: kit("#034694", "#034694", "#ffffff", "#2fbf5a"), alt: kit("#f4f4f4", "#111111", "#f4f4f4", "#ffd84d"),
+        p: [["Санчес", 1, 80], ["Джеймс", 24, 84], ["Фофана", 29, 80], ["Колуилл", 6, 82], ["Кукурелья", 3, 82], ["Кайседо", 25, 87], ["Энцо", 8, 85], ["Палмер", 10, 87], ["Нету", 7, 82], ["Жоау Педру", 20, 82], ["Гарначо", 49, 80]] },
+      { id: "MUN", n: "Манчестер Юнайтед", fl: "😈", club: 1, f: "433", k: kit("#da291c", "#ffffff", "#111111", "#2fbf5a"), alt: kit("#f4f4f4", "#111111", "#f4f4f4", "#ffd84d"),
+        p: [["Онана", 24, 80], ["Мазрауи", 3, 79], ["Де Лигт", 4, 82], ["Л. Мартинес", 6, 82], ["Шоу", 23, 79], ["Каземиро", 18, 80], ["Мейну", 37, 79], ["Б. Фернандеш", 8, 87], ["Мбемо", 19, 83], ["Шешко", 30, 80], ["Кунья", 10, 83]] },
+      { id: "TOT", n: "Тоттенхэм", fl: "🐓", club: 1, f: "433", k: kit("#f4f4f4", "#13235b", "#f4f4f4", "#ff8c1a"), alt: kit("#13235b", "#13235b", "#13235b", "#2fbf5a"),
+        p: [["Викарио", 1, 83], ["Порро", 23, 82], ["Ромеро", 17, 85], ["Ван де Вен", 37, 84], ["Удоджи", 13, 79], ["Биссума", 8, 80], ["Бентанкур", 30, 81], ["Мэддисон", 10, 83], ["Кудус", 20, 83], ["Соланке", 19, 80], ["Симонс", 7, 84]] },
+      { id: "NEW", n: "Ньюкасл", fl: "⚫", club: 1, f: "433", k: kit("#f4f4f4", "#111111", "#111111", "#2fbf5a", "#111111"), alt: kit("#5ad0e8", "#5ad0e8", "#5ad0e8", "#ffd84d"),
+        p: [["Поуп", 22, 82], ["Трипьер", 2, 79], ["Шер", 5, 80], ["Ботман", 4, 80], ["Холл", 3, 79], ["Тонали", 8, 85], ["Гимарайнс", 39, 86], ["Джоэлинтон", 7, 82], ["Мерфи", 23, 78], ["Волтемаде", 27, 80], ["Гордон", 10, 84]] },
+      { id: "AVL", n: "Астон Вилла", fl: "🦁", club: 1, f: "433", k: kit("#670e36", "#ffffff", "#5aa7d6", "#ffd84d"), alt: kit("#f4f4f4", "#670e36", "#f4f4f4", "#2fbf5a"),
+        p: [["Э. Мартинес", 23, 86], ["Кэш", 2, 80], ["Конса", 4, 81], ["Торрес", 14, 80], ["Динь", 12, 82], ["Камара", 44, 82], ["Тилеманс", 8, 83], ["Макгинн", 7, 80], ["Роджерс", 27, 84], ["Уоткинс", 11, 83], ["Бэйли", 31, 79]] },
+      { id: "BHA", n: "Брайтон", fl: "🕊️", club: 1, f: "433", k: kit("#0057b8", "#ffffff", "#ffffff", "#2fbf5a", "#ffffff"), alt: kit("#ffd84d", "#111111", "#ffd84d", "#111111"),
+        p: [["Фербрюгген", 1, 79], ["Вейфер", 29, 76], ["Данк", 5, 78], ["Ван Хекке", 6, 79], ["Де Куппер", 26, 75], ["Балеба", 17, 82], ["Гросс", 13, 81], ["Хинсельвуд", 41, 76], ["Минте", 11, 79], ["Велбек", 18, 78], ["Мито", 22, 80]] },
     ];
+    TEAMS.push({ id: "V3FC", n: "V3 FC", fl: "🟣", club: 1, f: "145", k: TEAMS[0].k, alt: TEAMS[0].alt, p: TEAMS[0].p });
+    const FC = TEAMS.length - 1, TI = (id) => TEAMS.findIndex((t) => t.id === id), NATS = TEAMS.map((t, i) => i).filter((i) => !TEAMS[i].club);
     // Formation spots in team-local metres (team attacks towards x = 105).
     const FORMS = {
       "433": [[4, 34], [18, 10], [16, 26], [16, 42], [18, 58], [32, 18], [30, 34], [32, 50], [44, 12], [46, 34], [44, 56]],
@@ -11312,13 +11370,14 @@ div.sc-pl { cursor: default; }
       let n = 0;
       for (const o of players) if (o.team !== p.team && Math.hypot(o.x - p.x, o.y - p.y) < 4.5) { o.fool = 1.1; n++; }
       float(p, n ? "Финт!" : "🌀", "#5ce1e6"); sfx("feint");
+      if (p.team === 0) bump("feints");
     }
     function userTackle(slide) {
       const p = ctrl; if (!p || p.down > 0 || p.cd > 0) return;
       p.cd = 0.6;
       const o = ball.owner;
       if (o && o.team === 1 && dist(o, p) < (slide ? 2.6 : 1.8) && ball.protect <= 0) {
-        if (Math.random() < clamp(0.62 + (p.r - o.r) * 0.01 + (slide ? 0.05 : 0), 0.2, 0.95)) { give(p); float(p, "Отбор!", "#9be15d"); sfx("tackle"); if (slide) o.down = 0.8; }
+        if (Math.random() < clamp(0.62 + (p.r - o.r) * 0.01 + (slide ? 0.05 : 0), 0.2, 0.95)) { give(p); float(p, "Отбор!", "#9be15d"); sfx("tackle"); bump("tackles"); if (slide) o.down = 0.8; }
         else { p.down = slide ? 0.9 : 0.4; float(p, "Мимо", "#ff9a9a"); }
         return;
       }
@@ -11352,10 +11411,11 @@ div.sc-pl { cursor: default; }
         clearBall(p, jy);
       } else if (a === "pass") {
         if (!has) return switchCtrl();
-        const m = bestMate(p, dx, dy); if (m) passTo(p, m);
+        const m = bestMate(p, dx, dy); if (m) { passTo(p, m); bump("passes"); }
       } else if (a === "through") {
         if (!has) return;
         if (!throughBall(p, dx, dy)) { const m = bestMate(p, dx, dy); if (m) passTo(p, m); }
+        bump("passes");
       } else if (a === "feint") {
         if (has) feint(p);
         else if (p.cd <= 0) { p.burst = 0.7; p.cd = 1.2; }
@@ -11577,6 +11637,8 @@ div.sc-pl { cursor: default; }
       ball.owner = null; ball.save = null; ball.target = null; ball.vx *= 0.25; ball.vy *= 0.25;
       const who = sc ? (sc.team === t ? sc.short : "автогол") : "";
       showMsg("ГОЛ! " + who, 3); sfx("goal");
+      if (t === 0) bump("goals");
+      if (sc && sc.team === 0 && t === 0 && sc.n === "Я") { bump("me"); club.me++; saveClub(); }
       if (t === 0) { Hero.earn(10); Hero.say("doccer", "good", `ГОООЛ! ${who} — ${score[0]}:${score[1]}!`); }
       else Hero.say("doccer", "bad", `Пропустили… ${score[0]}:${score[1]}. Отыграемся!`);
       if (sc) float(sc, "⚽ ГОЛ!", "#ffd84d");
@@ -11588,9 +11650,14 @@ div.sc-pl { cursor: default; }
       if (a > b) { wins++; store.set("dcWins", wins); Hero.earn(60); txt = `🏆 Победа ${a}:${b}! +60 ◎`; Hero.say("doccer", "win", `Победа ${a}:${b}! ${teams[0].n} — чемпион!`); }
       else if (a === b) { Hero.earn(20); txt = `🤝 Ничья ${a}:${b}. +20 ◎`; Hero.say("doccer", "draw", `Ничья ${a}:${b}. Реванш?`); }
       else { txt = `😓 Поражение ${a}:${b}. Реванш?`; Hero.say("doccer", "bad", `Проиграли ${a}:${b}. Сыграем ещё!`); }
+      if (TEAMS[homeI].id === "V3" || homeI === FC) { club.m++; club.gf += a; club.ga += b; if (a > b) club.w++; else if (a === b) club.d++; else club.l++; saveClub(); }
+      if (a > b) { bump("win"); if (diff === 2) bump("hard"); if (a - b >= 3) bump("big"); }
+      if (b === 0) bump("clean");
+      if (mctx && mctx.motd && a > b) { const d = today(); if (!d.motd) { d.motd = 1; store.set("dcDay", d); Hero.earn(50); txt += " Матч дня: +50 ◎"; } }
+      if (mctx && mctx.tour && tours[mctx.tour]) { const T = tours[mctx.tour]; if (T.stage !== "done" && !T.out && opp(T) === awayI) { const k = tourAdvance(T, [awayI, a, b]); if (k) txt += " " + k; } }
       showMsg(`ФИНАЛ ${a}:${b}`, 99);
       $("#dcResult").textContent = txt; $("#dcWins").textContent = wins;
-      menu(true); updateHub();
+      menu(true); go(mctx ? mctx.v : "main"); mctx = null; updateHub();
     }
     function update(dt) {
       tick += dt; msgT = Math.max(0, msgT - dt);
@@ -11790,26 +11857,203 @@ div.sc-pl { cursor: default; }
     function menu(show) {
       $("#dcMenu").hidden = !show; $("#dcPad").hidden = show;
       $("#dcResume").hidden = !(show && playing && paused);
-      $("#dcStart").textContent = playing && paused ? "🔄 Новый матч" : "⚽ Начать матч";
-    }
-    function fillSelects() {
-      const opt = (sel, v) => { sel.innerHTML = TEAMS.map((t, i) => `<option value="${i}">${t.fl} ${t.n}</option>`).join(""); sel.value = String(v); };
-      opt($("#dcHome"), homeI); opt($("#dcAway"), awayI);
-      $$("#dcDiff button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.d === diff)));
     }
     function preview() { setup(); kickoff(0, true); phase = "idle"; ctrl = null; }
     function start() {
+      if (homeI === awayI) return;
       setup(); playing = true; paused = false; btnState = "";
       kickoff(0); menu(false); updButtons();
+      $("#dcResult").textContent = "";
       showMsg(`${teams[0].id} — ${teams[1].id}`, 1.6);
       Hero.say("doccer", "start", `${teams[0].n} против ${teams[1].n}! Свисток!`);
     }
-    $("#dcHome").addEventListener("change", (e) => { homeI = +e.target.value; if (homeI === awayI) awayI = (homeI + 1) % TEAMS.length; store.set("dcHome", homeI); store.set("dcAway", awayI); fillSelects(); if (!playing) preview(); });
-    $("#dcAway").addEventListener("change", (e) => { awayI = +e.target.value; if (homeI === awayI) homeI = (awayI + 1) % TEAMS.length; store.set("dcHome", homeI); store.set("dcAway", awayI); fillSelects(); if (!playing) preview(); });
-    $$("#dcDiff button").forEach((b) => b.addEventListener("click", () => { diff = +b.dataset.d; store.set("dcDiff", diff); fillSelects(); }));
-    $("#dcStart").addEventListener("click", () => { playing = false; start(); });
+
+    // ---------- my club ----------
+    const CLUBCOL = ["#7b4dff", "#e3263a", "#1f6fd6", "#16a34a", "#1d1d1d", "#ff8c1a"];
+    const club = Object.assign({ name: "V3 FC", col: 0, m: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, me: 120 }, store.get("dcClub", null) || {});
+    club.cups = Object.assign({ ucl: 0, epl: 0, wc: 0 }, club.cups || {});
+    function saveClub() { store.set("dcClub", club); }
+    function applyClub() {
+      const t = TEAMS[FC], c = CLUBCOL[club.col] || CLUBCOL[0];
+      t.n = club.name; t.k = kit(c, club.col === 4 ? "#f4f4f4" : "#15122a", c, "#ffd84d"); t.alt = kit("#f4f4f4", c, "#f4f4f4", "#ffd84d");
+    }
+    applyClub();
+
+    // ---------- events of the day ----------
+    const TASKS = [
+      { k: "win", t: "Выиграй матч", n: 1, r: 40 }, { k: "goals", t: "Забей 3 гола", n: 3, r: 40 }, { k: "me", t: "Забей гол игроком «Я»", n: 1, r: 50 },
+      { k: "feints", t: "Сделай 5 финтов", n: 5, r: 30 }, { k: "passes", t: "Отдай 15 пасов", n: 15, r: 30 }, { k: "tackles", t: "Отбери мяч 3 раза", n: 3, r: 35 },
+      { k: "hard", t: "Победи на сложном уровне", n: 1, r: 80 }, { k: "big", t: "Выиграй с разницей 3+ мяча", n: 1, r: 60 }, { k: "clean", t: "Сыграй на ноль", n: 1, r: 45 },
+    ];
+    const NEWS = [
+      "🐐 Месси снова признан игроком месяца", "🚲 Роналду забил ножницами на последней минуте", "🌟 Ямаль обновил рекорд самого молодого бомбардира",
+      "💰 «Я» (113 OVR) — самый дорогой игрок мира", "🤖 Холанд оформил хет-трик за 20 минут", "🎙️ Мбаппе: «Мечтаю сыграть против V3 FC»",
+      "✍️ Салах продлил контракт ещё на 3 сезона", "🩹 Неймар вернулся после травмы и сразу забил", "🧤 Тер Штеген отбил два пенальти подряд",
+      "👑 Беллингем — лучший полузащитник тура", "🎯 Кейн побил рекорд голов за сезон", "🧠 Педри и Родри — лучшая пара центра поля",
+      "⚡ Винисиус обыграл пятерых и забил", "🧱 Ван Дейк: «Против Я играть невозможно»", "🏟️ Билеты на «V3 Арену» раскуплены за минуту",
+    ];
+    const dayKey = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`; };
+    function seeded(str) { let h = 2166136261; for (const ch of str) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); let x = h >>> 0 || 1; return () => { x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; }; }
+    function today() { const k = dayKey(); let d = store.get("dcDay", null); if (!d || d.k !== k) { d = { k, c: {}, got: [], motd: 0 }; store.set("dcDay", d); } return d; }
+    function bump(k, n) { const d = today(); d.c[k] = (d.c[k] || 0) + (n || 1); store.set("dcDay", d); }
+    function dayPlan() {
+      const r = seeded(dayKey()), pool = TASKS.slice(), tasks = [], np = NEWS.slice(), news = [];
+      while (tasks.length < 3) tasks.push(pool.splice((r() * pool.length) | 0, 1)[0]);
+      while (news.length < 3) news.push(np.splice((r() * np.length) | 0, 1)[0]);
+      const cl = TEAMS.map((t, i) => i).filter((i) => TEAMS[i].club && i !== FC), a = cl.splice((r() * cl.length) | 0, 1)[0];
+      return { tasks, news, motd: [a, cl[(r() * cl.length) | 0]] };
+    }
+
+    // ---------- tournaments ----------
+    const TOURS = {
+      ucl: { n: "Лига чемпионов", ico: "⭐", type: "cup", pool: ["RMA", "BAR", "BAY", "PSG", "MCI", "LIV", "INT", "ARS"], prize: 300, about: "8 лучших клубов Европы: 2 группы по 4, полуфинал и финал." },
+      epl: { n: "Премьер Лига", ico: "🦁", type: "league", pool: ["MCI", "LIV", "ARS", "CHE", "MUN", "TOT", "NEW", "AVL", "BHA"], prize: 250, about: "10 клубов Англии, 9 туров. Чемпион — тот, у кого больше очков." },
+      wc: { n: "Чемпионат мира", ico: "🌍", type: "cup", pool: null, prize: 300, about: "8 сборных: 2 группы по 4, полуфинал и финал. Выбери свою сборную." },
+    };
+    const RR4 = [[[0, 1], [2, 3]], [[0, 2], [1, 3]], [[0, 3], [1, 2]]];
+    const tours = store.get("dcTours", null) || {};
+    const saveTours = () => store.set("dcTours", tours);
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    function roundRobin(ts) { const a = ts.slice(), n = a.length, R = []; for (let r = 0; r < n - 1; r++) { const m = []; for (let i = 0; i < n / 2; i++) m.push([a[i], a[n - 1 - i]]); R.push(m); a.splice(1, 0, a.pop()); } return R; }
+    function newTour(id, me) {
+      const D = TOURS[id], pool = shuffle((D.pool ? D.pool.map(TI) : NATS.slice()).filter((i) => i >= 0 && i !== me));
+      const teams = [me, ...pool.slice(0, D.type === "league" ? 9 : 7)];
+      const T = { id, me, teams, table: {}, round: 0, stage: D.type === "league" ? "league" : "group", last: [], champ: null, out: false };
+      teams.forEach((i) => { T.table[i] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 }; });
+      if (D.type === "league") T.rounds = roundRobin(teams);
+      else { T.groups = [teams.slice(0, 4), teams.slice(4)]; T.rounds = RR4.map((rd) => T.groups.flatMap((g) => rd.map(([a, b]) => [g[a], g[b]]))); }
+      tours[id] = T; saveTours();
+      Hero.say("doccer", "start", `Kick off! ${D.n} начинается!`);
+    }
+    function strength(i) { const p = TEAMS[i].p; return p.reduce((s, x) => s + Math.min(x[2], 100), 0) / p.length + (p.some((x) => x[2] > 100) ? 3 : 0); }
+    function poisson(l) { const E = Math.exp(-l); let k = 0, p = 1; do { k++; p *= Math.random(); } while (p > E); return k - 1; }
+    function sim(a, b) { const d = strength(a) - strength(b); return [poisson(clamp(1.35 + d * 0.09, 0.2, 3.5)), poisson(clamp(1.35 - d * 0.09, 0.2, 3.5))]; }
+    function standings(T, ids) { const pts = (i) => T.table[i].w * 3 + T.table[i].d, gd = (i) => T.table[i].gf - T.table[i].ga; return ids.slice().sort((a, b) => pts(b) - pts(a) || gd(b) - gd(a) || T.table[b].gf - T.table[a].gf); }
+    function pairs(T) { return T.stage === "sf" || T.stage === "final" ? T.ko : T.stage === "done" ? [] : T.rounds[T.round]; }
+    function opp(T) { const m = pairs(T).find((x) => x.includes(T.me)); return m ? (m[0] === T.me ? m[1] : m[0]) : -1; }
+    function stageName(T) { return T.stage === "league" ? `Тур ${T.round + 1} из ${T.rounds.length}` : T.stage === "group" ? `Группа ${T.groups[0].includes(T.me) ? "A" : "B"} · тур ${T.round + 1} из 3` : T.stage === "sf" ? "Полуфинал" : T.stage === "final" ? "Финал" : "Турнир завершён"; }
+    function tourAdvance(T, mine) {
+      const res = []; let note = "";
+      const score2 = (a, b) => { if (mine && (a === T.me || b === T.me)) return a === T.me ? [mine[1], mine[2]] : [mine[2], mine[1]]; return sim(a, b); };
+      if (T.stage === "league" || T.stage === "group") {
+        for (const [a, b] of T.rounds[T.round]) {
+          const [ga, gb] = score2(a, b), A = T.table[a], B = T.table[b];
+          A.p++; B.p++; A.gf += ga; A.ga += gb; B.gf += gb; B.ga += ga;
+          if (ga > gb) { A.w++; B.l++; } else if (gb > ga) { B.w++; A.l++; } else { A.d++; B.d++; }
+          res.push([a, b, ga, gb, ""]);
+        }
+        T.round++;
+        if (T.round >= T.rounds.length) {
+          if (T.stage === "league") { T.champ = standings(T, T.teams)[0]; T.stage = "done"; }
+          else {
+            const A = standings(T, T.groups[0]), B = standings(T, T.groups[1]);
+            T.ko = [[A[0], B[1]], [B[0], A[1]]]; T.stage = "sf";
+            if (!T.ko.flat().includes(T.me)) { T.out = true; note = "Группа не пройдена…"; } else note = "Выход в полуфинал!";
+          }
+        }
+      } else {
+        const win = [];
+        for (const [a, b] of T.ko) {
+          const [ga, gb] = score2(a, b); let w = ga > gb ? a : gb > ga ? b : -1, pen = "";
+          if (w < 0) { let pa, pb; do { pa = 2 + ((Math.random() * 4) | 0); pb = 2 + ((Math.random() * 4) | 0); } while (pa === pb); w = pa > pb ? a : b; pen = ` (пен. ${pa}:${pb})`; if (a === T.me || b === T.me) note = w === T.me ? `Пенальти ${pa}:${pb} — победа!` : `Пенальти ${pa}:${pb} — вылет…`; }
+          res.push([a, b, ga, gb, pen]); win.push(w);
+        }
+        if (!T.out && !win.includes(T.me)) T.out = true;
+        if (T.stage === "sf") { T.ko = [[win[0], win[1]]]; T.stage = "final"; } else { T.champ = win[0]; T.stage = "done"; }
+      }
+      T.last = res;
+      if (T.stage === "done" && T.champ === T.me) {
+        club.cups[T.id]++; saveClub(); Hero.earn(TOURS[T.id].prize);
+        note = `🏆 ${TOURS[T.id].n} — твоя! +${TOURS[T.id].prize} ◎`; Hero.say("doccer", "win", `Мы выиграли турнир «${TOURS[T.id].n}»! 🏆`);
+      }
+      saveTours();
+      return note;
+    }
+    function tourStatus(id) { const T = tours[id]; if (!T) return "Не начат · Kick off"; if (T.stage === "done") return T.champ === T.me ? "🏆 Чемпион!" : "Завершён"; if (T.out) return "Вылет"; return stageName(T); }
+
+    // ---------- menu views ----------
+    let view = "main", mctx = null;
+    const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const tn = (i) => `${TEAMS[i].fl} ${esc(TEAMS[i].n)}`;
+    const back = '<button type="button" class="dc-back" data-v="main">← Главное меню</button>';
+    function go(v) { view = v; render(); }
+    function table(T, ids) {
+      return `<table class="dc-tbl"><tr><th>#</th><th>Команда</th><th>И</th><th>В</th><th>Н</th><th>П</th><th>М</th><th>О</th></tr>${standings(T, ids).map((i, k) => { const r = T.table[i]; return `<tr class="${i === T.me ? "me" : ""}"><td>${k + 1}</td><td>${tn(i)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf}:${r.ga}</td><td><b>${r.w * 3 + r.d}</b></td></tr>`; }).join("")}</table>`;
+    }
+    function render() {
+      const el = $("#dcView"); if (!el) return;
+      const tile = (v, ico, t, sub, cls) => `<button type="button" class="dc-tile ${cls || ""}" data-v="${v}"><span>${ico}</span><b>${t}</b><small>${sub}</small></button>`;
+      if (view === "main") {
+        const d = today(), plan = dayPlan(), ready = plan.tasks.filter((t) => (d.c[t.k] || 0) >= t.n && !d.got.includes(t.k)).length;
+        el.innerHTML = `<h3 class="dc-h">⚽ Doccer · главное меню</h3><div class="dc-mm">
+          ${tile("club", "🏟️", "Клуб", esc(club.name))}
+          ${tile("events", "📅", "События дня", ready ? `🎁 Наград: ${ready}` : "Задания и матч дня")}
+          ${tile("play", "⚽", "Играть", "Товарищеский матч", "hot")}
+          ${tile("ucl", "⭐", "ЛЧ", tourStatus("ucl"))}
+          ${tile("epl", "🦁", "Премьер Лига", tourStatus("epl"))}
+          ${tile("kickoff", "🏁", "Kick off", "Начать турнир")}
+        </div><div class="mk-diff">${["Лёгкий", "Нормальный", "Сложный"].map((n, i) => `<button type="button" data-diff="${i}" aria-pressed="${i === diff}">${n}</button>`).join("")}</div>`;
+      } else if (view === "play") {
+        const opts = (v) => `<optgroup label="Сборные">${NATS.map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup><optgroup label="Клубы">${TEAMS.map((t, i) => i).filter((i) => TEAMS[i].club).map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup>`;
+        el.innerHTML = `${back}<h3 class="dc-h">⚽ Товарищеский матч</h3><div class="dc-row"><select id="dcHome" aria-label="Твоя команда">${opts(homeI)}</select><b>VS</b><select id="dcAway" aria-label="Соперник">${opts(awayI)}</select></div><button class="btn" type="button" data-act="start">⚽ Начать матч</button>`;
+      } else if (view === "club") {
+        const c = CLUBCOL[club.col] || CLUBCOL[0], pos = ["ВРТ", "ЗАЩ", "ПЗ", "ПЗ", "ПЗ", "ПЗ", "НАП", "НАП", "НАП", "НАП", "НАП"];
+        const stat = (n, v) => `<div><b>${v}</b><small>${n}</small></div>`;
+        el.innerHTML = `${back}<div class="dc-club"><div class="dc-badge" style="background:${c}">V3</div><div><input id="dcClubName" maxlength="18" value="${esc(club.name)}" aria-label="Название клуба"><small>Бюджет 123 млрд $ · стадион «V3 Арена» · схема 1-4-5</small></div></div>
+          <div class="dc-cols" aria-label="Цвет формы">${CLUBCOL.map((x, i) => `<button type="button" data-col="${i}" style="background:${x}" aria-pressed="${i === club.col}" aria-label="Цвет ${i + 1}"></button>`).join("")}</div>
+          <div class="dc-stats">${stat("Матчей", club.m)}${stat("Побед", club.w)}${stat("Ничьих", club.d)}${stat("Поражений", club.l)}${stat("Мячи", `${club.gf}:${club.ga}`)}${stat("Голы «Я»", club.me)}</div>
+          <div class="dc-box"><small>Трофеи</small><b>⭐ ЛЧ × ${club.cups.ucl} · 🦁 АПЛ × ${club.cups.epl} · 🌍 ЧМ × ${club.cups.wc}</b></div>
+          <table class="dc-tbl"><tr><th>№</th><th>Игрок</th><th>Поз.</th><th>OVR</th></tr>${TEAMS[FC].p.map(([n, num, r], i) => `<tr class="${r > 100 ? "me" : ""}"><td>${num}</td><td>${esc(n)}</td><td>${pos[i]}</td><td><b>${r}</b></td></tr>`).join("")}</table>`;
+      } else if (view === "events") {
+        const d = today(), plan = dayPlan();
+        el.innerHTML = `${back}<h3 class="dc-h">📅 События дня</h3><small class="dc-note">Обновляются каждый день в полночь.</small>
+          ${plan.tasks.map((t) => { const v = Math.min(d.c[t.k] || 0, t.n), got = d.got.includes(t.k); return `<div class="dc-task"><div><b>${t.t}</b><small>${v}/${t.n} · +${t.r} ◎</small><i><em style="width:${(v / t.n) * 100}%"></em></i></div>${got ? "✅" : v >= t.n ? `<button class="btn small" type="button" data-claim="${t.k}">Забрать</button>` : ""}</div>`; }).join("")}
+          <div class="dc-box"><small>🔥 Матч дня ${d.motd ? "· бонус получен ✅" : "· победа +50 ◎"}</small><b>${tn(plan.motd[0])} — ${tn(plan.motd[1])}</b><button class="btn" type="button" data-act="motd">▶ Сыграть матч дня</button></div>
+          <div class="dc-box"><small>📰 Новости дня</small>${plan.news.map((n) => `<div>${n}</div>`).join("")}</div>`;
+      } else if (view === "kickoff") {
+        el.innerHTML = `${back}<h3 class="dc-h">🏁 Kick off — начало турнира</h3><small class="dc-note">Выбери турнир. Сложность берётся из главного меню.</small>
+          ${Object.entries(TOURS).map(([id, D]) => { const T = tours[id], live = T && T.stage !== "done"; return `<div class="dc-box"><b>${D.ico} ${D.n}</b><small>${D.about} ${id === "wc" ? "" : `Играешь за ${esc(club.name)}.`} ${T ? "Сейчас: " + tourStatus(id) : ""}</small>
+            ${id === "wc" ? `<select id="dcWcTeam" aria-label="Твоя сборная">${NATS.map((i) => `<option value="${i}"${T && T.me === i ? " selected" : ""}>${tn(i)}</option>`).join("")}</select>` : ""}
+            <div class="${live ? "dc-two" : ""}">${live ? `<button class="btn" type="button" data-v="${id}">▶ Продолжить</button>` : ""}<button class="btn" type="button" data-new="${id}">${live ? "🔄 Заново" : "🏁 Kick off!"}</button></div></div>`; }).join("")}`;
+      } else if (TOURS[view]) {
+        const D = TOURS[view], T = tours[view];
+        let h = `${back}<h3 class="dc-h">${D.ico} ${D.n}</h3>`;
+        if (!T) { el.innerHTML = h + `<p class="dc-note">${D.about}</p><p class="dc-note">Турнир ещё не начат.</p><button class="btn" type="button" data-new="${view}">🏁 Kick off!</button>`; return; }
+        if (T.stage === "done") h += `<p class="dc-champ">🏆 Победитель: ${tn(T.champ)}</p><button class="btn" type="button" data-new="${view}">🔄 Новый турнир</button>`;
+        else if (T.out) h += `<p class="dc-note">${tn(T.me)} выбывает. Можно досмотреть турнир до конца.</p><button class="btn" type="button" data-act="simall">⏩ Досмотреть</button>`;
+        else h += `<div class="dc-box"><small>${stageName(T)} · следующий матч</small><b>${tn(T.me)} — ${tn(opp(T))}</b><div class="dc-two"><button class="btn" type="button" data-act="tplay">▶ Играть</button><button class="btn ghost" type="button" data-act="tsim">⏩ Авто</button></div></div>`;
+        if (T.last.length) h += `<div class="dc-box"><small>Последние результаты</small>${T.last.map((r) => `<div>${tn(r[0])} <b>${r[2]}:${r[3]}</b>${r[4]} ${tn(r[1])}</div>`).join("")}</div>`;
+        if (T.ko && T.stage !== "done") h += `<div class="dc-box"><small>${T.stage === "sf" ? "Полуфиналы" : "Финал"}</small>${T.ko.map(([a, b]) => `<div>${tn(a)} — ${tn(b)}</div>`).join("")}</div>`;
+        h += D.type === "league" ? table(T, T.teams) : `<small class="dc-note">Группа A</small>${table(T, T.groups[0])}<small class="dc-note">Группа B</small>${table(T, T.groups[1])}`;
+        el.innerHTML = h;
+      }
+    }
+    $("#dcView").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const ds = b.dataset;
+      if (ds.v) { $("#dcResult").textContent = ""; return go(ds.v); }
+      if (ds.diff) { diff = +ds.diff; store.set("dcDiff", diff); return render(); }
+      if (ds.col) { club.col = +ds.col; saveClub(); applyClub(); if (!playing) preview(); return render(); }
+      if (ds.claim) {
+        const t = TASKS.find((x) => x.k === ds.claim), d = today();
+        if (t && (d.c[t.k] || 0) >= t.n && !d.got.includes(t.k)) { d.got.push(t.k); store.set("dcDay", d); Hero.earn(t.r); $("#dcResult").textContent = `🎁 +${t.r} ◎ за задание «${t.t}»`; }
+        return render();
+      }
+      if (ds.new) { const id = ds.new, me = id === "wc" ? +(($("#dcWcTeam") || {}).value || 0) : FC; newTour(id, me); $("#dcResult").textContent = `🏁 Kick off! ${TOURS[id].n} начался.`; return go(id); }
+      const a = ds.act, T = tours[view];
+      if (a === "start") { const h = +$("#dcHome").value, w = +$("#dcAway").value; if (h === w) { $("#dcResult").textContent = "Выбери разные команды"; return; } homeI = h; awayI = w; store.set("dcHome", h); store.set("dcAway", w); mctx = { v: "play" }; start(); }
+      else if (a === "motd") { const p = dayPlan(); homeI = p.motd[0]; awayI = p.motd[1]; mctx = { v: "events", motd: 1 }; start(); }
+      else if (a === "tplay" && T) { homeI = T.me; awayI = opp(T); mctx = { v: view, tour: view }; start(); }
+      else if (a === "tsim" && T) { const o = opp(T), [x, y] = sim(T.me, o), k = tourAdvance(T, [o, x, y]); $("#dcResult").textContent = `⏩ ${TEAMS[T.me].n} ${x}:${y} ${TEAMS[o].n}${k ? " · " + k : ""}`; render(); }
+      else if (a === "simall" && T) { let n = 0; while (T.stage !== "done" && n++ < 20) tourAdvance(T, null); render(); }
+    });
+    $("#dcView").addEventListener("change", (e) => {
+      const t = e.target;
+      if (t.id === "dcClubName") { club.name = t.value.trim().slice(0, 18) || "V3 FC"; saveClub(); applyClub(); }
+      if (t.id === "dcHome" || t.id === "dcAway") { const h = +$("#dcHome").value, w = +$("#dcAway").value; if (h !== w && !playing) { homeI = h; awayI = w; preview(); } }
+    });
     $("#dcResume").addEventListener("click", () => { paused = false; last = 0; menu(false); btnState = ""; updButtons(); });
-    $("#dcPause").addEventListener("click", () => { if (!playing) return; paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); });
+    $("#dcPause").addEventListener("click", () => { if (!playing) return; paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); render(); });
     Object.values(btns).forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); act(b.dataset.a); }));
     const jEl = $("#dcJoy"), knob = jEl.querySelector("i");
     function joyMove(e) {
@@ -11832,21 +12076,21 @@ div.sc-pl { cursor: default; }
     });
     document.addEventListener("keyup", (e) => { if (KM[e.code]) keys[KM[e.code]] = false; });
     window.addEventListener("resize", () => { if (visible) resize(); });
-    if (/dcdebug/.test(location.hash)) window.__dc = { act, start, get players() { return players; }, get ball() { return ball; }, get score() { return score; }, get phase() { return phase; }, get ctrl() { return ctrl; }, get clock() { return clock; }, set clock(v) { clock = v; }, give, shoot, get playing() { return playing; }, step(n) { for (let i = 0; i < n && playing; i++) update(1 / 60); }, joy };
+    if (/dcdebug/.test(location.hash)) window.__dc = { act, start, get players() { return players; }, get ball() { return ball; }, get score() { return score; }, get phase() { return phase; }, get ctrl() { return ctrl; }, get clock() { return clock; }, set clock(v) { clock = v; }, give, shoot, get playing() { return playing; }, get tours() { return tours; }, tourAdvance, go, get club() { return club; }, today, dayPlan, endMatch, step(n) { for (let i = 0; i < n && playing; i++) update(1 / 60); }, joy };
 
     return {
       enter() {
-        visible = true; fillSelects(); $("#dcWins").textContent = wins; resize();
+        visible = true; $("#dcWins").textContent = wins; resize();
         if (!ball) preview();
-        if (!playing) { menu(true); if (phase !== "end") $("#dcResult").textContent = "Выбери сборные и выходи на поле!"; }
-        else menu(paused);
+        if (!playing) { menu(true); if (phase !== "end") $("#dcResult").textContent = ""; go(view); }
+        else { menu(paused); if (paused) render(); }
         last = 0; if (!raf) raf = requestAnimationFrame(frame);
         Hero.say("doccer", "start", "Doccer: футбол как по телевизору! Месси, Роналду, Ямаль — и Я со 113 OVR.");
       },
       leave() {
         visible = false; joy.id = null; joy.x = joy.y = 0; knob.style.transform = ""; Object.keys(keys).forEach((k) => { keys[k] = false; });
         if (raf) cancelAnimationFrame(raf); raf = 0;
-        if (playing && !paused) { paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); }
+        if (playing && !paused) { paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); render(); }
       },
       key() {},
       best: () => (wins ? String(wins) : "—"),
