@@ -825,7 +825,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .dc-tbl tr.me td { background: rgba(255,216,77,.14); font-weight: 800; }
 .dc-club { display: flex; gap: 10px; align-items: center; }
 .dc-badge { flex: none; display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; border: 3px solid rgba(255,255,255,.3); color: #fff; font: 900 18px Manrope, sans-serif; }
-.dc-club > div:not(.dc-badge) { flex: 1; min-width: 0; } .dc-club small { color: var(--muted); font-size: 11px; font-weight: 700; }
+.dc-club > div:not(.dc-badge) { flex: 1; min-width: 0; } .dc-club b, .dc-club small { display: block; } .dc-club small { color: var(--muted); font-size: 11px; font-weight: 700; }
 .dc-club input { width: 100%; box-sizing: border-box; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 16px; }
 .dc-cols { display: flex; gap: 8px; } .dc-cols button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); cursor: pointer; } .dc-cols button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--amber); }
 .dc-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -11650,7 +11650,7 @@ div.sc-pl { cursor: default; }
       if (a > b) { wins++; store.set("dcWins", wins); Hero.earn(60); txt = `🏆 Победа ${a}:${b}! +60 ◎`; Hero.say("doccer", "win", `Победа ${a}:${b}! ${teams[0].n} — чемпион!`); }
       else if (a === b) { Hero.earn(20); txt = `🤝 Ничья ${a}:${b}. +20 ◎`; Hero.say("doccer", "draw", `Ничья ${a}:${b}. Реванш?`); }
       else { txt = `😓 Поражение ${a}:${b}. Реванш?`; Hero.say("doccer", "bad", `Проиграли ${a}:${b}. Сыграем ещё!`); }
-      if (TEAMS[homeI].id === "V3" || homeI === FC) { club.m++; club.gf += a; club.ga += b; if (a > b) club.w++; else if (a === b) club.d++; else club.l++; saveClub(); }
+      if (homeI === MYI() || (MYI() === FC && TEAMS[homeI].id === "V3")) { club.m++; club.gf += a; club.ga += b; if (a > b) club.w++; else if (a === b) club.d++; else club.l++; saveClub(); }
       if (a > b) { bump("win"); if (diff === 2) bump("hard"); if (a - b >= 3) bump("big"); }
       if (b === 0) bump("clean");
       if (mctx && mctx.motd && a > b) { const d = today(); if (!d.motd) { d.motd = 1; store.set("dcDay", d); Hero.earn(50); txt += " Матч дня: +50 ◎"; } }
@@ -11873,6 +11873,7 @@ div.sc-pl { cursor: default; }
     const club = Object.assign({ name: "V3 FC", col: 0, m: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, me: 120 }, store.get("dcClub", null) || {});
     club.cups = Object.assign({ ucl: 0, epl: 0, wc: 0 }, club.cups || {});
     function saveClub() { store.set("dcClub", club); }
+    const MYI = () => { const i = TI(club.team || "V3FC"); return i >= 0 && TEAMS[i].club ? i : FC; };
     function applyClub() {
       const t = TEAMS[FC], c = CLUBCOL[club.col] || CLUBCOL[0];
       t.n = club.name; t.k = kit(c, club.col === 4 ? "#f4f4f4" : "#15122a", c, "#ffd84d"); t.alt = kit("#f4f4f4", c, "#f4f4f4", "#ffd84d");
@@ -11916,8 +11917,9 @@ div.sc-pl { cursor: default; }
     function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
     function roundRobin(ts) { const a = ts.slice(), n = a.length, R = []; for (let r = 0; r < n - 1; r++) { const m = []; for (let i = 0; i < n / 2; i++) m.push([a[i], a[n - 1 - i]]); R.push(m); a.splice(1, 0, a.pop()); } return R; }
     function newTour(id, me) {
-      const D = TOURS[id], pool = shuffle((D.pool ? D.pool.map(TI) : NATS.slice()).filter((i) => i >= 0 && i !== me));
-      const teams = [me, ...pool.slice(0, D.type === "league" ? 9 : 7)];
+      const D = TOURS[id], pool = shuffle((D.pool ? D.pool.map(TI) : NATS.slice()).filter((i) => i >= 0 && i !== me)), need = D.type === "league" ? 9 : 7;
+      if (pool.length < need) pool.push(...shuffle(TEAMS.map((t, i) => i).filter((i) => (D.pool ? TEAMS[i].club : !TEAMS[i].club) && i !== me && i !== FC && !pool.includes(i))));
+      const teams = [me, ...pool.slice(0, need)];
       const T = { id, me, teams, table: {}, round: 0, stage: D.type === "league" ? "league" : "group", last: [], champ: null, out: false };
       teams.forEach((i) => { T.table[i] = { p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0 }; });
       if (D.type === "league") T.rounds = roundRobin(teams);
@@ -11986,7 +11988,7 @@ div.sc-pl { cursor: default; }
       if (view === "main") {
         const d = today(), plan = dayPlan(), ready = plan.tasks.filter((t) => (d.c[t.k] || 0) >= t.n && !d.got.includes(t.k)).length;
         el.innerHTML = `<h3 class="dc-h">⚽ Doccer · главное меню</h3><div class="dc-mm">
-          ${tile("club", "🏟️", "Клуб", esc(club.name))}
+          ${tile("club", "🏟️", "Клуб", tn(MYI()))}
           ${tile("events", "📅", "События дня", ready ? `🎁 Наград: ${ready}` : "Задания и матч дня")}
           ${tile("play", "⚽", "Играть", "Товарищеский матч", "hot")}
           ${tile("ucl", "⭐", "ЛЧ", tourStatus("ucl"))}
@@ -11997,13 +11999,16 @@ div.sc-pl { cursor: default; }
         const opts = (v) => `<optgroup label="Сборные">${NATS.map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup><optgroup label="Клубы">${TEAMS.map((t, i) => i).filter((i) => TEAMS[i].club).map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup>`;
         el.innerHTML = `${back}<h3 class="dc-h">⚽ Товарищеский матч</h3><div class="dc-row"><select id="dcHome" aria-label="Твоя команда">${opts(homeI)}</select><b>VS</b><select id="dcAway" aria-label="Соперник">${opts(awayI)}</select></div><button class="btn" type="button" data-act="start">⚽ Начать матч</button>`;
       } else if (view === "club") {
-        const c = CLUBCOL[club.col] || CLUBCOL[0], pos = ["ВРТ", "ЗАЩ", "ПЗ", "ПЗ", "ПЗ", "ПЗ", "НАП", "НАП", "НАП", "НАП", "НАП"];
-        const stat = (n, v) => `<div><b>${v}</b><small>${n}</small></div>`;
-        el.innerHTML = `${back}<div class="dc-club"><div class="dc-badge" style="background:${c}">V3</div><div><input id="dcClubName" maxlength="18" value="${esc(club.name)}" aria-label="Название клуба"><small>Бюджет 123 млрд $ · стадион «V3 Арена» · схема 1-4-5</small></div></div>
-          <div class="dc-cols" aria-label="Цвет формы">${CLUBCOL.map((x, i) => `<button type="button" data-col="${i}" style="background:${x}" aria-pressed="${i === club.col}" aria-label="Цвет ${i + 1}"></button>`).join("")}</div>
-          <div class="dc-stats">${stat("Матчей", club.m)}${stat("Побед", club.w)}${stat("Ничьих", club.d)}${stat("Поражений", club.l)}${stat("Мячи", `${club.gf}:${club.ga}`)}${stat("Голы «Я»", club.me)}</div>
-          <div class="dc-box"><small>Трофеи</small><b>⭐ ЛЧ × ${club.cups.ucl} · 🦁 АПЛ × ${club.cups.epl} · 🌍 ЧМ × ${club.cups.wc}</b></div>
-          <table class="dc-tbl"><tr><th>№</th><th>Игрок</th><th>Поз.</th><th>OVR</th></tr>${TEAMS[FC].p.map(([n, num, r], i) => `<tr class="${r > 100 ? "me" : ""}"><td>${num}</td><td>${esc(n)}</td><td>${pos[i]}</td><td><b>${r}</b></td></tr>`).join("")}</table>`;
+        const me = MYI(), T = TEAMS[me], own = me === FC, c = own ? CLUBCOL[club.col] || CLUBCOL[0] : T.k.sh;
+        const pos = T.f === "145" ? ["ВРТ", "ЗАЩ", "ПЗ", "ПЗ", "ПЗ", "ПЗ", "НАП", "НАП", "НАП", "НАП", "НАП"] : ["ВРТ", "ЗАЩ", "ЗАЩ", "ЗАЩ", "ЗАЩ", "ПЗ", "ПЗ", "ПЗ", "НАП", "НАП", "НАП"];
+        const stat = (n, v) => `<div><b>${v}</b><small>${n}</small></div>`, ovr = Math.round(T.p.reduce((x, p) => x + p[2], 0) / T.p.length);
+        const clubs = TEAMS.map((t, i) => i).filter((i) => TEAMS[i].club);
+        el.innerHTML = `${back}<div class="dc-box"><small>Мой клуб — за него играешь в ЛЧ и Премьер Лиге</small><select id="dcMyClub" aria-label="Мой клуб">${clubs.map((i) => `<option value="${TEAMS[i].id}"${i === me ? " selected" : ""}>${tn(i)}${i === FC ? " (свой клуб)" : ""}</option>`).join("")}</select></div>
+          <div class="dc-club"><div class="dc-badge" style="background:${c};color:${cdist(c, "#ffffff") < 160 ? "#111" : "#fff"}">${esc(T.id === "V3FC" ? "V3" : T.id)}</div><div>${own ? `<input id="dcClubName" maxlength="18" value="${esc(club.name)}" aria-label="Название клуба">` : `<b>${tn(me)}</b>`}<small>${own ? "Бюджет 123 млрд $ · стадион «V3 Арена» · схема 1-4-5" : `Средний рейтинг ${ovr} OVR · схема 4-3-3`}</small></div></div>
+          ${own ? `<div class="dc-cols" aria-label="Цвет формы">${CLUBCOL.map((x, i) => `<button type="button" data-col="${i}" style="background:${x}" aria-pressed="${i === club.col}" aria-label="Цвет ${i + 1}"></button>`).join("")}</div>` : ""}
+          <div class="dc-stats">${stat("Матчей", club.m)}${stat("Побед", club.w)}${stat("Ничьих", club.d)}${stat("Поражений", club.l)}${stat("Мячи", `${club.gf}:${club.ga}`)}${own ? stat("Голы «Я»", club.me) : stat("Рейтинг", ovr)}</div>
+          <div class="dc-box"><small>Трофеи карьеры</small><b>⭐ ЛЧ × ${club.cups.ucl} · 🦁 АПЛ × ${club.cups.epl} · 🌍 ЧМ × ${club.cups.wc}</b></div>
+          <table class="dc-tbl"><tr><th>№</th><th>Игрок</th><th>Поз.</th><th>OVR</th></tr>${T.p.map(([n, num, r], i) => `<tr class="${r > 100 ? "me" : ""}"><td>${num}</td><td>${esc(n)}</td><td>${pos[i]}</td><td><b>${r}</b></td></tr>`).join("")}</table>`;
       } else if (view === "events") {
         const d = today(), plan = dayPlan();
         el.innerHTML = `${back}<h3 class="dc-h">📅 События дня</h3><small class="dc-note">Обновляются каждый день в полночь.</small>
@@ -12012,7 +12017,7 @@ div.sc-pl { cursor: default; }
           <div class="dc-box"><small>📰 Новости дня</small>${plan.news.map((n) => `<div>${n}</div>`).join("")}</div>`;
       } else if (view === "kickoff") {
         el.innerHTML = `${back}<h3 class="dc-h">🏁 Kick off — начало турнира</h3><small class="dc-note">Выбери турнир. Сложность берётся из главного меню.</small>
-          ${Object.entries(TOURS).map(([id, D]) => { const T = tours[id], live = T && T.stage !== "done"; return `<div class="dc-box"><b>${D.ico} ${D.n}</b><small>${D.about} ${id === "wc" ? "" : `Играешь за ${esc(club.name)}.`} ${T ? "Сейчас: " + tourStatus(id) : ""}</small>
+          ${Object.entries(TOURS).map(([id, D]) => { const T = tours[id], live = T && T.stage !== "done"; return `<div class="dc-box"><b>${D.ico} ${D.n}</b><small>${D.about} ${id === "wc" ? "" : `Играешь за ${tn(MYI())}.`} ${T ? "Сейчас: " + tourStatus(id) : ""}</small>
             ${id === "wc" ? `<select id="dcWcTeam" aria-label="Твоя сборная">${NATS.map((i) => `<option value="${i}"${T && T.me === i ? " selected" : ""}>${tn(i)}</option>`).join("")}</select>` : ""}
             <div class="${live ? "dc-two" : ""}">${live ? `<button class="btn" type="button" data-v="${id}">▶ Продолжить</button>` : ""}<button class="btn" type="button" data-new="${id}">${live ? "🔄 Заново" : "🏁 Kick off!"}</button></div></div>`; }).join("")}`;
       } else if (TOURS[view]) {
@@ -12039,7 +12044,7 @@ div.sc-pl { cursor: default; }
         if (t && (d.c[t.k] || 0) >= t.n && !d.got.includes(t.k)) { d.got.push(t.k); store.set("dcDay", d); Hero.earn(t.r); $("#dcResult").textContent = `🎁 +${t.r} ◎ за задание «${t.t}»`; }
         return render();
       }
-      if (ds.new) { const id = ds.new, me = id === "wc" ? +(($("#dcWcTeam") || {}).value || 0) : FC; newTour(id, me); $("#dcResult").textContent = `🏁 Kick off! ${TOURS[id].n} начался.`; return go(id); }
+      if (ds.new) { const id = ds.new, me = id === "wc" ? +(($("#dcWcTeam") || {}).value || 0) : MYI(); newTour(id, me); $("#dcResult").textContent = `🏁 Kick off! ${TOURS[id].n} начался.`; return go(id); }
       const a = ds.act, T = tours[view];
       if (a === "start") { const h = +$("#dcHome").value, w = +$("#dcAway").value; if (h === w) { $("#dcResult").textContent = "Выбери разные команды"; return; } homeI = h; awayI = w; store.set("dcHome", h); store.set("dcAway", w); mctx = { v: "play" }; start(); }
       else if (a === "motd") { const p = dayPlan(); homeI = p.motd[0]; awayI = p.motd[1]; mctx = { v: "events", motd: 1 }; start(); }
@@ -12049,6 +12054,7 @@ div.sc-pl { cursor: default; }
     });
     $("#dcView").addEventListener("change", (e) => {
       const t = e.target;
+      if (t.id === "dcMyClub") { club.team = t.value; saveClub(); homeI = MYI(); if (homeI === awayI) awayI = TI("RMA") === homeI ? TI("BAR") : TI("RMA"); store.set("dcHome", homeI); store.set("dcAway", awayI); if (!playing) preview(); $("#dcResult").textContent = `Теперь твой клуб — ${TEAMS[MYI()].n}. Начни турнир в Kick off!`; render(); }
       if (t.id === "dcClubName") { club.name = t.value.trim().slice(0, 18) || "V3 FC"; saveClub(); applyClub(); }
       if (t.id === "dcHome" || t.id === "dcAway") { const h = +$("#dcHome").value, w = +$("#dcAway").value; if (h !== w && !playing) { homeI = h; awayI = w; preview(); } }
     });
