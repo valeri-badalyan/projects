@@ -846,7 +846,15 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mg-story { text-align: left; }
 .mg-story small { color: #ffd84d; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
 .mg-line { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: 14px; background: rgba(20,12,34,.92); border: 1px solid rgba(255,255,255,.18); }
-.mg-ava { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: #2a1a3a; font-size: 30px; }
+.mg-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mg-voice { width: 34px; height: 30px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font-size: 15px; cursor: pointer; }
+.mg-stage .mg-face { flex: none; width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(255,255,255,.25); transition: box-shadow .2s, transform .2s; }
+.mg-line { animation: mgIn .35s cubic-bezier(.2,1.4,.4,1); cursor: pointer; }
+.mg-stage .mg-line.talk .mg-face { box-shadow: 0 0 0 3px #ffb547, 0 0 14px rgba(255,181,71,.55); transform: scale(1.04); }
+.mg-line p { min-height: 2.7em; }
+.mg-k { border-color: rgba(255,45,85,.5); background: rgba(40,6,20,.94); } .mg-line.mg-k b { color: #ff6b7a; }
+.mg-line.mg-o b { color: #9be15d; } .mg-line.mg-e b { color: #5ce1e6; } .mg-line.mg-n b { color: #e8d2a0; }
+@keyframes mgIn { from { opacity: 0; transform: translateY(14px) scale(.95); } to { opacity: 1; transform: none; } }
 .mg-line b { color: #ffb547; font-size: 13px; } .mg-line p { margin: 2px 0 0; font-size: 14px; line-height: 1.35; }
 .mg-menu .btn { padding-top: 9px; padding-bottom: 9px; }
 .mg-pad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; max-width: 640px; margin: 8px auto 0; transition: opacity .2s; }
@@ -12199,6 +12207,7 @@ div.sc-pl { cursor: default; }
 
     // ---------- run ----------
     function startRun(i) {
+      hush();
       ci = i; const C = CH[ci];
       dist = 0; spd = C.spd; gap = 30; stam = 100; coins = 0; hits = 0; tick = 0;
       P = { y: 0, vy: 0, slide: 0, dash: 0, hurt: 0, run: 0, onGround: true };
@@ -12304,10 +12313,85 @@ div.sc-pl { cursor: default; }
 
     // ---------- story & overlays ----------
     function tell(lines, then, title) { story = { lines, then, title }; si = 0; showLine(); }
+    // ---------- talking: typewriter text, animated faces, voices ----------
+    const VOICE = { n: { pitch: 0.95, rate: 0.95, cps: 34, blip: 330 }, m: { pitch: 0.75, rate: 1.05, cps: 40, blip: 180 }, e: { pitch: 1.9, rate: 1.15, cps: 46, blip: 620 },
+      o: { pitch: 1.35, rate: 0.82, cps: 28, blip: 420 }, k: { pitch: 0.1, rate: 0.72, cps: 24, blip: 95 } };
+    let voiceOn = store.get("mgVoice", true) !== false, said = false, talkUntil = 0, ruVoice = null;
+    const SS = window.speechSynthesis || null;
+    function pickVoice() { try { const vs = SS ? SS.getVoices() : []; ruVoice = vs.find((v) => /^ru/i.test(v.lang) && /google|milena|yuri|irina|pavel/i.test(v.name)) || vs.find((v) => /^ru/i.test(v.lang)) || null; } catch (e) { ruVoice = null; } }
+    if (SS) { pickVoice(); try { SS.addEventListener("voiceschanged", pickVoice); } catch (e) { /* older browsers */ } }
+    function hush() { said = false; try { if (SS) SS.cancel(); } catch (e) { /* ignore */ } }
+    function speak(w, text) {
+      said = false;
+      if (!voiceOn || !SS || !ruVoice) return false;
+      try {
+        SS.cancel();
+        const u = new SpeechSynthesisUtterance(text.replace(/[^\p{L}\p{N}\s.,!?…:;«»—-]/gu, ""));
+        u.lang = "ru-RU"; u.voice = ruVoice; u.pitch = VOICE[w].pitch; u.rate = VOICE[w].rate;
+        u.onstart = () => { said = true; }; u.onend = u.onerror = () => { said = false; };
+        SS.speak(u); return true;
+      } catch (e) { return false; }
+    }
+    function drawFace(c, w, t, open, blink) {
+      const g = c.getContext("2d"), S = c.width; g.setTransform(S / 64, 0, 0, S / 64, 0, 0); g.clearRect(0, 0, 64, 64);
+      const bob = open > 0.05 ? Math.sin(t * 9) * 1.2 : Math.sin(t * 2) * 0.6;
+      const bg = { n: "#3a2a4a", m: "#3a2a1c", e: "#1f3a5a", o: "#1f3a2a", k: "#3a0f2a" }[w];
+      g.fillStyle = bg; g.beginPath(); g.arc(32, 32, 32, 0, 7); g.fill();
+      if (w === "n") {
+        g.save(); g.translate(32, 34 + bob); g.rotate(Math.sin(t * 2) * 0.05);
+        g.fillStyle = "#e8d2a0"; g.fillRect(-16, -14, 32, 26); g.fillStyle = "#c8a46a"; for (const y of [-14, 12]) { g.beginPath(); g.ellipse(0, y, 18, 4, 0, 0, 7); g.fill(); }
+        g.fillStyle = "#6b4a2a"; for (let i = 0; i < 4; i++) g.fillRect(-11, -7 + i * 5, 22 - (i % 2) * 6, 1.6);
+        g.restore();
+        g.strokeStyle = "#ffd84d"; g.lineWidth = 2; g.beginPath(); g.moveTo(44, 20 + bob); g.lineTo(52 - open * 4, 10 + bob); g.stroke();
+        return;
+      }
+      g.save(); g.translate(0, bob);
+      const skin = { m: "#e0ac84", e: "#f1c7a3", o: "#d8b49a", k: "#d8d4e8" }[w];
+      if (w === "k") { g.fillStyle = "#5a0f2a"; g.beginPath(); g.moveTo(8, 64); g.lineTo(14, 30); g.lineTo(32, 46); g.lineTo(50, 30); g.lineTo(56, 64); g.fill(); }
+      if (w === "o") { g.fillStyle = "#2c5a3a"; g.beginPath(); g.arc(32, 30, 22, Math.PI, 0); g.lineTo(54, 64); g.lineTo(10, 64); g.fill(); }
+      g.fillStyle = w === "m" ? "#6b3f22" : w === "e" ? "#2f6fd6" : w === "o" ? "#3a6a4a" : "#2a1036"; g.fillRect(14, 50, 36, 14);
+      g.fillStyle = skin; g.beginPath(); g.ellipse(32, 32, 14, 16, 0, 0, 7); g.fill();
+      // hair / hats
+      if (w === "m") { g.fillStyle = "#3a2a1c"; g.fillRect(14, 15, 36, 5); g.fillRect(20, 7, 24, 9); g.fillStyle = "#2a1a10"; g.beginPath(); g.moveTo(18, 34); g.quadraticCurveTo(32, 62, 46, 34); g.lineTo(42, 40); g.quadraticCurveTo(32, 46, 22, 40); g.fill(); }
+      if (w === "e") { g.fillStyle = "#c9862a"; g.beginPath(); g.ellipse(32, 19, 15, 7, 0, Math.PI, 0); g.fill(); g.fillRect(17, 18, 30, 4); g.fillStyle = "#d0805a"; for (const x of [24, 27, 37, 40]) g.fillRect(x, 37, 1.4, 1.4); }
+      if (w === "o") { g.fillStyle = "#e8e8f0"; g.beginPath(); g.ellipse(32, 18, 14, 6, 0, Math.PI, 0); g.fill(); g.fillRect(17, 18, 4, 16); g.fillRect(43, 18, 4, 16); g.strokeStyle = "#a07a60"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(22, 40); g.lineTo(26, 41); g.moveTo(42, 40); g.lineTo(38, 41); g.stroke(); }
+      if (w === "k") { g.fillStyle = "#111"; g.beginPath(); g.moveTo(18, 24); g.lineTo(32, 14); g.lineTo(46, 24); g.lineTo(46, 18); g.lineTo(18, 18); g.fill(); g.fillStyle = "#ffd84d"; g.beginPath(); g.moveTo(20, 14); for (let k = 0; k <= 6; k++) g.lineTo(20 + k * 4, k % 2 ? 6 : 14); g.fill(); }
+      // eyes
+      const ey = w === "e" ? 30 : 29, ec = w === "k" ? "#ff2d55" : "#1a1a1a";
+      if (blink) { g.strokeStyle = ec; g.lineWidth = 1.4; for (const x of [26, 38]) { g.beginPath(); g.moveTo(x - 2.5, ey); g.lineTo(x + 2.5, ey); g.stroke(); } }
+      else { g.fillStyle = "#fff"; for (const x of [26, 38]) { g.beginPath(); g.ellipse(x, ey, 3, w === "e" ? 3.4 : 2.6, 0, 0, 7); g.fill(); } g.fillStyle = ec; for (const x of [26, 38]) { g.beginPath(); g.arc(x + 0.6, ey + 0.3, 1.5, 0, 7); g.fill(); } }
+      g.strokeStyle = w === "k" ? "#2a0f2a" : "#4a2a1a"; g.lineWidth = 1.4; const angry = w === "k" ? 2 : 0;
+      for (const [x, s] of [[26, -1], [38, 1]]) { g.beginPath(); g.moveTo(x - 3, ey - 4); g.lineTo(x + 3, ey - 4 + s * angry); g.stroke(); }
+      // mouth: opens while the character talks
+      const my = w === "m" ? 41 : 42, mw = 4 + open * 2, mh = 0.8 + open * 5;
+      g.fillStyle = "#5a1a1a"; g.beginPath(); g.ellipse(32, my, mw, mh, 0, 0, 7); g.fill();
+      if (open > 0.25) { g.fillStyle = "#e36a7a"; g.beginPath(); g.ellipse(32, my + mh * 0.45, mw * 0.6, mh * 0.35, 0, 0, 7); g.fill(); }
+      if (w === "k") { g.fillStyle = "#fff"; g.beginPath(); g.moveTo(29, my - mh + 0.2); g.lineTo(30, my - mh + 3); g.lineTo(31, my - mh + 0.2); g.moveTo(33, my - mh + 0.2); g.lineTo(34, my - mh + 3); g.lineTo(35, my - mh + 0.2); g.fill(); }
+      g.restore();
+    }
     function showLine() {
-      const [w, text] = story.lines[si], [ico, name] = WHO[w];
+      const [w, text] = story.lines[si], [, name] = WHO[w];
       const o = $("#mgOver"); o.hidden = false;
-      o.innerHTML = `<div class="mg-story"><small>${story.title}</small><div class="mg-line"><div class="mg-ava">${ico}</div><div><b>${name}</b><p>${text}</p></div></div><button class="btn" type="button" data-mg="next">${si < story.lines.length - 1 ? "Далее ▶" : "Бежать! 🏃"}</button></div>`;
+      o.innerHTML = `<div class="mg-story"><div class="mg-top"><small>${story.title}</small><button type="button" class="mg-voice" data-mg="voice" aria-label="Голоса">${voiceOn ? "🔊" : "🔇"}</button></div><div class="mg-line mg-${w}" data-mg="skip"><canvas class="mg-face" id="mgFace" width="128" height="128"></canvas><div><b>${name}</b><p id="mgText"></p></div></div><button class="btn" type="button" data-mg="next">…</button></div>`;
+      story.w = w; story.text = text; story.shown = 0; story.t = 0; story.blink = 1.5 + Math.random() * 2; story.lastCh = 0;
+      story.voiced = speak(w, text);
+      talkUntil = 0; nextLabel();
+    }
+    function nextLabel() { const b = $('#mgOver [data-mg="next"]'); if (b && story) b.textContent = story.shown < story.text.length ? "Пропустить ⏩" : si < story.lines.length - 1 ? "Далее ▶" : "Бежать! 🏃"; }
+    function storyTick(dt) {
+      if (!story || story.text == null) return;
+      const V = VOICE[story.w]; story.t += dt;
+      if (story.shown < story.text.length) {
+        story.shown = Math.min(story.text.length, story.shown + V.cps * dt);
+        const n = Math.floor(story.shown), p = $("#mgText"); if (p) p.textContent = story.text.slice(0, n);
+        if (!story.voiced && voiceOn && n - story.lastCh >= 2 && /\S/.test(story.text[n - 1] || "")) { story.lastCh = n; tone(V.blip * (0.85 + Math.random() * 0.35), 0.05, story.w === "k" ? "sawtooth" : "triangle", 0.035); }
+        if (story.shown >= story.text.length) nextLabel();
+      }
+      story.blink -= dt; const blink = story.blink < 0.12; if (story.blink < 0) story.blink = 2 + Math.random() * 2.5;
+      const talking = story.shown < story.text.length || said;
+      const open = talking ? Math.max(0, Math.abs(Math.sin(story.t * 15)) * (0.55 + 0.45 * Math.sin(story.t * 5.3))) : 0;
+      const c = $("#mgFace"); if (c) drawFace(c, story.w, story.t, open, blink);
+      const line = $("#mgOver .mg-line"); if (line) line.classList.toggle("talk", talking);
     }
     function overlay(kind) {
       const o = $("#mgOver");
@@ -12326,10 +12410,15 @@ div.sc-pl { cursor: default; }
     }
     function pad(on) { $("#mgPad").classList.toggle("off", !on); }
     $("#mgOver").addEventListener("click", (e) => {
+      if (!e.target.closest("button") && e.target.closest('[data-mg="skip"]') && story && story.shown < story.text.length) { story.shown = story.text.length; const p = $("#mgText"); if (p) p.textContent = story.text; nextLabel(); return; }
       const b = e.target.closest("button"); if (!b) return;
       if (b.dataset.ch != null) return chapterIntro(+b.dataset.ch);
       const a = b.dataset.mg;
-      if (a === "next") { si++; if (si < story.lines.length) showLine(); else { const t = story.then; story = null; t(); } }
+      if (a === "voice") { voiceOn = !voiceOn; store.set("mgVoice", voiceOn); b.textContent = voiceOn ? "🔊" : "🔇"; if (!voiceOn) hush(); else if (story) story.voiced = speak(story.w, story.text); return; }
+      if (a === "next") {
+        if (story && story.shown < story.text.length) { story.shown = story.text.length; const p = $("#mgText"); if (p) p.textContent = story.text; nextLabel(); return; }
+        hush(); si++; if (si < story.lines.length) showLine(); else { const t = story.then; story = null; t(); }
+      }
       else if (a === "retry") startRun(ci);
       else if (a === "resume") { state = "run"; overlay(null); pad(true); last = 0; }
       else if (a === "menu") { state = "menu"; overlay("menu"); }
@@ -12475,6 +12564,7 @@ div.sc-pl { cursor: default; }
       raf = 0; if (!visible) return;
       const dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016; last = t;
       if (state === "run") update(dt); else tick += dt * 0.3;
+      if (state === "story") storyTick(dt);
       draw();
       raf = requestAnimationFrame(frame);
     }
@@ -12497,7 +12587,7 @@ div.sc-pl { cursor: default; }
     });
     document.addEventListener("keyup", (e) => { if (["ArrowDown", "KeyS"].includes(e.code)) keys.down = false; });
     window.addEventListener("resize", () => { if (visible) resize(); });
-    if (/mgdebug/.test(location.hash)) window.__mor = { startRun, jump, slide, dash, get state() { return state; }, get dist() { return dist; }, get gap() { return gap; }, set gap(v) { gap = v; }, set dist(v) { dist = v; }, get obs() { return obs; }, step(n) { for (let i = 0; i < n && state === "run"; i++) update(1 / 60); }, next() { const b = document.querySelector('#mgOver [data-mg="next"]'); if (b) b.click(); }, get P() { return P; } };
+    if (/mgdebug/.test(location.hash)) window.__mor = { startRun, chapterIntro, jump, slide, dash, get state() { return state; }, get dist() { return dist; }, get gap() { return gap; }, set gap(v) { gap = v; }, set dist(v) { dist = v; }, get obs() { return obs; }, step(n) { for (let i = 0; i < n && state === "run"; i++) update(1 / 60); }, next() { const b = document.querySelector('#mgOver [data-mg="next"]'); if (b) b.click(); }, get P() { return P; } };
 
     return {
       enter() {
@@ -12509,7 +12599,7 @@ div.sc-pl { cursor: default; }
         last = 0; if (!raf) raf = requestAnimationFrame(frame);
         Hero.say("morger", "start", "MORGER: помоги Морджеру убежать от монстров!");
       },
-      leave() { visible = false; keys.down = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (state === "run") state = "paused"; },
+      leave() { visible = false; keys.down = false; hush(); if (raf) cancelAnimationFrame(raf); raf = 0; if (state === "run") state = "paused"; },
       key() {},
       best: () => (done ? `${done}/${CH.length}` : "—"),
     };
