@@ -2807,7 +2807,7 @@ div.sc-pl { cursor: default; }
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
     <div id="ssView"></div>
-    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. После 30 лет можно завершить карьеру, к 39 — придётся. Итог попадает в Зал славы.</p>
+    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). За каждый сыгранный матч — +1 OVR. 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. После 30 лет можно завершить карьеру, к 39 — придётся. Итог попадает в Зал славы.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -14051,6 +14051,8 @@ div.sc-pl { cursor: default; }
       C.s.g += mm.g; C.s.a += mm.a; C.s.st += mm.st; C.s.r += rating; C.s.m++; C.tot.g += mm.g; C.tot.a += mm.a; C.tot.st += mm.st; C.tot.m++;
       C.fit = clamp(C.fit - 18, 0, 100); C.money += salary(); C.week++;
       if (rating >= 8) C.fans += 2;
+      // every match played gives +1 OVR: each skill that counts for the position grows by 1
+      const was = ovr(C); Object.keys(WT[C.pos]).forEach((k) => { C.sk[k] = Math.min(99, Math.round((C.sk[k] + 1) * 10) / 10); }); mm.up = ovr(C) - was;
       mm.r = r; mm.rating = rating; save(); updateHub(); render();
     }
     // ---------- season end, awards, transfers ----------
@@ -14118,7 +14120,7 @@ div.sc-pl { cursor: default; }
           ${opts.map((o, k) => `<button class="btn" type="button" data-mo="${k}">${o[0]} <small>${SK[o[1]]} ${Math.round(C.sk[o[1]])}</small></button>`).join("")}`);
       }
       if (view === "aim") { const c = mm.cur; return V(`<div class="ss-box"><small>${c.label}</small><b>Останови бегунок в зелёной зоне!</b></div><div class="ss-aim" data-stop="1"><i class="ss-zone" style="left:${c.z0}%;width:${c.zone}%"></i><i class="ss-mark" id="ssMark"></i></div><button class="btn ss-go" type="button" data-stop="1">⚡ ЖМИ!</button><button class="btn ghost" type="button" data-auto="1">🎲 Довериться удаче</button><small class="ss-note">Зона шире, когда навык ${SK[c.skill]} выше и ты полон сил.</small>`); }
-      if (view === "fulltime") { const r = mm.r, cl = club(C.club), win = r.us > r.them; return V(`<div class="ss-score big"><span>${cl.fl} ${cl.n}</span><b>${r.us} : ${r.them}</b><span>${mm.opp.fl} ${mm.opp.n}</span></div><p class="ss-last">${win ? "🎉 Победа!" : r.us === r.them ? "🤝 Ничья" : "😓 Поражение"} · Оценка <b>${mm.rating.toFixed(1)}</b> · ⚽ ${mm.g} · 🅰️ ${mm.a}${mm.st ? ` · 🛡 ${mm.st}` : ""}</p><div class="ss-box ss-log">${mm.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div><button class="btn" type="button" data-v="home">Дальше ▶</button>`); }
+      if (view === "fulltime") { const r = mm.r, cl = club(C.club), win = r.us > r.them; return V(`<div class="ss-score big"><span>${cl.fl} ${cl.n}</span><b>${r.us} : ${r.them}</b><span>${mm.opp.fl} ${mm.opp.n}</span></div><p class="ss-last">${win ? "🎉 Победа!" : r.us === r.them ? "🤝 Ничья" : "😓 Поражение"} · Оценка <b>${mm.rating.toFixed(1)}</b> · ⚽ ${mm.g} · 🅰️ ${mm.a}${mm.st ? ` · 🛡 ${mm.st}` : ""}</p><p class="ss-last ss-gold">📈 OVR ${mm.up > 0 ? "+" + mm.up : "+0 (максимум)"} → ${ovr(C)}</p><div class="ss-box ss-log">${mm.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div><button class="btn" type="button" data-v="home">Дальше ▶</button>`); }
       if (view === "season") { const s = C.seasons[C.seasons.length - 1]; return V(`<h3 class="ss-h">📅 Итоги сезона ${s.n}</h3><div class="ss-box"><b>${club(s.club).fl} ${s.club} · место ${s.place}</b><small>${s.m} матчей · ⚽ ${s.g} · 🅰️ ${s.a}${s.st ? ` · 🛡 ${s.st}` : ""} · средняя оценка ${s.avg}</small>${s.got.length || s.aw.length ? `<b class="ss-gold">${[...s.got, ...s.aw].join(" · ")}</b>` : "<small>Без трофеев в этом сезоне.</small>"}</div>
         <div class="ss-box"><small>Тебе ${C.age} лет · OVR ${ovr(C)}</small>${C.age >= 34 ? "<b>Пора думать о завершении карьеры…</b>" : ""}</div>
         ${C.mustRetire ? `<p class="ss-last">Тело говорит «хватит». Пора повесить бутсы на гвоздь.</p><button class="btn" type="button" data-retire="1">👋 Завершить карьеру</button>` : `<h3 class="ss-h">🔁 Трансферное окно</h3>${C.offers.length ? C.offers.map((o) => { const x = club(o.n); return `<button class="btn ghost ss-off" type="button" data-move="${esc(o.n)}">✉️ ${x.fl} ${x.n} <small>сила ${x.s} · ${money(o.wage)}/нед</small></button>`; }).join("") : "<small class='ss-note'>Предложений нет.</small>"}
