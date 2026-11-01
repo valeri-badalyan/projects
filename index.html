@@ -790,6 +790,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .cod-overlay p { margin: 0; font-weight: 700; max-width: 300px; }
 .dc-stage { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 4 / 3; max-height: 58vh; border-radius: 14px; overflow: hidden; background: #0d1a10; touch-action: none; user-select: none; -webkit-user-select: none; }
 .dc-stage canvas { display: block; width: 100%; height: 100%; }
+.dc-trailer { position: absolute; inset: 0; z-index: 4; background: #000; }
+.dc-trailer[hidden] { display: none; }
+.dc-trailer video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+.dc-tclose { position: absolute; top: 8px; right: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.6); color: #fff; font: 800 12px Manrope, sans-serif; cursor: pointer; }
+.dc-tile.wide { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 10px; background: linear-gradient(135deg, #3a1a5a, #12132a 70%); border-color: #7b4dff; }
 .dc-pad { position: relative; width: 100%; max-width: 640px; margin: 8px auto 0; height: 132px; touch-action: none; user-select: none; -webkit-user-select: none; }
 .dc-pad[hidden], .dc-menu[hidden] { display: none; }
 .dc-pad .vc-joy { left: 2px; bottom: 6px; background: rgba(51,151,74,.22); border-color: rgba(120,220,140,.55); }
@@ -2725,7 +2730,7 @@ div.sc-pl { cursor: default; }
       <div class="bubble"><b data-hero-name></b><span class="buddy-say">Свисток!</span></div>
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
-    <div class="dc-stage"><canvas id="dcCanvas" aria-label="Футбольный матч, вид с телекамеры"></canvas></div>
+    <div class="dc-stage"><canvas id="dcCanvas" aria-label="Футбольный матч, вид с телекамеры"></canvas><div class="dc-trailer" id="dcTrailer" hidden><video id="dcTrailerV" playsinline preload="none" controls aria-label="Трейлер Doccer"></video><button type="button" class="dc-tclose" id="dcTClose">✕ Закрыть</button></div></div>
     <div class="dc-pad" id="dcPad" hidden>
       <button type="button" class="dc-pause" id="dcPause" aria-label="Пауза">⏸</button>
       <div class="vc-joy" id="dcJoy"><i></i></div>
@@ -12218,6 +12223,7 @@ div.sc-pl { cursor: default; }
           ${tile("ucl", "⭐", "ЛЧ", tourStatus("ucl"))}
           ${tile("epl", "🦁", "Премьер Лига", tourStatus("epl"))}
           ${tile("kickoff", "🏁", "Kick off", "Начать турнир")}
+          ${tile("trailer", "🎬", "Трейлер", "Смотреть ролик Doccer", "wide")}
         </div><div class="mk-diff">${["Лёгкий", "Нормальный", "Сложный"].map((n, i) => `<button type="button" data-diff="${i}" aria-pressed="${i === diff}">${n}</button>`).join("")}</div>`;
       } else if (view === "play") {
         const opts = (v) => `<optgroup label="Сборные">${NATS.map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup><optgroup label="Клубы">${TEAMS.map((t, i) => i).filter((i) => TEAMS[i].club).map((i) => `<option value="${i}"${i === v ? " selected" : ""}>${TEAMS[i].fl} ${esc(TEAMS[i].n)}</option>`).join("")}</optgroup>`;
@@ -12260,6 +12266,7 @@ div.sc-pl { cursor: default; }
     $("#dcView").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
       const ds = b.dataset;
+      if (ds.v === "trailer") return playTrailer();
       if (ds.v) { $("#dcResult").textContent = ""; return go(ds.v); }
       if (ds.diff) { diff = +ds.diff; store.set("dcDiff", diff); return render(); }
       if (ds.col) { club.col = +ds.col; saveClub(); applyClub(); if (!playing) preview(); return render(); }
@@ -12282,6 +12289,17 @@ div.sc-pl { cursor: default; }
       if (t.id === "dcClubName") { club.name = t.value.trim().slice(0, 18) || "V3 FC"; saveClub(); applyClub(); }
       if (t.id === "dcHome" || t.id === "dcAway") { const h = +$("#dcHome").value, w = +$("#dcAway").value; if (h !== w && !playing) { homeI = h; awayI = w; preview(); } }
     });
+    // trailer video: a separate file next to the page (MP4, or WebM where MP4 cannot play)
+    const TRAILER = "media/doccer-trailer.mp4";
+    function trailerDone() { const v = $("#dcTrailerV"); try { v.pause(); } catch (e) { /* ignore */ } $("#dcTrailer").hidden = true; store.set("dcTrailerSeen", 1); }
+    function playTrailer() {
+      const box = $("#dcTrailer"), v = $("#dcTrailerV");
+      if (!v.getAttribute("src")) v.src = v.canPlayType('video/mp4; codecs="avc1.64001F, mp4a.40.2"') ? TRAILER : TRAILER.replace(".mp4", ".webm");
+      box.hidden = false; try { v.currentTime = 0; } catch (e) { /* not loaded yet */ }
+      v.onended = trailerDone; v.onerror = () => { trailerDone(); $("#dcResult").textContent = "🎬 Трейлер не загрузился — проверь интернет."; };
+      const p = v.play(); if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => { /* the controls let the viewer start it */ }); });
+    }
+    $("#dcTClose").addEventListener("click", trailerDone);
     $("#dcResume").addEventListener("click", () => { paused = false; last = 0; menu(false); btnState = ""; updButtons(); });
     $("#dcPause").addEventListener("click", () => { if (!playing) return; paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); render(); });
     Object.values(btns).forEach((b) => b.addEventListener("pointerdown", (e) => { e.preventDefault(); act(b.dataset.a); }));
@@ -12306,7 +12324,7 @@ div.sc-pl { cursor: default; }
     });
     document.addEventListener("keyup", (e) => { if (KM[e.code]) keys[KM[e.code]] = false; });
     window.addEventListener("resize", () => { if (visible) resize(); });
-    if (/dcdebug/.test(location.hash)) window.__dc = { act, start, get players() { return players; }, get ball() { return ball; }, get score() { return score; }, get phase() { return phase; }, get ctrl() { return ctrl; }, get clock() { return clock; }, set clock(v) { clock = v; }, give, shoot, get playing() { return playing; }, get tours() { return tours; }, tourAdvance, go, get club() { return club; }, today, dayPlan, endMatch, step(n) { for (let i = 0; i < n && playing; i++) update(1 / 60); }, joy };
+    if (/dcdebug/.test(location.hash)) window.__dc = { playTrailer, act, start, get players() { return players; }, get ball() { return ball; }, get score() { return score; }, get phase() { return phase; }, get ctrl() { return ctrl; }, get clock() { return clock; }, set clock(v) { clock = v; }, give, shoot, get playing() { return playing; }, get tours() { return tours; }, tourAdvance, go, get club() { return club; }, today, dayPlan, endMatch, step(n) { for (let i = 0; i < n && playing; i++) update(1 / 60); }, joy };
 
     return {
       enter() {
@@ -12316,10 +12334,12 @@ div.sc-pl { cursor: default; }
         else { menu(paused); if (paused) render(); }
         last = 0; if (!raf) raf = requestAnimationFrame(frame);
         Hero.say("doccer", "start", "Doccer: футбол как по телевизору! Месси, Роналду, Ямаль — и Я со 113 OVR.");
+        if (!playing && !store.get("dcTrailerSeen", 0)) playTrailer();
       },
       leave() {
         visible = false; joy.id = null; joy.x = joy.y = 0; knob.style.transform = ""; Object.keys(keys).forEach((k) => { keys[k] = false; });
         if (raf) cancelAnimationFrame(raf); raf = 0;
+        if (!$("#dcTrailer").hidden) trailerDone();
         if (playing && !paused) { paused = true; $("#dcResult").textContent = `Пауза · ${score[0]}:${score[1]}`; menu(true); render(); }
       },
       key() {},
