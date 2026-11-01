@@ -928,6 +928,25 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ss-in { padding: 9px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-size: 16px; font-weight: 800; }
 .ss-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; } .ss-pos button { padding: 9px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; cursor: pointer; } .ss-pos button[aria-pressed="true"] { border-color: #33c45a; background: rgba(51,196,90,.18); }
 .ss-tbl { width: 100%; border-collapse: collapse; font-size: 12px; } .ss-tbl th, .ss-tbl td { padding: 4px 3px; border-bottom: 1px solid var(--line); text-align: center; } .ss-tbl td:nth-child(2) { text-align: left; } .ss-tbl th { color: var(--muted); font-size: 10px; }
+#mcWrap { display: flex; flex-direction: column; gap: 8px; max-width: 520px; margin: 0 auto; }
+.mc-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.mc-tabs button, .mc-chips button, .mc-zoom button { padding: 7px 4px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12px; cursor: pointer; }
+.mc-tabs button[aria-pressed="true"], .mc-chips button[aria-pressed="true"], .mc-zoom button[aria-pressed="true"] { border-color: #5ce1e6; background: rgba(92,225,230,.15); }
+#mcCanvas { display: block; width: 100%; max-width: 380px; aspect-ratio: 1; margin: 0 auto; border-radius: 50%; touch-action: none; cursor: grab; background: #050507; }
+.mc-info { margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--panel); font-size: 13px; min-height: 2.4em; }
+.mc-zoom { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.mc-knob { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; font-size: 12px; font-weight: 800; color: var(--muted); }
+.mc-knob input { width: 100%; accent-color: #5ce1e6; }
+.mc-chips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+.mc-chips button { text-align: left; display: flex; flex-direction: column; gap: 1px; } .mc-chips button small { color: var(--muted); font-size: 10px; }
+.mc-h { margin: 4px 0 0; font: 900 14px Manrope, sans-serif; }
+.mc-panel[hidden] { display: none; } .mc-panel { display: flex; flex-direction: column; gap: 8px; }
+.mc-msg { margin: 0; text-align: center; font-weight: 800; min-height: 1.3em; }
+#mcDish { display: block; width: 100%; }
+.mc-dbtns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.mc-dbtn { display: flex; flex-direction: column; gap: 4px; } .mc-dbtn small { text-align: center; font-size: 10px; color: var(--muted); font-weight: 800; min-height: 2.4em; } .mc-dbtn .btn { margin: 0; padding: 7px 4px; font-size: 11px; }
+.mc-card { padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); } .mc-card b { display: block; } .mc-card small { color: #5ce1e6; font-size: 10px; font-weight: 800; } .mc-card p { margin: 3px 0 0; font-size: 12px; } .mc-card.lock { opacity: .6; }
+.mc-prog { margin: 0; text-align: center; font-weight: 900; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1938,6 +1957,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Легенда</span><span class="stat-val" id="hubSoccerstar">—</span></span>
       </button>
+      <button class="cart" data-go="microscop" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0e1a24"/><circle cx="40" cy="22" r="17" fill="#c8e8d0" stroke="#8a6a2a" stroke-width="3"/><ellipse cx="34" cy="18" rx="7" ry="3" fill="rgba(80,140,70,.6)" stroke="#4a7a3a"/><circle cx="35" cy="18" r="1.2" fill="#2a4a2a"/><circle cx="46" cy="28" r="4" fill="rgba(60,150,60,.5)" stroke="#2a7a2a"/><g fill="#7a2aa8"><circle cx="44" cy="14" r="1"/><circle cx="46" cy="15" r="1"/><circle cx="45" cy="17" r="1"/></g><path d="M48 24 q2 -2 4 0 t4 0" stroke="#c84a8a" fill="none"/><rect x="10" y="20" width="7" height="22" rx="2" transform="rotate(-25 13 31)" fill="#e8e8f0"/><rect x="8" y="44" width="22" height="5" rx="2" fill="#5a6a7a"/><rect x="6" y="54" width="30" height="5" rx="2" fill="#3a4a5a"/><path d="M19 49 v5" stroke="#5a6a7a" stroke-width="4"/><rect x="12" y="40" width="16" height="3" fill="#a8d8f0"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Microscop</span>
+          <span class="cart-desc">Лаборатория: смотри образцы под микроскопом (×40, ×100, ×400), готовь препараты с красителями, выращивай бактерии в чашках Петри и собирай атлас микромира.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Атлас</span><span class="stat-val" id="hubMicroscop">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2818,6 +2847,47 @@ div.sc-pl { cursor: default; }
     </div>
     <div id="ssView"></div>
     <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). За каждый сыгранный матч — +1 OVR. 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. Карьера длится сколько хочешь: завершай её когда угодно кнопкой «Завершить карьеру». Итог попадает в Зал славы.</p>
+  </section>
+
+  <!-- ===== Microscop ===== -->
+  <section id="microscop" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Microscop</div>
+      <div class="chips"><div class="chip hi"><span>Атлас</span><b id="mcCount">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Наука!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div id="mcWrap">
+      <div class="mc-tabs" id="mcTabs"><button type="button" data-tab="scope">🔬 Микроскоп</button><button type="button" data-tab="lab">🧪 Образцы</button><button type="button" data-tab="dish">🧫 Бактерии</button><button type="button" data-tab="atlas">📖 Атлас</button></div>
+      <div class="mc-panel" id="mcScope">
+        <canvas id="mcCanvas" aria-label="Поле зрения микроскопа"></canvas>
+        <p class="mc-info" id="mcInfo" aria-live="polite"></p>
+        <div class="mc-zoom" id="mcZoom"><button type="button" data-z="40">×40</button><button type="button" data-z="100">×100</button><button type="button" data-z="400">×400</button></div>
+        <label class="mc-knob">🔍 Фокус <input type="range" id="mcFocus" min="0" max="100" value="50"></label>
+        <label class="mc-knob">💡 Свет <input type="range" id="mcLight" min="0" max="100" value="70"></label>
+        <h3 class="mc-h">🔲 Мои предметные стёкла</h3>
+        <div class="mc-chips" id="mcSlides"></div>
+      </div>
+      <div class="mc-panel" id="mcLab" hidden>
+        <h3 class="mc-h">1. Что положим на стекло?</h3><div class="mc-chips" id="mcLabSrc"></div>
+        <h3 class="mc-h">2. Краситель</h3><div class="mc-chips" id="mcLabStain"></div>
+        <button class="btn" type="button" data-prep="1">🧪 Приготовить образец</button>
+        <p class="mc-msg" id="mcLabMsg"></p>
+      </div>
+      <div class="mc-panel" id="mcDishes" hidden>
+        <canvas id="mcDish" aria-label="Чашки Петри"></canvas>
+        <div class="mc-dbtns" id="mcDishBtns"></div>
+        <p class="mc-msg" id="mcDishMsg"></p>
+        <h3 class="mc-h">Откуда берём бактерии для посева?</h3><div class="mc-chips" id="mcDishSrc"></div>
+        <h3 class="mc-h">Где выращиваем?</h3><div class="mc-chips" id="mcDishTemp"></div>
+      </div>
+      <div class="mc-panel" id="mcAtlas" hidden><div id="mcAtlasList" class="mc-panel"></div></div>
+    </div>
+    <p class="hint">🔬 Двигай стекло пальцем, меняй увеличение (бактерии видны только при ×400), крути фокус, пока картинка не станет чёткой, и нажимай на организмы — так они попадают в атлас. 🧪 В «Образцах» готовь новые стёкла: вода из пруда, лук, щека, листок, дрожжи, плесень, йогурт, земля, с красителями. 🧫 В «Бактериях» посей пробу в чашку Петри — колонии растут на глазах (быстрее при 37°), проверь антибиотик и возьми пробу под микроскоп.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -6634,7 +6704,7 @@ div.sc-pl { cursor: default; }
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6909,7 +6979,7 @@ div.sc-pl { cursor: default; }
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -14256,6 +14326,282 @@ div.sc-pl { cursor: default; }
     };
   })();
 
+  /* ================= Microscop ================= */
+  const Microscop = (() => {
+    const cv = $("#mcCanvas"), ctx = cv.getContext("2d");
+    const ORG = {
+      para: { n: "Инфузория-туфелька", z: 40, size: 30, f: "Одноклеточное, плавает с помощью тысяч ресничек — будто вёслами." },
+      amoeba: { n: "Амёба", z: 100, size: 35, f: "Меняет форму и ползает «ложноножками», обволакивая еду." },
+      euglena: { n: "Эвглена зелёная", z: 100, size: 15, f: "И растение, и животное: фотосинтезирует и плавает жгутиком. Видит свет «глазком»." },
+      volvox: { n: "Вольвокс", z: 40, size: 60, f: "Шарик-колония из тысяч клеток, катится, вращаясь. Внутри — дочерние шарики." },
+      rotifer: { n: "Коловратка", z: 40, size: 45, f: "Крошечное животное с «колёсиками» из ресничек на голове — ими загоняет еду в рот." },
+      tardigrade: { n: "Тихоходка", z: 40, size: 50, f: "«Водяной медведь» на 8 лапках. Переживает космос, кипяток и заморозку! Редкая находка." },
+      diatom: { n: "Диатомея", z: 100, size: 18, f: "Водоросль в стеклянном панцире-коробочке. Даёт людям много кислорода." },
+      spirogyra: { n: "Спирогира", z: 40, size: 8, f: "Нитчатая водоросль со спиральными лентами хлоропластов." },
+      chlorella: { n: "Хлорелла", z: 400, size: 4, f: "Крошечная зелёная водоросль-шарик. Её выращивали на космических станциях." },
+      onion: { n: "Клетки кожицы лука", z: 100, size: 40, f: "Клетки-кирпичики с ядром. С йодом ядра видны лучше." },
+      cheek: { n: "Клетки эпителия щеки", z: 100, size: 25, f: "Плоские клетки с ядром посередине. Это твои собственные клетки!" },
+      leaf: { n: "Устьица листа", z: 100, size: 12, f: "«Ротики» листа из двух клеток-замыкающих: через них растение дышит." },
+      yeast: { n: "Дрожжи", z: 400, size: 4, f: "Одноклеточные грибы, размножаются почкованием. Из-за них поднимается тесто." },
+      mold: { n: "Плесень пеницилл", z: 100, size: 6, f: "Гриб-плесень с кисточками спор. Из него получили первый антибиотик — пенициллин." },
+      cocci: { n: "Стафилококки", z: 400, size: 0.9, f: "Круглые бактерии, собираются гроздьями, как виноград. Живут на коже." },
+      strepto: { n: "Стрептококки", z: 400, size: 0.8, f: "Круглые бактерии, выстроенные цепочкой-бусами." },
+      bacilli: { n: "Бациллы", z: 400, size: 2.2, f: "Бактерии-палочки. Многие живут в почве и умеют делать споры." },
+      spirilla: { n: "Спириллы", z: 400, size: 4, f: "Бактерии-спиральки, плавают штопором." },
+      lacto: { n: "Лактобактерии", z: 400, size: 2.6, f: "Палочки, которые превращают молоко в йогурт и кефир. Полезные!" },
+    };
+    const SRC = {
+      pond: { n: "💧 Вода из пруда", mix: { para: 14, amoeba: 6, euglena: 16, volvox: 6, rotifer: 5, diatom: 20, spirogyra: 6, chlorella: 90, tardigrade: 0.5, bacilli: 140, cocci: 70 } },
+      onion: { n: "🧅 Кожица лука", grid: "onion", mix: { bacilli: 6 } },
+      cheek: { n: "👄 Мазок со щеки", mix: { cheek: 60, cocci: 180, strepto: 50 } },
+      leaf: { n: "🍃 Листок", grid: "leaf", mix: {} },
+      yeast: { n: "🍞 Дрожжи", mix: { yeast: 320 } },
+      mold: { n: "🍊 Плесень с апельсина", mix: { mold: 14, yeast: 10 } },
+      yogurt: { n: "🥛 Йогурт", mix: { lacto: 260, strepto: 90 } },
+      soil: { n: "🌱 Земля", mix: { bacilli: 220, spirilla: 80, amoeba: 2, tardigrade: 0.6, rotifer: 1, mold: 3, diatom: 2 } },
+    };
+    const STAIN = { none: ["Без окраски", null], iodine: ["🟤 Йод", "#a0682a"], blue: ["🔵 Метиленовый синий", "#2a5ad8"], violet: ["🟣 Генциан-фиолетовый", "#7a2aa8"] };
+    const DISH_SRC = { air: ["🌬 Воздух", { mold: 0.5, cocci: 0.3, bacilli: 0.2 }, 10], finger: ["👆 Палец", { cocci: 0.6, bacilli: 0.3, strepto: 0.1 }, 22], coin: ["🪙 Монета", { cocci: 0.5, bacilli: 0.5 }, 5], phone: ["📱 Телефон", { cocci: 0.7, strepto: 0.2, bacilli: 0.1 }, 28], yogurt: ["🥛 Йогурт", { lacto: 0.7, strepto: 0.3 }, 30], soil: ["🌱 Земля", { bacilli: 0.5, spirilla: 0.2, mold: 0.3 }, 34] };
+    const COL = { cocci: ["#f4e28a", "#ffd84d"], strepto: ["#f4f4e8", "#e8e0c8"], bacilli: ["#e8d0a8", "#c8a87a"], spirilla: ["#f0c8d8", "#e8a0c0"], lacto: ["#f8f4ee", "#e8e0d0"], mold: ["#4a8a5a", "#8ad0a0"] };
+    const GROW_MS = 150000;
+    let slides = store.get("mcSlides", null), dishes = store.get("mcDishes", null) || [null, null, null], atlas = store.get("mcAtlas", {}) || {};
+    if (!slides) slides = [{ id: 1, src: "pond", stain: "none", seed: 7, n: "💧 Вода из пруда (стартовый)" }];
+    let tab = "scope", cur = null, world = null, zoom = 100, focus = 0.5, light = 0.7, cx = 500, cy = 500, W = 0, dpr = 1, raf = 0, last = 0, t = 0, visible = false, found = null, labSrc = "pond", labStain = "none", dishPick = "finger", dishTemp = 37, busy = false;
+    const off = document.createElement("canvas"), og = off.getContext("2d");
+    const save = () => { store.set("mcSlides", slides); store.set("mcDishes", dishes); store.set("mcAtlas", atlas); };
+    function rng(seed) { let a = seed >>> 0 || 1; return () => { a = (a + 0x6D2B79F5) >>> 0; let x = a; x = Math.imul(x ^ (x >>> 15), x | 1); x ^= x + Math.imul(x ^ (x >>> 7), x | 61); return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
+
+    // ---------- build a micro-world from a slide ----------
+    function build(sl) {
+      const r = rng(sl.seed), objs = [], S = SRC[sl.src], mix = sl.mix || S.mix;
+      Object.entries(mix).forEach(([k, n]) => { let cnt = n < 1 ? (r() < n ? 1 : 0) : Math.round(n * (0.8 + r() * 0.4)); for (let i = 0; i < cnt; i++) objs.push(make(k, r)); });
+      const grid = S.grid || null;
+      world = { sl, objs, grid, r, focusT: 0.25 + r() * 0.5, seed: sl.seed };
+      cx = 500; cy = 500; focus = 0.5;
+    }
+    function make(k, r) {
+      const o = { k, x: 40 + r() * 920, y: 40 + r() * 920, a: r() * 6.28, ph: r() * 6.28, sp: 0, turn: 0 };
+      const swim = { para: 22, euglena: 14, volvox: 6, rotifer: 3, amoeba: 1.5, tardigrade: 3, spirilla: 6, diatom: 1 };
+      o.sp = (swim[k] || 0) * (0.6 + r() * 0.8);
+      if (k === "spirogyra") { o.len = 200 + r() * 250; o.sp = 0; }
+      if (k === "mold") { o.len = 80 + r() * 140; o.br = 2 + ((r() * 3) | 0); }
+      if (k === "cocci") o.n = 4 + ((r() * 6) | 0);
+      if (k === "strepto" || k === "lacto") o.n = 3 + ((r() * 6) | 0);
+      if (k === "yeast") o.bud = r() < 0.45;
+      if (k === "cheek") o.shape = Array.from({ length: 9 }, () => 0.75 + r() * 0.4);
+      return o;
+    }
+    // ---------- drawing (in the off-screen buffer, then blurred by down-scaling when out of focus) ----------
+    function stainCol(a) { const s = STAIN[world.sl.stain][1]; return s; }
+    function drawObj(g, o, X, Y, s) {
+      const st = world.sl.stain, sc = STAIN[st][1], k = o.k, R = ORG[k].size * s;
+      if (R < 0.35) return;
+      g.save(); g.translate(X, Y); g.rotate(o.a);
+      const nuc = (x, y, r) => { g.fillStyle = st === "none" ? "rgba(120,110,90,.35)" : st === "iodine" ? "#6a3a10" : st === "blue" ? "#1a3aa8" : "#4a1a7a"; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); };
+      const bac = st === "none" ? 0.5 : 1, bcol = sc || "#d8d0b8";
+      if (k === "para") { g.fillStyle = "rgba(200,220,190,.55)"; g.strokeStyle = "rgba(80,110,70,.8)"; g.lineWidth = Math.max(1, s * 0.8); g.beginPath(); g.ellipse(0, 0, R, R * 0.38, 0, 0, 7); g.fill(); g.stroke(); g.strokeStyle = "rgba(80,110,70,.5)"; g.lineWidth = 0.7; for (let i = 0; i < 26; i++) { const a = (i / 26) * 6.28, l = R * 0.12 * (1 + Math.sin(t * 20 + i) * 0.4); g.beginPath(); g.moveTo(Math.cos(a) * R, Math.sin(a) * R * 0.38); g.lineTo(Math.cos(a) * (R + l), Math.sin(a) * (R * 0.38 + l)); g.stroke(); } nuc(R * 0.1, 0, R * 0.14); g.fillStyle = "rgba(255,255,255,.4)"; g.beginPath(); g.arc(-R * 0.5, 0, R * 0.09, 0, 7); g.arc(R * 0.55, 0, R * 0.08, 0, 7); g.fill(); }
+      else if (k === "amoeba") { g.fillStyle = "rgba(210,210,190,.5)"; g.strokeStyle = "rgba(110,110,90,.7)"; g.lineWidth = Math.max(1, s * 0.6); g.beginPath(); for (let i = 0; i <= 14; i++) { const a = (i / 14) * 6.28, rr = R * (0.7 + 0.3 * Math.sin(a * 3 + t * 0.8 + o.ph) + 0.15 * Math.sin(a * 5 - t * 0.5)); const x = Math.cos(a) * rr, y = Math.sin(a) * rr; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.closePath(); g.fill(); g.stroke(); nuc(0, 0, R * 0.16); for (let i = 0; i < 6; i++) { g.fillStyle = "rgba(120,120,80,.35)"; g.beginPath(); g.arc(Math.cos(i * 2) * R * 0.4, Math.sin(i * 3) * R * 0.35, R * 0.06, 0, 7); g.fill(); } }
+      else if (k === "euglena") { g.fillStyle = "rgba(80,170,70,.75)"; g.beginPath(); g.ellipse(0, 0, R, R * 0.32, 0, 0, 7); g.fill(); g.strokeStyle = "rgba(60,120,50,.8)"; g.lineWidth = 0.8; g.beginPath(); g.moveTo(R, 0); for (let i = 1; i <= 8; i++) g.lineTo(R + i * R * 0.15, Math.sin(t * 14 + i) * R * 0.15); g.stroke(); g.fillStyle = "#e83a2a"; g.beginPath(); g.arc(R * 0.6, -R * 0.08, R * 0.08, 0, 7); g.fill(); nuc(-R * 0.1, 0, R * 0.12); }
+      else if (k === "volvox") { g.rotate(t * 0.6 + o.ph); g.fillStyle = "rgba(120,200,110,.25)"; g.strokeStyle = "rgba(60,140,60,.7)"; g.lineWidth = Math.max(1, s * 0.6); g.beginPath(); g.arc(0, 0, R, 0, 7); g.fill(); g.stroke(); g.fillStyle = "rgba(40,130,40,.85)"; for (let i = 0; i < 40; i++) { const a = i * 2.4, rr = R * Math.sqrt((i + 0.5) / 40) * 0.95; g.beginPath(); g.arc(Math.cos(a) * rr, Math.sin(a) * rr, Math.max(0.6, R * 0.04), 0, 7); g.fill(); } for (let i = 0; i < 4; i++) { g.fillStyle = "rgba(30,110,30,.6)"; g.beginPath(); g.arc(Math.cos(i * 1.6) * R * 0.45, Math.sin(i * 1.6) * R * 0.45, R * 0.18, 0, 7); g.fill(); } }
+      else if (k === "rotifer") { const ext = 0.85 + 0.15 * Math.sin(t * 2 + o.ph); g.fillStyle = "rgba(220,210,180,.55)"; g.strokeStyle = "rgba(120,100,70,.8)"; g.lineWidth = Math.max(1, s * 0.6); g.beginPath(); g.ellipse(0, 0, R * 0.5 * ext, R * 0.22, 0, 0, 7); g.fill(); g.stroke(); g.beginPath(); g.moveTo(-R * 0.45, 0); g.lineTo(-R * 0.95, -R * 0.04); g.lineTo(-R * 0.95, R * 0.04); g.closePath(); g.fill(); g.stroke(); for (const sy of [-1, 1]) { g.save(); g.translate(R * 0.55, sy * R * 0.14); g.rotate(t * 10 * sy); g.strokeStyle = "rgba(120,100,70,.8)"; g.beginPath(); g.arc(0, 0, R * 0.12, 0, 7); g.stroke(); for (let i = 0; i < 8; i++) { g.beginPath(); g.moveTo(Math.cos(i * 0.8) * R * 0.12, Math.sin(i * 0.8) * R * 0.12); g.lineTo(Math.cos(i * 0.8) * R * 0.18, Math.sin(i * 0.8) * R * 0.18); g.stroke(); } g.restore(); } nuc(0, 0, R * 0.07); }
+      else if (k === "tardigrade") { g.fillStyle = "rgba(230,200,160,.75)"; g.strokeStyle = "rgba(140,100,60,.9)"; g.lineWidth = Math.max(1, s * 0.6); g.beginPath(); g.ellipse(0, 0, R * 0.55, R * 0.28, 0, 0, 7); g.fill(); g.stroke(); for (let i = 0; i < 4; i++) for (const sy of [-1, 1]) { const lx = -R * 0.35 + i * R * 0.24, sw = Math.sin(t * 3 + i + (sy > 0 ? 1 : 0)) * R * 0.05; g.beginPath(); g.ellipse(lx + sw, sy * R * 0.3, R * 0.06, R * 0.1, 0, 0, 7); g.fill(); g.stroke(); } g.fillStyle = "#3a2a1a"; g.beginPath(); g.arc(R * 0.45, -R * 0.08, R * 0.03, 0, 7); g.arc(R * 0.45, R * 0.08, R * 0.03, 0, 7); g.fill(); for (let i = 0; i < 6; i++) { g.strokeStyle = "rgba(140,100,60,.4)"; g.beginPath(); g.moveTo(-R * 0.4 + i * R * 0.15, -R * 0.25); g.lineTo(-R * 0.4 + i * R * 0.15, R * 0.25); g.stroke(); } }
+      else if (k === "diatom") { g.fillStyle = "rgba(210,190,120,.6)"; g.strokeStyle = "rgba(140,120,60,.9)"; g.lineWidth = Math.max(0.8, s * 0.4); g.beginPath(); g.ellipse(0, 0, R, R * 0.28, 0, 0, 7); g.fill(); g.stroke(); g.strokeStyle = "rgba(140,120,60,.5)"; for (let i = -6; i <= 6; i++) { g.beginPath(); g.moveTo(i * R * 0.14, -R * 0.25); g.lineTo(i * R * 0.14, R * 0.25); g.stroke(); } g.beginPath(); g.moveTo(-R, 0); g.lineTo(R, 0); g.stroke(); }
+      else if (k === "spirogyra") { const L = o.len * s, w = R; g.fillStyle = "rgba(150,210,140,.35)"; g.strokeStyle = "rgba(60,130,60,.7)"; g.lineWidth = Math.max(0.8, s * 0.4); g.fillRect(-L / 2, -w / 2, L, w); g.strokeRect(-L / 2, -w / 2, L, w); g.strokeStyle = "rgba(40,140,40,.85)"; g.lineWidth = Math.max(1, w * 0.18); g.beginPath(); for (let x = -L / 2; x <= L / 2; x += Math.max(1, w * 0.2)) g.lineTo(x, Math.sin(x / w * 2.2) * w * 0.38); g.stroke(); g.strokeStyle = "rgba(60,130,60,.5)"; g.lineWidth = 0.7; for (let x = -L / 2; x < L / 2; x += w * 3) { g.beginPath(); g.moveTo(x, -w / 2); g.lineTo(x, w / 2); g.stroke(); } }
+      else if (k === "chlorella" || k === "yeast") { const green = k === "chlorella"; g.fillStyle = green ? "rgba(70,170,70,.8)" : st === "none" ? "rgba(160,140,100,.6)" : sc; g.strokeStyle = green ? "rgba(40,110,40,.9)" : "rgba(150,130,90,.8)"; g.lineWidth = Math.max(0.6, s * 0.25); g.beginPath(); g.ellipse(0, 0, R, R * (green ? 1 : 0.85), 0, 0, 7); g.fill(); g.stroke(); if (o.bud) { g.beginPath(); g.ellipse(R * 1.25, 0, R * 0.45, R * 0.4, 0, 0, 7); g.fill(); g.stroke(); } if (!green) { g.fillStyle = "rgba(255,255,255,.4)"; g.beginPath(); g.arc(-R * 0.2, -R * 0.1, R * 0.25, 0, 7); g.fill(); } }
+      else if (k === "cheek") { g.fillStyle = st === "none" ? "rgba(225,215,200,.35)" : st === "blue" ? "rgba(150,180,240,.4)" : st === "iodine" ? "rgba(230,190,130,.4)" : "rgba(200,160,230,.4)"; g.strokeStyle = "rgba(140,130,110,.6)"; g.lineWidth = Math.max(0.7, s * 0.3); g.beginPath(); o.shape.forEach((k2, i) => { const a = (i / o.shape.length) * 6.28, x = Math.cos(a) * R * k2, y = Math.sin(a) * R * k2; i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.closePath(); g.fill(); g.stroke(); nuc(R * 0.05, 0, R * 0.16); }
+      else if (k === "mold") { const L = o.len * s; g.strokeStyle = "rgba(200,220,200,.85)"; g.lineWidth = Math.max(0.8, R * 0.35); g.beginPath(); g.moveTo(-L / 2, 0); g.lineTo(L / 2, 0); g.stroke(); for (let i = 0; i < o.br; i++) { const bx = -L / 2 + ((i + 1) / (o.br + 1)) * L, h = L * 0.3; g.beginPath(); g.moveTo(bx, 0); g.lineTo(bx + h * 0.2, -h); g.stroke(); g.fillStyle = "#4a9a5a"; for (let j = 0; j < 5; j++) { g.beginPath(); g.arc(bx + h * 0.2 + (j - 2) * R * 0.7, -h - R * 0.8 - Math.abs(j - 2) * -R * 0.3, R * 0.55, 0, 7); g.fill(); } } }
+      else {
+        g.globalAlpha = bac;
+        const fill = st === "none" ? "rgba(70,62,44,1)" : bcol;
+        g.fillStyle = fill;
+        if (k === "cocci") { for (let i = 0; i < o.n; i++) { const a = i * 2.4, rr = R * 1.1 * Math.sqrt(i); g.beginPath(); g.arc(Math.cos(a) * rr, Math.sin(a) * rr, R, 0, 7); g.fill(); } }
+        else if (k === "strepto" || k === "lacto") { const rod = k === "lacto"; for (let i = 0; i < o.n; i++) { const x = (i - o.n / 2) * R * (rod ? 2.2 : 2.05), y = Math.sin(i * 0.9 + o.ph) * R * 0.6; g.beginPath(); rod ? g.ellipse(x, y, R, R * 0.32, 0, 0, 7) : g.arc(x, y, R, 0, 7); g.fill(); } }
+        else if (k === "bacilli") { g.beginPath(); g.ellipse(0, 0, R, R * 0.3, 0, 0, 7); g.fill(); }
+        else if (k === "spirilla") { g.strokeStyle = fill; g.lineWidth = Math.max(0.8, R * 0.18); g.beginPath(); for (let i = 0; i <= 20; i++) { const x = -R + (i / 20) * 2 * R, y = Math.sin(i * 1.3 + t * 8) * R * 0.25; i ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
+        g.globalAlpha = 1;
+      }
+      g.restore();
+    }
+    function drawGrid(g, kind, s, ox, oy, size) {
+      const st = world.sl.stain;
+      if (kind === "onion") {
+        const cw = 40 * s, ch = 14 * s, x0 = -((cx % 40) * s) - cw * 2, y0 = -((cy % 28) * s) - ch * 2;
+        g.fillStyle = st === "iodine" ? "rgba(230,200,120,.35)" : st === "blue" ? "rgba(170,200,250,.35)" : st === "violet" ? "rgba(210,170,240,.35)" : "rgba(240,235,220,.25)"; g.fillRect(0, 0, size, size);
+        g.strokeStyle = st === "none" ? "rgba(150,140,110,.55)" : "rgba(110,80,40,.75)"; g.lineWidth = Math.max(0.8, s * 0.7);
+        for (let r = 0, y = y0; y < size + ch; r++, y += ch) { const row = Math.floor((cy - size / 2 / s) / 14) + r, sh = (row % 2) * cw * 0.5; for (let x = x0 - sh; x < size + cw; x += cw) { g.strokeRect(x, y, cw, ch); g.fillStyle = st === "none" ? "rgba(120,110,90,.3)" : st === "iodine" ? "#6a3a10" : st === "blue" ? "#1a3aa8" : "#4a1a7a"; g.beginPath(); g.ellipse(x + cw * (0.3 + ((row * 7 + Math.round(x)) % 5) * 0.08), y + ch / 2, Math.max(0.6, 2.4 * s), Math.max(0.6, 1.8 * s), 0, 0, 7); g.fill(); } }
+      } else if (kind === "leaf") {
+        const c = 20 * s; g.fillStyle = "rgba(140,200,120,.35)"; g.fillRect(0, 0, size, size);
+        g.strokeStyle = "rgba(60,120,50,.6)"; g.lineWidth = Math.max(0.7, s * 0.5);
+        const x0 = -((cx % 20) * s), y0 = -((cy % 20) * s);
+        for (let y = y0 - c; y < size + c; y += c) for (let x = x0 - c; x < size + c; x += c) { g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + c * 0.3, y + c * 0.2, x + c * 0.7, y - c * 0.2, x + c, y); g.bezierCurveTo(x + c * 1.2, y + c * 0.3, x + c * 0.8, y + c * 0.7, x + c, y + c); g.stroke(); }
+        const gx0 = Math.floor((cx - size / 2 / s) / 60), gy0 = Math.floor((cy - size / 2 / s) / 60);
+        for (let gy = gy0; gy < gy0 + size / s / 60 + 2; gy++) for (let gx = gx0; gx < gx0 + size / s / 60 + 2; gx++) { const X = (gx * 60 + 30 + ((gx * 13 + gy * 7) % 17) - cx) * s + size / 2, Y = (gy * 60 + 30 + ((gx * 5 + gy * 11) % 19) - cy) * s + size / 2, open = 0.5 + 0.5 * Math.sin(t * 0.4 + gx); g.fillStyle = "rgba(50,150,50,.85)"; for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(X + sd * 3.2 * s, Y, 3.6 * s, 8 * s, 0, 0, 7); g.fill(); } g.fillStyle = "rgba(20,40,20,.8)"; g.beginPath(); g.ellipse(X, Y, (0.6 + open * 1.4) * s, 6 * s, 0, 0, 7); g.fill(); g.fillStyle = "rgba(30,120,30,.8)"; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(X + (k % 2 ? 3 : -3) * s, Y + (k - 2.5) * 2.4 * s, Math.max(0.5, 1 * s), 0, 7); g.fill(); } }
+      }
+    }
+    function viewD() { return { 40: 600, 100: 240, 400: 60 }[zoom]; }
+    function draw() {
+      if (!W) return;
+      const D = W, s = D / viewD(), defocus = Math.abs(focus - world.focusT), q = Math.max(0.1, 1 / (1 + defocus * 14));
+      const bs = Math.max(40, Math.round(D * dpr * q)); if (off.width !== bs) { off.width = bs; off.height = bs; }
+      const k = bs / D; og.setTransform(k, 0, 0, k, 0, 0);
+      const bg = og.createRadialGradient(D / 2, D / 2, 0, D / 2, D / 2, D / 2); const L = 150 + light * 100; bg.addColorStop(0, `rgb(${L},${L - 6},${L - 30})`); bg.addColorStop(1, `rgb(${L - 50},${L - 56},${L - 80})`); og.fillStyle = bg; og.fillRect(0, 0, D, D);
+      if (world.grid) drawGrid(og, world.grid, s, 0, 0, D);
+      const v = viewD() / 2 + 40;
+      for (const o of world.objs) { const ext = o.len ? o.len / 2 + 10 : ORG[o.k].size * 2; if (Math.abs(o.x - cx) > v + ext || Math.abs(o.y - cy) > v + ext) continue; drawObj(og, o, (o.x - cx) * s + D / 2, (o.y - cy) * s + D / 2, s); }
+      if (world.sl.stain !== "none") { og.globalCompositeOperation = "multiply"; og.fillStyle = STAIN[world.sl.stain][1] + "26"; og.fillRect(0, 0, D, D); og.globalCompositeOperation = "source-over"; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#050507"; ctx.fillRect(0, 0, D, D);
+      ctx.save(); ctx.beginPath(); ctx.arc(D / 2, D / 2, D / 2 - 6, 0, 7); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.drawImage(off, 0, 0, D, D);
+      ctx.fillStyle = `rgba(0,0,0,${Math.max(0, 0.6 - light * 0.6)})`; ctx.fillRect(0, 0, D, D);
+      const vg = ctx.createRadialGradient(D / 2, D / 2, D * 0.3, D / 2, D / 2, D / 2); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.6)"); ctx.fillStyle = vg; ctx.fillRect(0, 0, D, D);
+      if (found && t - found.t < 2.2) { const a = 1 - (t - found.t) / 2.2; ctx.strokeStyle = `rgba(255,216,77,${a})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(found.x, found.y, found.r + (t - found.t) * 10, 0, 7); ctx.stroke(); }
+      ctx.restore();
+      ctx.strokeStyle = "#8a6a2a"; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(D / 2, D / 2, D / 2 - 5, 0, 7); ctx.stroke();
+      ctx.strokeStyle = "#e8c070"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(D / 2, D / 2, D / 2 - 9, 0, 7); ctx.stroke();
+      ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(10, 10, 54, 20); ctx.fillStyle = "#ffd84d"; ctx.font = "900 12px Manrope, sans-serif"; ctx.textBaseline = "middle"; ctx.fillText(`×${zoom}`, 18, 20);
+      if (defocus > 0.12) { ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.fillRect(D - 112, 10, 102, 20); ctx.fillStyle = "#fff"; ctx.font = "800 11px Manrope, sans-serif"; ctx.fillText("🔍 Настрой фокус", D - 106, 20); }
+    }
+    function step(dt) {
+      t += dt;
+      if (!world) return;
+      for (const o of world.objs) {
+        if (!o.sp) continue;
+        o.turn += (Math.random() - 0.5) * dt * 2; o.turn *= 0.98; o.a += o.turn * dt * (o.k === "amoeba" ? 0.3 : 1.2);
+        const sp = o.sp * (o.k === "para" ? 1 + 0.3 * Math.sin(t * 3 + o.ph) : 1);
+        o.x += Math.cos(o.a) * sp * dt; o.y += Math.sin(o.a) * sp * dt;
+        if (o.x < 20 || o.x > 980) { o.a = Math.PI - o.a; o.x = Math.max(20, Math.min(980, o.x)); }
+        if (o.y < 20 || o.y > 980) { o.a = -o.a; o.y = Math.max(20, Math.min(980, o.y)); }
+      }
+    }
+    function frame(ts) { raf = 0; if (!visible) return; const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts; step(dt); if (tab === "scope" && world) draw(); if (tab === "dish") drawDishes(); raf = requestAnimationFrame(frame); }
+    function resize() { const r = cv.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1); W = Math.max(200, r.width || 320); cv.width = Math.round(W * dpr); cv.height = Math.round(W * dpr); }
+    // ---------- identify by tapping ----------
+    function tap(px, py) {
+      if (!world) return;
+      const s = W / viewD(), defocus = Math.abs(focus - world.focusT);
+      const wx = cx + (px - W / 2) / s, wy = cy + (py - W / 2) / s;
+      if (Math.hypot(px - W / 2, py - W / 2) > W / 2) return;
+      let best = null, bd = 1e9;
+      for (const o of world.objs) { const d = Math.hypot(o.x - wx, o.y - wy) - (o.len ? 0 : ORG[o.k].size * (o.k === "cocci" ? 2.5 : 1)), along = o.len ? Math.abs((wx - o.x) * Math.sin(o.a) - (wy - o.y) * Math.cos(o.a)) : d; const dd = o.len ? (Math.hypot(o.x - wx, o.y - wy) < o.len / 2 ? along - ORG[o.k].size : 1e9) : d; if (dd < bd) { bd = dd; best = o; } }
+      let kind = best && bd * s < 14 ? best.k : null;
+      if (!kind && world.grid && zoom >= 100) kind = world.grid;
+      if (!kind) return info("Здесь ничего нет — подвинь стекло или нажми точно на организм.");
+      const O = ORG[kind], R = O.size * s;
+      if (defocus > 0.12) return info("Всё размыто — сначала настрой фокус 🔍.");
+      if (R < 3.2) return info(`Слишком мелко. Увеличь до ×${O.z > zoom ? O.z : zoom === 40 ? 100 : 400}.`);
+      found = { x: px, y: py, r: Math.max(10, R), t };
+      if (!atlas[kind]) { atlas[kind] = Date.now(); save(); Hero.earn(kind === "tardigrade" ? 60 : 15); updateHub(); beep(880, 0.12); setTimeout(() => beep(1320, 0.16), 120); info(`🎉 Открытие! <b>${O.n}</b> — ${O.f} ${kind === "tardigrade" ? "+60 ◎" : "+15 ◎"}`); Hero.say("microscop", "good", `Ого, ${O.n}!`); }
+      else info(`<b>${O.n}</b> — ${O.f}`);
+      $("#mcCount").textContent = Object.keys(atlas).length;
+    }
+    function info(h) { $("#mcInfo").innerHTML = h; }
+    let AC = null;
+    function beep(f, d) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.05, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d + 0.02); } catch (e) { /* optional */ } }
+    // ---------- Petri dishes ----------
+    const dcv = $("#mcDish"), dctx = dcv.getContext("2d");
+    function colonies(d) {
+      if (d.cols) return d.cols;
+      const r = rng(d.seed), [, mix, n] = DISH_SRC[d.src], cols = [];
+      const keys = Object.keys(mix);
+      for (let i = 0; i < n * (d.temp === 37 ? 1.2 : d.temp === 4 ? 0.35 : 0.9); i++) { let p = r(), k = keys[0]; for (const kk of keys) { if (p < mix[kk]) { k = kk; break; } p -= mix[kk]; } const a = r() * 6.28, rr = Math.sqrt(r()) * 0.88; cols.push({ k, x: Math.cos(a) * rr, y: Math.sin(a) * rr, s: 0.03 + r() * 0.06 * (k === "mold" ? 2 : 1), d: r() * 0.4, res: r() < 0.12 }); }
+      d.cols = cols; return cols;
+    }
+    function growth(d) { const sp = d.temp === 37 ? 1 : d.temp === 22 ? 0.6 : 0.15; return Math.max(0, Math.min(1, ((Date.now() - d.t0) / GROW_MS) * sp)); }
+    function drawDishes() {
+      const r = dcv.getBoundingClientRect(), D = Math.max(200, r.width || 320), dp = Math.min(2, window.devicePixelRatio || 1);
+      if (dcv.width !== Math.round(D * dp)) { dcv.width = Math.round(D * dp); dcv.height = Math.round((D / 3 + 8) * dp); }
+      const g = dctx; g.setTransform(dp, 0, 0, dp, 0, 0); g.clearRect(0, 0, D, D / 3 + 8);
+      dishes.forEach((d, i) => {
+        const R = D / 6 - 6, X = D / 6 + (i * D) / 3, Y = R + 6;
+        g.fillStyle = d ? "#e8d89a" : "#c8c8d0"; g.beginPath(); g.arc(X, Y, R, 0, 7); g.fill();
+        if (d) {
+          const gr = growth(d), now = Date.now();
+          for (const c of colonies(d)) {
+            if (d.anti && !c.res && Math.hypot(c.x, c.y) < 0.38 && d.anti < now) continue;
+            const gg = Math.max(0, (gr - c.d) / (1 - c.d)); if (gg <= 0) continue;
+            const rr = c.s * R * Math.pow(gg, 0.7), cc = COL[c.k];
+            g.fillStyle = cc[0]; g.beginPath(); g.arc(X + c.x * R, Y + c.y * R, rr, 0, 7); g.fill(); g.fillStyle = cc[1]; g.beginPath(); g.arc(X + c.x * R - rr * 0.2, Y + c.y * R - rr * 0.2, rr * 0.5, 0, 7); g.fill();
+          }
+          if (d.anti) { g.fillStyle = "#fff"; g.beginPath(); g.arc(X, Y, R * 0.08, 0, 7); g.fill(); g.strokeStyle = "rgba(255,255,255,.35)"; g.setLineDash([3, 3]); g.beginPath(); g.arc(X, Y, R * 0.38, 0, 7); g.stroke(); g.setLineDash([]); }
+        }
+        g.strokeStyle = "rgba(255,255,255,.75)"; g.lineWidth = 2; g.beginPath(); g.arc(X, Y, R, 0, 7); g.stroke();
+        g.fillStyle = "rgba(255,255,255,.18)"; g.beginPath(); g.ellipse(X - R * 0.35, Y - R * 0.45, R * 0.35, R * 0.12, -0.6, 0, 7); g.fill();
+      });
+      dishes.forEach((d, i) => { const el = $(`#mcDishInfo${i}`); if (el) el.textContent = d ? `${DISH_SRC[d.src][0]} · ${d.temp}° · ${Math.round(growth(d) * 100)}%` : "пусто"; });
+    }
+    // ---------- views ----------
+    function render() {
+      $$("#mcTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
+      $("#mcScope").hidden = tab !== "scope"; $("#mcLab").hidden = tab !== "lab"; $("#mcDishes").hidden = tab !== "dish"; $("#mcAtlas").hidden = tab !== "atlas";
+      $("#mcCount").textContent = Object.keys(atlas).length;
+      if (tab === "scope") {
+        $("#mcSlides").innerHTML = slides.map((sl) => `<button type="button" data-slide="${sl.id}" aria-pressed="${cur && cur.id === sl.id}">${sl.n}<small>${STAIN[sl.stain][0]}</small></button>`).join("");
+        $$("#mcZoom button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.z === zoom)));
+        resize();
+      }
+      if (tab === "lab") {
+        $("#mcLabSrc").innerHTML = Object.entries(SRC).map(([k, s]) => `<button type="button" data-src="${k}" aria-pressed="${k === labSrc}">${s.n}</button>`).join("");
+        $("#mcLabStain").innerHTML = Object.entries(STAIN).map(([k, s]) => `<button type="button" data-stain="${k}" aria-pressed="${k === labStain}">${s[0]}</button>`).join("");
+      }
+      if (tab === "dish") {
+        $("#mcDishSrc").innerHTML = Object.entries(DISH_SRC).map(([k, s]) => `<button type="button" data-ds="${k}" aria-pressed="${k === dishPick}">${s[0]}</button>`).join("");
+        $("#mcDishTemp").innerHTML = [[4, "❄️ Холодильник 4°"], [22, "🏠 Комната 22°"], [37, "🔥 Термостат 37°"]].map(([v, n]) => `<button type="button" data-temp="${v}" aria-pressed="${v === dishTemp}">${n}</button>`).join("");
+        $("#mcDishBtns").innerHTML = dishes.map((d, i) => `<div class="mc-dbtn"><small id="mcDishInfo${i}"></small>${d ? `<button class="btn" type="button" data-sample="${i}">🔬 Взять пробу</button><button class="btn ghost" type="button" data-anti="${i}" ${d.anti ? "disabled" : ""}>💊 Антибиотик</button><button class="btn ghost" type="button" data-clear="${i}">🧽 Вымыть</button>` : `<button class="btn" type="button" data-seed="${i}">➕ Посеять</button>`}</div>`).join("");
+      }
+      if (tab === "atlas") {
+        const n = Object.keys(atlas).length;
+        $("#mcAtlasList").innerHTML = `<p class="mc-prog">Открыто ${n} из ${Object.keys(ORG).length}</p>` + Object.entries(ORG).map(([k, o]) => atlas[k] ? `<div class="mc-card"><b>✅ ${o.n}</b><small>Видно с ×${o.z}</small><p>${o.f}</p></div>` : `<div class="mc-card lock"><b>❓ ???</b><small>Видно с ×${o.z}</small><p>${hint(k)}</p></div>`).join("");
+      }
+    }
+    function hint(k) { const where = Object.entries(SRC).filter(([, s]) => s.mix[k] || s.grid === k).map(([, s]) => s.n); return where.length ? `Ищи в образце: ${where.join(", ")}` : "Вырасти в чашке Петри и возьми пробу."; }
+    function load(id) { cur = slides.find((s) => s.id === id) || slides[0]; build(cur); info(`Образец: <b>${cur.n}</b>. Крути фокус, двигай стекло пальцем и нажимай на организмы, чтобы узнать, кто это.`); render(); }
+    function prepare() {
+      if (busy) return; busy = true;
+      const steps = ["💧 Капаем образец на предметное стекло…", labStain === "none" ? "🧪 Без красителя…" : `🧪 Добавляем ${STAIN[labStain][0]}…`, "🔲 Накрываем покровным стеклом…", "✅ Образец готов!"];
+      let i = 0; const el = $("#mcLabMsg");
+      const tick = () => { el.textContent = steps[i]; beep(500 + i * 150, 0.08); if (++i < steps.length) setTimeout(tick, 550); else {
+        const sl = { id: Date.now(), src: labSrc, stain: labStain, seed: (Math.random() * 1e9) | 0, n: SRC[labSrc].n };
+        slides.unshift(sl); slides = slides.slice(0, 12); save(); busy = false; Hero.earn(3);
+        setTimeout(() => { tab = "scope"; load(sl.id); }, 500);
+      } };
+      tick();
+    }
+    $("#mcWrap").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+      if (d.tab) { tab = d.tab; if (tab === "scope" && !world) load(slides[0].id); return render(); }
+      if (d.slide) return load(+d.slide);
+      if (d.z) { zoom = +d.z; world && (world.focusT = Math.max(0.15, Math.min(0.85, world.focusT + (Math.random() - 0.5) * 0.3))); return render(); }
+      if (d.src) { labSrc = d.src; return render(); }
+      if (d.stain) { labStain = d.stain; return render(); }
+      if (d.prep) return prepare();
+      if (d.ds) { dishPick = d.ds; return render(); }
+      if (d.temp) { dishTemp = +d.temp; return render(); }
+      if (d.seed != null) { dishes[+d.seed] = { src: dishPick, temp: dishTemp, t0: Date.now(), seed: (Math.random() * 1e9) | 0, anti: 0 }; save(); beep(660, 0.1); return render(); }
+      if (d.anti != null) { const dd = dishes[+d.anti]; dd.anti = Date.now(); save(); return render(); }
+      if (d.clear != null) { dishes[+d.clear] = null; save(); return render(); }
+      if (d.sample != null) {
+        const dd = dishes[+d.sample], gr = growth(dd);
+        if (gr < 0.25) { $("#mcDishMsg").textContent = "Колонии ещё не выросли — подожди немного (или поставь в термостат 37°)."; return; }
+        const mix = {}; for (const c of colonies(dd)) if (!(dd.anti && !c.res && Math.hypot(c.x, c.y) < 0.38)) mix[c.k] = (mix[c.k] || 0) + (c.k === "mold" ? 0.6 : 14) * gr;
+        const sl = { id: Date.now(), src: "pond", mix, stain: "blue", seed: (Math.random() * 1e9) | 0, n: `🧫 Проба: ${DISH_SRC[dd.src][0]}` };
+        slides.unshift(sl); slides = slides.slice(0, 12); save(); tab = "scope"; zoom = 400; load(sl.id); return;
+      }
+    });
+    $("#mcFocus").addEventListener("input", (e) => { focus = +e.target.value / 100; });
+    $("#mcLight").addEventListener("input", (e) => { light = +e.target.value / 100; });
+    let drag = null;
+    cv.addEventListener("pointerdown", (e) => { const r = cv.getBoundingClientRect(); drag = { x: e.clientX, y: e.clientY, cx, cy, moved: false, px: e.clientX - r.left, py: e.clientY - r.top }; try { cv.setPointerCapture(e.pointerId); } catch (_) { /* optional */ } });
+    cv.addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.hypot(dx, dy) > 6) drag.moved = true; const s = W / viewD(); cx = Math.max(0, Math.min(1000, drag.cx - dx / s)); cy = Math.max(0, Math.min(1000, drag.cy - dy / s)); });
+    cv.addEventListener("pointerup", () => { if (drag && !drag.moved) tap(drag.px, drag.py); drag = null; });
+    window.addEventListener("resize", () => { if (visible) resize(); });
+    if (/mcdebug/.test(location.hash)) window.__mc = { get world() { return world; }, set focus(v) { focus = v; }, get atlas() { return atlas; }, tap, setView(x, y, z) { cx = x; cy = y; zoom = z; render(); }, get dishes() { return dishes; } };
+    return {
+      enter() { visible = true; if (!world) load(slides[0].id); render(); last = 0; if (!raf) raf = requestAnimationFrame(frame); Hero.say("microscop", "start", "Микроскоп готов! Что будем исследовать?"); },
+      leave() { visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; },
+      key() {},
+      best: () => { const n = Object.keys(atlas).length; return n ? `${n}/${Object.keys(ORG).length}` : "—"; },
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -14846,7 +15192,7 @@ div.sc-pl { cursor: default; }
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -15102,6 +15448,7 @@ div.sc-pl { cursor: default; }
       { go: "enth", ico: "🌐", t: "ENTHERNET", s: "Сделай свой сайт: магазин, блог или игровой портал — и собери тысячи посетителей!", bg: "linear-gradient(135deg,#1f8fd6,#7b5cff)", fx: ["🌐", "💻", "❤️", "🚀"] },
       { go: "tc", ico: "🏬", t: "ЧТО В ТЦ?", s: "Напиши «Игрушки» — и в твоём торговом центре откроется магазин игрушек!", bg: "linear-gradient(135deg,#3a8ad8,#ff8a3d)", fx: ["🏬", "🛍️", "🧸", "🍕"] },
       { go: "cod", ico: "🎖️", t: "CALL OF V3", s: "Роботы атакуют базу! Автомат, снайперка и волны врагов — в 3D.", bg: "linear-gradient(135deg,#3a4a2a,#c9a06a)", fx: ["🎖️", "🔥", "🤖", "💥"] },
+      { go: "microscop", ico: "🔬", t: "MICROSCOP", s: "Загляни в микромир: инфузории, тихоходки, бактерии в чашках Петри!", bg: "linear-gradient(135deg,#0e3a4a,#2a8a6a)", fx: ["🔬", "🦠", "🧫", "🧪"] },
       { go: "soccerstar", ico: "⭐", t: "SOCCER STAR", s: "Начни карьеру в 17 лет, выбирай клубы сам и заверши её легендой с Золотым мячом!", bg: "linear-gradient(135deg,#16803a,#c89a2a)", fx: ["⚽", "⭐", "🏆", "🏅"] },
       { go: "voicerec", ico: "🎙", t: "VOICE REC", s: "Озвучь мемы своим голосом: «Поехали!», «Шок! Сенсация!» — и получи 3 звезды!", bg: "linear-gradient(135deg,#ff2d55,#5a1aa8)", fx: ["🎙", "😂", "⭐", "🎬"] },
       { go: "morger", ico: "🧔", t: "MORGER", s: "Морджер убегает от монстров Графа Мрака! 5 глав сюжета — успеешь к Башне Рассвета?", bg: "linear-gradient(135deg,#3a0f2a,#12081c)", fx: ["🧔", "👹", "🌅", "🏃"] },
@@ -15145,7 +15492,7 @@ div.sc-pl { cursor: default; }
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -15173,7 +15520,7 @@ div.sc-pl { cursor: default; }
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -18020,8 +18367,8 @@ div.sc-pl { cursor: default; }
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -18057,6 +18404,7 @@ div.sc-pl { cursor: default; }
     $("#hubMorger").textContent = Morger.best();
     $("#hubVoicerec").textContent = VoiceRec.best();
     $("#hubSoccerstar").textContent = SoccerStar.best();
+    $("#hubMicroscop").textContent = Microscop.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -18076,7 +18424,7 @@ div.sc-pl { cursor: default; }
     if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -19260,6 +19608,7 @@ div.sc-pl { cursor: default; }
     if (document.hidden && current === "morger") Morger.leave();
     if (document.hidden && current === "voicerec") VoiceRec.leave();
     if (document.hidden && current === "soccerstar") SoccerStar.leave();
+    if (document.hidden && current === "microscop") Microscop.leave();
     if (document.hidden && current === "enth") Enth.leave();
     if (!document.hidden && current === "enth") Enth.enter();
     if (document.hidden && current === "cash") Cash.leave();
