@@ -2737,7 +2737,7 @@ div.sc-pl { cursor: default; }
       <button class="btn" type="button" id="dcResume" hidden>▶ Продолжить матч</button>
       <div id="dcView"></div>
     </div>
-    <p class="hint">Джойстик — бежать (жёлтый круг — твой игрок, он переключается сам). ⚽ Удар — только на половине соперника; джойстик вверх/вниз — в дальний/ближний угол. 🦵 Выбить — длинный удар, только на своей половине. ➡️ Пас — партнёру по направлению джойстика. ⚡ Вразрез — пас на ход в свободную зону. 🌀 Финт — защитники проваливаются. Без мяча: Отбор, Подкат, Смена игрока, Рывок. Матч — 2 тайма по 2,5 минуты. Компьютер: WASD/стрелки, пробел — удар/выбить/отбор, Z — пас, X — вразрез, C — финт.</p>
+    <p class="hint">Джойстик — бежать (жёлтый круг — твой игрок, он переключается сам). ⚽ Удар — только на половине соперника; джойстик вверх/вниз — в дальний/ближний угол. 🦵 Выбить — длинный удар, только на своей половине. ➡️ Пас — партнёру по направлению джойстика. ⚡ Вразрез — пас на ход в свободную зону. 🌀 Финт — защитники проваливаются. Без мяча: 🦶 Отбор — игрок очень быстро бежит на соперника и подкатом забирает мяч; Подкат, Смена игрока, Рывок. Матч — 2 тайма по 2,5 минуты. Компьютер: WASD/стрелки, пробел — удар/выбить/отбор, Z — пас, X — вразрез, C — финт.</p>
   </section>
 
   <!-- ===== MORGER ===== -->
@@ -11562,6 +11562,8 @@ div.sc-pl { cursor: default; }
     }
     function userTackle(slide) {
       const p = ctrl; if (!p || p.down > 0 || p.cd > 0) return;
+      // «Отбор»: a very fast sprint at the ball carrier that ends in a sliding tackle winning the ball
+      if (!slide) { p.rush = 1.6; p.cd = 0.3; float(p, "💨", "#5ce1e6"); sfx("feint"); return; }
       p.cd = 0.6;
       const o = ball.owner;
       if (o && o.team === 1 && dist(o, p) < (slide ? 2.6 : 1.8) && ball.protect <= 0) {
@@ -11686,7 +11688,8 @@ div.sc-pl { cursor: default; }
         let tx = p.x, ty = p.y, sp = p.spd;
         if (p.down > 0) sp = 0;
         else if (p === ctrl) {
-          if (jx || jy) { tx = p.x + jx * 5; ty = p.y + jy * 5; sp = p.spd * Math.min(1, Math.hypot(jx, jy) * 1.2); }
+          if (p.rush > 0) { const o = ball.owner && ball.owner.team === 1 ? ball.owner : null; tx = o ? o.x + o.vx * 0.15 : ball.x; ty = o ? o.y + o.vy * 0.15 : ball.y; sp = p.spd * 2.6; }
+          else if (jx || jy) { tx = p.x + jx * 5; ty = p.y + jy * 5; sp = p.spd * Math.min(1, Math.hypot(jx, jy) * 1.2); }
           else if (ball.owner === p) sp = 0;
           else if (!ball.owner || ball.owner.team === 1 || (ball.target === p)) { [tx, ty] = intercept(p); sp = p.spd * 0.9; }
           else [tx, ty] = formTarget(p);
@@ -11711,6 +11714,16 @@ div.sc-pl { cursor: default; }
         if (v > 0.4 && p.down <= 0) { p.fx = p.vx / v; p.fy = p.vy / v; }
         else if (ball.owner !== p && p.down <= 0) { const bx = ball.x - p.x, by = ball.y - p.y, bd = Math.hypot(bx, by) || 1; p.fx += (bx / bd - p.fx) * a; p.fy += (by / bd - p.fy) * a; const fl = Math.hypot(p.fx, p.fy) || 1; p.fx /= fl; p.fy /= fl; }
         p.anim += v * dt * 2.4;
+        if (p.slideT > 0) p.slideT = Math.max(0, p.slideT - dt);
+        if (p.rush > 0) {
+          p.rush = p !== ctrl || phase !== "play" ? 0 : p.rush - dt;
+          const o = ball.owner;
+          if (o && o.team === 0) p.rush = 0;
+          else if (o && o.team === 1 && dist(p, o) < 1.7 && ball.protect <= 0) {
+            p.rush = 0; p.slideT = 0.5; p.vx *= 0.6; p.vy *= 0.6; o.down = 0.9;
+            give(p); float(p, "Подкат! Мяч твой!", "#9be15d"); sfx("tackle"); bump("tackles");
+          } else if (!o && dist(p, ball) < 1.3 && ball.z < 1.4) { p.rush = 0; give(p); }
+        }
       }
       for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) {
         const a = players[i], b = players[j], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
@@ -11954,7 +11967,7 @@ div.sc-pl { cursor: default; }
       if (p === ctrl) { c.strokeStyle = "#ffd84d"; c.lineWidth = Math.max(1.5, k * 0.07); c.beginPath(); c.ellipse(sx, sy, 0.6 * k, 0.2 * k, 0, 0, 7); c.stroke(); }
       c.save(); c.translate(sx, sy);
       if (p.dive > 0) { const pr = Math.min(1, (0.9 - p.dive) / 0.25); c.translate(0, -Math.min(p.diveZ, 2) * 0.3 * k * pr); c.rotate(p.diveSide * dirT(p.team) * 1.35 * pr); }
-      else if (p.down > 0) c.rotate((p.fx >= 0 ? 1 : -1) * 1.2);
+      else if (p.down > 0 || p.slideT > 0) c.rotate((p.fx >= 0 ? 1 : -1) * 1.2);
       const lw = Math.max(1.4, 0.15 * k); c.lineCap = "round";
       c.strokeStyle = K.so; c.lineWidth = lw;
       for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(sd * 0.1 * k, -0.85 * k); c.lineTo(sd * 0.1 * k + run * sd * 0.28 * k, -0.04 * k); c.stroke(); }
