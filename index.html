@@ -2807,7 +2807,7 @@ div.sc-pl { cursor: default; }
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
     <div id="ssView"></div>
-    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). За каждый сыгранный матч — +1 OVR. 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. После 30 лет можно завершить карьеру, к 39 — придётся. Итог попадает в Зал славы.</p>
+    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). За каждый сыгранный матч — +1 OVR. 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. Карьера длится сколько хочешь: завершай её когда угодно кнопкой «Завершить карьеру». Итог попадает в Зал славы.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -14077,7 +14077,7 @@ div.sc-pl { cursor: default; }
       C.age++;
       Object.keys(C.sk).forEach((k) => { if (C.age >= 31) C.sk[k] = Math.max(20, Math.round((C.sk[k] - rnd(0.5, C.age >= 34 ? 3.5 : 2)) * 10) / 10); else if (C.age <= 23 && C.sk[k] < C.pot) C.sk[k] = Math.min(C.pot, Math.round((C.sk[k] + rnd(0.5, 2)) * 10) / 10); });
       C.offers = makeOffers(avg); C.season++; C.fit = 100;
-      C.mustRetire = C.age >= 39 || (C.age >= 34 && ovr(C) < 60);
+      C.mustRetire = false; // the career lasts as long as the player wants
       view = "season"; save(); render();
     }
     function makeOffers(avg) {
@@ -14122,9 +14122,9 @@ div.sc-pl { cursor: default; }
       if (view === "aim") { const c = mm.cur; return V(`<div class="ss-box"><small>${c.label}</small><b>Останови бегунок в зелёной зоне!</b></div><div class="ss-aim" data-stop="1"><i class="ss-zone" style="left:${c.z0}%;width:${c.zone}%"></i><i class="ss-mark" id="ssMark"></i></div><button class="btn ss-go" type="button" data-stop="1">⚡ ЖМИ!</button><button class="btn ghost" type="button" data-auto="1">🎲 Довериться удаче</button><small class="ss-note">Зона шире, когда навык ${SK[c.skill]} выше и ты полон сил.</small>`); }
       if (view === "fulltime") { const r = mm.r, cl = club(C.club), win = r.us > r.them; return V(`<div class="ss-score big"><span>${cl.fl} ${cl.n}</span><b>${r.us} : ${r.them}</b><span>${mm.opp.fl} ${mm.opp.n}</span></div><p class="ss-last">${win ? "🎉 Победа!" : r.us === r.them ? "🤝 Ничья" : "😓 Поражение"} · Оценка <b>${mm.rating.toFixed(1)}</b> · ⚽ ${mm.g} · 🅰️ ${mm.a}${mm.st ? ` · 🛡 ${mm.st}` : ""}</p><p class="ss-last ss-gold">📈 OVR ${mm.up > 0 ? "+" + mm.up : "+0 (максимум)"} → ${ovr(C)}</p><div class="ss-box ss-log">${mm.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div><button class="btn" type="button" data-v="home">Дальше ▶</button>`); }
       if (view === "season") { const s = C.seasons[C.seasons.length - 1]; return V(`<h3 class="ss-h">📅 Итоги сезона ${s.n}</h3><div class="ss-box"><b>${club(s.club).fl} ${s.club} · место ${s.place}</b><small>${s.m} матчей · ⚽ ${s.g} · 🅰️ ${s.a}${s.st ? ` · 🛡 ${s.st}` : ""} · средняя оценка ${s.avg}</small>${s.got.length || s.aw.length ? `<b class="ss-gold">${[...s.got, ...s.aw].join(" · ")}</b>` : "<small>Без трофеев в этом сезоне.</small>"}</div>
-        <div class="ss-box"><small>Тебе ${C.age} лет · OVR ${ovr(C)}</small>${C.age >= 34 ? "<b>Пора думать о завершении карьеры…</b>" : ""}</div>
+        <div class="ss-box"><small>Тебе ${C.age} лет · OVR ${ovr(C)}</small><b>Карьера длится сколько хочешь — завершай, когда сам решишь.</b></div>
         ${C.mustRetire ? `<p class="ss-last">Тело говорит «хватит». Пора повесить бутсы на гвоздь.</p><button class="btn" type="button" data-retire="1">👋 Завершить карьеру</button>` : `<h3 class="ss-h">🔁 Трансферное окно</h3>${C.offers.length ? C.offers.map((o) => { const x = club(o.n); return `<button class="btn ghost ss-off" type="button" data-move="${esc(o.n)}">✉️ ${x.fl} ${x.n} <small>сила ${x.s} · ${money(o.wage)}/нед</small></button>`; }).join("") : "<small class='ss-note'>Предложений нет.</small>"}
-        <button class="btn ghost" type="button" data-v="clubs">📋 Выбрать клуб самому</button><button class="btn" type="button" data-move="${esc(C.club)}">🤝 Остаться в ${C.club}</button>${C.age >= 30 ? `<button class="btn ghost" type="button" data-retire="1">👋 Завершить карьеру</button>` : ""}`}`); }
+        <button class="btn ghost" type="button" data-v="clubs">📋 Выбрать клуб самому</button><button class="btn" type="button" data-move="${esc(C.club)}">🤝 Остаться в ${C.club}</button><button class="btn ghost" type="button" data-retire="1">👋 Завершить карьеру</button>`}`); }
       if (view === "clubs") {
         const o = ovr(C);
         return V(`<button class="ss-back" type="button" data-v="${prevView}">← Назад</button><h3 class="ss-h">📋 Все клубы</h3><small class="ss-note">Переходи в любой клуб в любой момент — бесплатно. Твой OVR ${o}.</small>
@@ -14142,7 +14142,7 @@ div.sc-pl { cursor: default; }
         ${next ? `<button class="btn ss-go" type="button" data-play="1">⚽ Матч: ${cl.fl} ${cl.n} — ${next.fl} ${next.n}</button>` : `<button class="btn ss-go" type="button" data-end="1">📅 Завершить сезон</button>`}
         <div class="ss-box"><small>🏋️ Тренировка (1 раз в неделю)</small><div class="ss-train">${Object.keys(SK).filter((k) => WT[C.pos][k]).map((k) => `<button type="button" data-tr="${k}"><b>${SK[k]}</b><small>${Math.round(C.sk[k])}</small>${bar(C.sk[k])}</button>`).join("")}<button type="button" data-rest="1"><b>😴 Отдых</b><small>+35% сил</small></button></div></div>
         <div class="ss-two"><button class="btn ghost" type="button" data-v="clubs">📋 Клубы</button><button class="btn ghost" type="button" data-v="career">📖 Карьера</button></div>
-        ${C.age >= 30 ? `<button class="btn ghost" type="button" data-retire="1">👋 Завершить карьеру</button>` : ""}`);
+        <button class="btn ghost" type="button" data-retire="1">👋 Завершить карьеру</button>`);
       if (view === "career") V(`<button class="ss-back" type="button" data-v="home">← Назад</button>${card()}<div class="ss-box"><small>Всего</small><b>${C.tot.m} матчей · ⚽ ${C.tot.g} · 🅰️ ${C.tot.a}${C.tot.st ? ` · 🛡 ${C.tot.st}` : ""}</b><small>Потенциал: ${C.pot} · Фанаты: ${C.fans} · Настроение: ${C.mood}</small></div><div class="ss-box"><small>Трофеи и награды</small><b class="ss-gold">${[...C.trophies, ...C.awards].join(" · ") || "Пока нет — всё впереди!"}</b></div><div class="ss-box"><small>Путь</small><b>${C.history.map((h) => club(h.club).fl + " " + h.club).join(" → ")}</b></div>${table()}`);
     }
     function table() { return C.seasons.length ? `<table class="ss-tbl"><tr><th>Сез.</th><th>Клуб</th><th>OVR</th><th>И</th><th>⚽</th><th>🅰️</th><th>Оц.</th></tr>${C.seasons.map((s) => `<tr><td>${s.n}</td><td>${club(s.club).fl} ${s.club}</td><td>${s.ovr}</td><td>${s.m}</td><td>${s.g}</td><td>${s.a}</td><td>${s.avg}</td></tr>`).join("")}</table>` : ""; }
@@ -14169,7 +14169,7 @@ div.sc-pl { cursor: default; }
       if (d.tr) return train(d.tr);
       if (d.rest) return rest();
       if (d.move) return moveTo(d.move);
-      if (d.retire) return retire();
+      if (d.retire) { if (b.dataset.sure) return retire(); b.dataset.sure = "1"; b.textContent = "❗ Точно завершить? Нажми ещё раз"; return; }
       if (d.ev != null) { msg = renderEvent.cur.o[+d.ev][1](); save(); return startMatch(); }
     });
     document.addEventListener("keydown", (e) => { if (current === "soccerstar" && view === "aim" && (e.code === "Space" || e.code === "Enter")) { e.preventDefault(); stopAim(false); } });
