@@ -11399,7 +11399,7 @@ div.sc-pl { cursor: default; }
     let W = 0, H = 0, F = 0, HZ = 0, dpr = 1, camX = L / 2, tick = 0;
     let players = [], teams = [null, null], kits = [null, null], ball = null, ctrl = null;
     let score = [0, 0], clock = 0, half = 1, phase = "idle", phaseT = 0, after = 0, playing = false, paused = false, visible = false, raf = 0, last = 0;
-    let msg = "", msgT = 0, texts = [], btnState = "", AC = null;
+    let ach = null, msg = "", msgT = 0, texts = [], btnState = "", AC = null;
     let homeI = store.get("dcHome", 0) | 0, awayI = store.get("dcAway", 1) | 0, diff = store.get("dcDiff", 1) | 0, wins = store.get("dcWins", 0) | 0;
     if (homeI === awayI || !TEAMS[homeI] || !TEAMS[awayI]) { homeI = 0; awayI = 1; }
     const keys = {}, joy = { id: null, x: 0, y: 0 };
@@ -11843,6 +11843,12 @@ div.sc-pl { cursor: default; }
       if (t === 0) { Hero.earn(10); Hero.say("doccer", "good", `ГОООЛ! ${who} — ${score[0]}:${score[1]}!`); }
       else Hero.say("doccer", "bad", `Пропустили… ${score[0]}:${score[1]}. Отыграемся!`);
       if (sc) float(sc, "⚽ ГОЛ!", "#ffd84d");
+      // achievement: a 10:0 scoreline
+      if (t === 0 && score[0] === 10 && score[1] === 0) {
+        ach = { t: 0 }; club.ach = (club.ach || 0) + 1; saveClub(); Hero.earn(100);
+        Hero.say("doccer", "win", "🏅 Достижение: Бомбардир Месяца! 10:0 — +100 ◎");
+        [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => tone(f, 0.3, "triangle", 0.07), 500 + i * 130));
+      }
     }
     function halfTime() { phase = "ht"; phaseT = 2.6; clock = HALF; showMsg(`Перерыв ${score[0]}:${score[1]}`, 2.6); whistle(2); }
     function endMatch() {
@@ -12021,6 +12027,18 @@ div.sc-pl { cursor: default; }
         const [sx, sy, s] = proj(t.x, t.y, 0), yy = sy - 2.3 * s * 2.1 - 14 - t.t * 24;
         c.globalAlpha = Math.max(0, 1 - t.t / 1.4); c.font = "900 13px Manrope, sans-serif"; c.textAlign = "center";
         c.lineWidth = 3; c.strokeStyle = "rgba(0,0,0,.75)"; c.strokeText(t.text, sx, yy); c.fillStyle = t.col; c.fillText(t.text, sx, yy); c.globalAlpha = 1;
+      }
+      if (ach) {
+        ach.t += 1 / 60; if (ach.t > 5.5) ach = null;
+        else {
+          const a = Math.min(1, ach.t * 3, (5.5 - ach.t) * 2), y = H * 0.66, w = Math.min(W - 24, 330), h = 58, x = (W - w) / 2, pop = 1 + Math.max(0, 0.25 - ach.t) * 1.2;
+          c.save(); c.globalAlpha = a; c.translate(W / 2, y + h / 2); c.scale(pop, pop); c.translate(-W / 2, -(y + h / 2));
+          const g = c.createLinearGradient(x, y, x + w, y + h); g.addColorStop(0, "#ffe08a"); g.addColorStop(0.5, "#ffb547"); g.addColorStop(1, "#c8862a");
+          c.fillStyle = "rgba(0,0,0,.5)"; c.fillRect(x + 3, y + 4, w, h); c.fillStyle = g; c.fillRect(x, y, w, h);
+          c.fillStyle = "#2a1600"; c.textAlign = "center"; c.textBaseline = "middle"; c.font = "900 11px Manrope, sans-serif"; c.fillText("🏅 ДОСТИЖЕНИЕ ПОЛУЧЕНО · 10:0 · +100 ◎", W / 2, y + 16);
+          c.font = `900 ${Math.min(24, W / 15)}px Manrope, sans-serif`; c.fillText("Бомбардир Месяца!", W / 2, y + 39);
+          c.restore();
+        }
       }
       if (msgT > 0 && msg) {
         const big = /ГОЛ|ФИНАЛ/.test(msg);
@@ -12208,7 +12226,7 @@ div.sc-pl { cursor: default; }
           <div class="dc-club"><div class="dc-badge" style="background:${c};color:${cdist(c, "#ffffff") < 160 ? "#111" : "#fff"}">${esc(T.id === "V3FC" ? "V3" : T.id)}</div><div>${own ? `<input id="dcClubName" maxlength="18" value="${esc(club.name)}" aria-label="Название клуба">` : `<b>${tn(me)}</b>`}<small>${own ? "Бюджет 123 млрд $ · стадион «V3 Арена» · схема 1-4-5" : `Средний рейтинг ${ovr} OVR · схема 4-3-3`}</small></div></div>
           ${own ? `<div class="dc-cols" aria-label="Цвет формы">${CLUBCOL.map((x, i) => `<button type="button" data-col="${i}" style="background:${x}" aria-pressed="${i === club.col}" aria-label="Цвет ${i + 1}"></button>`).join("")}</div>` : ""}
           <div class="dc-stats">${stat("Матчей", club.m)}${stat("Побед", club.w)}${stat("Ничьих", club.d)}${stat("Поражений", club.l)}${stat("Мячи", `${club.gf}:${club.ga}`)}${own ? stat("Голы «Я»", club.me) : stat("Рейтинг", ovr)}</div>
-          <div class="dc-box"><small>Трофеи карьеры</small><b>⭐ ЛЧ × ${club.cups.ucl} · 🦁 АПЛ × ${club.cups.epl} · 🌍 ЧМ × ${club.cups.wc}</b></div>
+          <div class="dc-box"><small>Трофеи карьеры</small><b>⭐ ЛЧ × ${club.cups.ucl} · 🦁 АПЛ × ${club.cups.epl} · 🌍 ЧМ × ${club.cups.wc}</b><small>Достижения</small><b>🏅 Бомбардир Месяца × ${club.ach || 0}</b></div>
           <table class="dc-tbl"><tr><th>№</th><th>Игрок</th><th>Поз.</th><th>OVR</th></tr>${T.p.map(([n, num, r], i) => `<tr class="${r > 100 ? "me" : ""}"><td>${num}</td><td>${esc(n)}</td><td>${pos[i]}</td><td><b>${r}</b></td></tr>`).join("")}</table>`;
       } else if (view === "events") {
         const d = today(), plan = dayPlan();
