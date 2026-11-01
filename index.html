@@ -835,6 +835,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .dc-row select { width: 100%; min-width: 0; padding: 8px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 14px; }
 .mg-stage { position: relative; width: 100%; max-width: 640px; margin: 0 auto; aspect-ratio: 4 / 3; max-height: 58vh; border-radius: 14px; overflow: hidden; background: #12081c; touch-action: none; user-select: none; -webkit-user-select: none; }
 .mg-stage > canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.mg-intro { position: absolute; inset: 0; z-index: 5; background: #000; }
+.mg-intro[hidden] { display: none; }
+.mg-stage .mg-intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.mg-skip, .mg-unmute { position: absolute; bottom: 10px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.55); color: #fff; font: 800 12px Manrope, sans-serif; cursor: pointer; }
+.mg-skip { right: 10px; } .mg-unmute { left: 10px; } .mg-unmute[hidden] { display: none; }
 .mg-mode { position: absolute; right: 8px; bottom: 8px; padding: 5px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,.35); background: rgba(10,6,20,.6); color: #fff; font: 900 12px Manrope, sans-serif; cursor: pointer; }
 .mg-over { position: absolute; inset: 0; display: flex; align-items: safe center; justify-content: center; padding: 10px; overflow-y: auto; background: rgba(8,4,16,.62); }
 .mg-over[hidden] { display: none; }
@@ -2752,7 +2757,7 @@ div.sc-pl { cursor: default; }
       <div class="bubble"><b data-hero-name></b><span class="buddy-say">Беги, Морджер!</span></div>
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
-    <div class="mg-stage"><canvas id="mgCanvas" aria-label="Морджер убегает от монстров"></canvas><button type="button" class="mg-mode" id="mgMode" aria-label="Графика 2D или 3D">3D</button><div class="mg-over" id="mgOver"></div></div>
+    <div class="mg-stage"><canvas id="mgCanvas" aria-label="Морджер убегает от монстров"></canvas><button type="button" class="mg-mode" id="mgMode" aria-label="Графика 2D или 3D">3D</button><div class="mg-over" id="mgOver"></div><div class="mg-intro" id="mgIntro" hidden><video id="mgIntroV" playsinline preload="none" aria-label="Заставка V3 Original"></video><button type="button" class="mg-skip" id="mgSkip">Пропустить ⏩</button><button type="button" class="mg-unmute" id="mgUnmute" hidden>🔊 Включить звук</button></div></div>
     <div class="mg-pad off" id="mgPad">
       <button type="button" id="mgSlide"><span>⬇️</span>Пригнуться</button>
       <button type="button" id="mgDash"><span>⚡</span>Рывок</button>
@@ -13682,6 +13687,22 @@ div.sc-pl { cursor: default; }
     document.addEventListener("keyup", (e) => { if (["ArrowDown", "KeyS"].includes(e.code)) keys.down = false; });
     window.addEventListener("resize", () => { if (visible) resize(); });
     $("#mgMode").addEventListener("click", toggleMode);
+    // the V3 Original intro plays when MORGER opens; it is a separate file next to the page
+    const INTRO = "media/v3-original.mp4";
+    let introFailed = false;
+    function introDone() { const v = $("#mgIntroV"); try { v.pause(); } catch (e) { /* ignore */ } $("#mgIntro").hidden = true; $("#mgUnmute").hidden = true; }
+    function playIntro() {
+      if (introFailed) return;
+      const box = $("#mgIntro"), v = $("#mgIntroV");
+      if (!v.getAttribute("src")) v.src = v.canPlayType('video/mp4; codecs="avc1.64001F, mp4a.40.2"') ? INTRO : INTRO.replace(".mp4", ".webm");
+      box.hidden = false; v.muted = false;
+      try { v.currentTime = 0; } catch (e) { /* not loaded yet */ }
+      v.onended = introDone; v.onerror = () => { introFailed = true; introDone(); };
+      const p = v.play();
+      if (p && p.catch) p.catch(() => { v.muted = true; $("#mgUnmute").hidden = false; v.play().catch(() => { introFailed = true; introDone(); }); });
+    }
+    $("#mgSkip").addEventListener("click", introDone);
+    $("#mgUnmute").addEventListener("click", () => { const v = $("#mgIntroV"); v.muted = false; $("#mgUnmute").hidden = true; });
     if (/mgdebug/.test(location.hash)) window.__mor = { get choices() { return choices; }, get endings() { return endings; }, get banner() { return banner; }, get r3() { return R3; }, get failed3() { return failed3; }, startRun, chapterIntro, jump, slide, dash, get state() { return state; }, get dist() { return dist; }, get gap() { return gap; }, set gap(v) { gap = v; }, set dist(v) { dist = v; }, get obs() { return obs; }, step(n) { for (let i = 0; i < n && state === "run"; i++) update(1 / 60); }, next() { const b = document.querySelector('#mgOver [data-mg="next"]'); if (b) b.click(); }, get P() { return P; } };
 
     return {
@@ -13693,8 +13714,9 @@ div.sc-pl { cursor: default; }
         else if (state === "menu" || state === "caught") overlay(state === "caught" ? "caught" : "menu");
         last = 0; if (!raf) raf = requestAnimationFrame(frame);
         Hero.say("morger", "start", "MORGER: помоги Морджеру убежать от монстров!");
+        if (state === "menu") playIntro();
       },
-      leave() { visible = false; keys.down = false; hush(); if (raf) cancelAnimationFrame(raf); raf = 0; if (state === "run") state = "paused"; },
+      leave() { visible = false; keys.down = false; hush(); introDone(); if (raf) cancelAnimationFrame(raf); raf = 0; if (state === "run") state = "paused"; },
       key() {},
       best: () => (done ? `${done}/${CH.length}` : "—"),
     };
