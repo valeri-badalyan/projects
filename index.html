@@ -912,7 +912,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .ss-zone { position: absolute; top: 0; bottom: 0; background: linear-gradient(180deg, #4ae07a, #1f9a46); box-shadow: 0 0 14px #33c45a; }
 .ss-mark { position: absolute; top: -2px; bottom: -2px; width: 6px; margin-left: -3px; border-radius: 3px; background: #fff; box-shadow: 0 0 10px #fff; left: 0; }
 .ss-note { color: var(--muted); font-size: 11px; text-align: center; }
-.ss-off { text-align: left; display: flex; justify-content: space-between; align-items: center; } .ss-off:disabled { opacity: .45; } .ss-vip { border-color: #ffd84d !important; }
+.ss-off { text-align: left; display: flex; justify-content: space-between; align-items: center; } .ss-off:disabled { opacity: .45; }
 .ss-log div { font-size: 12px; }
 .ss-back { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--muted); font-weight: 800; cursor: pointer; }
 .ss-in { padding: 9px 10px; border-radius: 10px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-size: 16px; font-weight: 800; }
@@ -2807,7 +2807,7 @@ div.sc-pl { cursor: default; }
       <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
     </div>
     <div id="ssView"></div>
-    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или выбирай любой клуб сам, если хватает OVR. После 30 лет можно завершить карьеру, к 39 — придётся. Итог попадает в Зал славы.</p>
+    <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. После 30 лет можно завершить карьеру, к 39 — придётся. Итог попадает в Зал славы.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -14083,16 +14083,17 @@ div.sc-pl { cursor: default; }
       return CLUBS.filter((x) => x.n !== cur && x.s <= o + 4 && x.s >= o - 14).sort(() => Math.random() - 0.5).slice(0, 3).map((x) => ({ n: x.n, wage: Math.round(((x.s - 50) ** 2 * 120 + ovr(C) ** 2 * 6) * rnd(1, 1.4)) }));
     }
     const reqOf = (x) => x.s - 6;
-    // with 200 thousand dollars saved, Real Madrid and Barcelona open up for free, whatever your OVR
-    const VIP = ["Реал Мадрид", "Барселона"], VIP_PRICE = 200000;
-    const vipBuy = (x) => VIP.includes(x.n) && x.n !== C.club && ovr(C) < reqOf(x);
+
     function moveTo(n) {
+      // any club, any time: between seasons a fresh schedule starts, mid-season the rest of the games move to the new club
+      const between = !!C.offers || C.week === 0 || C.week >= C.fix.length;
+      const changing = n !== C.club;
       C.offers = null; C.mustRetire = false;
-      const x = club(n);
-      if (vipBuy(x) && C.money < VIP_PRICE) { msg = `Нужно накопить ${money(VIP_PRICE)}, а у тебя ${money(C.money)}.`; return render(); }
       if (n !== C.club) { C.history.push({ club: n, from: C.season }); C.club = n; msg = `✍️ Ты подписал контракт с клубом ${club(n).fl} ${n}!`; Hero.say("soccerstar", "win", `Трансфер в ${n}!`); }
       else msg = `🤝 Ты остаёшься в ${n}.`;
-      makeFixtures(); view = "home"; save(); render();
+      if (between) makeFixtures();
+      else if (changing) { const own = club(n), pool = CLUBS.filter((x) => x.n !== own.n && Math.abs(x.s - own.s) <= 10); for (let w = C.week; w < C.fix.length; w++) C.fix[w] = pool[(Math.random() * pool.length) | 0].n; }
+      view = "home"; save(); render();
     }
     function retire() {
       const legend = C.tot.g * 2 + C.tot.a + C.tot.st + C.trophies.length * 15 + C.awards.filter((a) => a.includes("Золотой")).length * 60 + C.seasons.length * 5;
@@ -14124,9 +14125,8 @@ div.sc-pl { cursor: default; }
         <button class="btn ghost" type="button" data-v="clubs">📋 Выбрать клуб самому</button><button class="btn" type="button" data-move="${esc(C.club)}">🤝 Остаться в ${C.club}</button>${C.age >= 30 ? `<button class="btn ghost" type="button" data-retire="1">👋 Завершить карьеру</button>` : ""}`}`); }
       if (view === "clubs") {
         const o = ovr(C);
-        return V(`<button class="ss-back" type="button" data-v="${prevView}">← Назад</button><h3 class="ss-h">📋 Все клубы</h3><small class="ss-note">Перейти можно в клуб, если твой OVR не меньше требования. Сейчас OVR ${o}.</small>
-          <div class="ss-box"><small>💰 У тебя ${money(C.money)}</small><b>Накопи ${money(VIP_PRICE)} — и Реал Мадрид с Барселоной откроются бесплатно при любом OVR!</b></div>
-          ${CLUBS.slice().sort((a, b) => b.s - a.s).map((x) => { const buy = vipBuy(x), ok = o >= reqOf(x) || x.n === C.club || (buy && C.money >= VIP_PRICE); return `<button class="btn ghost ss-off${buy ? " ss-vip" : ""}" type="button" ${ok ? `data-move="${esc(x.n)}"` : "disabled"}>${x.fl} ${x.n}${x.n === C.club ? " (твой клуб)" : ""} <small>сила ${x.s} · ${buy ? (C.money >= VIP_PRICE ? "💰 открыт — переход бесплатный" : `💰 нужно 200 тыс $ (есть ${money(C.money)})`) : ok ? "доступен" : "нужен OVR " + reqOf(x)}</small></button>`; }).join("")}`);
+        return V(`<button class="ss-back" type="button" data-v="${prevView}">← Назад</button><h3 class="ss-h">📋 Все клубы</h3><small class="ss-note">Переходи в любой клуб в любой момент — бесплатно. Твой OVR ${o}.</small>
+          ${CLUBS.slice().sort((a, b) => b.s - a.s).map((x) => `<button class="btn ghost ss-off" type="button" data-move="${esc(x.n)}">${x.fl} ${x.n}${x.n === C.club ? " (твой клуб)" : ""} <small>сила ${x.s} · ${money((x.s - 50) ** 2 * 120 + o ** 2 * 6)}/нед</small></button>`).join("")}`);
       }
       if (view === "end") return V(`<h3 class="ss-h">👋 Конец карьеры</h3><div class="ss-box"><b>${esc(C.name)} — ${C.rank}</b><small>${C.seasons.length} сезонов · ${C.tot.m} матчей · ⚽ ${C.tot.g} · 🅰️ ${C.tot.a}${C.tot.st ? ` · 🛡 ${C.tot.st}` : ""}</small><small>Очки легенды: ${C.legend}</small></div>
         <div class="ss-box"><small>Клубы</small><b>${C.history.map((h) => club(h.club).fl + " " + h.club).join(" → ")}</b></div>
