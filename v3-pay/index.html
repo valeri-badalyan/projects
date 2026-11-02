@@ -158,6 +158,23 @@ button { cursor: pointer; }
 .who button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
 .who button b { display: block; font-size: 14px; }
 .who button small { display: block; color: var(--muted); font-size: 11.5px; }
+.banks { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.bank { display: grid; grid-template-columns: 36px 1fr; gap: 2px 9px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 14px; padding: 9px 10px; min-width: 0; }
+.bank .bi { grid-row: span 2; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12px; letter-spacing: .02em; }
+.bank b { font-size: 13.5px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bank small { font-size: 11.5px; color: var(--muted); }
+.bank.on { border-color: var(--plus); }
+.bank.on small { color: var(--plus); font-weight: 600; }
+.demo { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 99px; background: var(--warn-soft); color: var(--warn); font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+.steps { display: flex; flex-direction: column; gap: 8px; margin: 4px 0; }
+.steps div { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+.steps div i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); flex: none; display: grid; place-items: center; font-style: normal; font-size: 12px; }
+.steps div.run { color: var(--ink); }
+.steps div.run i { border-color: var(--accent); border-top-color: transparent; animation: spin .8s linear infinite; }
+.steps div.done { color: var(--ink); }
+.steps div.done i { border-color: var(--plus); background: var(--plus); color: #fff; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .steps div.run i { animation: none; } }
 .lock { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin: 0; }
 .jhero { border-radius: 22px; padding: 18px; color: #fff; background: linear-gradient(135deg, #0f4d3a, #13875a); display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }
 .jhero small { font-size: 12.5px; opacity: .85; }
@@ -601,6 +618,60 @@ button { cursor: pointer; }
     });
   }
 
+  // ---------- banks of Armenia (demo: V3 Pay has no agreement with any bank) ----------
+  const BANKS = [
+    ["ameria", "Америабанк", "AM", "#1d4f91"], ["ardshin", "Ардшинбанк", "AR", "#0e6b4f"], ["acba", "АКБА Банк", "AC", "#b0122c"],
+    ["ineco", "Инекобанк", "IN", "#0a7f6e"], ["evoca", "Эвокабанк", "EV", "#5b2a86"], ["idbank", "АйДиБанк", "ID", "#e05a00"],
+    ["converse", "Конверс Банк", "CB", "#003a70"], ["unibank", "Юнибанк", "UN", "#7a1f2b"], ["aeb", "Армэкономбанк", "AE", "#00609c"],
+    ["ararat", "Араратбанк", "AB", "#a8741a"], ["fast", "Фаст Банк", "FB", "#2b2d42"], ["vtb", "ВТБ (Армения)", "VT", "#0a2896"],
+    ["armswiss", "Армсвиссбанк", "AS", "#c8102e"], ["artsakh", "Арцахбанк", "AH", "#4a6b2a"],
+  ];
+  const bankById = (id) => BANKS.find((b) => b[0] === id);
+  const linked = (id) => docs.get("bank_" + id);
+  function banksPanel() {
+    const n = BANKS.filter((b) => linked(b[0])).length;
+    return `<section class="panel"><div class="ph"><h2>Банки Армении <span class="demo">ДЕМО</span></h2><span class="muted">${n ? "подключено " + n : ""}</span></div>
+      <div class="banks">${BANKS.map(([id, name, ini, col]) => { const l = linked(id); return `<button class="bank ${l ? "on" : ""}" type="button" data-bank="${id}"><span class="bi" style="background:${col}">${ini}</span><b>${esc(name)}</b><small>${l ? "✓ подключён" : "Подключить"}</small></button>`; }).join("")}</div>
+      <p class="lock">Это демонстрация: у V3 Pay нет договора с банками, поэтому подключение имитируется и операции из банка не загружаются — записывай их сам. V3 Pay никогда не спросит логин, пароль или код из СМС от банка.</p></section>`;
+  }
+  function bankSheet(id) {
+    const b = bankById(id); if (!b) return; const [, name, ini, col] = b, l = linked(id);
+    if (l) {
+      openSheet(`<h3>${esc(name)} <span class="demo">ДЕМО</span></h3><p class="muted">Подключён ${esc(new Date(l.ts).toLocaleDateString("ru-RU", { day: "numeric", month: "long" }))}. Счёт в V3 Pay: ${esc(accName(l.acc))}.</p>
+        <p class="lock">Подключение демонстрационное: настоящие операции из банка сюда не приходят.</p>
+        <div class="row-btns"><button class="btn danger" type="button" id="bkOff">Отключить</button><button class="btn" type="button" id="bkOk">Готово</button></div>`, (s) => {
+        $("#bkOk", s).addEventListener("click", closeSheet);
+        $("#bkOff", s).addEventListener("click", () => { del("bank_" + id); closeSheet(); toast(name + " отключён"); });
+      });
+      return;
+    }
+    ensureAccounts();
+    const accs = accounts();
+    openSheet(`<h3>Подключить ${esc(name)} <span class="demo">ДЕМО</span></h3>
+      <div class="field"><span>Какой счёт в V3 Pay связать с банком</span><div class="pick" data-pick="acc"><button type="button" data-v="new" aria-pressed="true">+ Новый: «${esc(name)}»</button>${accs.map((a) => `<button type="button" data-v="${esc(a.id)}" aria-pressed="false"><i style="background:${esc(a.color)}"></i>${esc(a.name)}</button>`).join("")}</div></div>
+      ${cur() !== "֏" ? `<label class="field" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="bkAmd" checked> <span style="color:var(--ink);font-size:14px">Вести учёт в драмах ֏</span></label>` : ""}
+      <div class="steps" id="bkSteps" hidden><div><i></i>Соединяемся с банком «${esc(name)}»</div><div><i></i>Проверяем V3 Pay</div><div><i></i>Связываем счёт</div></div>
+      <p class="lock">Логин и пароль от банка не нужны — это демо-подключение, оно ничего не запрашивает у банка.</p>
+      <button class="btn" type="button" id="bkGo">Подключить</button>`, (s) => {
+      wirePicks(s);
+      $("#bkGo", s).addEventListener("click", () => {
+        const pickAcc = picked(s, "acc") || "new", amd = $("#bkAmd", s) && $("#bkAmd", s).checked, btn = $("#bkGo", s);
+        btn.disabled = true; btn.textContent = "Подключаем…"; $("#bkSteps", s).hidden = false;
+        const rows = [...s.querySelectorAll("#bkSteps div")];
+        rows.forEach((r, i) => { setTimeout(() => { if (i) { rows[i - 1].className = "done"; rows[i - 1].querySelector("i").textContent = "✓"; } r.className = "run"; }, i * 900); });
+        setTimeout(() => {
+          rows[rows.length - 1].className = "done"; rows[rows.length - 1].querySelector("i").textContent = "✓";
+          let acc = pickAcc;
+          if (acc === "new") { acc = "acc_" + uid(); put(acc, { type: "acc", name, kind: "card", color: col, start: 0, order: Date.now(), bank: id }); }
+          else { const a = docs.get(acc); if (a) put(acc, { ...a, bank: id }); }
+          if (amd) put("settings", { ...settings(), type: "set", cur: "֏" });
+          put("bank_" + id, { type: "bank", acc, ts: Date.now() });
+          setTimeout(() => { closeSheet(); toast(name + " подключён (демо)"); }, 500);
+        }, rows.length * 900);
+      });
+    });
+  }
+
   // ---------- render ----------
   function render() {
     document.querySelectorAll(".tab").forEach((b) => { if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
@@ -680,7 +751,7 @@ button { cursor: pointer; }
     h += `<section class="panel"><div class="ph"><h2>Последние операции</h2>${recent.length ? `<button type="button" data-goto="ops">Все</button>` : ""}</div>${recent.length ? `<div class="ops">${grouped(recent)}</div>` : `<div class="empty"><strong>Операций пока нет</strong>Нажми «+» внизу и запиши первую трату или доход.</div>`}</section>`;
     return h;
   }
-  function accCard(a) { const b = balance(a.id); return `<button class="acc" type="button" data-acc="${esc(a.id)}"><span class="k"><i style="background:${esc(a.color || "#2347d9")}"></i>${esc(ACC_KINDS[a.kind] || "Счёт")}</span><span style="font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}</span><b class="num ${b < 0 ? "minus" : ""}">${esc(money(b))}</b></button>`; }
+  function accCard(a) { const b = balance(a.id); return `<button class="acc" type="button" data-acc="${esc(a.id)}"><span class="k"><i style="background:${esc(a.color || "#2347d9")}"></i>${esc(a.bank && bankById(a.bank) ? bankById(a.bank)[1] : ACC_KINDS[a.kind] || "Счёт")}</span><span style="font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.name)}</span><b class="num ${b < 0 ? "minus" : ""}">${esc(money(b))}</b></button>`; }
 
   function opsView() {
     const key = mKey(month), st = monthStats(key);
@@ -713,6 +784,7 @@ button { cursor: pointer; }
     const set = settings(), accs = accounts(), prof = docs.get("profile") || {};
     return `<section class="panel"><div class="ph"><h2>${esc(prof.name || "Профиль")}</h2><button type="button" data-act="card">Сменить карту</button></div><p class="muted">Карта ${esc(prof.brand || "")} •• ${esc(prof.last4 || "")} · с ${esc(new Date(prof.ts || Date.now()).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }))}</p></section>
       <section class="panel"><div class="ph"><h2>Мои счета</h2><span class="muted num">${esc(money(accs.reduce((s, a) => s + balance(a.id), 0)))}</span></div><div class="accs">${accs.map(accCard).join("")}<button class="acc add" type="button" data-act="acc-new">+ Счёт</button></div></section>
+      ${banksPanel()}
       <section class="panel"><div class="ph"><h2>Настройки</h2></div>
         <div class="set-row"><label for="curSel">Валюта<small>Символ у всех сумм</small></label><select class="in" id="curSel" style="width:auto">${CURS.map(([s, n]) => `<option value="${esc(s)}" ${s === cur() ? "selected" : ""}>${esc(s)} · ${esc(n)}</option>`).join("")}</select></div>
         <div class="set-row"><label>Бюджет на месяц<small>${set.budget > 0 ? esc(money(set.budget)) : "Не задан"}</small></label><button class="btn soft small" type="button" data-act="budget">${set.budget > 0 ? "Изменить" : "Задать"}</button></div>
@@ -800,7 +872,7 @@ button { cursor: pointer; }
       $("#aSave", s).addEventListener("click", () => {
         const name = $("#aName", s).value.trim().slice(0, 24); if (!name) { $("#aErr", s).textContent = "Назови счёт"; return; }
         const raw = $("#aStart", s).value.trim(), start = raw ? parseAmt(raw) : 0; if (!isFinite(start)) { $("#aErr", s).textContent = "Остаток — это число"; return; }
-        put(id || "acc_" + uid(), { type: "acc", name, kind: picked(s, "kind") || "card", color: picked(s, "color") || ACC_COLORS[0], start, order: a ? a.order : Date.now() });
+        put(id || "acc_" + uid(), { ...(a || {}), type: "acc", name, kind: picked(s, "kind") || "card", color: picked(s, "color") || ACC_COLORS[0], start, order: a ? a.order : Date.now() });
         closeSheet(); toast(a ? "Счёт сохранён" : "Счёт добавлен");
       });
       if (a) armDelete($("#aDel", s), () => { if (used) { $("#aErr", s).textContent = "По счёту есть операции — сначала удали или перенеси их"; return; } del(id); closeSheet(); toast("Счёт удалён"); });
@@ -896,6 +968,7 @@ button { cursor: pointer; }
     else if (d.act === "csv") exportCsv();
     else if (d.act === "card") cardSheet();
     else if (d.act === "send") sendSheet();
+    else if (d.bank) bankSheet(d.bank);
     else if (d.accept) acceptSheet(d.accept);
     else if (d.decline) declineIn(d.decline);
     else if (d.act === "job-new") jobSheet();
