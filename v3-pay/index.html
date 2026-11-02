@@ -163,6 +163,18 @@ button { cursor: pointer; }
 .row-btns { display: flex; gap: 8px; }
 .row-btns .btn { flex: 1; }
 
+.reg { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+.reg-card { border-radius: 22px; aspect-ratio: 1.586; max-width: 100%; padding: 18px 20px; color: #fff; background: linear-gradient(135deg, var(--hero-a), var(--hero-b)); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.reg-card::after { content: ""; position: absolute; right: -70px; top: -80px; width: 230px; height: 230px; border-radius: 50%; border: 32px solid rgba(255,255,255,.07); }
+.reg-card .chipc { width: 42px; height: 31px; border-radius: 7px; background: linear-gradient(135deg, #f3dc8e, #c49a35); }
+.reg-card .no { font-family: var(--display); font-weight: 500; font-size: clamp(15px, 5.2vw, 21px); letter-spacing: 1.5px; white-space: nowrap; overflow: hidden; }
+.reg-card .rb { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; font-size: 13px; }
+.reg-card .rb b { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.reg h1 { margin: 0; font-family: var(--display); font-weight: 700; font-size: 24px; letter-spacing: -.5px; text-wrap: balance; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; min-height: 1.4em; }
+.check.ok { color: var(--plus); }
+.check.bad { color: var(--minus); }
+.safe { font-size: 12.5px; color: var(--muted); background: var(--card); border-radius: 14px; padding: 10px 12px; line-height: 1.45; margin: 0; }
 .toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 14px; font-size: 14px; font-weight: 600; box-shadow: var(--shadow); max-width: calc(100% - 32px); }
 @media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
 </style>
@@ -256,11 +268,95 @@ button { cursor: pointer; }
   const mKey = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1);
   const monthName = (d) => d.toLocaleDateString("ru-RU", { month: "long", year: "numeric" });
 
+  // ---------- card number check (offline: checksum, payment system, length, known test numbers) ----------
+  const BRANDS = [
+    ["Мир", /^220[0-4]/, [16, 17, 18, 19]],
+    ["ArCa", /^9051/, [16]],
+    ["Белкарт", /^9112/, [16]],
+    ["Visa", /^4/, [13, 16, 19]],
+    ["Mastercard", /^(5[1-5]|222[1-9]|22[3-9]\d|2[3-6]\d\d|27[01]\d|2720)/, [16]],
+    ["Maestro", /^(5018|5020|5038|5893|6304|6759|676[1-3])/, [12, 13, 14, 15, 16, 17, 18, 19]],
+    ["American Express", /^3[47]/, [15]],
+    ["UnionPay", /^62/, [16, 17, 18, 19]],
+    ["JCB", /^35(2[89]|[3-8]\d)/, [16, 17, 18, 19]],
+    ["Discover", /^(6011|65|64[4-9])/, [16, 19]],
+  ];
+  const TEST_CARDS = new Set(["4111111111111111", "4242424242424242", "4012888888881881", "4000056655665556", "4000000000000002", "4000000000000077", "4000000000003220", "4000000000009995",
+    "5555555555554444", "5105105105105100", "5200828282828210", "2223003122003222", "5555555555554477", "5555555555554592", "378282246310005", "371449635398431", "6011111111111117",
+    "2200000000000004", "2201382000000013", "2202474301322987", "2201382000000021", "4793128161644804", "5413330089020011", "3530111333300000", "6200000000000005", "4000000000000101"]);
+  function luhn(n) { let sum = 0, dbl = false; for (let i = n.length - 1; i >= 0; i--) { let d = +n[i]; if (dbl) { d *= 2; if (d > 9) d -= 9; } sum += d; dbl = !dbl; } return sum % 10 === 0; }
+  function cardCheck(raw) {
+    const n = String(raw).replace(/\D/g, ""), b = BRANDS.find(([, re]) => re.test(n)), brand = b ? b[0] : "";
+    if (!n) return { n, brand, ok: false, msg: "" };
+    if (!b) return { n, brand, ok: false, msg: n.length >= 4 ? "Такой платёжной системы нет — проверь первые цифры" : "" };
+    const max = Math.max(...b[2]);
+    if (!b[2].includes(n.length)) return { n, brand, ok: false, msg: n.length > max ? `У ${brand} не бывает столько цифр` : "", short: true };
+    if (!luhn(n)) return { n, brand, ok: false, msg: "Такого номера карты не существует — в цифрах ошибка" };
+    if (TEST_CARDS.has(n) || /(\d)\1{7,}/.test(n) || /(0123456789|1234567890|9876543210)/.test(n)) return { n, brand, ok: false, msg: "Это тестовый или выдуманный номер — нужна настоящая карта" };
+    return { n, brand, ok: true, msg: "Номер прошёл проверку · " + brand };
+  }
+  const fmtCard = (n) => n.replace(/\D/g, "").slice(0, 19).replace(/(\d{4})(?=\d)/g, "$1 ");
+  function wireCardInput(inp, out, preview) {
+    const upd = (final) => {
+      const c = cardCheck(inp.value);
+      out.className = "check " + (c.ok ? "ok" : c.msg && (final || !c.short) ? "bad" : "");
+      out.textContent = c.ok ? "✓ " + c.msg : c.msg && (final || !c.short) ? c.msg : c.short && final ? `Номер неполный — у ${c.brand} ${BRANDS.find((b) => b[0] === c.brand)[2].join(", ").replace(/, (\d+)$/, " или $1")} цифр` : c.brand ? c.brand : "";
+      if (preview) { $("#rcNo").textContent = (fmtCard(inp.value) || "•••• •••• •••• ••••"); $("#rcBrand").textContent = c.brand || "V3 Pay"; }
+      return c;
+    };
+    inp.addEventListener("input", () => { const pos = inp.selectionStart, before = inp.value.slice(0, pos).replace(/\D/g, "").length; inp.value = fmtCard(inp.value); let i = 0, k = 0; while (i < inp.value.length && k < before) { if (/\d/.test(inp.value[i])) k++; i++; } try { inp.setSelectionRange(i, i); } catch (e) {} upd(false); });
+    return upd;
+  }
+  function linkCard(c, startRaw) {
+    const last4 = c.n.slice(-4), prev = docs.get("profile") || {};
+    put("profile", { ...prev, type: "profile", brand: c.brand, last4, ts: Date.now() });
+    if (!accounts().some((a) => a.last4 === last4 && a.brand === c.brand)) {
+      const start = startRaw ? parseAmt(startRaw) : 0;
+      put("acc_" + uid(), { type: "acc", name: c.brand + " •• " + last4, kind: "card", color: ACC_COLORS[accounts().length % ACC_COLORS.length], start: isFinite(start) ? start : 0, order: 0, brand: c.brand, last4 });
+    }
+  }
+  function regView() {
+    return `<div class="reg"><div class="reg-card" aria-hidden="true"><div class="chipc"></div><div class="no num" id="rcNo">•••• •••• •••• ••••</div><div class="rb"><span>Добро пожаловать</span><b id="rcBrand">V3 Pay</b></div></div>
+      <h1>Регистрация в V3 Pay</h1>
+      <label class="field"><span>Как к тебе обращаться</span><input class="in" id="rName" maxlength="30" autocomplete="given-name" placeholder="Имя"></label>
+      <label class="field"><span>Номер банковской карты</span><input class="in num" id="rCard" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000" maxlength="23" style="font-size:18px;letter-spacing:1px"></label>
+      <div class="check" id="rCheck" aria-live="polite"></div>
+      <label class="field"><span>Сколько сейчас на карте, ${esc(cur())} (можно позже)</span><input class="in num" id="rStart" inputmode="decimal" placeholder="0"></label>
+      <p class="err" id="rErr"></p>
+      <button class="btn" type="button" id="rGo">Зарегистрироваться</button>
+      <p class="safe">Номер проверяется прямо на телефоне: контрольная сумма, платёжная система и длина. Сохраняются только платёжная система и последние 4 цифры, полный номер никуда не отправляется. Срок действия, CVV и пароли из СМС V3 Pay не нужны — не вводи их здесь.</p></div>`;
+  }
+  function wireReg() {
+    const inp = $("#rCard"); if (!inp) return; const upd = wireCardInput(inp, $("#rCheck"), true);
+    [inp, $("#rName")].forEach((x) => x.addEventListener("input", () => { $("#rErr").textContent = ""; }));
+    $("#rGo").addEventListener("click", () => {
+      const name = $("#rName").value.trim().slice(0, 30), c = upd(true), err = $("#rErr");
+      if (!name) { err.textContent = "Напиши своё имя"; $("#rName").focus(); return; }
+      if (!c.ok) { err.textContent = c.n ? "Нужен номер существующей карты" : "Введи номер карты"; inp.focus(); return; }
+      err.textContent = ""; const startRaw = $("#rStart").value.trim(); inp.value = "";
+      docs.set("profile", { type: "profile", name, brand: c.brand, last4: c.n.slice(-4), ts: Date.now() });
+      linkCard(c, startRaw); toast("Готово, " + name + "! Карта " + c.brand + " •• " + c.n.slice(-4) + " добавлена");
+    });
+  }
+  function cardSheet() {
+    const p = docs.get("profile") || {};
+    openSheet(`<h3>Сменить карту</h3><p class="muted">Сейчас: ${esc(p.brand || "")} •• ${esc(p.last4 || "")}. Новая карта появится среди счетов, старая останется с историей операций.</p>
+      <label class="field"><span>Номер новой карты</span><input class="in num" id="cCard" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000" maxlength="23" style="font-size:18px;letter-spacing:1px" autofocus></label>
+      <div class="check" id="cCheck" aria-live="polite"></div><p class="err" id="cErr"></p>
+      <button class="btn" type="button" id="cGo">Привязать карту</button>`, (s) => {
+      const inp = $("#cCard", s), upd = wireCardInput(inp, $("#cCheck", s), false);
+      $("#cGo", s).addEventListener("click", () => { const c = upd(true); if (!c.ok) { $("#cErr", s).textContent = "Нужен номер существующей карты"; return; } linkCard(c, ""); inp.value = ""; closeSheet(); toast("Карта " + c.brand + " •• " + c.n.slice(-4) + " привязана"); });
+    });
+  }
+
   // ---------- render ----------
   function render() {
     document.querySelectorAll(".tab").forEach((b) => { if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     const m = $("#main");
-    if (mode === "loading") { m.innerHTML = `<div class="view"><div class="panel"><p class="muted">Загружаем твои данные…</p></div></div>`; return; }
+    if (mode === "loading") { $(".tabs").hidden = true; m.innerHTML = `<div class="view"><div class="panel"><p class="muted">Загружаем твои данные…</p></div></div>`; return; }
+    const prof = docs.get("profile");
+    if (!prof || !prof.last4) { $(".tabs").hidden = true; if (!$("#rCard")) { m.innerHTML = regView(); wireReg(); } return; }
+    $(".tabs").hidden = false;
     m.innerHTML = `<div class="view">${tab === "home" ? home() : tab === "ops" ? opsView() : tab === "debts" ? debtsView() : moreView()}</div>`;
   }
 
@@ -355,8 +451,9 @@ button { cursor: pointer; }
   }
 
   function moreView() {
-    const set = settings(), accs = accounts();
-    return `<section class="panel"><div class="ph"><h2>Мои счета</h2><span class="muted num">${esc(money(accs.reduce((s, a) => s + balance(a.id), 0)))}</span></div><div class="accs">${accs.map(accCard).join("")}<button class="acc add" type="button" data-act="acc-new">+ Счёт</button></div></section>
+    const set = settings(), accs = accounts(), prof = docs.get("profile") || {};
+    return `<section class="panel"><div class="ph"><h2>${esc(prof.name || "Профиль")}</h2><button type="button" data-act="card">Сменить карту</button></div><p class="muted">Карта ${esc(prof.brand || "")} •• ${esc(prof.last4 || "")} · с ${esc(new Date(prof.ts || Date.now()).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }))}</p></section>
+      <section class="panel"><div class="ph"><h2>Мои счета</h2><span class="muted num">${esc(money(accs.reduce((s, a) => s + balance(a.id), 0)))}</span></div><div class="accs">${accs.map(accCard).join("")}<button class="acc add" type="button" data-act="acc-new">+ Счёт</button></div></section>
       <section class="panel"><div class="ph"><h2>Настройки</h2></div>
         <div class="set-row"><label for="curSel">Валюта<small>Символ у всех сумм</small></label><select class="in" id="curSel" style="width:auto">${CURS.map(([s, n]) => `<option value="${esc(s)}" ${s === cur() ? "selected" : ""}>${esc(s)} · ${esc(n)}</option>`).join("")}</select></div>
         <div class="set-row"><label>Бюджет на месяц<small>${set.budget > 0 ? esc(money(set.budget)) : "Не задан"}</small></label><button class="btn soft small" type="button" data-act="budget">${set.budget > 0 ? "Изменить" : "Задать"}</button></div>
@@ -534,21 +631,25 @@ button { cursor: pointer; }
     else if (d.act === "debt-new") debtSheet();
     else if (d.act === "budget") budgetSheet();
     else if (d.act === "csv") exportCsv();
+    else if (d.act === "card") cardSheet();
   });
   $("#main").addEventListener("change", (e) => { if (e.target.id === "curSel") { put("settings", { ...settings(), type: "set", cur: e.target.value }); toast("Валюта: " + e.target.value); } });
 
   // ---------- boot ----------
   Object.entries(lsRead()).forEach(([k, v]) => docs.set(k, v));
-  mode = "local"; setSync("local", "На этом устройстве"); render();
+  const toLocal = () => { if (mode === "loading") { mode = "local"; setSync("local", "На этом устройстве"); render(); } };
+  const hasClaude = !!(window.claude && typeof window.claude.use === "function");
+  // wait for the cloud copy before asking a returning user to register again
+  if (!hasClaude || docs.get("profile")) toLocal(); else { render(); setTimeout(toLocal, 12000); }
   (async () => {
     try {
-      if (!window.claude || typeof window.claude.use !== "function") return;
+      if (!hasClaude) return;
       const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
-      if (!d || !u) return;
-      const me = await u.id(); if (!me) return;
+      if (!d || !u) { toLocal(); return; }
+      const me = await u.id(); if (!me) { toLocal(); return; }
       db = d; const c = db.collection("data/users/" + me);
       setSync("", "Синхронизация…");
-      let first = true; const timer = setTimeout(() => { if (first) setSync("local", "Нет связи — на устройстве"); }, 10000);
+      let first = true; const timer = setTimeout(() => { if (first) { toLocal(); setSync("local", "Нет связи — на устройстве"); } }, 10000);
       c.onSnapshot((snap) => {
         clearTimeout(timer);
         if (first) {
@@ -559,8 +660,8 @@ button { cursor: pointer; }
         }
         if (!snap.empty || docs.size === 0) { docs.clear(); snap.docs.forEach((x) => { if (x.exists) docs.set(x.id, x.data()); }); lsWrite(); }
         mode = "db"; setSync("ok", "Сохранено в облаке"); if (!sheetOpen) render();
-      }, () => { clearTimeout(timer); col = null; setSync("local", "На этом устройстве"); });
-    } catch (e) { /* stays on this device */ }
+      }, () => { clearTimeout(timer); col = null; toLocal(); setSync("local", "На этом устройстве"); });
+    } catch (e) { toLocal(); }
   })();
 })();
 </script>
