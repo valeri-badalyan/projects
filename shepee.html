@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Shepee V3</title>
+<meta name="theme-color" content="#12132a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Manrope:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Shepee V3: pick a role, then work through a task board for the V3 console. Same palette as index.html. */
+:root {
+  --bg: #12132a;
+  --panel: #1c1e3d;
+  --panel-2: #24274d;
+  --line: #34386a;
+  --fg: #eef0ff;
+  --muted: #9a9ec8;
+  --amber: #ffb547;
+  --cyan: #5ce1e6;
+  --coral: #ff6b7a;
+  --lime: #9be15d;
+  --pink: #ff5ad1;
+  --violet: #a98bff;
+  --display: "Rubik Mono One", "Arial Black", Impact, sans-serif;
+  --body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 500px at 50% -200px, #2a2160 0%, transparent 70%), var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
+.wrap { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+
+.brand { display: flex; align-items: center; gap: 12px; margin: 8px 0 18px; }
+.logo {
+  font-family: var(--display); font-size: 30px; letter-spacing: 2px; line-height: 1;
+  background: linear-gradient(110deg, var(--pink), var(--violet) 55%, var(--cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.v3 {
+  font-family: var(--display); font-size: 14px; padding: 6px 8px; border-radius: 8px;
+  background: var(--amber); color: var(--bg);
+}
+.back { margin-left: auto; color: var(--muted); text-decoration: none; font-size: 13px; }
+.back:hover { color: var(--fg); }
+
+h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 0 8px; font-weight: 400; }
+.sub { color: var(--muted); margin: 0 0 18px; }
+.label { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; }
+
+.field {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: var(--panel); outline: none;
+}
+.field:focus { border-color: var(--cyan); }
+
+.roles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+.role {
+  text-align: left; padding: 14px 12px; border-radius: 16px; border: 2px solid var(--line);
+  background: var(--panel); display: flex; flex-direction: column; gap: 4px; transition: transform .12s, border-color .12s;
+}
+.role:hover { transform: translateY(-2px); }
+.role[aria-pressed="true"] { border-color: var(--role, var(--cyan)); background: var(--panel-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--role, var(--cyan)) 18%, transparent); }
+.role .ico { font-size: 28px; line-height: 1; }
+.role b { font-size: 15px; }
+.role small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 18px; border-radius: 14px; border: 0; font-weight: 800;
+  background: var(--amber); color: var(--bg); transition: transform .1s, opacity .1s;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn.wide { width: 100%; padding: 15px; font-size: 16px; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 10px; }
+.btn.go { background: linear-gradient(110deg, var(--pink), var(--violet)); color: var(--bg); font-family: var(--display); font-weight: 400; letter-spacing: 1px; }
+
+/* Workspace */
+.badge-card {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center;
+  padding: 14px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line);
+}
+.badge-ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font-size: 28px; background: var(--role, var(--cyan)); }
+.badge-name { font-weight: 800; font-size: 16px; }
+.badge-role { color: var(--muted); font-size: 13px; }
+.pay { text-align: right; }
+.pay b { font-family: var(--mono); color: var(--amber); font-size: 18px; display: block; }
+.pay small { color: var(--muted); font-size: 11px; }
+.xp { margin-top: 12px; grid-column: 1 / -1; }
+.xp-top { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+.xp-top b { color: var(--fg); }
+.bar { height: 10px; border-radius: 99px; background: var(--bg); overflow: hidden; margin-top: 4px; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--role, var(--cyan)), var(--amber)); transition: width .4s; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; }
+.section-h { display: flex; align-items: baseline; justify-content: space-between; margin: 24px 0 10px; }
+.section-h h2 { font-family: var(--display); font-weight: 400; font-size: 15px; margin: 0; letter-spacing: 1px; }
+.section-h span { color: var(--muted); font-size: 12px; font-family: var(--mono); }
+
+.tasks { display: flex; flex-direction: column; gap: 10px; }
+.task {
+  padding: 14px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.task.active { border-color: var(--role, var(--cyan)); background: var(--panel-2); }
+.task.done { opacity: .55; }
+.task-top { display: flex; gap: 10px; align-items: flex-start; }
+.task-game { font-size: 22px; line-height: 1.1; }
+.task-text { flex: 1; }
+.task-text b { display: block; font-size: 14px; }
+.task-text small { color: var(--muted); font-size: 12px; }
+.reward { font-family: var(--mono); font-size: 12px; color: var(--amber); white-space: nowrap; }
+.prio { display: inline-block; font-family: var(--mono); font-size: 10px; padding: 1px 6px; border-radius: 6px; margin-left: 6px; vertical-align: middle; }
+.prio.hot { background: var(--coral); color: var(--bg); }
+.prio.norm { background: var(--line); color: var(--fg); }
+.work { display: flex; gap: 8px; align-items: center; }
+.work .bar { flex: 1; margin: 0; height: 12px; }
+.work-msg { font-family: var(--mono); font-size: 12px; color: var(--cyan); min-height: 18px; }
+
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.feed li { font-size: 13px; padding: 8px 12px; background: var(--panel); border-radius: 10px; color: var(--muted); }
+.feed li b { color: var(--fg); font-weight: 600; }
+.feed time { font-family: var(--mono); font-size: 11px; margin-right: 6px; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0;
+  background: var(--lime); color: var(--bg); font-weight: 800; padding: 12px 18px; border-radius: 14px;
+  transition: opacity .2s, transform .2s; pointer-events: none; max-width: calc(100% - 32px); text-align: center;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.levelup {
+  position: fixed; inset: 0; display: grid; place-items: center; background: rgba(10, 10, 30, .8); padding: 16px; z-index: 5;
+}
+.levelup-card { background: var(--panel); border: 2px solid var(--amber); border-radius: 20px; padding: 24px; text-align: center; max-width: 340px; }
+.levelup-card .big { font-size: 54px; }
+.levelup-card h3 { font-family: var(--display); font-weight: 400; margin: 6px 0; font-size: 18px; }
+.levelup-card p { color: var(--muted); margin: 0 0 16px; }
+
+@media (max-width: 380px) {
+  .roles { grid-template-columns: 1fr; }
+  .badge-card { grid-template-columns: auto 1fr; }
+  .pay { grid-column: 1 / -1; text-align: left; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <span class="logo">SHEPEE</span><span class="v3">V3</span>
+    <a class="back" href="index.html">← V3 Games</a>
+  </header>
+
+  <!-- Step 1: choose a role -->
+  <section id="pick">
+    <h1>Работай на V3</h1>
+    <p class="sub">Выбери роль в команде V3 — и погнали. Задачи по нашим играм, опыт, повышения и зарплата в монетах ◎.</p>
+
+    <label class="label" for="nameIn">Как тебя зовут</label>
+    <input class="field" id="nameIn" maxlength="24" placeholder="Например, Валерий" autocomplete="nickname">
+
+    <div class="roles" id="roles" role="group" aria-label="Роли"></div>
+
+    <button class="btn wide go" id="startBtn" type="button" disabled>Начать работу ▶</button>
+  </section>
+
+  <!-- Step 2: workspace -->
+  <section id="desk" hidden>
+    <div class="badge-card" id="badge">
+      <div class="badge-ico" id="bIco"></div>
+      <div>
+        <div class="badge-name" id="bName"></div>
+        <div class="badge-role" id="bRole"></div>
+      </div>
+      <div class="pay"><b id="bCoins">0 ◎</b><small>заработано</small></div>
+      <div class="xp">
+        <div class="xp-top"><span>Должность: <b id="bLevel"></b></span><span id="bXp"></span></div>
+        <div class="bar"><i id="bBar"></i></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn ghost small" id="newTasks" type="button">↻ Новые задачи</button>
+      <button class="btn ghost small" id="switchRole" type="button">Сменить роль</button>
+    </div>
+
+    <div class="section-h"><h2>ЗАДАЧИ</h2><span id="doneCount"></span></div>
+    <div class="tasks" id="tasks"></div>
+
+    <div class="section-h"><h2>ЛЕНТА V3</h2><span>что сделано</span></div>
+    <ul class="feed" id="feed"></ul>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="levelup" id="levelup" hidden>
+  <div class="levelup-card">
+    <div class="big">🚀</div>
+    <h3 id="luTitle">Повышение!</h3>
+    <p id="luText"></p>
+    <button class="btn wide" id="luOk" type="button">Работаем дальше</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const GAMES = [
+    ["🐍", "Змейка"], ["🔢", "2048"], ["❌", "Крестики-нолики"], ["🧱", "Block Blast"],
+    ["🧟", "Zombie Apokalipsis"], ["🎢", "VR Аттракцион"], ["🦔", "Соник Даш"], ["👻", "Ghost of Leyendas"],
+    ["🟧", "Geometry Lite"], ["🖱️", "Ссылка"], ["🖥️", "Почини Монитор"], ["🥤", "V3 Cola"],
+    ["👕", "Переодень личность"], ["🍳", "Готовить"], ["⛏️", "My Mine"], ["🧊", "V3 Craft"],
+    ["⚽", "Doccer"], ["🔬", "Microscop"], ["🌟", "Soccer Star"], ["🎬", "MORGER"]
+  ];
+
+  // Each role: tasks are "{g}" templates filled with a V3 game; verbs show while working.
+  const ROLES = [
+    { id: "dev", ico: "💻", name: "Разработчик", color: "#5ce1e6", about: "Пишет код игр и чинит баги.",
+      tasks: ["Починить баг в «{g}»", "Ускорить загрузку «{g}»", "Добавить новый уровень в «{g}»", "Сделать управление свайпами в «{g}»", "Сохранять рекорд «{g}» между заходами"],
+      verbs: ["Пишу код…", "Компилирую…", "Ищу баг…", "Запускаю тесты…", "git push…"] },
+    { id: "design", ico: "🎨", name: "Дизайнер", color: "#ff5ad1", about: "Рисует героев, иконки и экраны.",
+      tasks: ["Нарисовать иконку для «{g}»", "Новый скин героя в «{g}»", "Перерисовать меню «{g}»", "Подобрать палитру для «{g}»", "Анимация победы в «{g}»"],
+      verbs: ["Рисую…", "Двигаю пиксели…", "Подбираю цвет…", "Экспорт в SVG…", "Ещё чуть-чуть…"] },
+    { id: "qa", ico: "🔍", name: "Тестировщик", color: "#9be15d", about: "Ломает игры раньше игроков.",
+      tasks: ["Пройти «{g}» на телефоне", "Найти 3 бага в «{g}»", "Проверить рекорды «{g}»", "Тест «{g}» на медленном интернете", "Проверить «{g}» в тёмной комнате 😎"],
+      verbs: ["Тыкаю кнопки…", "Нашёл баг!", "Записываю шаги…", "Проверяю ещё раз…", "Отчёт готов…"] },
+    { id: "music", ico: "🎵", name: "Композитор", color: "#a98bff", about: "Музыка и звуки для игр.",
+      tasks: ["Саундтрек для «{g}»", "Звук прыжка в «{g}»", "Мелодия победы в «{g}»", "Звуки меню «{g}»", "Ремикс темы «{g}»"],
+      verbs: ["Подбираю аккорды…", "Пишу бит…", "Сведение…", "Мастеринг…", "Звучит огонь…"] },
+    { id: "video", ico: "🎬", name: "Видеомонтажёр", color: "#ff6b7a", about: "Трейлеры и ролики V3.",
+      tasks: ["Трейлер для «{g}»", "Shorts про «{g}»", "Нарезка лучших моментов «{g}»", "Титры для ролика «{g}»", "Интро для «{g}»"],
+      verbs: ["Режу клипы…", "Склеиваю…", "Ставлю музыку…", "Цветокоррекция…", "Рендер…"] },
+    { id: "market", ico: "📣", name: "Маркетолог", color: "#ffb547", about: "Делает так, чтобы о V3 узнали все.",
+      tasks: ["Пост про «{g}» в соцсети", "Слоган для «{g}»", "Реклама «{g}» на баннер", "Турнир по «{g}» для игроков", "Опрос игроков про «{g}»"],
+      verbs: ["Думаю над идеей…", "Пишу текст…", "Делаю картинку…", "Публикую…", "Считаю лайки…"] }
+  ];
+
+  const LEVELS = [
+    ["Стажёр", 0], ["Джуниор", 100], ["Мидл", 260], ["Сеньор", 500], ["Лид", 850], ["Директор V3", 1300]
+  ];
+  const KEY = "shepee-v3";
+  const $ = (id) => document.getElementById(id);
+
+  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } };
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+  let S = load() || { name: "", role: null, xp: 0, coins: 0, tasks: [], feed: [], working: false };
+  let picked = S.role;
+  let activeId = null;
+
+  const roleOf = (id) => ROLES.find(r => r.id === id);
+  const levelIdx = (xp) => { let i = 0; LEVELS.forEach(([, need], k) => { if (xp >= need) i = k; }); return i; };
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---- Role picker ----
+  function renderRoles() {
+    $("roles").innerHTML = ROLES.map(r =>
+      `<button class="role" type="button" data-role="${r.id}" style="--role:${r.color}" aria-pressed="${picked === r.id}">
+        <span class="ico">${r.ico}</span><b>${r.name}</b><small>${r.about}</small></button>`).join("");
+    $("startBtn").disabled = !picked;
+  }
+  $("roles").addEventListener("click", (e) => {
+    const b = e.target.closest(".role"); if (!b) return;
+    picked = b.dataset.role; renderRoles();
+  });
+  $("nameIn").value = S.name;
+  $("startBtn").addEventListener("click", () => {
+    const name = $("nameIn").value.trim() || "Сотрудник";
+    const changed = S.role !== picked;
+    S.name = name; S.role = picked;
+    if (changed || !S.tasks.length) S.tasks = makeTasks();
+    log(`<b>${esc(name)}</b> вышел на работу: ${roleOf(picked).name}`);
+    save(); showDesk();
+  });
+
+  // ---- Tasks ----
+  function makeTasks() {
+    const r = roleOf(S.role);
+    const games = [...GAMES].sort(() => Math.random() - .5).slice(0, 5);
+    return games.map(([ico, g], i) => {
+      const hot = Math.random() < .3;
+      const steps = 4 + Math.floor(Math.random() * 5);
+      return {
+        id: Date.now() + "-" + i, ico, title: pick(r.tasks).replace("{g}", g),
+        steps, progress: 0, hot, xp: steps * 6 + (hot ? 20 : 0), pay: steps * 5 + (hot ? 25 : 0), done: false
+      };
+    });
+  }
+
+  function renderTasks() {
+    const r = roleOf(S.role);
+    $("tasks").innerHTML = S.tasks.map(t => {
+      const pct = Math.round(t.progress / t.steps * 100);
+      const isActive = activeId === t.id;
+      let action;
+      if (t.done) action = `<div class="work-msg">✓ Готово</div>`;
+      else if (isActive) action = `<div class="work"><div class="bar"><i style="width:${pct}%"></i></div>
+          <button class="btn small" type="button" data-work="${t.id}">${r.ico} Работать</button></div>
+          <div class="work-msg" id="msg-${t.id}">Жми «Работать», пока не закончишь</div>`;
+      else action = `<div class="work">${t.progress ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
+          <button class="btn ghost small" type="button" data-take="${t.id}">${t.progress ? "Продолжить" : "Взять задачу"}</button></div>`;
+      return `<div class="task${isActive ? " active" : ""}${t.done ? " done" : ""}">
+        <div class="task-top"><span class="task-game">${t.ico}</span>
+          <div class="task-text"><b>${esc(t.title)}<span class="prio ${t.hot ? "hot" : "norm"}">${t.hot ? "СРОЧНО" : "обычная"}</span></b>
+          <small>${t.steps} шагов работы</small></div>
+          <span class="reward">+${t.xp} XP<br>+${t.pay} ◎</span></div>${action}</div>`;
+    }).join("");
+    const done = S.tasks.filter(t => t.done).length;
+    $("doneCount").textContent = `${done} из ${S.tasks.length} выполнено`;
+  }
+
+  $("tasks").addEventListener("click", (e) => {
+    const take = e.target.closest("[data-take]");
+    if (take) { activeId = take.dataset.take; renderTasks(); return; }
+    const w = e.target.closest("[data-work]");
+    if (!w) return;
+    const t = S.tasks.find(x => x.id === w.dataset.work);
+    if (!t || t.done) return;
+    t.progress++;
+    if (t.progress >= t.steps) { finish(t); return; }
+    save(); renderTasks();
+    const msg = $("msg-" + t.id);
+    if (msg) msg.textContent = roleOf(S.role).verbs[(t.progress - 1) % 5];
+  });
+
+  function finish(t) {
+    const before = levelIdx(S.xp);
+    t.done = true; activeId = null;
+    S.xp += t.xp; S.coins += t.pay;
+    log(`<b>${esc(S.name)}</b>: ${esc(t.title)} — готово (+${t.pay} ◎)`);
+    toast(`Задача сдана! +${t.xp} XP, +${t.pay} ◎`);
+    if (S.tasks.every(x => x.done)) {
+      const bonus = 50; S.coins += bonus;
+      log(`Все задачи закрыты — премия <b>${bonus} ◎</b>`);
+      setTimeout(() => toast(`Все задачи закрыты! Премия +${bonus} ◎`), 1400);
+    }
+    save(); renderDesk();
+    const after = levelIdx(S.xp);
+    if (after > before) {
+      $("luTitle").textContent = `Повышение: ${LEVELS[after][0]}!`;
+      $("luText").textContent = `${S.name}, команда V3 гордится тобой. Новая должность — ${LEVELS[after][0]}.`;
+      $("levelup").hidden = false;
+      log(`🚀 <b>${esc(S.name)}</b> повышен до «${LEVELS[after][0]}»`);
+      save(); renderFeed();
+    }
+  }
+  $("luOk").addEventListener("click", () => { $("levelup").hidden = true; });
+
+  $("newTasks").addEventListener("click", () => {
+    S.tasks = makeTasks(); activeId = null; save(); renderTasks();
+    toast("Новые задачи на доске");
+  });
+  $("switchRole").addEventListener("click", () => {
+    activeId = null; $("desk").hidden = true; $("pick").hidden = false; renderRoles(); window.scrollTo(0, 0);
+  });
+
+  // ---- Workspace header + feed ----
+  function renderDesk() {
+    const r = roleOf(S.role);
+    document.body.style.setProperty("--role", r.color);
+    $("bIco").textContent = r.ico;
+    $("bName").textContent = S.name;
+    $("bRole").textContent = r.name + " · команда V3";
+    $("bCoins").textContent = S.coins + " ◎";
+    const i = levelIdx(S.xp);
+    $("bLevel").textContent = LEVELS[i][0];
+    const next = LEVELS[i + 1];
+    if (next) {
+      const from = LEVELS[i][1];
+      $("bXp").textContent = `${S.xp} / ${next[1]} XP`;
+      $("bBar").style.width = Math.round((S.xp - from) / (next[1] - from) * 100) + "%";
+    } else {
+      $("bXp").textContent = `${S.xp} XP · максимум`;
+      $("bBar").style.width = "100%";
+    }
+    renderTasks(); renderFeed();
+  }
+  function log(html) {
+    const d = new Date();
+    S.feed.unshift({ t: d.toTimeString().slice(0, 5), html });
+    S.feed = S.feed.slice(0, 12);
+  }
+  function renderFeed() {
+    $("feed").innerHTML = S.feed.map(f => `<li><time>${f.t}</time>${f.html}</li>`).join("") || `<li>Пока пусто — возьми первую задачу.</li>`;
+  }
+  function showDesk() {
+    $("pick").hidden = true; $("desk").hidden = false; renderDesk(); window.scrollTo(0, 0);
+  }
+
+  let toastTimer;
+  function toast(text) {
+    const el = $("toast"); el.textContent = text; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+
+  renderRoles();
+  if (S.role && roleOf(S.role)) showDesk();
+})();
+</script>
+</body>
+</html>
