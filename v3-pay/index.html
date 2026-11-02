@@ -139,6 +139,46 @@ button { cursor: pointer; }
 
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 .tabs nav { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr 72px 1fr 1fr; align-items: center; }
+.top-r { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.me-btn { width: 36px; height: 36px; flex: none; border-radius: 50%; border: 0; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px; display: grid; place-items: center; }
+.me-btn[aria-current="page"] { background: var(--accent); color: var(--on-accent); }
+.hero-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; position: relative; z-index: 1; }
+.hero-acts button { border: 0; border-radius: 12px; padding: 10px 8px; background: rgba(255,255,255,.16); color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.hero-acts button:hover { background: rgba(255,255,255,.24); }
+.hero-acts em { font-style: normal; background: #fff; color: var(--hero-b); border-radius: 99px; padding: 0 7px; font-size: 12px; }
+.inbox { border: 2px solid var(--accent); }
+.in-item { display: grid; grid-template-columns: 38px 1fr; gap: 4px 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.in-item:last-child { border-bottom: 0; }
+.in-item .av, .who .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; grid-row: span 2; }
+.in-item b { font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.in-item small { color: var(--muted); font-size: 12px; display: block; }
+.in-item .acts { grid-column: 2; display: flex; gap: 8px; flex-wrap: wrap; }
+.who { display: flex; flex-direction: column; gap: 6px; max-height: 40vh; overflow-y: auto; }
+.who button { display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: center; text-align: left; border: 1.5px solid var(--line); background: var(--card); border-radius: 14px; padding: 8px 10px; }
+.who button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.who button b { display: block; font-size: 14px; }
+.who button small { display: block; color: var(--muted); font-size: 11.5px; }
+.lock { font-size: 12.5px; color: var(--muted); line-height: 1.45; margin: 0; }
+.jhero { border-radius: 22px; padding: 18px; color: #fff; background: linear-gradient(135deg, #0f4d3a, #13875a); display: flex; flex-direction: column; gap: 4px; position: relative; overflow: hidden; }
+.jhero small { font-size: 12.5px; opacity: .85; }
+.jhero .total { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 9vw, 38px); letter-spacing: -1px; line-height: 1.15; overflow-wrap: anywhere; }
+.jhero .hero-row div { background: rgba(255,255,255,.12); }
+.bars { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; align-items: end; height: 130px; padding-top: 6px; }
+.bars div { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; min-width: 0; }
+.bars i { width: 100%; max-width: 34px; border-radius: 8px 8px 3px 3px; background: var(--plus); opacity: .35; min-height: 3px; }
+.bars div.now i { opacity: 1; }
+.bars span { font-size: 11px; color: var(--muted); text-transform: capitalize; }
+.bars em { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.job { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.job:last-child { border-bottom: 0; }
+.job .r1 { display: flex; align-items: center; gap: 10px; }
+.job .r1 i { width: 12px; height: 12px; border-radius: 4px; flex: none; }
+.job .r1 b { flex: 1; min-width: 0; font-size: 15px; overflow-wrap: anywhere; }
+.job .r1 button { border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 600; padding: 0; }
+.job .st { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.job .st div { background: var(--bg); border-radius: 12px; padding: 6px 9px; min-width: 0; }
+.job .st span { display: block; font-size: 11px; color: var(--muted); }
+.job .st b { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 .tabs button.tab { border: 0; background: none; padding: 9px 2px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); }
 .tabs button.tab svg { width: 22px; height: 22px; }
 .tabs button.tab[aria-current="page"] { color: var(--accent); }
@@ -182,7 +222,7 @@ button { cursor: pointer; }
 <div class="app">
   <header class="top">
     <div class="brand"><i>V3</i>Pay</div>
-    <div class="sync" id="sync" aria-live="polite"><b></b><span>Загрузка…</span></div>
+    <div class="top-r"><div class="sync" id="sync" aria-live="polite"><b></b><span>Загрузка…</span></div><button class="me-btn" type="button" id="meBtn" aria-label="Профиль и счета" hidden>V</button></div>
   </header>
   <main id="main"></main>
 </div>
@@ -192,8 +232,9 @@ button { cursor: pointer; }
     <button class="tab" type="button" data-tab="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Главная</button>
     <button class="tab" type="button" data-tab="ops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Операции</button>
     <button class="fab" type="button" id="fab" aria-label="Новая операция">+</button>
+    <button class="tab" type="button" data-tab="jobs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8.5 7V5.5A1.5 1.5 0 0 1 10 4h4a1.5 1.5 0 0 1 1.5 1.5V7M3 12.5h18"/></svg>JOBS</button>
     <button class="tab" type="button" data-tab="debts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.5 3.2-5.5 6.5-5.5s5.9 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.7.8 2.8 2.6 3.1 5.2"/></svg>Долги</button>
-    <button class="tab" type="button" data-tab="more"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>Счета</button>
+
   </nav>
 </div>
 
@@ -216,9 +257,12 @@ button { cursor: pointer; }
     ["food", "Продукты", "🛒", "#2f9e5b"], ["cafe", "Кафе и еда", "☕", "#d9822b"], ["transport", "Транспорт", "🚕", "#e0b100"],
     ["home", "Дом и счета", "🏠", "#4a6cf0"], ["phone", "Связь и интернет", "📱", "#16a2b8"], ["health", "Здоровье", "💊", "#e2526a"],
     ["clothes", "Одежда", "👕", "#9b59d0"], ["fun", "Развлечения", "🎮", "#f0659c"], ["gifts", "Подарки", "🎁", "#c0392b"],
-    ["edu", "Учёба", "📚", "#3d7bd9"], ["other", "Другое", "•", "#8a93a8"],
+    ["edu", "Учёба", "📚", "#3d7bd9"], ["other", "Другое", "•", "#8a93a8"], ["p2p", "Переводы людям", "💸", "#2347d9"],
   ];
-  const INC = [["salary", "Зарплата", "💼", "#13875a"], ["side", "Подработка", "🛠️", "#2f9e5b"], ["gift", "Подарок", "🎁", "#d9822b"], ["refund", "Возврат", "↩️", "#4a6cf0"], ["iother", "Другое", "•", "#8a93a8"]];
+  const INC = [["salary", "Зарплата", "💼", "#13875a"], ["side", "Подработка", "🛠️", "#2f9e5b"], ["gift", "Подарок", "🎁", "#d9822b"], ["refund", "Возврат", "↩️", "#4a6cf0"], ["iother", "Другое", "•", "#8a93a8"], ["p2pin", "От людей", "💸", "#2347d9"]];
+  const HIDDEN_CATS = new Set(["p2p", "p2pin"]);
+  const JOB_KINDS = { work: "Работа", side: "Подработка", free: "Фриланс" };
+  const UNITS = { hour: "час", shift: "смена", day: "день", month: "месяц", task: "заказ" };
   const CAT = {}; [...EXP, ...INC].forEach(([id, name, ico, col]) => { CAT[id] = { id, name, ico, col }; });
   const ACC_KINDS = { card: "Карта", cash: "Наличные", save: "Накопления" };
   const ACC_COLORS = ["#2347d9", "#13875a", "#d9822b", "#9b59d0", "#e2526a", "#16a2b8", "#141a2e"];
@@ -229,7 +273,7 @@ button { cursor: pointer; }
   let db = null, col = null, mode = "loading";
   const LS = "v3pay:docs";
   function lsRead() { try { const o = JSON.parse(localStorage.getItem(LS) || "{}"); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; } }
-  function lsWrite() { try { localStorage.setItem(LS, JSON.stringify(Object.fromEntries(docs))); } catch (e) {} }
+  function lsWrite() { try { localStorage.setItem(LS, JSON.stringify(Object.fromEntries([...docs].filter(([k]) => k !== "keys")))); } catch (e) {} }
   function put(id, data) {
     docs.set(id, data); lsWrite(); render();
     if (col) col.doc(id).set(data).catch((e) => toast(e && e.code === "quota_exceeded" ? "Хранилище заполнено" : "Не удалось сохранить в облако — сохранено на устройстве"));
@@ -262,7 +306,7 @@ button { cursor: pointer; }
 
   // ---------- state ----------
   let tab = "home", month = new Date(), opFilter = "all", debtDir = "me", sheetOpen = false;
-  function readHash() { const h = location.hash.slice(1); if (["home", "ops", "debts", "more"].includes(h)) tab = h; }
+  function readHash() { const h = location.hash.slice(1); if (["home", "ops", "jobs", "debts", "more"].includes(h)) tab = h; }
   readHash();
   window.addEventListener("hashchange", () => { readHash(); render(); });
   const mKey = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1);
@@ -335,7 +379,7 @@ button { cursor: pointer; }
       if (!c.ok) { err.textContent = c.n ? "Нужен номер существующей карты" : "Введи номер карты"; inp.focus(); return; }
       err.textContent = ""; const startRaw = $("#rStart").value.trim(); inp.value = "";
       docs.set("profile", { type: "profile", name, brand: c.brand, last4: c.n.slice(-4), ts: Date.now() });
-      linkCard(c, startRaw); toast("Готово, " + name + "! Карта " + c.brand + " •• " + c.n.slice(-4) + " добавлена");
+      linkCard(c, startRaw); p2pStart(); toast("Готово, " + name + "! Карта " + c.brand + " •• " + c.n.slice(-4) + " добавлена");
     });
   }
   function cardSheet() {
@@ -349,15 +393,221 @@ button { cursor: pointer; }
     });
   }
 
+  // ---------- transfers to other V3 Pay users ----------
+  // Each user writes only into xfer/<own id>/items; amount and message are encrypted with a key
+  // only the sender and the receiver can derive (ECDH P-256 + AES-GCM). Public keys live in dir/<id>.
+  const P2P = { started: false, on: false, me: null, user: null, priv: null, pubs: new Map(), names: new Map(), nicks: new Map(), inbox: new Map(), subs: new Map() };
+  const EC = { name: "ECDH", namedCurve: "P-256" };
+  const b64 = (buf) => { let s = ""; new Uint8Array(buf).forEach((c) => { s += String.fromCharCode(c); }); return btoa(s); };
+  const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  const safeId = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 120);
+  const AV = ["#2347d9", "#13875a", "#d9822b", "#9b59d0", "#e2526a", "#16a2b8", "#b8862b"];
+  const avColor = (id) => AV[[...String(id)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % AV.length];
+  function nameOf(id) { return P2P.names.get(id) || P2P.nicks.get(id) || "Пользователь V3 Pay"; }
+  function tagOf(id) { const p = P2P.pubs.get(id); return p && p.jwk && p.jwk.x ? "V3-" + p.jwk.x.replace(/[^A-Za-z0-9]/g, "").slice(0, 5).toUpperCase() : ""; }
+  function avatar(id) { return `<span class="av" style="background:${avColor(id)}">${esc(nameOf(id).slice(0, 1).toUpperCase())}</span>`; }
+
+  async function p2pStart() {
+    if (P2P.started || !db || !col || !P2P.me || !docs.get("profile") || !(window.crypto && crypto.subtle)) return;
+    P2P.started = true;
+    try {
+      let k = docs.get("keys");
+      if (!k || !k.priv || !k.pub) {
+        const kp = await crypto.subtle.generateKey(EC, true, ["deriveKey"]);
+        k = { type: "keys", priv: await crypto.subtle.exportKey("jwk", kp.privateKey), pub: await crypto.subtle.exportKey("jwk", kp.publicKey), ts: Date.now() };
+        docs.set("keys", k); await col.doc("keys").set(k);
+      }
+      P2P.priv = await crypto.subtle.importKey("jwk", k.priv, EC, false, ["deriveKey"]);
+      const prof = docs.get("profile") || {};
+      await db.doc("dir/" + P2P.me).set({ pub: { kty: k.pub.kty, crv: k.pub.crv, x: k.pub.x, y: k.pub.y }, nick: String(prof.name || "").slice(0, 30), ts: Date.now() });
+    } catch (e) { P2P.started = false; return; }
+    P2P.on = true;
+    db.collection("dir").onSnapshot((snap) => {
+      snap.docs.forEach((d) => {
+        if (!d.exists) return; const v = d.data() || {};
+        if (v.pub && typeof v.pub.x === "string" && typeof v.pub.y === "string") {
+          const prev = P2P.pubs.get(d.id);
+          if (!prev || prev.jwk.x !== v.pub.x) P2P.pubs.set(d.id, { jwk: { kty: "EC", crv: "P-256", x: v.pub.x, y: v.pub.y }, key: null });
+        }
+        if (typeof v.nick === "string") P2P.nicks.set(d.id, v.nick.slice(0, 30));
+        watchPeer(d.id);
+      });
+      names(); if (!sheetOpen) render();
+    }, () => {});
+  }
+  async function names() {
+    try { const ids = [...P2P.pubs.keys()]; if (!ids.length || !P2P.user.profiles) return; const ps = await P2P.user.profiles(ids); ids.forEach((i) => { if (ps && ps[i] && ps[i].name) P2P.names.set(i, ps[i].name); }); if (!sheetOpen) render(); } catch (e) {}
+  }
+  function watchPeer(id) {
+    if (id === P2P.me || P2P.subs.has(id)) return;
+    P2P.subs.set(id, db.collection("xfer/" + id + "/items").where("to", "==", P2P.me).onSnapshot((snap) => {
+      snap.docs.forEach((d) => { if (d.exists) handleItem(id, d.id, d.data()); });
+    }, () => { P2P.subs.delete(id); }));
+  }
+  async function sharedKey(id) {
+    const p = P2P.pubs.get(id); if (!p) throw new Error("no key");
+    if (!p.key) { const pub = await crypto.subtle.importKey("jwk", p.jwk, EC, false, []); p.key = await crypto.subtle.deriveKey({ name: "ECDH", public: pub }, P2P.priv, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]); }
+    return p.key;
+  }
+  const strip = (o) => { const { id, ...rest } = o; return rest; };
+  async function handleItem(from, docId, v) {
+    if (!v || typeof v !== "object") return;
+    if (v.ack) { // the receiver answered one of my transfers
+      const op = all("op").find((o) => o.xid === v.ack && o.peer === from);
+      if (op && op.st === "wait" && (v.st === "ok" || v.st === "no")) {
+        put(op.id, { ...strip(op), st: v.st });
+        if (v.st === "no") put("op_" + uid(), { type: "op", kind: "inc", amount: op.amount, acc: op.acc, date: todayStr(), cat: "refund", note: "Перевод отклонён", peer: from, ts: Date.now() });
+        toast(nameOf(from) + (v.st === "ok" ? " принял(а) перевод " : " отклонил(а) перевод ") + money(op.amount));
+      }
+      return;
+    }
+    const key = safeId("xin_" + from + "_" + docId);
+    if (docs.has(key) || P2P.inbox.has(key) || typeof v.iv !== "string" || typeof v.ct !== "string") return;
+    try {
+      const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(v.iv) }, await sharedKey(from), unb64(v.ct));
+      const o = JSON.parse(new TextDecoder().decode(pt)), amount = round2(+o.amount);
+      if (!(amount > 0 && amount < 1e10)) return;
+      P2P.inbox.set(key, { key, from, tid: docId, amount, note: String(o.note || "").slice(0, 60), cur: String(o.cur || "").slice(0, 3), ts: +v.ts || Date.now() });
+      if (!sheetOpen) render(); toast("💸 " + nameOf(from) + " перевёл(а) тебе " + nf.format(amount) + " " + (o.cur || cur()));
+    } catch (e) { /* not for us or a key changed */ }
+  }
+  function pendingIn() { return [...P2P.inbox.values()].filter((it) => !docs.has(it.key)).sort((a, b) => b.ts - a.ts); }
+  function answer(it, st) { db.doc("xfer/" + P2P.me + "/items/" + safeId("a_" + it.tid)).set({ to: it.from, ack: it.tid, st, ts: Date.now() }).catch(() => toast("Ответ не отправлен — проверь связь")); }
+  function inboxPanel() {
+    const list = pendingIn(); if (!list.length) return "";
+    return `<section class="panel inbox"><div class="ph"><h2>Входящие переводы</h2><span class="muted">${list.length}</span></div>${list.map((it) => `<div class="in-item">${avatar(it.from)}<b>${esc(nameOf(it.from))} · <span class="plus num">+${esc(nf.format(it.amount))} ${esc(it.cur || cur())}</span></b><small>${esc(it.note || "Без сообщения")} · ${esc(new Date(it.ts).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</small><div class="acts"><button class="btn small" type="button" data-accept="${esc(it.key)}">Принять</button><button class="btn small danger" type="button" data-decline="${esc(it.key)}">Отклонить</button></div></div>`).join("")}</section>`;
+  }
+  function acceptSheet(key) {
+    const it = P2P.inbox.get(key); if (!it) return; ensureAccounts();
+    openSheet(`<h3>Принять ${esc(nf.format(it.amount))} ${esc(it.cur || cur())}</h3><p class="muted">От ${esc(nameOf(it.from))}${it.note ? " · «" + esc(it.note) + "»" : ""}. На какой счёт записать?</p>
+      ${it.cur && it.cur !== cur() ? `<p class="lock">Отправитель ведёт учёт в ${esc(it.cur)}, а ты — в ${esc(cur())}. Сумма запишется как есть, поправь её при необходимости.</p>` : ""}
+      <label class="field"><span>Сумма, ${esc(cur())}</span><input class="in num" id="xAmt" inputmode="decimal" value="${esc(String(it.amount).replace(".", ","))}"></label>
+      <div class="pick" data-pick="acc">${accounts().map((a, i) => `<button type="button" data-v="${esc(a.id)}" aria-pressed="${i === 0}"><i style="background:${esc(a.color)}"></i>${esc(a.name)}</button>`).join("")}</div>
+      <p class="err" id="xErr"></p><button class="btn" type="button" id="xGo">Принять перевод</button>`, (s) => {
+      wirePicks(s);
+      $("#xGo", s).addEventListener("click", () => {
+        const a = parseAmt($("#xAmt", s).value); if (!(a > 0)) { $("#xErr", s).textContent = "Введи сумму больше нуля"; return; }
+        put(it.key, { type: "xin", st: "ok", ts: Date.now() });
+        put("op_" + uid(), { type: "op", kind: "inc", amount: a, acc: picked(s, "acc") || accounts()[0].id, date: todayStr(), cat: "p2pin", note: it.note, peer: it.from, ts: Date.now() });
+        answer(it, "ok"); P2P.inbox.delete(key); closeSheet(); toast("Перевод принят");
+      });
+    });
+  }
+  function declineIn(key) { const it = P2P.inbox.get(key); if (!it) return; put(it.key, { type: "xin", st: "no", ts: Date.now() }); answer(it, "no"); P2P.inbox.delete(key); toast("Перевод отклонён"); }
+
+  function sendSheet() {
+    if (!P2P.on) {
+      openSheet(`<h3>Перевести</h3><p class="muted">${mode === "db" ? "Подключаем переводы… Попробуй через пару секунд." : "Переводы другим пользователям работают, когда ты вошёл в Claude и данные сохраняются в облаке (зелёная точка вверху)."}</p><button class="btn" type="button" id="xOk">Понятно</button>`, (s) => { $("#xOk", s).addEventListener("click", closeSheet); });
+      return;
+    }
+    ensureAccounts();
+    const people = [...P2P.pubs.keys()].filter((id) => id !== P2P.me).sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+    openSheet(`<h3>Перевести пользователю</h3>
+      ${people.length ? `<div class="who" data-pick="to">${people.map((id, i) => `<button type="button" data-v="${esc(id)}" aria-pressed="${i === 0}">${avatar(id)}<span><b>${esc(nameOf(id))}</b><small>${esc(tagOf(id))}</small></span></button>`).join("")}</div>
+      <label class="field"><span>Сумма, ${esc(cur())}</span><input class="in big num" id="sAmt" inputmode="decimal" placeholder="0" autofocus></label>
+      <div class="field"><span>Списать со счёта</span><div class="pick" data-pick="acc">${accounts().map((a, i) => `<button type="button" data-v="${esc(a.id)}" aria-pressed="${i === 0}"><i style="background:${esc(a.color)}"></i>${esc(a.name)}</button>`).join("")}</div></div>
+      <label class="field"><span>Сообщение</span><input class="in" id="sNote" maxlength="60" placeholder="Например, за пиццу"></label>
+      <p class="err" id="sErr"></p><button class="btn" type="button" id="sGo">Перевести</button>
+      <p class="lock">🔒 Сумму и сообщение видите только вы двое: они зашифрованы на телефоне. V3 Pay записывает перевод в учёт у обоих — настоящие деньги отправь в своём банке.</p>`
+      : `<div class="empty"><strong>Пока некому переводить</strong>Других пользователей V3 Pay здесь ещё нет. Поделись приложением через меню «Поделиться» — когда друг зарегистрируется, он появится в этом списке.</div>`}`, (s) => {
+      if (!people.length) return;
+      wirePicks(s);
+      $("#sGo", s).addEventListener("click", async () => {
+        const to = picked(s, "to"), amount = parseAmt($("#sAmt", s).value), note = $("#sNote", s).value.trim().slice(0, 60), acc = picked(s, "acc"), err = $("#sErr", s), btn = $("#sGo", s);
+        if (!to) { err.textContent = "Выбери, кому перевести"; return; } if (!(amount > 0)) { err.textContent = "Введи сумму больше нуля"; return; }
+        btn.disabled = true; btn.textContent = "Отправляем…";
+        try {
+          const iv = crypto.getRandomValues(new Uint8Array(12)), tid = uid();
+          const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await sharedKey(to), new TextEncoder().encode(JSON.stringify({ amount, note, cur: cur() })));
+          await db.doc("xfer/" + P2P.me + "/items/" + tid).set({ to, iv: b64(iv), ct: b64(ct), ts: Date.now() });
+          put("op_" + uid(), { type: "op", kind: "exp", amount, acc, date: todayStr(), cat: "p2p", note, peer: to, xid: tid, st: "wait", ts: Date.now() });
+          closeSheet(); toast("Отправлено: " + money(amount) + " → " + nameOf(to));
+        } catch (e) { btn.disabled = false; btn.textContent = "Перевести"; err.textContent = "Не получилось отправить — проверь связь и попробуй ещё раз"; }
+      });
+    });
+  }
+
+  // ---------- JOBS: everything earned from work ----------
+  function jobs() { return all("job").sort((a, b) => (a.ts || 0) - (b.ts || 0)); }
+  const isEarning = (o) => o.kind === "inc" && (!!o.job || o.cat === "salary" || o.cat === "side");
+  function earnings() { return ops().filter(isEarning); }
+  function jobsView() {
+    const list = earnings(), js = jobs(), now = new Date(), mk = mKey(now), yk = String(now.getFullYear());
+    const total = list.reduce((s, o) => s + o.amount, 0), month = list.filter((o) => (o.date || "").startsWith(mk)).reduce((s, o) => s + o.amount, 0), year = list.filter((o) => (o.date || "").startsWith(yk)).reduce((s, o) => s + o.amount, 0);
+    const months = []; for (let i = 5; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push({ k: mKey(d), n: d.toLocaleDateString("ru-RU", { month: "short" }).replace(".", ""), v: 0 }); }
+    list.forEach((o) => { const m = months.find((x) => (o.date || "").startsWith(x.k)); if (m) m.v += o.amount; });
+    const max = Math.max(...months.map((m) => m.v), 1);
+    const short = (v) => v >= 1e6 ? nf.format(round2(v / 1e6)) + "M" : v >= 1e4 ? Math.round(v / 1e3) + "K" : nf.format(Math.round(v));
+    let h = `<section class="jhero" aria-label="Заработано"><small>Заработано всего</small><div class="total num">${esc(money(total))}</div>
+      <div class="hero-row"><div><span>В этом месяце</span><b class="num">${esc(money(month))}</b></div><div><span>За ${esc(yk)} год</span><b class="num">${esc(money(year))}</b></div></div></section>`;
+    h += `<section class="panel"><div class="ph"><h2>По месяцам</h2><span class="muted">${esc(cur())}</span></div><div class="bars" role="img" aria-label="Заработок за полгода">${months.map((m, i) => `<div class="${i === 5 ? "now" : ""}"><em class="num">${m.v ? esc(short(m.v)) : ""}</em><i style="height:${(m.v / max * 100).toFixed(1)}%"></i><span>${esc(m.n)}</span></div>`).join("")}</div></section>`;
+    h += `<section class="panel"><div class="ph"><h2>Мои работы</h2><button type="button" data-act="job-new">+ Работа</button></div>`;
+    if (!js.length) h += `<div class="empty"><strong>Добавь, где ты зарабатываешь</strong>Например, «Курьер», «Репетитор» или основная работа. Потом записывай каждую выплату — всё соберётся здесь.<button class="btn small" type="button" data-act="job-new">Добавить работу</button></div>`;
+    js.forEach((j) => {
+      const e = list.filter((o) => o.job === j.id), jt = e.reduce((s, o) => s + o.amount, 0), jm = e.filter((o) => (o.date || "").startsWith(mk)).reduce((s, o) => s + o.amount, 0);
+      h += `<div class="job"><div class="r1"><i style="background:${esc(j.color)}"></i><b>${esc(j.name)}</b><button type="button" data-job="${esc(j.id)}">Изменить</button></div>
+        <div class="muted">${esc(JOB_KINDS[j.kind] || "Работа")}${j.rate ? " · " + esc(money(j.rate)) + " за " + esc(UNITS[j.unit] || "час") : ""}</div>
+        <div class="st"><div><span>Месяц</span><b class="num">${esc(money(jm))}</b></div><div><span>Всего</span><b class="num">${esc(money(jt))}</b></div><div><span>Выплат</span><b class="num">${e.length}</b></div></div>
+        <button class="btn soft small" type="button" data-earn="${esc(j.id)}" style="align-self:flex-start">+ Заработал</button></div>`;
+    });
+    h += `</section>`;
+    h += `<section class="panel"><div class="ph"><h2>Все заработанные деньги</h2>${js.length ? `<button type="button" data-earn="">+ Записать</button>` : ""}</div>${list.length ? `<div class="ops">${grouped(list.slice(0, 40))}</div>` : `<div class="empty">Здесь появится каждая зарплата и подработка — из JOBS или из доходов с категорией «Зарплата» и «Подработка».</div>`}</section>`;
+    return h;
+  }
+  function jobSheet(id) {
+    const j = id ? docs.get(id) : null, used = id && ops().some((o) => o.job === id);
+    openSheet(`<h3>${j ? "Работа" : "Новая работа"}</h3>
+      <label class="field"><span>Название</span><input class="in" id="jName" maxlength="30" placeholder="Например, Курьер в Яндекс Еде" value="${esc(j ? j.name : "")}" autofocus></label>
+      <div class="field"><span>Тип</span><div class="pick" data-pick="kind">${Object.entries(JOB_KINDS).map(([k, n]) => `<button type="button" data-v="${k}" aria-pressed="${(j ? j.kind : "work") === k}">${n}</button>`).join("")}</div></div>
+      <div class="two"><label class="field"><span>Ставка, ${esc(cur())} (необязательно)</span><input class="in num" id="jRate" inputmode="decimal" placeholder="0" value="${j && j.rate ? esc(String(j.rate).replace(".", ",")) : ""}"></label>
+      <label class="field"><span>За</span><select class="in" id="jUnit">${Object.entries(UNITS).map(([k, n]) => `<option value="${k}" ${(j ? j.unit : "hour") === k ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>
+      <div class="field"><span>Цвет</span><div class="pick" data-pick="color">${ACC_COLORS.map((c, i) => `<button type="button" data-v="${c}" aria-pressed="${(j ? j.color : ACC_COLORS[(jobs().length + 1) % ACC_COLORS.length]) === c}" aria-label="Цвет"><i style="background:${c};width:18px;height:18px"></i></button>`).join("")}</div></div>
+      <p class="err" id="jErr"></p>
+      <div class="row-btns">${j ? `<button class="btn danger" type="button" id="jDel">Удалить</button>` : ""}<button class="btn" type="button" id="jSave">${j ? "Сохранить" : "Добавить"}</button></div>`, (s) => {
+      wirePicks(s);
+      $("#jSave", s).addEventListener("click", () => {
+        const name = $("#jName", s).value.trim().slice(0, 30); if (!name) { $("#jErr", s).textContent = "Назови работу"; return; }
+        const raw = $("#jRate", s).value.trim(), rate = raw ? parseAmt(raw) : 0; if (!(rate >= 0)) { $("#jErr", s).textContent = "Ставка — это число"; return; }
+        put(id || "job_" + uid(), { type: "job", name, kind: picked(s, "kind") || "work", rate, unit: $("#jUnit", s).value, color: picked(s, "color") || ACC_COLORS[0], ts: j ? j.ts : Date.now() });
+        closeSheet(); toast(j ? "Сохранено" : "Работа добавлена");
+      });
+      if (j) armDelete($("#jDel", s), () => { if (used) { $("#jErr", s).textContent = "У работы есть выплаты — она нужна для истории"; return; } del(id); closeSheet(); toast("Работа удалена"); });
+    });
+  }
+  function earnSheet(jobId) {
+    ensureAccounts(); const js = jobs(); if (!js.length) { jobSheet(); return; }
+    const first = docs.get(jobId) ? jobId : js[0].id;
+    openSheet(`<h3>Заработал</h3>
+      <div class="field"><span>Где</span><div class="pick" data-pick="job">${js.map((j) => `<button type="button" data-v="${esc(j.id)}" aria-pressed="${j.id === first}"><i style="background:${esc(j.color)}"></i>${esc(j.name)}</button>`).join("")}</div></div>
+      <div class="two" id="eRateBox"><label class="field"><span id="eQtyLbl">Часов</span><input class="in num" id="eQty" inputmode="decimal" placeholder="0"></label><div class="field"><span>Ставка</span><p class="muted num" id="eRate" style="padding:12px 0 0"></p></div></div>
+      <label class="field"><span>Сумма, ${esc(cur())}</span><input class="in big num" id="eAmt" inputmode="decimal" placeholder="0" autofocus></label>
+      <div class="field"><span>Зачислить на счёт</span><div class="pick" data-pick="acc">${accounts().map((a, i) => `<button type="button" data-v="${esc(a.id)}" aria-pressed="${i === 0}"><i style="background:${esc(a.color)}"></i>${esc(a.name)}</button>`).join("")}</div></div>
+      <div class="two"><label class="field"><span>Дата</span><input class="in" type="date" id="eDate" value="${esc(todayStr())}"></label><label class="field"><span>Заметка</span><input class="in" id="eNote" maxlength="60" placeholder="Например, аванс"></label></div>
+      <p class="err" id="eErr"></p><button class="btn" type="button" id="eGo">Записать заработок</button>`, (s) => {
+      const QTY = { hour: "Часов", shift: "Смен", day: "Дней", month: "Месяцев", task: "Заказов" };
+      const sync = () => { const j = docs.get(picked(s, "job")) || {}; $("#eRateBox", s).hidden = !(j.rate > 0); $("#eQtyLbl", s).textContent = QTY[j.unit] || "Часов"; $("#eRate", s).textContent = j.rate ? money(j.rate) + " за " + (UNITS[j.unit] || "час") : ""; };
+      wirePicks(s, (name) => { if (name === "job") { sync(); calc(); } });
+      const calc = () => { const j = docs.get(picked(s, "job")) || {}, q = parseAmt($("#eQty", s).value); if (j.rate > 0 && q > 0) $("#eAmt", s).value = String(round2(q * j.rate)).replace(".", ","); };
+      $("#eQty", s).addEventListener("input", calc); sync();
+      $("#eGo", s).addEventListener("click", () => {
+        const a = parseAmt($("#eAmt", s).value); if (!(a > 0)) { $("#eErr", s).textContent = "Введи сумму больше нуля"; return; }
+        const j = docs.get(picked(s, "job")) || {};
+        put("op_" + uid(), { type: "op", kind: "inc", amount: a, acc: picked(s, "acc") || accounts()[0].id, date: $("#eDate", s).value || todayStr(), cat: j.kind === "work" ? "salary" : "side", job: picked(s, "job"), note: $("#eNote", s).value.trim().slice(0, 60), ts: Date.now() });
+        closeSheet(); toast("Записано в JOBS: +" + money(a));
+      });
+    });
+  }
+
   // ---------- render ----------
   function render() {
     document.querySelectorAll(".tab").forEach((b) => { if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
     const m = $("#main");
+    $("#meBtn").hidden = true;
     if (mode === "loading") { $(".tabs").hidden = true; m.innerHTML = `<div class="view"><div class="panel"><p class="muted">Загружаем твои данные…</p></div></div>`; return; }
     const prof = docs.get("profile");
     if (!prof || !prof.last4) { $(".tabs").hidden = true; if (!$("#rCard")) { m.innerHTML = regView(); wireReg(); } return; }
-    $(".tabs").hidden = false;
-    m.innerHTML = `<div class="view">${tab === "home" ? home() : tab === "ops" ? opsView() : tab === "debts" ? debtsView() : moreView()}</div>`;
+    $(".tabs").hidden = false; const mb = $("#meBtn"); mb.hidden = false; mb.textContent = String(prof.name || "V").slice(0, 1).toUpperCase(); if (tab === "more") mb.setAttribute("aria-current", "page"); else mb.removeAttribute("aria-current");
+    m.innerHTML = `<div class="view">${tab === "home" ? home() : tab === "ops" ? opsView() : tab === "jobs" ? jobsView() : tab === "debts" ? debtsView() : moreView()}</div>`;
   }
 
   function monthStats(key) {
@@ -369,7 +619,11 @@ button { cursor: pointer; }
   function opRow(o) {
     let ic, title, sub, amt, cls;
     if (o.kind === "tr") { ic = "⇄"; title = "Перевод"; sub = accName(o.acc) + " → " + accName(o.to); amt = money(o.amount); cls = ""; }
-    else { const c = CAT[o.cat] || CAT[o.kind === "inc" ? "iother" : "other"]; ic = c.ico; title = o.note || c.name; sub = (o.note ? c.name + " · " : "") + accName(o.acc); amt = money(o.kind === "inc" ? o.amount : -o.amount, true); cls = o.kind === "inc" ? "plus" : ""; }
+    else {
+      const c = CAT[o.cat] || CAT[o.kind === "inc" ? "iother" : "other"]; ic = c.ico; title = o.note || c.name; sub = (o.note ? c.name + " · " : "") + accName(o.acc); amt = money(o.kind === "inc" ? o.amount : -o.amount, true); cls = o.kind === "inc" ? "plus" : "";
+      if (o.peer) { title = (o.kind === "inc" ? "От: " : "Кому: ") + nameOf(o.peer); sub = (o.note ? o.note + " · " : "") + (o.st === "wait" ? "⏳ ждёт ответа" : o.st === "ok" ? "✓ принят" : o.st === "no" ? "✕ отклонён" : accName(o.acc)); }
+      else if (o.job && docs.get(o.job)) sub = docs.get(o.job).name + " · " + accName(o.acc);
+    }
     return `<button class="op" type="button" data-op="${esc(o.id)}"><span class="ic">${esc(ic)}</span><span class="t"><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="a num ${cls}">${esc(amt)}</span></button>`;
   }
   function dayLabel(s) {
@@ -394,7 +648,9 @@ button { cursor: pointer; }
     const st = monthStats(mKey(new Date())), set = settings();
     const ds = debts().filter((d) => !d.closed), owedMe = ds.filter((d) => d.dir === "me").reduce((s, d) => s + d.amount - (d.paid || 0), 0), iOwe = ds.filter((d) => d.dir === "i").reduce((s, d) => s + d.amount - (d.paid || 0), 0);
     let h = `<section class="hero" aria-label="Баланс"><small>Всего на счетах</small><div class="total num">${esc(money(total))}</div>
-      <div class="hero-row"><div><span>Доходы за ${esc(new Date().toLocaleDateString("ru-RU", { month: "long" }))}</span><b class="num">${esc(money(st.inc, true))}</b></div><div><span>Расходы</span><b class="num">${esc(money(-st.exp, true))}</b></div></div></section>`;
+      <div class="hero-row"><div><span>Доходы за ${esc(new Date().toLocaleDateString("ru-RU", { month: "long" }))}</span><b class="num">${esc(money(st.inc, true))}</b></div><div><span>Расходы</span><b class="num">${esc(money(-st.exp, true))}</b></div></div>
+      <div class="hero-acts"><button type="button" data-act="send">↗ Перевести</button><button type="button" data-goto="jobs">💼 JOBS</button></div></section>`;
+    h += inboxPanel();
     // budget
     if (set.budget > 0) {
       const pct = Math.min(100, st.exp / set.budget * 100), left = set.budget - st.exp;
@@ -489,11 +745,12 @@ button { cursor: pointer; }
     const o = id ? docs.get(id) : null, accs = accounts();
     let kind = o ? o.kind : "exp";
     const accPick = (name, val) => `<div class="pick" data-pick="${name}">${accs.map((a) => `<button type="button" data-v="${esc(a.id)}" aria-pressed="${a.id === val}"><i style="background:${esc(a.color)}"></i>${esc(a.name)}</button>`).join("")}</div>`;
-    const catPick = (k, val) => `<div class="pick" data-pick="cat">${(k === "inc" ? INC : EXP).map(([cid, n, ic]) => `<button type="button" data-v="${cid}" aria-pressed="${cid === val}">${esc(ic)} ${esc(n)}</button>`).join("")}</div>`;
+    const catPick = (k, val) => `<div class="pick" data-pick="cat">${(k === "inc" ? INC : EXP).filter(([cid]) => !HIDDEN_CATS.has(cid) || cid === val).map(([cid, n, ic]) => `<button type="button" data-v="${cid}" aria-pressed="${cid === val}">${esc(ic)} ${esc(n)}</button>`).join("")}</div>`;
     openSheet(`<h3>${o ? "Операция" : "Новая операция"}</h3>
       <div class="seg" style="--n:3" id="kindSeg">${[["exp", "Расход"], ["inc", "Доход"], ["tr", "Перевод"]].map(([k, n]) => `<button type="button" data-k="${k}" aria-pressed="${kind === k}">${n}</button>`).join("")}</div>
       <label class="field"><span>Сумма, ${esc(cur())}</span><input class="in big num" id="fAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${o ? esc(String(o.amount).replace(".", ",")) : ""}" autofocus></label>
       <div class="field" id="catBox"><span>Категория</span><div id="catWrap">${catPick(kind, o && o.cat || (kind === "inc" ? "salary" : "food"))}</div></div>
+      <div class="field" id="jobBox" ${kind === "inc" && jobs().length ? "" : "hidden"}><span>Работа (для JOBS)</span><div class="pick" data-pick="job"><button type="button" data-v="" aria-pressed="${!(o && o.job)}">Без работы</button>${jobs().map((j) => `<button type="button" data-v="${esc(j.id)}" aria-pressed="${!!(o && o.job === j.id)}"><i style="background:${esc(j.color)}"></i>${esc(j.name)}</button>`).join("")}</div></div>
       <div class="field"><span id="accLbl">${kind === "tr" ? "Откуда" : "Счёт"}</span>${accPick("acc", o ? o.acc : accs[0].id)}</div>
       <div class="field" id="toBox" ${kind === "tr" ? "" : "hidden"}><span>Куда</span>${accPick("to", o && o.to || (accs[1] || accs[0]).id)}</div>
       <div class="two"><label class="field"><span>Дата</span><input class="in" type="date" id="fDate" value="${esc(o ? o.date : todayStr())}"></label>
@@ -504,7 +761,7 @@ button { cursor: pointer; }
       $("#kindSeg", s).addEventListener("click", (e) => {
         const b = e.target.closest("button"); if (!b) return; kind = b.dataset.k;
         s.querySelectorAll("#kindSeg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
-        $("#catBox", s).hidden = kind === "tr"; $("#toBox", s).hidden = kind !== "tr"; $("#accLbl", s).textContent = kind === "tr" ? "Откуда" : "Счёт";
+        $("#catBox", s).hidden = kind === "tr"; $("#toBox", s).hidden = kind !== "tr"; $("#jobBox", s).hidden = !(kind === "inc" && jobs().length); $("#accLbl", s).textContent = kind === "tr" ? "Откуда" : "Счёт";
         if (kind !== "tr") { $("#catWrap", s).innerHTML = catPick(kind, kind === "inc" ? "salary" : "food"); }
       });
       $("#catBox", s).hidden = kind === "tr";
@@ -517,6 +774,8 @@ button { cursor: pointer; }
         if (kind === "tr" && acc === to) { err.textContent = "Выбери два разных счёта"; return; }
         const data = { type: "op", kind, amount, acc, date, note: $("#fNote", s).value.trim().slice(0, 60), ts: o ? o.ts : Date.now() };
         if (kind === "tr") data.to = to; else data.cat = picked(s, "cat") || (kind === "inc" ? "iother" : "other");
+        if (kind === "inc" && picked(s, "job")) { data.job = picked(s, "job"); if (data.cat === "iother") data.cat = "salary"; }
+        if (o && o.peer) { data.peer = o.peer; if (o.xid) data.xid = o.xid; if (o.st) data.st = o.st; }
         put(id || "op_" + uid(), data); closeSheet(); toast(o ? "Сохранено" : kind === "exp" ? "Расход записан" : kind === "inc" ? "Доход записан" : "Перевод записан");
       });
       if (o) armDelete($("#fDel", s), () => { del(id); closeSheet(); toast("Операция удалена"); });
@@ -614,6 +873,7 @@ button { cursor: pointer; }
   function go(t) { tab = t; try { history.replaceState(null, "", "#" + t); } catch (e) { location.hash = t; } render(); window.scrollTo(0, 0); }
   document.querySelectorAll(".tab").forEach((b) => b.addEventListener("click", () => go(b.dataset.tab)));
   $("#fab").addEventListener("click", () => opSheet());
+  $("#meBtn").addEventListener("click", () => go("more"));
   $("#main").addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
     if (d.op) opSheet(d.op);
@@ -632,6 +892,12 @@ button { cursor: pointer; }
     else if (d.act === "budget") budgetSheet();
     else if (d.act === "csv") exportCsv();
     else if (d.act === "card") cardSheet();
+    else if (d.act === "send") sendSheet();
+    else if (d.accept) acceptSheet(d.accept);
+    else if (d.decline) declineIn(d.decline);
+    else if (d.act === "job-new") jobSheet();
+    else if (d.job) jobSheet(d.job);
+    else if (d.earn !== undefined) earnSheet(d.earn);
   });
   $("#main").addEventListener("change", (e) => { if (e.target.id === "curSel") { put("settings", { ...settings(), type: "set", cur: e.target.value }); toast("Валюта: " + e.target.value); } });
 
@@ -647,7 +913,7 @@ button { cursor: pointer; }
       const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
       if (!d || !u) { toLocal(); return; }
       const me = await u.id(); if (!me) { toLocal(); return; }
-      db = d; const c = db.collection("data/users/" + me);
+      db = d; P2P.me = me; P2P.user = u; const c = db.collection("data/users/" + me);
       setSync("", "Синхронизация…");
       let first = true; const timer = setTimeout(() => { if (first) { toLocal(); setSync("local", "Нет связи — на устройстве"); } }, 10000);
       c.onSnapshot((snap) => {
@@ -660,6 +926,7 @@ button { cursor: pointer; }
         }
         if (!snap.empty || docs.size === 0) { docs.clear(); snap.docs.forEach((x) => { if (x.exists) docs.set(x.id, x.data()); }); lsWrite(); }
         mode = "db"; setSync("ok", "Сохранено в облаке"); if (!sheetOpen) render();
+        p2pStart();
       }, () => { clearTimeout(timer); col = null; toLocal(); setSync("local", "На этом устройстве"); });
     } catch (e) { toLocal(); }
   })();
