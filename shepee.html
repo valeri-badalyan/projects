@@ -164,6 +164,7 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
 .studio-tag { margin-left: auto; font-family: var(--mono); font-size: 12px; padding: 4px 10px; border-radius: 99px; background: var(--role, var(--cyan)); color: var(--bg); font-weight: 700; }
 .brief { background: var(--panel); border: 1px dashed var(--line); border-radius: 14px; padding: 10px 12px; font-size: 13px; color: var(--muted); margin: 0 0 14px; }
 .brief b { color: var(--fg); }
+.brief code { font-family: var(--mono); font-size: 12px; color: var(--cyan); }
 .checks { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 6px; }
 .checks li { font-size: 13px; color: var(--muted); padding-left: 26px; position: relative; }
 .checks li::before { content: "○"; position: absolute; left: 4px; color: var(--muted); }
@@ -283,6 +284,10 @@ textarea.field { min-height: 80px; resize: vertical; }
       <div class="section-h"><h2>ПОРТФОЛИО</h2><span>твои рисунки</span></div>
       <div class="portfolio" id="portfolio"></div>
     </div>
+    <div id="pubWrap" hidden>
+      <div class="section-h"><h2>ОПУБЛИКОВАНО</h2><span>магазин V3</span></div>
+      <ul class="feed" id="published"></ul>
+    </div>
     <div class="section-h"><h2>ЛЕНТА V3</h2><span>что сделано</span></div>
     <ul class="feed" id="feed"></ul>
   </section>
@@ -355,7 +360,7 @@ textarea.field { min-height: 80px; resize: vertical; }
 
   const ROLES = [
     { id: "dev", ico: "💻", name: "Разработчик", color: "#5ce1e6", about: "Пишет код игр и чинит баги.", studio: "Редактор кода",
-      tasks: PUZZLES.map((p, i) => ({ t: p.t, p: i })) },
+      tasks: PUZZLES.map((p, i) => ({ t: p.t, p: i })).concat([{ t: "Опубликовать «{g}» в магазине V3", pub: true, always: true }]) },
     { id: "design", ico: "🎨", name: "Дизайнер", color: "#ff5ad1", about: "Рисует меню, иконки и героев.", studio: "Студия дизайна",
       tasks: [{ t: "Перерисовать меню «{g}»", v: "menu" }, { t: "Нарисовать иконку для «{g}»", v: "icon" },
               { t: "Новый скин героя в «{g}»", v: "hero" }, { t: "Постер для «{g}»", v: "poster" }] },
@@ -382,8 +387,9 @@ textarea.field { min-height: 80px; resize: vertical; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
   let S = load() || { name: "", role: null, xp: 0, coins: 0, tasks: [], feed: [] };
-  if (S.v !== 2) { S.v = 2; S.tasks = []; }  // old click-only tasks are replaced
+  if (S.v !== 3) { S.v = 3; S.tasks = []; }  // old click-only tasks are replaced
   S.portfolio = S.portfolio || [];
+  S.published = S.published || [];
   S.feed = S.feed || [];
   let picked = S.role;
   let tool = null;      // the open studio: { checks(), submit?(), stop?() }
@@ -413,11 +419,12 @@ textarea.field { min-height: 80px; resize: vertical; }
   // ---------- Tasks ----------
   function makeTasks() {
     const r = roleOf(S.role);
-    const tpls = shuffle(r.tasks);
+    const must = r.tasks.filter(x => x.always);
+    const tpls = shuffle(must.concat(shuffle(r.tasks.filter(x => !x.always)).slice(0, 4 - must.length)));
     return shuffle(GAMES).slice(0, 4).map(([ico, g], i) => {
       const tpl = tpls[i % tpls.length];
       const hot = Math.random() < .35;
-      return { id: Date.now() + "-" + i, ico, game: g, title: tpl.t.replace("{g}", g), v: tpl.v, p: tpl.p,
+      return { id: Date.now() + "-" + i, ico, game: g, title: tpl.t.replace("{g}", g), v: tpl.v, p: tpl.p, pub: !!tpl.pub,
                hot, xp: hot ? 70 : 45, pay: hot ? 60 : 35, done: false };
     });
   }
@@ -625,6 +632,7 @@ textarea.field { min-height: 80px; resize: vertical; }
 
   // Programmer: edit real code, run the tests.
   TOOLS.dev = (t, body, brief) => {
+    if (t.pub) return publishTool(t, body, brief);
     const p = PUZZLES[t.p] || PUZZLES[0];
     brief.innerHTML = `<b>Баг-репорт:</b> ${esc(p.spec)} Сейчас код работает неправильно — исправь его и запусти тесты.`;
     body.innerHTML = `
@@ -671,6 +679,88 @@ textarea.field { min-height: 80px; resize: vertical; }
       { label: `Все ${p.tests.length} теста зелёные`, ok: passed }
     ] };
   };
+
+  // Programmer, game release: a script in the V3 release language.
+  //   Arnievnent "name"  — add an achievement
+  //   Downcheat          — anti-cheat check and pack the build for download
+  //   Bri $ Bradge <◎>   — set the price and send the game to the V3 store (last line)
+  const CMDS = ["Arnievnent", "Downcheat", "Bri $ Bradge"];
+  function closest(word) {
+    const d = (a, b) => { const m = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) m[0][j] = j;
+      for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+        m[i][j] = Math.min(m[i - 1][j] + 1, m[i][j - 1] + 1, m[i - 1][j - 1] + (a[i - 1].toLowerCase() === b[j - 1].toLowerCase() ? 0 : 1));
+      return m[a.length][b.length]; };
+    let best = null, bd = 99;
+    CMDS.forEach(c => { const k = d(word, c.slice(0, Math.max(word.length, 3))); if (k < bd) { bd = k; best = c; } });
+    return bd <= 4 ? best : null;
+  }
+  function publishTool(t, body, brief) {
+    const needAch = t.hot ? 3 : 2;
+    const start = `# Публикация «${t.game}» в магазин V3\n# Сначала достижения, потом Downcheat, в конце Bri $ Bradge\n\n`;
+    brief.innerHTML = `<b>Задание:</b> выпусти «${esc(t.game)}». Напиши скрипт публикации командами V3:
+      <br>• <code>Arnievnent "Название"</code> — добавить достижение (нужно минимум ${needAch})
+      <br>• <code>Downcheat</code> — проверить игру на читы и собрать файл для скачивания
+      <br>• <code>Bri $ Bradge 50</code> — цена в ◎ (0 — бесплатно) и отправка в магазин, последней строкой`;
+    body.innerHTML = `
+      <label class="label" for="code">release.v3</label>
+      <textarea class="code" id="code" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="row">
+        <button class="btn small" id="run" type="button">🚀 Запустить публикацию</button>
+        <button class="btn ghost small" id="ex" type="button">💡 Пример</button>
+      </div>
+      <ul class="tests" id="tests"></ul>`;
+    const ta = body.querySelector("#code");
+    ta.value = start;
+    let result = null;  // { ach, price } when the script ran clean
+    ta.addEventListener("input", () => { result = null; refresh(); });
+    body.querySelector("#ex").addEventListener("click", () => {
+      ta.value = start + `Arnievnent "Первая победа"\nArnievnent "Рекорд 1000"\n${t.hot ? 'Arnievnent "Без единой ошибки"\n' : ""}Downcheat\nBri $ Bradge 0`;
+      result = null; refresh();
+    });
+    body.querySelector("#run").addEventListener("click", () => {
+      const out = []; const ach = []; let checked = false, price = null, bad = false;
+      const ok = (m) => out.push(`<li class="pass">✓ ${m}</li>`);
+      const err = (m) => { bad = true; out.push(`<li class="fail">✗ ${m}</li>`); };
+      ta.value.split("\n").forEach((raw, i) => {
+        const line = raw.trim(), n = `стр. ${i + 1}:`;
+        if (!line || line.startsWith("#")) return;
+        if (price !== null) { err(`${n} после Bri $ Bradge игра уже в магазине — эта строка лишняя`); return; }
+        let m;
+        if ((m = line.match(/^Arnievnent\s+"([^"]+)"$/))) {
+          if (checked) err(`${n} достижения добавляют до Downcheat`);
+          else { ach.push(m[1]); ok(`Arnievnent: достижение «${esc(m[1])}» добавлено`); }
+        } else if (/^Arnievnent\b/.test(line)) {
+          err(`${n} название достижения пишется в кавычках: Arnievnent "Первая победа"`);
+        } else if (line === "Downcheat") {
+          if (!ach.length) err(`${n} сначала добавь достижения через Arnievnent`);
+          else if (checked) err(`${n} Downcheat уже был`);
+          else { checked = true; ok(`Downcheat: читов нет, ${esc(t.game.toLowerCase().replace(/\s+/g, "-"))}.zip собран (${(2 + Math.random() * 8).toFixed(1)} МБ)`); }
+        } else if ((m = line.match(/^Bri\s*\$\s*Bradge(?:\s+(\d+))?$/))) {
+          if (!checked) err(`${n} нельзя публиковать без проверки — сначала Downcheat`);
+          else if (m[1] === undefined) err(`${n} укажи цену: Bri $ Bradge 0`);
+          else { price = +m[1]; ok(`Bri $ Bradge: цена — ${price ? price + " ◎" : "бесплатно"}, игра отправлена в магазин V3`); }
+        } else {
+          const guess = closest(line.split(/\s+/)[0]);
+          err(`${n} неизвестная команда «${esc(line.slice(0, 30))}»${guess ? ` — может, ${guess}?` : ""}`);
+        }
+      });
+      if (price === null && !bad) err("Нет последней строки Bri $ Bradge — игра не ушла в магазин");
+      if (!bad && ach.length < needAch) err(`Достижений ${ach.length}, а нужно минимум ${needAch}`);
+      if (!bad) out.push(`<li class="pass">🎉 «${esc(t.game)}» опубликована!</li>`);
+      result = bad ? null : { ach, price };
+      body.querySelector("#tests").innerHTML = out.join("");
+      refresh();
+    });
+    return {
+      checks: () => [{ label: "Скрипт публикации прошёл без ошибок", ok: !!result }],
+      submit: () => {
+        S.published.unshift({ game: t.game, ico: t.ico, price: result.price, ach: result.ach.length });
+        S.published = S.published.slice(0, 20);
+        log(`🚀 «${esc(t.game)}» вышла в магазине V3 · ${result.price ? result.price + " ◎" : "бесплатно"}`);
+      }
+    };
+  }
 
   // QA: tap the broken parts of a game screen, then write a report.
   TOOLS.qa = (t, body, brief) => {
@@ -936,6 +1026,8 @@ textarea.field { min-height: 80px; resize: vertical; }
     } else { $("bXp").textContent = `${S.xp} XP · максимум`; $("bBar").style.width = "100%"; }
     renderTasks(); renderFeed();
     $("pfWrap").hidden = !S.portfolio.length;
+    $("pubWrap").hidden = !S.published.length;
+    $("published").innerHTML = S.published.map(g => `<li>${g.ico} <b>${esc(g.game)}</b> · ${g.price ? g.price + " ◎" : "бесплатно"} · 🏅 ${g.ach}</li>`).join("");
     $("portfolio").innerHTML = S.portfolio.map(p => `<figure><img src="${p.img}" alt=""><figcaption>${esc(p.title)}</figcaption></figure>`).join("");
   }
   function log(html) {
