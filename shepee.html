@@ -158,6 +158,91 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
   .badge-card { grid-template-columns: auto 1fr; }
   .pay { grid-column: 1 / -1; text-align: left; }
 }
+
+/* Studio: each role works in its own tool */
+.studio-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.studio-tag { margin-left: auto; font-family: var(--mono); font-size: 12px; padding: 4px 10px; border-radius: 99px; background: var(--role, var(--cyan)); color: var(--bg); font-weight: 700; }
+.brief { background: var(--panel); border: 1px dashed var(--line); border-radius: 14px; padding: 10px 12px; font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.brief b { color: var(--fg); }
+.checks { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 6px; }
+.checks li { font-size: 13px; color: var(--muted); padding-left: 26px; position: relative; }
+.checks li::before { content: "○"; position: absolute; left: 4px; color: var(--muted); }
+.checks li.ok { color: var(--fg); }
+.checks li.ok::before { content: "✓"; color: var(--lime); font-weight: 800; }
+
+/* Design */
+.canvas-wrap { position: relative; width: 100%; border-radius: 14px; overflow: hidden; background: #fff; touch-action: none; }
+.canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.canvas-wrap canvas.guide { pointer-events: none; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tool { padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-size: 13px; }
+.tool[aria-pressed="true"] { background: var(--role, var(--cyan)); color: var(--bg); border-color: transparent; font-weight: 800; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sw { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--panel-2); }
+.sw[aria-pressed="true"] { border-color: var(--fg); transform: scale(1.1); }
+.portfolio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.portfolio figure { margin: 0; }
+.portfolio img { width: 100%; border-radius: 10px; display: block; background: #fff; }
+.portfolio figcaption { font-size: 11px; color: var(--muted); line-height: 1.3; margin-top: 3px; }
+
+/* Code */
+.code { width: 100%; min-height: 170px; resize: vertical; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: #0c0d1f; color: #d9f7ff; font-family: var(--mono); font-size: 13px; line-height: 1.55; outline: none; tab-size: 2; white-space: pre; overflow-x: auto; }
+.code:focus { border-color: var(--role, var(--cyan)); }
+.tests { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 4px; font-family: var(--mono); font-size: 12px; }
+.tests li { padding: 6px 10px; border-radius: 8px; background: var(--panel); overflow-wrap: anywhere; }
+.tests li.pass { color: var(--lime); }
+.tests li.fail { color: var(--coral); }
+
+/* QA */
+.mock { position: relative; border-radius: 16px; padding: 14px; background: linear-gradient(160deg, #22265a, #151735); border: 4px solid #0b0c1d; overflow: hidden; }
+.mock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.el { position: relative; padding: 10px; border-radius: 10px; background: rgba(255,255,255,.06); border: 2px solid transparent; text-align: center; font-weight: 700; min-height: 46px; display: grid; place-items: center; overflow: hidden; }
+.el.full { grid-column: 1 / -1; }
+.el.found { border-color: var(--coral); background: rgba(255,107,122,.15); }
+.el.found::after { content: "🐞"; position: absolute; top: 2px; right: 4px; font-size: 14px; }
+.el.nope { animation: shake .3s; border-color: var(--muted); }
+@keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.bugs { list-style: none; padding: 0; margin: 10px 0; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.bugs li { padding: 6px 10px; border-radius: 8px; background: var(--panel); }
+textarea.field { min-height: 80px; resize: vertical; }
+
+/* Music */
+.seq { display: grid; grid-template-columns: 54px repeat(8, 1fr); gap: 4px; align-items: center; }
+.seq .rl { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+.cell { aspect-ratio: 1; border-radius: 6px; border: 0; background: var(--panel-2); padding: 0; }
+.cell:nth-child(9n+6), .cell:nth-child(9n+7), .cell:nth-child(9n+8), .cell:nth-child(9n+9) { background: #2c2f5c; }
+.cell.on { background: var(--role, var(--cyan)) !important; box-shadow: 0 0 10px var(--role, var(--cyan)); }
+.cell.now { outline: 2px solid var(--amber); }
+.tempo { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.tempo input { flex: 1; accent-color: var(--amber); }
+
+/* Video */
+.screen16 { aspect-ratio: 16 / 9; border-radius: 14px; background: #000; display: grid; place-items: center; text-align: center; position: relative; overflow: hidden; }
+.screen16 .big { font-size: 56px; line-height: 1; }
+.screen16 .cap { font-family: var(--display); font-size: 13px; margin-top: 8px; }
+.screen16 .ttl { position: absolute; inset: auto 0 10px; font-family: var(--display); font-size: 16px; color: var(--amber); }
+.timeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 10px 0; padding: 8px; border-radius: 12px; background: #0c0d1f; }
+.slot { aspect-ratio: 1; border-radius: 8px; border: 1px dashed var(--line); display: grid; place-items: center; font-size: 11px; color: var(--muted); }
+.clip { border-radius: 8px; border: 0; padding: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; line-height: 1.2; color: #fff; text-align: center; }
+.clip span { font-size: 22px; }
+.timeline .clip { width: 100%; height: 100%; }
+.pool { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pool .clip { aspect-ratio: 1; }
+
+/* Marketing */
+.covers { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.cover { width: 46px; height: 46px; border-radius: 10px; border: 3px solid transparent; font-size: 22px; }
+.cover[aria-pressed="true"] { border-color: var(--fg); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.tagc { padding: 5px 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--panel); font-size: 12px; }
+.tagc[aria-pressed="true"] { background: var(--role, var(--cyan)); color: var(--bg); border-color: transparent; font-weight: 800; }
+.post { margin-top: 14px; border-radius: 16px; background: #fff; color: #111; overflow: hidden; }
+.post-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; font-weight: 800; font-size: 13px; }
+.post-head i { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(110deg, var(--pink), var(--violet)); display: grid; place-items: center; font-style: normal; color: #fff; font-size: 11px; font-family: var(--display); }
+.post-img { aspect-ratio: 1.6; display: grid; place-items: center; font-size: 64px; background: #ddd; }
+.post-body { padding: 10px 12px 14px; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.post-body .ht { color: #3b5bdb; }
+.post-likes { padding: 0 12px 12px; font-size: 13px; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -167,27 +252,21 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
     <a class="back" href="index.html">← V3 Games</a>
   </header>
 
-  <!-- Step 1: choose a role -->
+  <!-- 1: choose a role -->
   <section id="pick">
     <h1>Работай на V3</h1>
-    <p class="sub">Выбери роль в команде V3 — и погнали. Задачи по нашим играм, опыт, повышения и зарплата в монетах ◎.</p>
-
+    <p class="sub">Выбери роль в команде V3 — и погнали. Каждая задача открывает рабочее место твоей профессии: дизайнер рисует, программист пишет код, композитор собирает бит.</p>
     <label class="label" for="nameIn">Как тебя зовут</label>
     <input class="field" id="nameIn" maxlength="24" placeholder="Например, Валерий" autocomplete="nickname">
-
     <div class="roles" id="roles" role="group" aria-label="Роли"></div>
-
     <button class="btn wide go" id="startBtn" type="button" disabled>Начать работу ▶</button>
   </section>
 
-  <!-- Step 2: workspace -->
+  <!-- 2: task board -->
   <section id="desk" hidden>
-    <div class="badge-card" id="badge">
+    <div class="badge-card">
       <div class="badge-ico" id="bIco"></div>
-      <div>
-        <div class="badge-name" id="bName"></div>
-        <div class="badge-role" id="bRole"></div>
-      </div>
+      <div><div class="badge-name" id="bName"></div><div class="badge-role" id="bRole"></div></div>
       <div class="pay"><b id="bCoins">0 ◎</b><small>заработано</small></div>
       <div class="xp">
         <div class="xp-top"><span>Должность: <b id="bLevel"></b></span><span id="bXp"></span></div>
@@ -198,12 +277,27 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
       <button class="btn ghost small" id="newTasks" type="button">↻ Новые задачи</button>
       <button class="btn ghost small" id="switchRole" type="button">Сменить роль</button>
     </div>
-
     <div class="section-h"><h2>ЗАДАЧИ</h2><span id="doneCount"></span></div>
     <div class="tasks" id="tasks"></div>
-
+    <div id="pfWrap" hidden>
+      <div class="section-h"><h2>ПОРТФОЛИО</h2><span>твои рисунки</span></div>
+      <div class="portfolio" id="portfolio"></div>
+    </div>
     <div class="section-h"><h2>ЛЕНТА V3</h2><span>что сделано</span></div>
     <ul class="feed" id="feed"></ul>
+  </section>
+
+  <!-- 3: the role's own work tool -->
+  <section id="studio" hidden>
+    <div class="studio-top">
+      <button class="btn ghost small" id="studioBack" type="button">← Задачи</button>
+      <span class="studio-tag" id="stTag"></span>
+    </div>
+    <h1 id="stTitle"></h1>
+    <p class="brief" id="stBrief"></p>
+    <div id="stBody"></div>
+    <ul class="checks" id="stChecks"></ul>
+    <button class="btn wide go" id="stSubmit" type="button" disabled>Сдать работу</button>
   </section>
 </div>
 
@@ -227,47 +321,75 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
     ["⚽", "Doccer"], ["🔬", "Microscop"], ["🌟", "Soccer Star"], ["🎬", "MORGER"]
   ];
 
-  // Each role: tasks are "{g}" templates filled with a V3 game; verbs show while working.
-  const ROLES = [
-    { id: "dev", ico: "💻", name: "Разработчик", color: "#5ce1e6", about: "Пишет код игр и чинит баги.",
-      tasks: ["Починить баг в «{g}»", "Ускорить загрузку «{g}»", "Добавить новый уровень в «{g}»", "Сделать управление свайпами в «{g}»", "Сохранять рекорд «{g}» между заходами"],
-      verbs: ["Пишу код…", "Компилирую…", "Ищу баг…", "Запускаю тесты…", "git push…"] },
-    { id: "design", ico: "🎨", name: "Дизайнер", color: "#ff5ad1", about: "Рисует героев, иконки и экраны.",
-      tasks: ["Нарисовать иконку для «{g}»", "Новый скин героя в «{g}»", "Перерисовать меню «{g}»", "Подобрать палитру для «{g}»", "Анимация победы в «{g}»"],
-      verbs: ["Рисую…", "Двигаю пиксели…", "Подбираю цвет…", "Экспорт в SVG…", "Ещё чуть-чуть…"] },
-    { id: "qa", ico: "🔍", name: "Тестировщик", color: "#9be15d", about: "Ломает игры раньше игроков.",
-      tasks: ["Пройти «{g}» на телефоне", "Найти 3 бага в «{g}»", "Проверить рекорды «{g}»", "Тест «{g}» на медленном интернете", "Проверить «{g}» в тёмной комнате 😎"],
-      verbs: ["Тыкаю кнопки…", "Нашёл баг!", "Записываю шаги…", "Проверяю ещё раз…", "Отчёт готов…"] },
-    { id: "music", ico: "🎵", name: "Композитор", color: "#a98bff", about: "Музыка и звуки для игр.",
-      tasks: ["Саундтрек для «{g}»", "Звук прыжка в «{g}»", "Мелодия победы в «{g}»", "Звуки меню «{g}»", "Ремикс темы «{g}»"],
-      verbs: ["Подбираю аккорды…", "Пишу бит…", "Сведение…", "Мастеринг…", "Звучит огонь…"] },
-    { id: "video", ico: "🎬", name: "Видеомонтажёр", color: "#ff6b7a", about: "Трейлеры и ролики V3.",
-      tasks: ["Трейлер для «{g}»", "Shorts про «{g}»", "Нарезка лучших моментов «{g}»", "Титры для ролика «{g}»", "Интро для «{g}»"],
-      verbs: ["Режу клипы…", "Склеиваю…", "Ставлю музыку…", "Цветокоррекция…", "Рендер…"] },
-    { id: "market", ico: "📣", name: "Маркетолог", color: "#ffb547", about: "Делает так, чтобы о V3 узнали все.",
-      tasks: ["Пост про «{g}» в соцсети", "Слоган для «{g}»", "Реклама «{g}» на баннер", "Турнир по «{g}» для игроков", "Опрос игроков про «{g}»"],
-      verbs: ["Думаю над идеей…", "Пишу текст…", "Делаю картинку…", "Публикую…", "Считаю лайки…"] }
+  // Bugs for the programmer: buggy code + tests that the fixed code must pass.
+  const PUZZLES = [
+    { t: "«{g}»: очки отнимаются вместо прибавления", fn: "addScore",
+      spec: "addScore(счёт, очки) должна возвращать счёт + очки.",
+      code: "function addScore(score, points) {\n  return score - points;\n}",
+      tests: [[[10, 5], 15], [[0, 3], 3], [[120, 30], 150]], hint: "Посмотри на знак между score и points." },
+    { t: "«{g}»: игра заканчивается при живом герое", fn: "isGameOver",
+      spec: "isGameOver(жизни) — true, когда жизней 0 или меньше.",
+      code: "function isGameOver(lives) {\n  return lives > 0;\n}",
+      tests: [[[0], true], [[3], false], [[-1], true]], hint: "Условие перевёрнуто: нужно lives <= 0." },
+    { t: "«{g}»: рекорд становится меньше", fn: "bestScore",
+      spec: "bestScore(старыйРекорд, счёт) — самое большое из двух чисел.",
+      code: "function bestScore(oldBest, score) {\n  return Math.min(oldBest, score);\n}",
+      tests: [[[100, 150], 150], [[200, 50], 200], [[0, 0], 0]], hint: "min ищет меньшее, а рекорд — большее." },
+    { t: "«{g}»: монеты за уровни считаются неправильно", fn: "totalCoins",
+      spec: "totalCoins([монеты по уровням]) — сумма всех чисел массива.",
+      code: "function totalCoins(coins) {\n  let sum = 0;\n  for (let i = 1; i <= coins.length; i++) {\n    sum += coins[i];\n  }\n  return sum;\n}",
+      tests: [[[[5, 10, 15]], 30], [[[7]], 7], [[[]], 0]], hint: "Массив начинается с индекса 0 и заканчивается на length - 1." },
+    { t: "«{g}»: герой проходит сквозь стену", fn: "hitWall",
+      spec: "Поле — клетки от 0 до size - 1. hitWall(x, y, size) — true, если клетка за краем поля.",
+      code: "function hitWall(x, y, size) {\n  return x < 0 || y < 0 || x > size || y > size;\n}",
+      tests: [[[0, 0, 10], false], [[10, 5, 10], true], [[9, 9, 10], false], [[-1, 3, 10], true]], hint: "Клетка size уже за краем: нужно >=." },
+    { t: "«{g}»: скорость растёт бесконечно", fn: "speed",
+      spec: "speed(уровень) = 100 + уровень × 10, но не больше 200.",
+      code: "function speed(level) {\n  return 100 + level * 10;\n}",
+      tests: [[[1], 110], [[5], 150], [[20], 200], [[10], 200]], hint: "Оберни в Math.min(200, …)." },
+    { t: "«{g}»: таймер показывает 1:5 вместо 1:05", fn: "formatTime",
+      spec: "formatTime(секунды) → «минуты:секунды», секунды всегда двумя цифрами.",
+      code: "function formatTime(sec) {\n  const m = Math.floor(sec / 60);\n  const s = sec % 60;\n  return m + \":\" + s;\n}",
+      tests: [[[65], "1:05"], [[130], "2:10"], [[9], "0:09"]], hint: "Попробуй String(s).padStart(2, \"0\")." }
   ];
 
-  const LEVELS = [
-    ["Стажёр", 0], ["Джуниор", 100], ["Мидл", 260], ["Сеньор", 500], ["Лид", 850], ["Директор V3", 1300]
+  const ROLES = [
+    { id: "dev", ico: "💻", name: "Разработчик", color: "#5ce1e6", about: "Пишет код игр и чинит баги.", studio: "Редактор кода",
+      tasks: PUZZLES.map((p, i) => ({ t: p.t, p: i })) },
+    { id: "design", ico: "🎨", name: "Дизайнер", color: "#ff5ad1", about: "Рисует меню, иконки и героев.", studio: "Студия дизайна",
+      tasks: [{ t: "Перерисовать меню «{g}»", v: "menu" }, { t: "Нарисовать иконку для «{g}»", v: "icon" },
+              { t: "Новый скин героя в «{g}»", v: "hero" }, { t: "Постер для «{g}»", v: "poster" }] },
+    { id: "qa", ico: "🔍", name: "Тестировщик", color: "#9be15d", about: "Ломает игры раньше игроков.", studio: "Тестовый стенд",
+      tasks: [{ t: "Проверить главный экран «{g}»" }, { t: "Найти баги в новой версии «{g}»" }, { t: "Тест «{g}» перед релизом" }] },
+    { id: "music", ico: "🎵", name: "Композитор", color: "#a98bff", about: "Музыка и звуки для игр.", studio: "Студия звука",
+      tasks: [{ t: "Саундтрек для «{g}»" }, { t: "Бит для меню «{g}»" }, { t: "Мелодия победы в «{g}»" }] },
+    { id: "video", ico: "🎬", name: "Видеомонтажёр", color: "#ff6b7a", about: "Трейлеры и ролики V3.", studio: "Монтажная",
+      tasks: [{ t: "Трейлер «{g}»", v: "trailer" }, { t: "Shorts про «{g}»", v: "shorts" }] },
+    { id: "market", ico: "📣", name: "Маркетолог", color: "#ffb547", about: "Делает так, чтобы о V3 узнали все.", studio: "Редактор постов",
+      tasks: [{ t: "Пост про «{g}» в соцсети" }, { t: "Анонс турнира по «{g}»" }, { t: "Реклама «{g}» для новых игроков" }] }
   ];
+
+  const LEVELS = [["Стажёр", 0], ["Джуниор", 100], ["Мидл", 260], ["Сеньор", 500], ["Лид", 850], ["Директор V3", 1300]];
   const KEY = "shepee-v3";
   const $ = (id) => document.getElementById(id);
+  const roleOf = (id) => ROLES.find(r => r.id === id);
+  const levelIdx = (xp) => { let i = 0; LEVELS.forEach(([, need], k) => { if (xp >= need) i = k; }); return i; };
+  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const shuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } };
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
-  let S = load() || { name: "", role: null, xp: 0, coins: 0, tasks: [], feed: [], working: false };
+  let S = load() || { name: "", role: null, xp: 0, coins: 0, tasks: [], feed: [] };
+  if (S.v !== 2) { S.v = 2; S.tasks = []; }  // old click-only tasks are replaced
+  S.portfolio = S.portfolio || [];
+  S.feed = S.feed || [];
   let picked = S.role;
-  let activeId = null;
+  let tool = null;      // the open studio: { checks(), submit?(), stop?() }
+  let current = null;   // task open in the studio
 
-  const roleOf = (id) => ROLES.find(r => r.id === id);
-  const levelIdx = (xp) => { let i = 0; LEVELS.forEach(([, need], k) => { if (xp >= need) i = k; }); return i; };
-  const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-
-  // ---- Role picker ----
+  // ---------- Role picker ----------
   function renderRoles() {
     $("roles").innerHTML = ROLES.map(r =>
       `<button class="role" type="button" data-role="${r.id}" style="--role:${r.color}" aria-pressed="${picked === r.id}">
@@ -278,7 +400,7 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
     const b = e.target.closest(".role"); if (!b) return;
     picked = b.dataset.role; renderRoles();
   });
-  $("nameIn").value = S.name;
+  $("nameIn").value = S.name || "";
   $("startBtn").addEventListener("click", () => {
     const name = $("nameIn").value.trim() || "Сотрудник";
     const changed = S.role !== picked;
@@ -288,88 +410,515 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
     save(); showDesk();
   });
 
-  // ---- Tasks ----
+  // ---------- Tasks ----------
   function makeTasks() {
     const r = roleOf(S.role);
-    const games = [...GAMES].sort(() => Math.random() - .5).slice(0, 5);
-    return games.map(([ico, g], i) => {
-      const hot = Math.random() < .3;
-      const steps = 4 + Math.floor(Math.random() * 5);
-      return {
-        id: Date.now() + "-" + i, ico, title: pick(r.tasks).replace("{g}", g),
-        steps, progress: 0, hot, xp: steps * 6 + (hot ? 20 : 0), pay: steps * 5 + (hot ? 25 : 0), done: false
-      };
+    const tpls = shuffle(r.tasks);
+    return shuffle(GAMES).slice(0, 4).map(([ico, g], i) => {
+      const tpl = tpls[i % tpls.length];
+      const hot = Math.random() < .35;
+      return { id: Date.now() + "-" + i, ico, game: g, title: tpl.t.replace("{g}", g), v: tpl.v, p: tpl.p,
+               hot, xp: hot ? 70 : 45, pay: hot ? 60 : 35, done: false };
     });
   }
 
   function renderTasks() {
     const r = roleOf(S.role);
-    $("tasks").innerHTML = S.tasks.map(t => {
-      const pct = Math.round(t.progress / t.steps * 100);
-      const isActive = activeId === t.id;
-      let action;
-      if (t.done) action = `<div class="work-msg">✓ Готово</div>`;
-      else if (isActive) action = `<div class="work"><div class="bar"><i style="width:${pct}%"></i></div>
-          <button class="btn small" type="button" data-work="${t.id}">${r.ico} Работать</button></div>
-          <div class="work-msg" id="msg-${t.id}">Жми «Работать», пока не закончишь</div>`;
-      else action = `<div class="work">${t.progress ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
-          <button class="btn ghost small" type="button" data-take="${t.id}">${t.progress ? "Продолжить" : "Взять задачу"}</button></div>`;
-      return `<div class="task${isActive ? " active" : ""}${t.done ? " done" : ""}">
+    $("tasks").innerHTML = S.tasks.map(t => `
+      <div class="task${t.done ? " done" : ""}">
         <div class="task-top"><span class="task-game">${t.ico}</span>
           <div class="task-text"><b>${esc(t.title)}<span class="prio ${t.hot ? "hot" : "norm"}">${t.hot ? "СРОЧНО" : "обычная"}</span></b>
-          <small>${t.steps} шагов работы</small></div>
-          <span class="reward">+${t.xp} XP<br>+${t.pay} ◎</span></div>${action}</div>`;
-    }).join("");
-    const done = S.tasks.filter(t => t.done).length;
-    $("doneCount").textContent = `${done} из ${S.tasks.length} выполнено`;
+          <small>${r.ico} ${r.studio}${t.hot ? " · сложнее" : ""}</small></div>
+          <span class="reward">+${t.xp} XP<br>+${t.pay} ◎</span></div>
+        ${t.done ? `<div class="work-msg">✓ Сдано</div>`
+                 : `<div class="work"><button class="btn small" type="button" data-open="${t.id}">Открыть: ${r.studio} →</button></div>`}
+      </div>`).join("");
+    $("doneCount").textContent = `${S.tasks.filter(t => t.done).length} из ${S.tasks.length} сдано`;
   }
-
   $("tasks").addEventListener("click", (e) => {
-    const take = e.target.closest("[data-take]");
-    if (take) { activeId = take.dataset.take; renderTasks(); return; }
-    const w = e.target.closest("[data-work]");
-    if (!w) return;
-    const t = S.tasks.find(x => x.id === w.dataset.work);
-    if (!t || t.done) return;
-    t.progress++;
-    if (t.progress >= t.steps) { finish(t); return; }
-    save(); renderTasks();
-    const msg = $("msg-" + t.id);
-    if (msg) msg.textContent = roleOf(S.role).verbs[(t.progress - 1) % 5];
+    const b = e.target.closest("[data-open]"); if (!b) return;
+    openStudio(S.tasks.find(t => t.id === b.dataset.open));
+  });
+
+  // ---------- Studio shell ----------
+  function openStudio(t) {
+    const r = roleOf(S.role);
+    current = t;
+    $("desk").hidden = true; $("studio").hidden = false;
+    $("stTag").textContent = `${r.ico} ${r.studio}`;
+    $("stTitle").textContent = t.title;
+    $("stBody").innerHTML = "";
+    $("stSubmit").textContent = "Сдать работу";
+    tool = TOOLS[r.id](t, $("stBody"), $("stBrief"));
+    refresh();
+    window.scrollTo(0, 0);
+  }
+  function closeStudio() {
+    if (tool && tool.stop) tool.stop();
+    tool = null; current = null;
+    $("studio").hidden = true; $("desk").hidden = false;
+    renderDesk(); window.scrollTo(0, 0);
+  }
+  function refresh() {
+    if (!tool) return;
+    const list = tool.checks();
+    $("stChecks").innerHTML = list.map(c => `<li class="${c.ok ? "ok" : ""}">${c.label}</li>`).join("");
+    $("stSubmit").disabled = !list.every(c => c.ok);
+  }
+  $("studioBack").addEventListener("click", closeStudio);
+  $("stSubmit").addEventListener("click", () => {
+    if (!tool || !current) return;
+    const t = current;
+    if (tool.submit) tool.submit();
+    closeStudio();
+    finish(t);
   });
 
   function finish(t) {
     const before = levelIdx(S.xp);
-    t.done = true; activeId = null;
+    t.done = true;
     S.xp += t.xp; S.coins += t.pay;
-    log(`<b>${esc(S.name)}</b>: ${esc(t.title)} — готово (+${t.pay} ◎)`);
-    toast(`Задача сдана! +${t.xp} XP, +${t.pay} ◎`);
+    log(`<b>${esc(S.name)}</b>: ${esc(t.title)} — сдано (+${t.pay} ◎)`);
+    let msg = `Работа принята! +${t.xp} XP, +${t.pay} ◎`;
     if (S.tasks.every(x => x.done)) {
-      const bonus = 50; S.coins += bonus;
-      log(`Все задачи закрыты — премия <b>${bonus} ◎</b>`);
-      setTimeout(() => toast(`Все задачи закрыты! Премия +${bonus} ◎`), 1400);
+      S.coins += 50; log(`Все задачи закрыты — премия <b>50 ◎</b>`);
+      msg += " · премия +50 ◎";
     }
-    save(); renderDesk();
     const after = levelIdx(S.xp);
+    if (after > before) log(`🚀 <b>${esc(S.name)}</b> повышен до «${LEVELS[after][0]}»`);
+    save(); renderDesk(); toast(msg);
     if (after > before) {
       $("luTitle").textContent = `Повышение: ${LEVELS[after][0]}!`;
       $("luText").textContent = `${S.name}, команда V3 гордится тобой. Новая должность — ${LEVELS[after][0]}.`;
       $("levelup").hidden = false;
-      log(`🚀 <b>${esc(S.name)}</b> повышен до «${LEVELS[after][0]}»`);
-      save(); renderFeed();
     }
   }
   $("luOk").addEventListener("click", () => { $("levelup").hidden = true; });
 
-  $("newTasks").addEventListener("click", () => {
-    S.tasks = makeTasks(); activeId = null; save(); renderTasks();
-    toast("Новые задачи на доске");
-  });
-  $("switchRole").addEventListener("click", () => {
-    activeId = null; $("desk").hidden = true; $("pick").hidden = false; renderRoles(); window.scrollTo(0, 0);
-  });
+  // ---------- Tools, one per role ----------
+  const TOOLS = {};
 
-  // ---- Workspace header + feed ----
+  // Designer: draw on a canvas with brush, eraser, background and stickers.
+  TOOLS.design = (t, body, brief) => {
+    const square = t.v === "icon" || t.v === "hero";
+    const needStrokes = t.hot ? 18 : 12;
+    const COLORS = ["#12132a", "#ff6b7a", "#ffb547", "#ffe14d", "#9be15d", "#5ce1e6", "#3b5bdb", "#a98bff", "#ff5ad1", "#8b5a2b", "#ffffff"];
+    const STICKERS = [t.ico, "⭐", "❤️", "🔥", "👾", "🏆", "◎", "▶️"];
+    const guideText = { menu: "Название сверху, под ним 3 кнопки: Играть, Рекорды, Настройки.",
+      icon: "Квадратная иконка: крупно и понятно даже маленькой.", hero: "Нарисуй героя в новом костюме по центру.",
+      poster: "Постер: герой, название игры и что-то яркое." }[t.v];
+    brief.innerHTML = `<b>ТЗ:</b> ${esc(guideText)} Пунктир — подсказка, в рисунок он не попадёт.`;
+    body.innerHTML = `
+      <div class="canvas-wrap" style="aspect-ratio:${square ? "1 / 1" : "3 / 4"}"><canvas id="cv"></canvas><canvas class="guide" id="gd"></canvas></div>
+      <div class="toolbar" id="modes">
+        <button class="tool" data-m="brush" aria-pressed="true">🖌 Кисть</button>
+        <button class="tool" data-m="erase" aria-pressed="false">🧽 Ластик</button>
+        <button class="tool" data-m="sticker" aria-pressed="false">⭐ Стикер</button>
+        <button class="tool" data-act="bg">🪣 Фон</button>
+        <button class="tool" data-act="undo">↶ Отмена</button>
+        <button class="tool" data-act="guide">📐 Пунктир</button>
+        <button class="tool" data-act="clear">🗑 Очистить</button>
+      </div>
+      <div class="toolbar" id="sizes">${[3, 7, 14, 26].map((s, i) => `<button class="tool" data-s="${s}" aria-pressed="${i === 1}">${["Тонко", "Средне", "Толсто", "Маркер"][i]}</button>`).join("")}</div>
+      <div class="swatches" id="sws">${COLORS.map((c, i) => `<button class="sw" data-c="${c}" style="background:${c}" aria-pressed="${i === 1}" aria-label="Цвет ${c}"></button>`).join("")}</div>
+      <div class="toolbar" id="stk" hidden>${STICKERS.map((s, i) => `<button class="tool" data-k="${s}" aria-pressed="${i === 0}">${s}</button>`).join("")}</div>`;
+
+    const cv = body.querySelector("#cv"), gd = body.querySelector("#gd");
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const W = cv.clientWidth, H = cv.clientHeight;
+    [cv, gd].forEach(c => { c.width = W * dpr; c.height = H * dpr; c.getContext("2d").scale(dpr, dpr); });
+    const ctx = cv.getContext("2d"), g = gd.getContext("2d");
+
+    function drawGuide() {
+      g.clearRect(0, 0, W, H);
+      g.setLineDash([6, 6]); g.strokeStyle = "rgba(60,70,140,.35)"; g.lineWidth = 2;
+      g.fillStyle = "rgba(60,70,140,.35)"; g.font = "600 12px Manrope, sans-serif"; g.textAlign = "center";
+      if (t.v === "menu") {
+        g.strokeRect(W * .12, H * .08, W * .76, H * .16); g.fillText(t.game, W / 2, H * .17);
+        ["Играть", "Рекорды", "Настройки"].forEach((n, i) => { const y = H * (.38 + i * .17); g.strokeRect(W * .2, y, W * .6, H * .11); g.fillText(n, W / 2, y + H * .065); });
+      } else if (t.v === "icon") {
+        g.beginPath(); g.roundRect ? g.roundRect(W * .1, H * .1, W * .8, H * .8, W * .18) : g.rect(W * .1, H * .1, W * .8, H * .8); g.stroke();
+      } else if (t.v === "hero") {
+        g.beginPath(); g.arc(W / 2, H * .3, W * .13, 0, 7); g.stroke();
+        g.strokeRect(W * .34, H * .44, W * .32, H * .32); g.fillText("герой", W / 2, H * .92);
+      } else {
+        g.strokeRect(W * .08, H * .06, W * .84, H * .14); g.fillText("название", W / 2, H * .14);
+        g.beginPath(); g.arc(W / 2, H * .55, W * .25, 0, 7); g.stroke();
+      }
+      g.setLineDash([]);
+    }
+    let showGuide = true; drawGuide();
+
+    let mode = "brush", color = COLORS[1], size = 7, sticker = STICKERS[0];
+    let strokes = 0; const used = new Set(); const undo = [];
+    let drawing = false, len = 0, last = null;
+    const pos = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    const snap = () => { undo.push(ctx.getImageData(0, 0, cv.width, cv.height)); if (undo.length > 12) undo.shift(); };
+
+    cv.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const [x, y] = pos(e);
+      snap();
+      if (mode === "sticker") {
+        ctx.font = `${size * 3 + 22}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(sticker, x, y); strokes++; refresh(); return;
+      }
+      cv.setPointerCapture(e.pointerId);
+      drawing = true; len = 0; last = [x, y];
+      ctx.globalCompositeOperation = mode === "erase" ? "destination-out" : "source-over";
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = size; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath(); ctx.arc(x, y, size / 2, 0, 7); ctx.fill();
+    });
+    cv.addEventListener("pointermove", (e) => {
+      if (!drawing) return;
+      const [x, y] = pos(e);
+      ctx.beginPath(); ctx.moveTo(last[0], last[1]); ctx.lineTo(x, y); ctx.stroke();
+      len += Math.hypot(x - last[0], y - last[1]); last = [x, y];
+    });
+    const up = () => {
+      if (!drawing) return;
+      drawing = false; ctx.globalCompositeOperation = "source-over";
+      if (mode === "brush" && len > 8) { strokes++; used.add(color); }
+      refresh();
+    };
+    cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+
+    body.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.m) {
+        mode = b.dataset.m;
+        body.querySelectorAll("[data-m]").forEach(x => x.setAttribute("aria-pressed", x === b));
+        body.querySelector("#stk").hidden = mode !== "sticker";
+      } else if (b.dataset.s) {
+        size = +b.dataset.s; body.querySelectorAll("[data-s]").forEach(x => x.setAttribute("aria-pressed", x === b));
+      } else if (b.dataset.c) {
+        color = b.dataset.c; body.querySelectorAll("[data-c]").forEach(x => x.setAttribute("aria-pressed", x === b));
+        if (mode === "erase") body.querySelector('[data-m="brush"]').click();
+      } else if (b.dataset.k) {
+        sticker = b.dataset.k; body.querySelectorAll("[data-k]").forEach(x => x.setAttribute("aria-pressed", x === b));
+      } else if (b.dataset.act === "bg") {
+        snap(); ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalCompositeOperation = "destination-over";
+        ctx.fillStyle = color; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore(); used.add(color); refresh();
+      } else if (b.dataset.act === "undo") {
+        const img = undo.pop(); if (img) { ctx.putImageData(img, 0, 0); strokes = Math.max(0, strokes - 1); refresh(); }
+      } else if (b.dataset.act === "guide") {
+        showGuide = !showGuide; showGuide ? drawGuide() : g.clearRect(0, 0, W, H);
+      } else if (b.dataset.act === "clear") {
+        snap(); ctx.clearRect(0, 0, W, H); strokes = 0; used.clear(); refresh();
+      }
+    });
+
+    return {
+      checks: () => [
+        { label: `Штрихов и стикеров: ${Math.min(strokes, needStrokes)} / ${needStrokes}`, ok: strokes >= needStrokes },
+        { label: `Цветов кистью или фоном: ${Math.min(used.size, 3)} / 3`, ok: used.size >= 3 }
+      ],
+      submit: () => {
+        const tw = 160, th = Math.round(tw * H / W);
+        const c = document.createElement("canvas"); c.width = tw; c.height = th;
+        const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, tw, th); x.drawImage(cv, 0, 0, tw, th);
+        S.portfolio.unshift({ img: c.toDataURL("image/jpeg", .7), title: t.title });
+        S.portfolio = S.portfolio.slice(0, 9);
+      }
+    };
+  };
+
+  // Programmer: edit real code, run the tests.
+  TOOLS.dev = (t, body, brief) => {
+    const p = PUZZLES[t.p] || PUZZLES[0];
+    brief.innerHTML = `<b>Баг-репорт:</b> ${esc(p.spec)} Сейчас код работает неправильно — исправь его и запусти тесты.`;
+    body.innerHTML = `
+      <label class="label" for="code">${p.fn}.js</label>
+      <textarea class="code" id="code" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+      <div class="row">
+        <button class="btn small" id="run" type="button">▶ Запустить тесты</button>
+        <button class="btn ghost small" id="hint" type="button">💡 Подсказка</button>
+        <button class="btn ghost small" id="reset" type="button">↺ Сбросить</button>
+      </div>
+      <p class="work-msg" id="hintTxt" hidden></p>
+      <ul class="tests" id="tests"></ul>`;
+    const ta = body.querySelector("#code");
+    ta.value = p.code;
+    let passed = false, ran = false;
+    ta.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab") return;
+      e.preventDefault(); const s = ta.selectionStart;
+      ta.value = ta.value.slice(0, s) + "  " + ta.value.slice(ta.selectionEnd); ta.selectionStart = ta.selectionEnd = s + 2;
+    });
+    ta.addEventListener("input", () => { passed = false; refresh(); });
+    const show = (a) => JSON.stringify(a).slice(1, -1);
+    body.querySelector("#run").addEventListener("click", () => {
+      ran = true;
+      let fn, out = [];
+      try { fn = new Function(`"use strict";\n${ta.value}\nreturn ${p.fn};`)(); }
+      catch (err) { out.push(`<li class="fail">Ошибка в коде: ${esc(err.message)}</li>`); }
+      let ok = !!fn;
+      if (fn) p.tests.forEach(([args, exp]) => {
+        let got;
+        try { got = fn(...JSON.parse(JSON.stringify(args))); } catch (err) { got = "ошибка: " + err.message; }
+        const good = JSON.stringify(got) === JSON.stringify(exp);
+        ok = ok && good;
+        out.push(`<li class="${good ? "pass" : "fail"}">${good ? "✓" : "✗"} ${p.fn}(${esc(show(args))}) → ${esc(JSON.stringify(got))}${good ? "" : ` · ждали ${esc(JSON.stringify(exp))}`}</li>`);
+      });
+      passed = ok;
+      body.querySelector("#tests").innerHTML = out.join("");
+      refresh();
+    });
+    body.querySelector("#hint").addEventListener("click", () => { const h = body.querySelector("#hintTxt"); h.hidden = false; h.textContent = "💡 " + p.hint; });
+    body.querySelector("#reset").addEventListener("click", () => { ta.value = p.code; passed = false; refresh(); });
+    return { checks: () => [
+      { label: "Тесты запущены", ok: ran },
+      { label: `Все ${p.tests.length} теста зелёные`, ok: passed }
+    ] };
+  };
+
+  // QA: tap the broken parts of a game screen, then write a report.
+  TOOLS.qa = (t, body, brief) => {
+    const g = t.game;
+    const PARTS = [
+      { ok: esc(g), bad: `<span style="display:inline-block;transform:scaleX(-1)">${esc(g)}</span>`, bug: "Название игры отзеркалено", full: true },
+      { ok: "Счёт: 120", bad: "Счёт: NaN", bug: "Вместо счёта NaN" },
+      { ok: "Рекорд: 340", bad: "Рекорд: undefined", bug: "Рекорд показывает undefined" },
+      { ok: "❤️❤️❤️", bad: "Жизни: −1", bug: "Отрицательные жизни" },
+      { ok: "◎ 25", bad: `<span style="display:inline-block;transform:rotate(180deg)">◎ 25</span>`, bug: "Монеты вверх ногами" },
+      { ok: "🔊 Звук", bad: "🔊🔇 Звук", bug: "Звук и включён, и выключен сразу" },
+      { ok: `<span style="font-size:40px">${t.ico}</span>`, bad: `<span style="font-size:40px;position:relative;left:46%">${t.ico}</span>`, bug: "Герой застрял в стене", full: true },
+      { ok: "▶ Играть", bad: "▶ Ирать", bug: "Опечатка на кнопке «Играть»" },
+      { ok: "⚙️ Настройки", bad: `<span style="color:#1d2045">⚙️ Настройки</span>`, bug: "Текст кнопки не видно" },
+      { ok: "🏆 Рекорды", bad: "🏆 Рекорды 🏆 Рекорды", bug: "Кнопка «Рекорды» продублирована" }
+    ];
+    const n = t.hot ? 4 : 3;
+    const badIdx = new Set(shuffle(PARTS.map((_, i) => i)).slice(0, n));
+    const found = new Set(); let falseAlarms = 0;
+    brief.innerHTML = `<b>Задание:</b> на экране «${esc(g)}» спрятано ${n} бага. Нажимай на всё, что выглядит сломанным. Потом опиши, что нашёл.`;
+    body.innerHTML = `
+      <div class="mock"><div class="mock-grid">${PARTS.map((p, i) => `<div class="el${p.full ? " full" : ""}" data-i="${i}" role="button" tabindex="0">${badIdx.has(i) ? p.bad : p.ok}</div>`).join("")}</div></div>
+      <ul class="bugs" id="bugs"></ul>
+      <label class="label" for="rep">Баг-репорт</label>
+      <textarea class="field" id="rep" placeholder="Например: открыл главный экран — счёт показывает NaN…"></textarea>`;
+    const tap = (el) => {
+      const i = +el.dataset.i;
+      if (found.has(i)) return;
+      if (badIdx.has(i)) {
+        found.add(i); el.classList.add("found");
+        body.querySelector("#bugs").innerHTML = [...found].map(k => `<li>🐞 ${PARTS[k].bug}</li>`).join("");
+      } else {
+        falseAlarms++; el.classList.remove("nope"); void el.offsetWidth; el.classList.add("nope");
+        toast("Это не баг — всё работает");
+      }
+      refresh();
+    };
+    body.querySelector(".mock").addEventListener("click", (e) => { const el = e.target.closest(".el"); if (el) tap(el); });
+    body.querySelector(".mock").addEventListener("keydown", (e) => { if (e.key === "Enter") { const el = e.target.closest(".el"); if (el) tap(el); } });
+    const rep = body.querySelector("#rep");
+    rep.addEventListener("input", refresh);
+    return { checks: () => [
+      { label: `Найдено багов: ${found.size} / ${n}${falseAlarms ? ` · ложных тревог: ${falseAlarms}` : ""}`, ok: found.size === n },
+      { label: "Баг-репорт написан (от 20 символов)", ok: rep.value.trim().length >= 20 }
+    ] };
+  };
+
+  // Composer: 8-step sequencer with Web Audio.
+  TOOLS.music = (t, body, brief) => {
+    const ROWS = [{ n: "Бочка", k: "kick" }, { n: "Снейр", k: "snare" }, { n: "Хэт", k: "hat" },
+                  { n: "Бас", f: 110 }, { n: "До", f: 523 }, { n: "Ми", f: 659 }, { n: "Соль", f: 784 }];
+    const need = t.hot ? 16 : 12;
+    const grid = ROWS.map(() => Array(8).fill(false));
+    let ac = null, noise = null, timer = null, step = 0, loops = 0, bpm = 110;
+    brief.innerHTML = `<b>Задание:</b> собери трек для «${esc(t.game)}». Нажимай клетки, включай ▶ и слушай. Минимум ${need} нот и 3 разных инструмента, прослушай трек целиком.`;
+    body.innerHTML = `
+      <div class="seq" id="seq">${ROWS.map((r, ri) => `<span class="rl">${r.n}</span>` + Array.from({ length: 8 }, (_, si) => `<button class="cell" type="button" data-r="${ri}" data-s="${si}" aria-label="${r.n}, доля ${si + 1}"></button>`).join("")).join("")}</div>
+      <div class="tempo"><span>Темп</span><input type="range" min="70" max="160" value="110" id="bpm"><b id="bpmV">110</b></div>
+      <div class="row">
+        <button class="btn small" id="play" type="button">▶ Слушать</button>
+        <button class="btn ghost small" id="rnd" type="button">🎲 Идея</button>
+        <button class="btn ghost small" id="clr" type="button">🗑 Очистить</button>
+      </div>`;
+
+    const audio = () => {
+      if (!ac) {
+        const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+        ac = new AC();
+        noise = ac.createBuffer(1, ac.sampleRate * .3, ac.sampleRate);
+        const d = noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (ac.state === "suspended") ac.resume();
+      return ac;
+    };
+    function sound(row) {
+      const a = audio(); if (!a) return;
+      const now = a.currentTime, r = ROWS[row], gain = a.createGain(); gain.connect(a.destination);
+      if (r.k === "kick") {
+        const o = a.createOscillator(); o.frequency.setValueAtTime(150, now); o.frequency.exponentialRampToValueAtTime(40, now + .15);
+        gain.gain.setValueAtTime(.9, now); gain.gain.exponentialRampToValueAtTime(.001, now + .25); o.connect(gain); o.start(now); o.stop(now + .26);
+      } else if (r.k) {
+        const s = a.createBufferSource(); s.buffer = noise; const f = a.createBiquadFilter();
+        f.type = r.k === "hat" ? "highpass" : "bandpass"; f.frequency.value = r.k === "hat" ? 7000 : 1800;
+        const len = r.k === "hat" ? .05 : .15;
+        gain.gain.setValueAtTime(r.k === "hat" ? .25 : .5, now); gain.gain.exponentialRampToValueAtTime(.001, now + len);
+        s.connect(f); f.connect(gain); s.start(now); s.stop(now + len + .01);
+      } else {
+        const o = a.createOscillator(); o.type = r.f < 200 ? "sawtooth" : "triangle"; o.frequency.value = r.f;
+        gain.gain.setValueAtTime(r.f < 200 ? .18 : .3, now); gain.gain.exponentialRampToValueAtTime(.001, now + .3); o.connect(gain); o.start(now); o.stop(now + .31);
+      }
+    }
+    const cells = () => body.querySelectorAll(".cell");
+    function paint() { cells().forEach(c => c.classList.toggle("on", grid[c.dataset.r][c.dataset.s])); }
+    function tick() {
+      cells().forEach(c => c.classList.toggle("now", +c.dataset.s === step));
+      grid.forEach((row, ri) => { if (row[step]) sound(ri); });
+      step = (step + 1) % 8;
+      if (step === 0) { loops++; refresh(); }
+    }
+    function stop() { clearInterval(timer); timer = null; cells().forEach(c => c.classList.remove("now")); body.querySelector("#play").textContent = "▶ Слушать"; }
+    function start() { audio(); step = 0; tick(); timer = setInterval(tick, 60000 / bpm / 2); body.querySelector("#play").textContent = "■ Стоп"; }
+
+    body.querySelector("#seq").addEventListener("click", (e) => {
+      const c = e.target.closest(".cell"); if (!c) return;
+      const on = grid[c.dataset.r][c.dataset.s] = !grid[c.dataset.r][c.dataset.s];
+      if (on) sound(+c.dataset.r);
+      loops = 0; paint(); refresh();
+    });
+    body.querySelector("#play").addEventListener("click", () => timer ? stop() : start());
+    body.querySelector("#bpm").addEventListener("input", (e) => {
+      bpm = +e.target.value; body.querySelector("#bpmV").textContent = bpm;
+      if (timer) { clearInterval(timer); timer = setInterval(tick, 60000 / bpm / 2); }
+    });
+    body.querySelector("#rnd").addEventListener("click", () => {
+      grid.forEach((row, ri) => row.forEach((_, si) => { row[si] = ri === 0 ? si % 4 === 0 : ri === 1 ? si % 4 === 2 : ri === 2 ? si % 2 === 1 : Math.random() < .18; }));
+      loops = 0; paint(); refresh();
+    });
+    body.querySelector("#clr").addEventListener("click", () => { grid.forEach(r => r.fill(false)); loops = 0; paint(); refresh(); });
+
+    const notes = () => grid.flat().filter(Boolean).length;
+    const rowsUsed = () => grid.filter(r => r.some(Boolean)).length;
+    return {
+      checks: () => [
+        { label: `Нот: ${Math.min(notes(), need)} / ${need}`, ok: notes() >= need },
+        { label: `Инструментов: ${Math.min(rowsUsed(), 3)} / 3`, ok: rowsUsed() >= 3 },
+        { label: "Трек прослушан целиком", ok: loops > 0 && notes() >= need }
+      ],
+      stop: () => { stop(); if (ac) ac.close(); }
+    };
+  };
+
+  // Video editor: put clips on the timeline in script order, add a title, watch the preview.
+  TOOLS.video = (t, body, brief) => {
+    const SCRIPTS = {
+      trailer: { text: "Сначала логотип V3, потом покажи героя игры, затем экшн-сцену, победу и в конце призыв «Играй сейчас».",
+        clips: [["🟦", "Логотип V3", "#3b4cca"], [t.ico, "Герой игры", "#5b3fa0"], ["💥", "Экшн", "#c2364a"], ["🏆", "Победа", "#b37a12"], ["▶️", "Играй сейчас", "#3f8a2a"]] },
+      shorts: { text: "Shorts начинается с хука: герой крупно. Дальше экшн, потом неожиданный поворот, смешной момент и в конце «Играй сейчас».",
+        clips: [[t.ico, "Хук: герой", "#5b3fa0"], ["💥", "Экшн", "#c2364a"], ["😱", "Поворот", "#7a2a9e"], ["😂", "Смешной момент", "#b37a12"], ["▶️", "Играй сейчас", "#3f8a2a"]] }
+    };
+    const sc = SCRIPTS[t.v] || SCRIPTS.trailer;
+    const decoys = t.hot ? [["😴", "Загрузка", "#444"], ["🐞", "Кадр с багом", "#555"], ["⬛", "Чёрный экран", "#222"]] : [["😴", "Загрузка", "#444"], ["🐞", "Кадр с багом", "#555"]];
+    const all = sc.clips.map((c, i) => ({ c, good: i })).concat(decoys.map(c => ({ c, good: -1 })));
+    const pool = shuffle(all.map((_, i) => i));
+    let line = [], watched = false, playing = null;
+    brief.innerHTML = `<b>Сценарий:</b> ${esc(sc.text)} Лишние кадры в ролик не бери.`;
+    body.innerHTML = `
+      <div class="screen16" id="scr"><div><div class="big">🎬</div><div class="cap">Собери ролик</div></div></div>
+      <div class="label" style="margin-top:12px">Таймлайн</div>
+      <div class="timeline" id="tl"></div>
+      <div class="label">Кадры — нажми, чтобы добавить</div>
+      <div class="pool" id="pool"></div>
+      <label class="label" for="ttl" style="margin-top:12px">Титр в конце</label>
+      <input class="field" id="ttl" maxlength="40" placeholder="${esc(t.game)} — уже в V3!">
+      <div class="row"><button class="btn small" id="prev" type="button">▶ Просмотр</button></div>`;
+    const clipHtml = (i, where) => { const [e, n, bg] = all[i].c; return `<button class="clip" type="button" data-${where}="${i}" style="background:${bg}"><span>${e}</span>${esc(n)}</button>`; };
+    function draw() {
+      body.querySelector("#tl").innerHTML = Array.from({ length: 5 }, (_, k) => line[k] !== undefined ? clipHtml(line[k], "rm") : `<div class="slot">${k + 1}</div>`).join("");
+      body.querySelector("#pool").innerHTML = pool.filter(i => !line.includes(i)).map(i => clipHtml(i, "add")).join("");
+    }
+    body.addEventListener("click", (e) => {
+      const add = e.target.closest("[data-add]"), rm = e.target.closest("[data-rm]");
+      if (add && line.length < 5) line.push(+add.dataset.add);
+      else if (rm) line = line.filter(i => i !== +rm.dataset.rm);
+      else return;
+      watched = false; draw(); refresh();
+    });
+    const ttl = body.querySelector("#ttl");
+    ttl.addEventListener("input", () => { watched = false; refresh(); });
+    const scr = body.querySelector("#scr");
+    body.querySelector("#prev").addEventListener("click", () => {
+      if (!line.length) { toast("Сначала добавь кадры на таймлайн"); return; }
+      clearTimeout(playing);
+      let k = 0;
+      const show = () => {
+        if (k < line.length) {
+          const [e, n, bg] = all[line[k]].c;
+          scr.style.background = bg; scr.innerHTML = `<div><div class="big">${e}</div><div class="cap">${esc(n)}</div></div>`;
+          k++; playing = setTimeout(show, 900);
+        } else {
+          scr.style.background = "#000";
+          scr.innerHTML = `<div><div class="big">${t.ico}</div><div class="cap">V3 GAMES</div></div><div class="ttl">${esc(ttl.value.trim() || "…")}</div>`;
+          watched = true; refresh();
+        }
+      };
+      show();
+    });
+    draw();
+    const orderOk = () => line.length === 5 && line.every((i, k) => all[i].good === k);
+    return {
+      checks: () => [
+        { label: "Кадры стоят по сценарию, без лишних", ok: orderOk() },
+        { label: "Титр написан", ok: ttl.value.trim().length >= 3 },
+        { label: "Готовый ролик просмотрен", ok: watched && orderOk() }
+      ],
+      stop: () => clearTimeout(playing)
+    };
+  };
+
+  // Marketer: write a post with a cover and hashtags, see the preview.
+  TOOLS.market = (t, body, brief) => {
+    const COVERS = [["#ff5ad1", "#a98bff"], ["#ffb547", "#ff6b7a"], ["#5ce1e6", "#3b5bdb"], ["#9be15d", "#2a9d8f"], ["#12132a", "#5b3fa0"]];
+    const gameTag = "#" + t.game.replace(/[^\p{L}\p{N}]/gu, "");
+    const TAGS = ["#V3", gameTag, "#игры", "#новинка", "#турнир", "#бесплатно"];
+    const minLen = t.hot ? 80 : 50;
+    let cover = -1; const tags = new Set();
+    brief.innerHTML = `<b>Задание:</b> пост про «${esc(t.game)}». Напиши текст (от ${minLen} символов, назови игру), выбери обложку и минимум 2 хэштега.`;
+    body.innerHTML = `
+      <label class="label" for="txt">Текст поста</label>
+      <textarea class="field" id="txt" maxlength="400" placeholder="Новая игра в V3! …"></textarea>
+      <div class="label" style="margin-top:10px">Обложка</div>
+      <div class="covers">${COVERS.map((c, i) => `<button class="cover" type="button" data-cv="${i}" style="background:linear-gradient(135deg,${c[0]},${c[1]})" aria-pressed="false">${t.ico}</button>`).join("")}</div>
+      <div class="label">Хэштеги</div>
+      <div class="tags">${TAGS.map(h => `<button class="tagc" type="button" data-tg="${esc(h)}" aria-pressed="false">${esc(h)}</button>`).join("")}</div>
+      <div class="label" style="margin-top:12px">Так увидят подписчики</div>
+      <div class="post">
+        <div class="post-head"><i>V3</i>v3games</div>
+        <div class="post-img" id="pImg">${t.ico}</div>
+        <div class="post-body" id="pBody"></div>
+        <div class="post-likes" id="pLikes">♡ 0</div>
+      </div>`;
+    const txt = body.querySelector("#txt");
+    function preview() {
+      body.querySelector("#pBody").innerHTML = esc(txt.value || "Тут будет твой текст…") + (tags.size ? "\n" + [...tags].map(h => `<span class="ht">${esc(h)}</span>`).join(" ") : "");
+      body.querySelector("#pImg").style.background = cover >= 0 ? `linear-gradient(135deg,${COVERS[cover][0]},${COVERS[cover][1]})` : "#ddd";
+      refresh();
+    }
+    txt.addEventListener("input", preview);
+    body.addEventListener("click", (e) => {
+      const c = e.target.closest("[data-cv]"), h = e.target.closest("[data-tg]");
+      if (c) { cover = +c.dataset.cv; body.querySelectorAll("[data-cv]").forEach(x => x.setAttribute("aria-pressed", x === c)); }
+      else if (h) { const v = h.dataset.tg; tags.has(v) ? tags.delete(v) : tags.add(v); h.setAttribute("aria-pressed", tags.has(v)); }
+      else return;
+      preview();
+    });
+    const key = t.game.toLowerCase().split(" ")[0];
+    preview();
+    return {
+      checks: () => [
+        { label: `Текст: ${Math.min(txt.value.trim().length, minLen)} / ${minLen} символов`, ok: txt.value.trim().length >= minLen },
+        { label: `Упомянута игра «${esc(t.game)}»`, ok: txt.value.toLowerCase().includes(key) },
+        { label: "Выбрана обложка", ok: cover >= 0 },
+        { label: `Хэштегов: ${Math.min(tags.size, 2)} / 2`, ok: tags.size >= 2 }
+      ],
+      submit: () => { const likes = 50 + Math.floor(Math.random() * 950); log(`📣 Пост про «${esc(t.game)}» набрал <b>♥ ${likes}</b>`); }
+    };
+  };
+
+  // ---------- Desk ----------
   function renderDesk() {
     const r = roleOf(S.role);
     document.body.style.setProperty("--role", r.color);
@@ -384,32 +933,34 @@ h1 { font-family: var(--display); font-size: 22px; line-height: 1.25; margin: 0 
       const from = LEVELS[i][1];
       $("bXp").textContent = `${S.xp} / ${next[1]} XP`;
       $("bBar").style.width = Math.round((S.xp - from) / (next[1] - from) * 100) + "%";
-    } else {
-      $("bXp").textContent = `${S.xp} XP · максимум`;
-      $("bBar").style.width = "100%";
-    }
+    } else { $("bXp").textContent = `${S.xp} XP · максимум`; $("bBar").style.width = "100%"; }
     renderTasks(); renderFeed();
+    $("pfWrap").hidden = !S.portfolio.length;
+    $("portfolio").innerHTML = S.portfolio.map(p => `<figure><img src="${p.img}" alt=""><figcaption>${esc(p.title)}</figcaption></figure>`).join("");
   }
   function log(html) {
-    const d = new Date();
-    S.feed.unshift({ t: d.toTimeString().slice(0, 5), html });
+    S.feed.unshift({ t: new Date().toTimeString().slice(0, 5), html });
     S.feed = S.feed.slice(0, 12);
   }
   function renderFeed() {
     $("feed").innerHTML = S.feed.map(f => `<li><time>${f.t}</time>${f.html}</li>`).join("") || `<li>Пока пусто — возьми первую задачу.</li>`;
   }
-  function showDesk() {
-    $("pick").hidden = true; $("desk").hidden = false; renderDesk(); window.scrollTo(0, 0);
-  }
+  function showDesk() { $("pick").hidden = true; $("studio").hidden = true; $("desk").hidden = false; renderDesk(); window.scrollTo(0, 0); }
+
+  $("newTasks").addEventListener("click", () => { S.tasks = makeTasks(); save(); renderTasks(); toast("Новые задачи на доске"); });
+  $("switchRole").addEventListener("click", () => { $("desk").hidden = true; $("pick").hidden = false; renderRoles(); window.scrollTo(0, 0); });
 
   let toastTimer;
   function toast(text) {
     const el = $("toast"); el.textContent = text; el.classList.add("show");
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2400);
   }
 
   renderRoles();
-  if (S.role && roleOf(S.role)) showDesk();
+  if (S.role && roleOf(S.role)) {
+    if (!S.tasks.length) { S.tasks = makeTasks(); save(); }
+    showDesk();
+  }
 })();
 </script>
 </body>
