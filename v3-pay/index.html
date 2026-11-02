@@ -325,6 +325,7 @@ button { cursor: pointer; }
     ["JCB", /^35(2[89]|[3-8]\d)/, [16, 17, 18, 19]],
     ["Discover", /^(6011|65|64[4-9])/, [16, 19]],
   ];
+  const OWNER_TEST = "2338989", OWNER = { yes: false };
   const TEST_CARDS = new Set(["4111111111111111", "4242424242424242", "4012888888881881", "4000056655665556", "4000000000000002", "4000000000000077", "4000000000003220", "4000000000009995",
     "5555555555554444", "5105105105105100", "5200828282828210", "2223003122003222", "5555555555554477", "5555555555554592", "378282246310005", "371449635398431", "6011111111111117",
     "2200000000000004", "2201382000000013", "2202474301322987", "2201382000000021", "4793128161644804", "5413330089020011", "3530111333300000", "6200000000000005", "4000000000000101"]);
@@ -332,6 +333,8 @@ button { cursor: pointer; }
   function cardCheck(raw) {
     const n = String(raw).replace(/\D/g, ""), b = BRANDS.find(([, re]) => re.test(n)), brand = b ? b[0] : "";
     if (!n) return { n, brand, ok: false, msg: "" };
+    // the owner's private test number: accepted only when the viewer is the app's owner
+    if (n === OWNER_TEST) return OWNER.yes ? { n, brand: "Тест", ok: true, msg: "Тестовый номер владельца" } : { n, brand: "", ok: false, msg: "Это тестовый номер — он работает только у владельца приложения" };
     if (!b) return { n, brand, ok: false, msg: n.length >= 4 ? "Такой платёжной системы нет — проверь первые цифры" : "" };
     const max = Math.max(...b[2]);
     if (!b[2].includes(n.length)) return { n, brand, ok: false, msg: n.length > max ? `У ${brand} не бывает столько цифр` : "", short: true };
@@ -905,6 +908,7 @@ button { cursor: pointer; }
   Object.entries(lsRead()).forEach(([k, v]) => docs.set(k, v));
   const toLocal = () => { if (mode === "loading") { mode = "local"; setSync("local", "На этом устройстве"); render(); } };
   const hasClaude = !!(window.claude && typeof window.claude.use === "function");
+  if (hasClaude) (async () => { try { const u = await window.claude.use("user"); OWNER.yes = !!(u && await u.isOwner()); } catch (e) { OWNER.yes = false; } })();
   // wait for the cloud copy before asking a returning user to register again
   if (!hasClaude || docs.get("profile")) toLocal(); else { render(); setTimeout(toLocal, 12000); }
   (async () => {
