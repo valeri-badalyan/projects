@@ -947,6 +947,31 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mc-dbtn { display: flex; flex-direction: column; gap: 4px; } .mc-dbtn small { text-align: center; font-size: 10px; color: var(--muted); font-weight: 800; min-height: 2.4em; } .mc-dbtn .btn { margin: 0; padding: 7px 4px; font-size: 11px; }
 .mc-card { padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); } .mc-card b { display: block; } .mc-card small { color: #5ce1e6; font-size: 10px; font-weight: 800; } .mc-card p { margin: 3px 0 0; font-size: 12px; } .mc-card.lock { opacity: .6; }
 .mc-prog { margin: 0; text-align: center; font-weight: 900; }
+#vaWrap { display: flex; flex-direction: column; gap: 8px; max-width: 560px; margin: 0 auto; }
+.va-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.va-tabs button, .va-chips button, .va-zoom button, .va-mini { padding: 7px 4px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12px; cursor: pointer; }
+.va-tabs button[aria-pressed="true"], .va-chips button[aria-pressed="true"] { border-color: #4fa3ff; background: rgba(79,163,255,.16); }
+.va-mini:disabled { opacity: .45; cursor: default; }
+.va-panel[hidden] { display: none; } .va-panel { display: flex; flex-direction: column; gap: 8px; }
+#vaMap { display: block; width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; touch-action: none; cursor: grab; background: #0b2742; }
+#vaPilotCv { display: block; width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; touch-action: none; background: #7cc0ff; user-select: none; -webkit-user-select: none; }
+.va-zoom { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.va-stat { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; font-size: 12px; font-weight: 800; color: var(--muted); }
+.va-stat b { color: var(--fg); } .va-ev { width: 100%; text-align: center; color: #4fa3ff; }
+.va-card { display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; }
+.va-card small { color: var(--muted); font-size: 11px; font-weight: 700; } .va-card select { padding: 7px; border-radius: 9px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 700; font-size: 13px; }
+.va-row { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.va-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 6px; }
+.va-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.va-h { margin: 4px 0 0; font: 900 14px Manrope, sans-serif; }
+.va-msg { margin: 0; text-align: center; font-weight: 800; min-height: 1.3em; font-size: 13px; }
+.va-pbtns { display: grid; grid-template-columns: 1fr 2fr; gap: 6px; }
+.va-pbtns button { padding: 14px 6px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 900; font-size: 15px; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; }
+.va-pbtns button[aria-pressed="true"] { border-color: #4fa3ff; background: rgba(79,163,255,.2); }
+.va-hubs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.va-hubs button { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 12px 6px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 900; cursor: pointer; font-size: 14px; } .va-hubs button span { font-size: 28px; } .va-hubs small { color: var(--muted); font-size: 10px; }
+#v3a .gtitle { font-size: 15px; }
+.va-good { color: #3ecf74; } .va-bad { color: #ff6b7a; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1967,6 +1992,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Атлас</span><span class="stat-val" id="hubMicroscop">—</span></span>
       </button>
+      <button class="cart" data-go="v3a" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="vabg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b5fb8"/><stop offset="1" stop-color="#8fd0ff"/></linearGradient></defs><rect width="64" height="64" fill="url(#vabg)"/><circle cx="50" cy="13" r="6" fill="#ffe28a"/><path d="M0 52 Q16 46 32 52 T64 50 V64 H0Z" fill="#2b5e45"/><g transform="translate(32 30) rotate(-12)"><ellipse cx="0" cy="0" rx="22" ry="4.2" fill="#fff"/><path d="M-4 1 L-14 15 L-9 15 L6 1Z" fill="#d9e6f5"/><path d="M-17 -2 L-22 -12 L-18 -12 L-11 -2Z" fill="#1b5fb8"/><rect x="-18" y="-1" width="36" height="1.6" fill="#1b5fb8"/><circle cx="17" cy="-1" r="1.2" fill="#1b3a66"/></g><text x="32" y="60" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="10" fill="#fff">V3A</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">V3A International</span>
+          <span class="cart-desc">Своя авиакомпания: покупай самолёты от ATR 72 до A380, открывай рейсы по всему миру, выбирай цены билетов и сажай лайнеры сам.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Флот</span><span class="stat-val" id="hubV3a">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2888,6 +2923,46 @@ div.sc-pl { cursor: default; }
       <div class="mc-panel" id="mcAtlas" hidden><div id="mcAtlasList" class="mc-panel"></div></div>
     </div>
     <p class="hint">🔬 Двигай стекло пальцем, меняй увеличение (бактерии видны только при ×400), крути фокус, пока картинка не станет чёткой, и нажимай на организмы — так они попадают в атлас. 🧪 В «Образцах» готовь новые стёкла: вода из пруда, лук, щека, листок, дрожжи, плесень, йогурт, земля, с красителями. 🧫 В «Бактериях» посей пробу в чашку Петри — колонии растут на глазах (быстрее при 37°), проверь антибиотик и возьми пробу под микроскоп.</p>
+  </section>
+
+  <!-- ===== V3A International ===== -->
+  <section id="v3a" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3A International</div>
+      <div class="chips"><div class="chip hi"><span>Касса</span><b id="vaMoney">$0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">На взлёт!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div id="vaWrap">
+      <div class="va-panel" id="vaStart" hidden>
+        <h3 class="va-h">✈️ Основай авиакомпанию V3A International</h3>
+        <p class="va-msg">Выбери главный аэропорт — хаб. Отсюда полетят первые рейсы. На старте: $40 000 и один ATR 72.</p>
+        <div class="va-hubs"><button type="button" data-hub="evn"><span>🇦🇲</span>Ереван<small>Звартноц</small></button><button type="button" data-hub="mow"><span>🇷🇺</span>Москва<small>Шереметьево</small></button><button type="button" data-hub="dxb"><span>🇦🇪</span>Дубай<small>DXB</small></button></div>
+      </div>
+      <div class="va-panel" id="vaGame" hidden>
+        <div class="va-stat" id="vaStat"></div>
+        <div class="va-tabs" id="vaTabs"><button type="button" data-tab="map">🗺 Карта</button><button type="button" data-tab="fleet">✈️ Флот</button><button type="button" data-tab="routes">🛫 Рейсы</button><button type="button" data-tab="pilot">🎮 Пилот</button></div>
+        <div class="va-panel" id="vaPMap">
+          <canvas id="vaMap" aria-label="Карта рейсов"></canvas>
+          <div class="va-zoom"><button type="button" data-zoom="-1">➖ Отдалить</button><button type="button" data-zoom="0">🏠 Хаб</button><button type="button" data-zoom="1">➕ Приблизить</button></div>
+          <div id="vaInfo" class="va-panel"></div>
+        </div>
+        <div class="va-panel" id="vaPFleet" hidden><div id="vaFleet" class="va-panel"></div><h3 class="va-h">🛒 Купить самолёт</h3><div id="vaShop" class="va-panel"></div></div>
+        <div class="va-panel" id="vaPRoutes" hidden><div id="vaRoutes" class="va-panel"></div></div>
+        <div class="va-panel" id="vaPPilot" hidden>
+          <canvas id="vaPilotCv" aria-label="Посадка самолёта"></canvas>
+          <div class="va-pbtns" id="vaPBtns"><button type="button" id="vaGear">⚙️ Шасси</button><button type="button" id="vaPull">⬆ Тянуть на себя</button></div>
+          <p class="va-msg" id="vaPMsg"></p>
+          <div id="vaPList" class="va-panel"></div>
+        </div>
+        <p class="va-msg" id="vaMsg" aria-live="polite"></p>
+      </div>
+    </div>
+    <p class="hint">🗺 На карте нажми золотой город своей сети, затем любой другой — и открой рейс. Во «Флоте» поставь на рейс самолёт: он летает сам и приносит деньги с каждого прилёта (большие города — больше пассажиров, но несколько самолётов на одной линии делят спрос). Эконом-билеты растят репутацию, премиум выгоден при высокой репутации. Пока тебя нет (до 2 часов), самолёты зарабатывают треть обычного. В «Пилоте» сажай лайнер сам: выпусти шасси, держи кнопку «Тянуть», чтобы не падать слишком быстро, следи за огнями глиссады (2 белых + 2 красных = идеально) и перед касанием выровняй самолёт — мягкая посадка даёт двойную выручку рейса и монеты.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -6704,7 +6779,7 @@ div.sc-pl { cursor: default; }
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6979,7 +7054,7 @@ div.sc-pl { cursor: default; }
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -14602,6 +14677,408 @@ div.sc-pl { cursor: default; }
     };
   })();
 
+  /* ================= V3A International ================= */
+  // Airline tycoon: buy planes, open routes on a world map, set ticket prices, and land planes by hand.
+  const V3A = (() => {
+    const cv = $("#vaMap"), ctx = cv.getContext("2d"), pc = $("#vaPilotCv"), pctx = pc.getContext("2d");
+    // id: [name, flag, lat, lon, demand 1-5]
+    const CITY = {
+      evn: ["Ереван", "🇦🇲", 40.15, 44.4, 3], mow: ["Москва", "🇷🇺", 55.75, 37.6, 5], led: ["Санкт-Петербург", "🇷🇺", 59.94, 30.3, 4], aer: ["Сочи", "🇷🇺", 43.6, 39.7, 2],
+      tbs: ["Тбилиси", "🇬🇪", 41.7, 44.8, 2], dxb: ["Дубай", "🇦🇪", 25.25, 55.36, 5], ist: ["Стамбул", "🇹🇷", 41.0, 28.97, 5], ayt: ["Анталья", "🇹🇷", 36.9, 30.7, 3],
+      lhr: ["Лондон", "🇬🇧", 51.5, -0.12, 5], par: ["Париж", "🇫🇷", 48.86, 2.35, 5], ber: ["Берлин", "🇩🇪", 52.52, 13.4, 4], rom: ["Рим", "🇮🇹", 41.9, 12.5, 4],
+      mad: ["Мадрид", "🇪🇸", 40.42, -3.7, 4], bcn: ["Барселона", "🇪🇸", 41.39, 2.17, 3], cai: ["Каир", "🇪🇬", 30.04, 31.24, 4], ala: ["Алматы", "🇰🇿", 43.24, 76.9, 2],
+      del: ["Дели", "🇮🇳", 28.6, 77.2, 5], bkk: ["Бангкок", "🇹🇭", 13.75, 100.5, 4], sin: ["Сингапур", "🇸🇬", 1.35, 103.8, 4], hkg: ["Гонконг", "🇭🇰", 22.3, 114.2, 4],
+      pek: ["Пекин", "🇨🇳", 39.9, 116.4, 5], sel: ["Сеул", "🇰🇷", 37.57, 126.98, 4], tyo: ["Токио", "🇯🇵", 35.68, 139.7, 5], syd: ["Сидней", "🇦🇺", -33.87, 151.2, 4],
+      jnb: ["Йоханнесбург", "🇿🇦", -26.2, 28.05, 3], los: ["Лагос", "🇳🇬", 6.5, 3.4, 3], nbo: ["Найроби", "🇰🇪", -1.29, 36.82, 2], nyc: ["Нью-Йорк", "🇺🇸", 40.7, -74, 5],
+      lax: ["Лос-Анджелес", "🇺🇸", 34.05, -118.24, 5], yyz: ["Торонто", "🇨🇦", 43.65, -79.4, 4], mex: ["Мехико", "🇲🇽", 19.43, -99.13, 4], rio: ["Рио-де-Жанейро", "🇧🇷", -22.9, -43.2, 4],
+      bue: ["Буэнос-Айрес", "🇦🇷", -34.6, -58.4, 3],
+    };
+    const PLANES = {
+      atr: { n: "ATR 72", seats: 70, range: 1500, spd: 510, burn: 2.2, price: 30000, lvl: 0 },
+      e190: { n: "Embraer E190", seats: 100, range: 4000, spd: 820, burn: 3.2, price: 70000, lvl: 0 },
+      a320: { n: "Airbus A320", seats: 180, range: 6000, spd: 830, burn: 4.6, price: 140000, lvl: 1 },
+      b737: { n: "Boeing 737 MAX", seats: 190, range: 6500, spd: 840, burn: 4.5, price: 160000, lvl: 1 },
+      b787: { n: "Boeing 787", seats: 290, range: 13500, spd: 900, burn: 7, price: 400000, lvl: 2 },
+      a350: { n: "Airbus A350", seats: 330, range: 15000, spd: 910, burn: 7.6, price: 520000, lvl: 3 },
+      a380: { n: "Airbus A380", seats: 520, range: 15000, spd: 900, burn: 12, price: 1000000, lvl: 4 },
+    };
+    const RANKS = [[0, "Региональный стартап"], [150000, "Национальный перевозчик"], [600000, "Международная авиакомпания"], [2000000, "Мировой лидер"], [6000000, "Легенда неба"]];
+    // [name, ticket multiplier, load multiplier, reputation per flight]
+    const PRICE = { eco: ["Эконом", 0.7, 1.25, 0.01], std: ["Стандарт", 1, 1, 0.004], pre: ["Премиум", 1.5, 0.6, -0.003] };
+    const EVS = { fuelUp: "⛽ Нефть подорожала: топливо ×1.35", fuelDown: "⛽ Топливо подешевело: ×0.75", season: "🏖 Сезон отпусков: +12% пассажиров" };
+    // coarse continent outlines as [lon, lat] pairs
+    const LAND = [
+      [[-168, 66], [-140, 70], [-95, 72], [-80, 73], [-62, 60], [-55, 50], [-66, 44], [-76, 35], [-81, 25], [-81, 30], [-90, 29], [-97, 26], [-97, 20], [-87, 21], [-88, 15], [-83, 9], [-78, 8], [-85, 11], [-92, 15], [-105, 20], [-112, 30], [-117, 33], [-124, 40], [-124, 48], [-133, 56], [-150, 60], [-165, 60]],
+      [[-55, 60], [-42, 60], [-20, 70], [-20, 80], [-60, 82], [-70, 76], [-55, 68]],
+      [[-78, 8], [-60, 10], [-50, 0], [-35, -5], [-38, -13], [-40, -22], [-48, -28], [-58, -38], [-65, -42], [-68, -52], [-74, -50], [-72, -35], [-71, -18], [-76, -14], [-81, -5], [-80, 0]],
+      [[-17, 15], [-16, 22], [-10, 30], [-6, 36], [10, 37], [20, 32], [32, 31], [34, 28], [43, 12], [51, 12], [42, -2], [40, -15], [35, -24], [32, -29], [20, -35], [18, -30], [12, -17], [13, -5], [9, 4], [-8, 4], [-14, 8]],
+      [[-9, 37], [-9, 43], [-2, 44], [-5, 48], [0, 50], [5, 53], [8, 57], [5, 62], [15, 69], [28, 71], [40, 67], [60, 69], [80, 73], [105, 78], [140, 72], [170, 70], [180, 66], [160, 60], [142, 59], [136, 54], [141, 47], [130, 42], [127, 35], [122, 40], [118, 38], [122, 30], [120, 23], [110, 20], [108, 12], [104, 9], [100, 13], [100, 7], [103, 1], [98, 8], [97, 17], [92, 21], [88, 22], [80, 15], [77, 8], [72, 20], [67, 25], [57, 25], [56, 26], [59, 22], [53, 16], [44, 12], [43, 17], [39, 22], [34, 30], [35, 34], [36, 36], [28, 37], [26, 40], [22, 37], [20, 40], [16, 38], [18, 40], [12, 44], [8, 44], [3, 43], [0, 39], [-2, 37]],
+      [[-5, 50], [1, 51], [-2, 56], [-3, 58.5], [-6, 57], [-4, 54]],
+      [[114, -22], [122, -18], [130, -12], [137, -12], [142, -11], [146, -19], [153, -26], [150, -37], [141, -38], [135, -35], [129, -32], [115, -34]],
+      [[130, 31], [135, 34], [140, 36], [142, 40], [141, 45], [139, 41], [136, 36], [131, 34]],
+      [[44, -25], [50, -15], [49, -12], [44, -17]],
+      [[95, 5], [106, -6], [115, -8], [110, -2], [104, 1]], [[109, 1], [119, 6], [118, -2], [111, -3]],
+    ];
+    const WATER = [[[47, 45], [51, 47], [54, 42], [53, 37], [49, 38]], [[28, 42], [28, 46], [34, 46], [41, 42], [36, 41]]];
+    const KEY = "v3a", RWY = 2200, deg = Math.PI / 180;
+    let S = store.get(KEY, null);
+    if (S && !S.hub) S = null;
+    let visible = false, raf = 0, last = 0, tab = "map", selA = null, selB = null, ev = null, evNext = 0, saveAt = 0, topAt = 0, msgT = 0, floats = [], PL = null, resetArm = false;
+    let view = { lon: 40, lat: 40, z: 3 };
+
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const money = (n) => { const a = Math.abs(n), s = n < 0 ? "−$" : "$"; return a >= 1e6 ? s + (a / 1e6).toFixed(a >= 1e7 ? 1 : 2) + "M" : s + Math.round(a).toLocaleString("ru-RU"); };
+    const cn = (id) => `${CITY[id][1]} ${CITY[id][0]}`;
+    function km(a, b) { const A = CITY[a], B = CITY[b], dLa = (B[2] - A[2]) * deg, dLo = (B[3] - A[3]) * deg; const h = Math.sin(dLa / 2) ** 2 + Math.cos(A[2] * deg) * Math.cos(B[2] * deg) * Math.sin(dLo / 2) ** 2; return Math.round(12742 * Math.asin(Math.sqrt(h))); }
+    const routeById = (id) => S.routes.find((r) => r.id === id);
+    const routeBetween = (a, b) => S.routes.find((r) => (r.a === a && r.b === b) || (r.a === b && r.b === a));
+    const served = (c) => c === S.hub || S.routes.some((r) => r.a === c || r.b === c);
+    const rname = (r) => `${cn(r.a)} ⇄ ${cn(r.b)}`;
+    const fee = (a, b) => Math.round((1500 + km(a, b) * 0.8 + CITY[b][4] * 800) / 100) * 100;
+    const legT = (r, type) => 6 + km(r.a, r.b) / PLANES[type].spd * 8;
+    const rankOf = () => { let k = 0; RANKS.forEach((x, i) => { if (S.earned >= x[0]) k = i; }); return k; };
+    const stars = (v) => "★".repeat(Math.round(v)) + "☆".repeat(5 - Math.round(v));
+    function leg(r, type) {
+      const P = PLANES[type], d = km(r.a, r.b), pm = PRICE[r.price] || PRICE.std, n = S.planes.filter((p) => p.route === r.id).length;
+      let load = (0.3 + (CITY[r.a][4] + CITY[r.b][4]) * 0.055) * pm[2] + S.rep * (r.price === "pre" ? 0.06 : 0.03) + (ev && ev.k === "season" ? 0.12 : 0) - Math.max(0, n - 1) * 0.08;
+      load = clamp(load, 0.12, 1);
+      const pax = Math.round(P.seats * load), rev = Math.round(pax * (8 + d * 0.07) * pm[1]), port = 150 + P.seats * 2;
+      const fuel = Math.round(d * P.burn * (ev && ev.k === "fuelUp" ? 1.35 : ev && ev.k === "fuelDown" ? 0.75 : 1));
+      return { pax, rev, fuel, port, net: rev - fuel - port, d, load };
+    }
+    function fresh(hub) { return { hub, money: 40000, rep: 2.5, planes: [{ id: 1, type: "atr", route: 0, t: 0, dir: 0 }], routes: [], earned: 0, legs: 0, landings: 0, soft: 0, rank: 0, nid: 2, ts: Date.now() }; }
+    function save() { if (S) { S.ts = Date.now(); store.set(KEY, S); } }
+    function msg(t) { $("#vaMsg").innerHTML = t; clearTimeout(msgT); msgT = setTimeout(() => { $("#vaMsg").textContent = ""; }, 5000); }
+    function beep(f, d) { try { const AC = beep.ac = beep.ac || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0.05, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d + 0.02); } catch (e) { /* optional */ } }
+    function checkRank() {
+      const k = rankOf();
+      if (k > S.rank) { S.rank = k; Hero.earn(40 * k); msg(`🏆 Новый статус: <b>${RANKS[k][1]}</b>! Открыты новые самолёты. +${40 * k} ◎`); Hero.say("v3a", "win", `Мы теперь ${RANKS[k][1]}!`); beep(880, 0.15); setTimeout(() => beep(1320, 0.2), 140); if (tab === "fleet") render(); }
+    }
+    function arrive(p, r, mult, quiet) {
+      const L = leg(r, p.type), net = Math.round(L.net * (mult || 1));
+      S.money += net; if (net > 0) S.earned += net; S.legs++;
+      S.rep = clamp(S.rep + (PRICE[r.price] || PRICE.std)[3], 0, 5);
+      if (!quiet) floats.push({ c: p.dir ? r.a : r.b, txt: (net >= 0 ? "+" : "") + money(net), col: net >= 0 ? "#7dffa0" : "#ff8d8d", t: 0 });
+      checkRank();
+    }
+    function tick(dt) {
+      for (const p of S.planes) {
+        const r = routeById(p.route); if (!r) continue;
+        const T = legT(r, p.type); p.t += dt;
+        while (p.t >= T) { p.t -= T; arrive(p, r); p.dir ^= 1; }
+      }
+    }
+    // planes keep flying while the player is away, at 35% of the income, for up to 2 hours
+    function catchUp() {
+      const el = Math.min(2 * 3600, Math.max(0, (Date.now() - (S.ts || Date.now())) / 1000));
+      if (el < 5) return 0;
+      const m0 = S.money;
+      for (const p of S.planes) {
+        const r = routeById(p.route); if (!r) continue;
+        const T = legT(r, p.type); p.t += el; const n = Math.floor(p.t / T); p.t -= n * T; if (n % 2) p.dir ^= 1;
+        const add = Math.round(leg(r, p.type).net * n * 0.35); S.money += add; if (add > 0) S.earned += add; S.legs += n;
+      }
+      checkRank();
+      return S.money - m0;
+    }
+
+    /* ---------- map ---------- */
+    function fit(c) {
+      const w = c.clientWidth || 340, h = c.clientHeight || Math.round(w * 0.75), d = Math.min(2, window.devicePixelRatio || 1);
+      if (c.width !== Math.round(w * d) || c.height !== Math.round(h * d)) { c.width = Math.round(w * d); c.height = Math.round(h * d); }
+      return { w, h, d };
+    }
+    let MW = 340, MH = 255;
+    const proj = (lon, lat) => { const s = MW / 360 * view.z; return [(lon - view.lon) * s + MW / 2, (view.lat - lat) * s + MH / 2]; };
+    const cxy = (id) => proj(CITY[id][3], CITY[id][2]);
+    function curve(a, b) {
+      const [x1, y1] = cxy(a), [x2, y2] = cxy(b), mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1;
+      let qx = mx - dy * 0.18, qy = my + dx * 0.18; if (qy > my) { qx = mx + dy * 0.18; qy = my - dx * 0.18; }
+      return [x1, y1, qx, qy, x2, y2];
+    }
+    const bez = (B, u) => { const v = 1 - u; return [v * v * B[0] + 2 * v * u * B[2] + u * u * B[4], v * v * B[1] + 2 * v * u * B[3] + u * u * B[5]]; };
+    const bezD = (B, u) => [2 * (1 - u) * (B[2] - B[0]) + 2 * u * (B[4] - B[2]), 2 * (1 - u) * (B[3] - B[1]) + 2 * u * (B[5] - B[3])];
+    function topPlane(c, x, y, ang, s, col) {
+      const pts = [[1, 0], [0.55, 0.1], [0.1, 0.12], [-0.15, 0.85], [-0.35, 0.85], [-0.2, 0.12], [-0.7, 0.1], [-0.85, 0.4], [-1, 0.4], [-0.9, 0]];
+      c.save(); c.translate(x, y); c.rotate(ang); c.beginPath();
+      pts.forEach(([px, py], i) => (i ? c.lineTo(px * s, py * s) : c.moveTo(px * s, py * s)));
+      for (let i = pts.length - 2; i > 0; i--) c.lineTo(pts[i][0] * s, -pts[i][1] * s);
+      c.closePath(); c.fillStyle = col; c.fill(); c.strokeStyle = "rgba(0,0,0,.5)"; c.lineWidth = 0.8; c.stroke(); c.restore();
+    }
+    function drawMap(dt) {
+      const { w, h, d } = fit(cv); MW = w; MH = h; ctx.setTransform(d, 0, 0, d, 0, 0);
+      ctx.fillStyle = "#0b2742"; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(255,255,255,.06)"; ctx.lineWidth = 1; ctx.beginPath();
+      for (let lo = -180; lo <= 180; lo += 30) { const [x] = proj(lo, 0); ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let la = -60; la <= 80; la += 20) { const [, y] = proj(0, la); ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+      const poly = (pts, fill, stroke) => { ctx.beginPath(); pts.forEach(([lo, la], i) => { const [x, y] = proj(lo, la); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); } };
+      LAND.forEach((p) => poly(p, "#2b5e45", "#3f7d5c")); WATER.forEach((p) => poly(p, "#0b2742"));
+      const selR = selA && selB ? routeBetween(selA, selB) : null;
+      for (const r of S.routes) {
+        const B = curve(r.a, r.b), hi = r === selR;
+        ctx.beginPath(); ctx.moveTo(B[0], B[1]); ctx.quadraticCurveTo(B[2], B[3], B[4], B[5]);
+        ctx.strokeStyle = hi ? "#ffffff" : r.price === "pre" ? "rgba(255,170,80,.75)" : r.price === "eco" ? "rgba(125,255,160,.65)" : "rgba(255,211,107,.7)"; ctx.lineWidth = hi ? 2.5 : 1.6; ctx.setLineDash([5, 4]); ctx.stroke(); ctx.setLineDash([]);
+      }
+      if (selA && selB && !selR) { const B = curve(selA, selB); ctx.beginPath(); ctx.moveTo(B[0], B[1]); ctx.quadraticCurveTo(B[2], B[3], B[4], B[5]); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 1.5; ctx.setLineDash([2, 4]); ctx.stroke(); ctx.setLineDash([]); }
+      const ps = clamp(3 + view.z * 1.2, 5, 11);
+      for (const p of S.planes) {
+        const r = routeById(p.route); if (!r) continue;
+        const B = curve(r.a, r.b); let u = clamp(p.t / legT(r, p.type), 0, 1); if (p.dir) u = 1 - u;
+        const [x, y] = bez(B, u), [tx, ty] = bezD(B, u); let ang = Math.atan2(ty, tx); if (p.dir) ang += Math.PI;
+        topPlane(ctx, x, y, ang, ps, "#ffffff");
+      }
+      ctx.textAlign = "center"; ctx.font = "700 10px Manrope, sans-serif";
+      for (const id in CITY) {
+        const [x, y] = cxy(id); if (x < -20 || y < -20 || x > w + 20 || y > h + 20) continue;
+        const sv = served(id), pop = CITY[id][4], rr = 1.6 + pop * 0.55, sel = id === selA || id === selB;
+        if (id === S.hub) { ctx.beginPath(); ctx.arc(x, y, rr + 4, 0, 7); ctx.strokeStyle = "#ffd36b"; ctx.lineWidth = 1.5; ctx.stroke(); }
+        if (sel) { ctx.beginPath(); ctx.arc(x, y, rr + 7, 0, 7); ctx.strokeStyle = "#4fa3ff"; ctx.lineWidth = 2.5; ctx.stroke(); }
+        ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.fillStyle = sv ? "#ffd36b" : "rgba(207,227,255,.8)"; ctx.fill();
+        if (sv || sel || view.z >= 4 || pop >= 5) { ctx.fillStyle = sv || sel ? "#ffffff" : "rgba(220,235,255,.75)"; ctx.fillText(CITY[id][0], x, y - rr - 4); }
+      }
+      ctx.font = "900 11px Manrope, sans-serif";
+      floats = floats.filter((f) => (f.t += dt) < 1.8);
+      for (const f of floats) { const [x, y] = cxy(f.c); ctx.globalAlpha = clamp(1.8 - f.t, 0, 1); ctx.fillStyle = f.col; ctx.fillText(f.txt, x, y - 16 - f.t * 18); }
+      ctx.globalAlpha = 1;
+    }
+    function tapMap(px, py) {
+      let best = null, bd = 22;
+      for (const id in CITY) { const [x, y] = cxy(id), dd = Math.hypot(x - px, y - py); if (dd < bd) { bd = dd; best = id; } }
+      if (!best) { selA = selB = null; }
+      else if (!selA || selB || best === selA) { selA = best === selA && !selB ? null : best; selB = null; }
+      else { selB = best; if (!served(selA) && served(selB)) { const t = selA; selA = selB; selB = t; } }
+      beep(660, 0.05); renderInfo();
+    }
+    function renderInfo() {
+      const el = $("#vaInfo");
+      if (!selA) { el.innerHTML = `<div class="va-card"><b>🗺 Твоя сеть: ${S.routes.length} ${S.routes.length === 1 ? "рейс" : "рейсов"}</b><small>Нажми золотой город (там, куда ты уже летаешь), затем любой другой — и открой новый рейс. Карту можно двигать пальцем.</small></div>`; return; }
+      const A = CITY[selA];
+      if (!selB) {
+        const rs = S.routes.filter((r) => r.a === selA || r.b === selA);
+        el.innerHTML = `<div class="va-card"><div class="va-row"><b>${cn(selA)}</b><small>${selA === S.hub ? "🏠 твой хаб" : served(selA) ? "✅ в сети" : "ещё не летаешь"}</small></div><small>Спрос: ${"👤".repeat(A[4])} · рейсов отсюда: ${rs.length}</small><small>${served(selA) ? "Теперь нажми второй город на карте." : "Сначала выбери город из своей сети (золотой), потом этот."}</small></div>`;
+        return;
+      }
+      const r = routeBetween(selA, selB), d = km(selA, selB);
+      if (r) {
+        const ps = S.planes.filter((p) => p.route === r.id);
+        el.innerHTML = `<div class="va-card"><b>🛫 ${rname(r)}</b><small>${d} км · самолётов: ${ps.length} · цены: ${PRICE[r.price][0]}</small>${ps.length ? `<small>За прилёт: ${money(leg(r, ps[0].type).net)} (${PLANES[ps[0].type].n})</small>` : "<small>На рейсе нет самолёта — поставь его во «Флоте».</small>"}<div class="va-btns"><button class="va-mini" type="button" data-tab="routes">Управлять</button><button class="va-mini" type="button" data-tab="fleet">✈️ Флот</button></div></div>`;
+        return;
+      }
+      const f = fee(selA, selB), ok = served(selA), fits = Object.values(PLANES).filter((P) => P.range >= d);
+      el.innerHTML = `<div class="va-card"><b>${cn(selA)} → ${cn(selB)}</b><small>${d.toLocaleString("ru-RU")} км · спрос ${"👤".repeat(CITY[selB][4])} · лёту ~${Math.round(d / 830 * 60)} мин</small><small>${fits.length ? "Долетят: " + fits.map((P) => P.n).join(", ") : "Слишком далеко для любого самолёта!"}</small>${ok ? `<button class="btn" type="button" data-open="1" ${S.money < f || !fits.length ? "disabled" : ""}>Открыть рейс за ${money(f)}</button>` : "<small>Один из городов должен быть в твоей сети.</small>"}</div>`;
+    }
+    function openRoute() {
+      if (!selA || !selB || routeBetween(selA, selB) || !served(selA)) return;
+      const f = fee(selA, selB); if (S.money < f) return msg("Не хватает денег на открытие рейса.");
+      S.money -= f; const r = { id: S.nid++, a: selA, b: selB, price: "std" }; S.routes.push(r);
+      const idle = S.planes.find((p) => !routeById(p.route) && PLANES[p.type].range >= km(r.a, r.b));
+      if (idle) { idle.route = r.id; idle.t = 0; idle.dir = 0; }
+      Hero.earn(5); beep(990, 0.12); save();
+      msg(`✅ Рейс <b>${rname(r)}</b> открыт!${idle ? ` На него вылетел ${PLANES[idle.type].n}.` : " Поставь на него самолёт во «Флоте»."}`);
+      Hero.say("v3a", "good", `Новый рейс в ${CITY[r.b][0]}!`);
+      renderInfo(); renderStat();
+    }
+
+    /* ---------- panels ---------- */
+    function renderStat() {
+      const k = rankOf();
+      $("#vaStat").innerHTML = `<span>🏆 <b>${RANKS[k][1]}</b></span><span>⭐ <b>${stars(S.rep)}</b></span><span>✈ <b>${S.planes.length}</b></span><span>🛫 <b>${S.legs}</b></span>${ev ? `<span class="va-ev">${EVS[ev.k]} (${Math.ceil((ev.until - Date.now()) / 1000)} с)</span>` : ""}`;
+      $("#vaMoney").textContent = money(S.money);
+    }
+    function renderFleet() {
+      $("#vaFleet").innerHTML = S.planes.length ? S.planes.map((p) => {
+        const P = PLANES[p.type], r = routeById(p.route);
+        const opts = [`<option value="0">🅿️ В ангаре</option>`].concat(S.routes.map((q) => { const ok = km(q.a, q.b) <= P.range; return `<option value="${q.id}" ${p.route === q.id ? "selected" : ""} ${ok ? "" : "disabled"}>${CITY[q.a][0]} ⇄ ${CITY[q.b][0]}${ok ? "" : " — далеко"}</option>`; })).join("");
+        return `<div class="va-card"><div class="va-row"><b>✈️ ${P.n}</b><small>борт V3A-${String(p.id).padStart(3, "0")}</small></div><small>${P.seats} мест · дальность ${P.range.toLocaleString("ru-RU")} км · ${P.spd} км/ч</small>${r ? `<small>За прилёт: <span class="${leg(r, p.type).net >= 0 ? "va-good" : "va-bad"}">${money(leg(r, p.type).net)}</span> · ${leg(r, p.type).pax} пасс.</small>` : ""}<select data-assign="${p.id}" aria-label="Рейс самолёта">${opts}</select><button class="va-mini" type="button" data-sell="${p.id}">Продать за ${money(P.price * 0.6)}</button></div>`;
+      }).join("") : `<div class="va-card"><small>Самолётов нет — купи первый ниже.</small></div>`;
+      $("#vaShop").innerHTML = Object.entries(PLANES).map(([id, P]) => {
+        const lock = P.lvl > S.rank;
+        return `<div class="va-card"><div class="va-row"><b>${lock ? "🔒" : "🛩"} ${P.n}</b><b>${money(P.price)}</b></div><small>${P.seats} мест · ${P.range.toLocaleString("ru-RU")} км · ${P.spd} км/ч · топливо $${P.burn}/км</small>${lock ? `<small>Нужен статус «${RANKS[P.lvl][1]}»</small>` : `<button class="va-mini" type="button" data-buy="${id}" ${S.money < P.price ? "disabled" : ""}>Купить</button>`}</div>`;
+      }).join("");
+    }
+    function renderRoutes() {
+      const list = S.routes.map((r) => {
+        const ps = S.planes.filter((p) => p.route === r.id), L = ps.length ? leg(r, ps[0].type) : null;
+        return `<div class="va-card"><b>${rname(r)}</b><small>${km(r.a, r.b).toLocaleString("ru-RU")} км · самолётов: ${ps.length}${L ? ` · загрузка ${Math.round(L.load * 100)}% · ${L.pax} пасс.` : ""}</small>${L ? `<small>Билеты ${money(L.rev)} − топливо ${money(L.fuel)} − сборы ${money(L.port)} = <span class="${L.net >= 0 ? "va-good" : "va-bad"}">${money(L.net)}</span> за прилёт</small>` : "<small>Нет самолёта — поставь во «Флоте».</small>"}<div class="va-chips">${Object.entries(PRICE).map(([k, v]) => `<button type="button" data-price="${r.id}:${k}" aria-pressed="${r.price === k}">${v[0]}</button>`).join("")}</div><div class="va-btns">${ps.length ? `<button class="va-mini" type="button" data-fly="${r.id}">🎮 Посадить самому</button>` : ""}<button class="va-mini" type="button" data-close="${r.id}">✖ Закрыть рейс</button></div></div>`;
+      }).join("");
+      $("#vaRoutes").innerHTML = (list || `<div class="va-card"><small>Рейсов пока нет. Открой первый на карте: нажми свой хаб ${cn(S.hub)}, потом город рядом (ATR 72 летает до 1 500 км).</small></div>`)
+        + `<div class="va-card"><small>Всего заработано: ${money(S.earned)} · посадок вручную: ${S.landings} (мягких: ${S.soft})</small><button class="va-mini" type="button" data-reset="1">${resetArm ? "Точно? Нажми ещё раз — всё обнулится" : "🔄 Начать авиакомпанию заново"}</button></div>`;
+    }
+    function renderPilotList() {
+      const btns = $("#vaPBtns"), flying = PL && !PL.res;
+      btns.hidden = !flying;
+      $("#vaGear").setAttribute("aria-pressed", String(!!(PL && PL.gear)));
+      if (flying) { $("#vaPList").innerHTML = ""; return; }
+      const rs = S.routes.filter((r) => S.planes.some((p) => p.route === r.id));
+      $("#vaPList").innerHTML = `<h3 class="va-h">Выбери посадку</h3>` + rs.map((r) => { const p = S.planes.find((q) => q.route === r.id), dest = p.dir ? r.a : r.b; return `<button class="btn ghost" type="button" data-fly="${r.id}">🛬 ${PLANES[p.type].n} → ${cn(dest)}</button>`; }).join("") + `<button class="btn ghost" type="button" data-fly="0">🎓 Тренировочный полёт</button>`;
+    }
+    function render() {
+      $("#vaStart").hidden = !!S; $("#vaGame").hidden = !S;
+      if (!S) return;
+      $$("#vaTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.tab === tab)));
+      $("#vaPMap").hidden = tab !== "map"; $("#vaPFleet").hidden = tab !== "fleet"; $("#vaPRoutes").hidden = tab !== "routes"; $("#vaPPilot").hidden = tab !== "pilot";
+      renderStat();
+      if (tab === "map") { renderInfo(); drawMap(0); }
+      if (tab === "fleet") renderFleet();
+      if (tab === "routes") renderRoutes();
+      if (tab === "pilot") { renderPilotList(); drawPilot(); }
+    }
+
+    /* ---------- pilot: hand landing ---------- */
+    function startPilot(rid) {
+      const r = rid ? routeById(rid) : null, p = r && S.planes.find((q) => q.route === r.id);
+      PL = { rid: p ? r.id : 0, type: p ? p.type : "a320", dest: p ? (p.dir ? r.a : r.b) : S.hub, x: -4300, alt: 290, vs: -3, gear: false, hold: false, gust: 0, gt: 0, res: null, t: 0 };
+      tab = "pilot"; $("#vaPMsg").textContent = "Выпусти шасси и держи самолёт на глиссаде!"; render();
+      Hero.say("v3a", "start", `Заходим на посадку в ${CITY[PL.dest][0]}!`);
+    }
+    function pilotStep(dt) {
+      const P = PL; if (!P || P.res) return;
+      P.t += dt; P.x += (P.gear ? 68 : 74) * dt;
+      P.gt -= dt; if (P.gt <= 0) { P.gt = 0.6 + Math.random() * 1.2; P.gust = (Math.random() - 0.5) * 3.2; }
+      const target = (P.hold ? 2.2 : -5.5) + P.gust;
+      P.vs += (target - P.vs) * Math.min(1, dt * 1.6);
+      P.alt = Math.min(700, P.alt + P.vs * dt);
+      if (P.alt <= 0) { P.alt = 0; land(); }
+      else if (P.x > RWY) finish("go", "🔄 Полоса закончилась — уход на второй круг. Попробуй ещё раз!");
+    }
+    function land() {
+      const P = PL, vs = P.vs;
+      if (!P.gear) return finish("crash", "💥 Посадка на брюхо — забыли выпустить шасси!");
+      if (P.x < 0) return finish("crash", "💥 Недолёт: самолёт коснулся земли до полосы!");
+      if (vs < -4.6) return finish("crash", `💥 Слишком жёстко: ${vs.toFixed(1)} м/с. Шасси сломаны.`);
+      if (vs < -2.4) return finish("hard", `😬 Жёсткая посадка: ${vs.toFixed(1)} м/с. Пассажиры вцепились в кресла.`);
+      finish("soft", `🧈 Как по маслу! Касание ${vs.toFixed(1)} м/с — пассажиры аплодируют!`);
+    }
+    function finish(kind, text) {
+      const P = PL; P.res = kind; P.hold = false;
+      const r = P.rid ? routeById(P.rid) : null, plane = r && S.planes.find((q) => q.route === r.id);
+      let extra = "";
+      if (kind !== "go") { S.landings++; if (kind === "soft") S.soft++; }
+      if (r && plane) {
+        const L = leg(r, plane.type);
+        if (kind === "soft") { S.money += L.net * 2; if (L.net > 0) S.earned += L.net * 2; S.rep = clamp(S.rep + 0.15, 0, 5); Hero.earn(25); extra = ` Выручка рейса ×2: ${money(L.net * 2)}, репутация ↑, +25 ◎`; }
+        else if (kind === "hard") { S.money += L.net; if (L.net > 0) S.earned += L.net; S.rep = clamp(S.rep + 0.02, 0, 5); Hero.earn(8); extra = ` Выручка рейса: ${money(L.net)}, +8 ◎`; }
+        else if (kind === "crash") { const fix = Math.round(PLANES[plane.type].price * 0.05); S.money -= fix; S.rep = clamp(S.rep - 0.4, 0, 5); extra = ` Ремонт: −${money(fix)}, репутация ↓ (все живы — это тренажёр 😅)`; }
+        checkRank();
+      } else if (kind === "soft") { Hero.earn(6); extra = " +6 ◎"; } else if (kind === "hard") { Hero.earn(2); extra = " +2 ◎"; }
+      $("#vaPMsg").innerHTML = text + extra;
+      Hero.say("v3a", kind === "soft" ? "win" : kind === "crash" ? "lose" : "good", kind === "soft" ? "Идеальная посадка, капитан!" : kind === "crash" ? "Ой… давай ещё раз!" : "Сели!");
+      beep(kind === "soft" ? 1100 : kind === "crash" ? 140 : 520, kind === "crash" ? 0.5 : 0.2);
+      save(); renderStat(); renderPilotList();
+    }
+    function sidePlane(c, x, y, ang, s, gear) {
+      c.save(); c.translate(x, y); c.rotate(ang);
+      c.fillStyle = "#1b5fb8"; c.beginPath(); c.moveTo(-1.55 * s, -0.08 * s); c.lineTo(-1.95 * s, -0.95 * s); c.lineTo(-1.6 * s, -0.95 * s); c.lineTo(-1.05 * s, -0.12 * s); c.fill();
+      c.fillStyle = "#ffffff"; c.beginPath(); c.moveTo(1.7 * s, 0.05 * s); c.quadraticCurveTo(1.6 * s, -0.28 * s, 1.1 * s, -0.3 * s); c.lineTo(-1.5 * s, -0.24 * s); c.lineTo(-1.95 * s, -0.05 * s); c.lineTo(-1.5 * s, 0.22 * s); c.lineTo(1.2 * s, 0.25 * s); c.quadraticCurveTo(1.65 * s, 0.22 * s, 1.7 * s, 0.05 * s); c.fill();
+      c.strokeStyle = "rgba(0,0,0,.25)"; c.lineWidth = 1; c.stroke();
+      c.fillStyle = "#1b5fb8"; c.fillRect(-1.5 * s, 0.02 * s, 2.9 * s, 0.07 * s);
+      c.fillStyle = "#1b3a66"; for (let i = 0; i < 9; i++) c.fillRect((-1.1 + i * 0.25) * s, -0.15 * s, 0.09 * s, 0.09 * s);
+      c.beginPath(); c.moveTo(1.38 * s, -0.17 * s); c.lineTo(1.58 * s, -0.12 * s); c.lineTo(1.5 * s, -0.04 * s); c.lineTo(1.32 * s, -0.06 * s); c.fill();
+      c.fillStyle = "#d9e6f5"; c.beginPath(); c.moveTo(0.35 * s, 0.12 * s); c.lineTo(-0.55 * s, 0.42 * s); c.lineTo(-0.2 * s, 0.42 * s); c.lineTo(0.65 * s, 0.14 * s); c.fill();
+      c.fillStyle = "#8a96a8"; c.beginPath(); c.ellipse(0.15 * s, 0.34 * s, 0.32 * s, 0.11 * s, 0, 0, 7); c.fill();
+      c.fillStyle = "#ffffff"; c.font = `900 ${Math.round(0.26 * s)}px Arial, sans-serif`; c.textAlign = "center"; c.fillText("V3A", -1.62 * s, -0.42 * s);
+      if (gear) { c.strokeStyle = "#333"; c.lineWidth = Math.max(1.5, s * 0.05); c.beginPath(); c.moveTo(1.2 * s, 0.24 * s); c.lineTo(1.2 * s, 0.48 * s); c.moveTo(-0.15 * s, 0.25 * s); c.lineTo(-0.15 * s, 0.5 * s); c.stroke(); c.fillStyle = "#222"; [[1.2, 0.52], [-0.15, 0.54]].forEach(([wx, wy]) => { c.beginPath(); c.arc(wx * s, wy * s, 0.08 * s, 0, 7); c.fill(); }); }
+      c.restore();
+    }
+    function drawPilot() {
+      const { w, h, d } = fit(pc), c = pctx; c.setTransform(d, 0, 0, d, 0, 0);
+      const P = PL || { x: -4300, alt: 290, vs: 0, gear: false, t: 0 }, gy = h * 0.8;
+      const g = c.createLinearGradient(0, 0, 0, gy); g.addColorStop(0, "#3d8fe0"); g.addColorStop(1, "#bfe3ff"); c.fillStyle = g; c.fillRect(0, 0, w, gy);
+      c.fillStyle = "rgba(255,255,255,.8)"; for (let i = 0; i < 5; i++) { const cx = ((i * 260 - P.x * 0.04) % (w + 200) + w + 200) % (w + 200) - 100, cy = 30 + (i * 37) % (gy * 0.4); c.beginPath(); c.ellipse(cx, cy, 40, 11, 0, 0, 7); c.ellipse(cx + 22, cy - 7, 26, 10, 0, 0, 7); c.fill(); }
+      c.fillStyle = "#6f8fa8"; c.beginPath(); c.moveTo(0, gy); for (let x = 0; x <= w + 40; x += 40) { const wx = x + P.x * 0.08; c.lineTo(x, gy - 22 - Math.abs(Math.sin(wx * 0.013)) * 30 - Math.sin(wx * 0.031) * 8); } c.lineTo(w, gy); c.fill();
+      c.fillStyle = "#4a8a3a"; c.fillRect(0, gy, w, h - gy);
+      const sx = w / 1400, px = w * 0.28, ky = (gy - 100) / Math.sqrt(330), py = gy - Math.sqrt(Math.max(0, P.alt)) * ky;
+      const X = (wx) => px + (wx - P.x) * sx;
+      c.fillStyle = "#3b3f46"; c.fillRect(X(0), gy, RWY * sx, (h - gy) * 0.5);
+      c.fillStyle = "#ffffff"; for (let wx = 60; wx < RWY - 60; wx += 120) c.fillRect(X(wx), gy + (h - gy) * 0.23, 50 * sx, 2);
+      for (let i = 0; i < 6; i++) c.fillRect(X(8), gy + 2 + i * (h - gy) * 0.075, 30 * sx, 2);
+      c.fillStyle = "#ffe066"; for (let wx = -600; wx < 0; wx += 60) { c.beginPath(); c.arc(X(wx), gy + 4, 2, 0, 7); c.fill(); }
+      c.fillStyle = "#c33"; c.fillRect(X(RWY), gy, 3, (h - gy) * 0.5);
+      c.fillStyle = "#d8d2c4"; c.fillRect(X(RWY * 0.45), gy - 26, 14, 26); c.fillStyle = "#264a6e"; c.fillRect(X(RWY * 0.45) - 6, gy - 34, 26, 10);
+      const ang = clamp(-(P.vs / 74) - (P.hold ? 0.07 : 0) + (P.res === "crash" ? 0.15 : 0), -0.35, 0.3);
+      c.fillStyle = "rgba(0,0,0,.18)"; c.beginPath(); c.ellipse(px, gy + 3, 34, 4, 0, 0, 7); c.fill();
+      sidePlane(c, px, py - (P.alt <= 0 ? 12 : 0), ang, clamp(w / 24, 14, 26), P.gear);
+      // instruments
+      c.fillStyle = "rgba(8,16,30,.7)"; c.fillRect(8, 8, 128, 76); c.fillStyle = "#fff"; c.font = "800 12px Manrope, sans-serif"; c.textAlign = "left";
+      const vsBad = P.vs < -4.6 ? "#ff6b7a" : P.vs < -2.4 ? "#ffd36b" : "#7dffa0";
+      c.fillText(`Высота ${Math.round(P.alt)} м`, 16, 26); c.fillStyle = vsBad; c.fillText(`Снижение ${P.vs.toFixed(1)} м/с`, 16, 44);
+      c.fillStyle = "#fff"; c.fillText(P.x < 0 ? `До полосы ${(-P.x / 1000).toFixed(1)} км` : `Полоса ${Math.round(P.x)}/${RWY} м`, 16, 62); c.fillStyle = P.gear ? "#7dffa0" : "#ff6b7a"; c.fillText(P.gear ? "Шасси выпущены" : "Шасси убраны!", 16, 78);
+      // glide-slope lights: 2 white + 2 red means on the 3° path
+      const ideal = Math.max(0, -P.x * 0.0524), dev = P.alt - ideal, whites = P.x >= 0 ? 2 : dev > 35 ? 4 : dev > 12 ? 3 : dev > -12 ? 2 : dev > -35 ? 1 : 0;
+      c.fillStyle = "rgba(8,16,30,.7)"; c.fillRect(w - 92, 8, 84, 26);
+      for (let i = 0; i < 4; i++) { c.beginPath(); c.arc(w - 80 + i * 20, 21, 6, 0, 7); c.fillStyle = i < whites ? "#ffffff" : "#ff3b3b"; c.fill(); }
+      if (PL && PL.res) { c.fillStyle = "rgba(0,0,0,.45)"; c.fillRect(0, h * 0.38, w, 44); c.fillStyle = "#fff"; c.textAlign = "center"; c.font = "900 20px Manrope, sans-serif"; c.fillText({ soft: "🧈 МЯГКАЯ ПОСАДКА", hard: "😬 ЖЁСТКО, НО СЕЛИ", crash: "💥 АВАРИЯ", go: "🔄 НА ВТОРОЙ КРУГ" }[PL.res], w / 2, h * 0.38 + 29); }
+      else if (!PL) { c.fillStyle = "rgba(0,0,0,.4)"; c.fillRect(0, h * 0.38, w, 40); c.fillStyle = "#fff"; c.textAlign = "center"; c.font = "900 16px Manrope, sans-serif"; c.fillText("Выбери рейс ниже и садись сам!", w / 2, h * 0.38 + 26); }
+    }
+
+    /* ---------- loop ---------- */
+    function frame(ts) {
+      raf = 0; if (!visible) return;
+      const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+      if (S) {
+        const now = Date.now();
+        if (ev && now > ev.until) { ev = null; evNext = now + 50000 + Math.random() * 60000; }
+        if (!ev && evNext && now > evNext) { const ks = Object.keys(EVS), k = ks[(Math.random() * ks.length) | 0]; ev = { k, until: now + 60000 }; msg(EVS[k] + " — на 60 секунд!"); }
+        tick(dt); pilotStep(dt);
+        if (tab === "map") drawMap(dt);
+        if (tab === "pilot") drawPilot();
+        if (now > topAt) { topAt = now + 400; renderStat(); }
+        if (now > saveAt) { saveAt = now + 5000; save(); }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    /* ---------- input ---------- */
+    $("#vaWrap").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b || b.disabled) return; const d = b.dataset;
+      if (d.hub) { S = fresh(d.hub); const c = CITY[d.hub]; view = { lon: c[3], lat: c[2], z: 3.5, set: 1 }; tab = "map"; evNext = Date.now() + 45000; save(); render(); msg(`✈️ V3A International основана в городе ${cn(d.hub)}! Открой первый рейс: нажми хаб, потом соседний город.`); Hero.say("v3a", "start", "Своя авиакомпания!"); return; }
+      if (!S) return;
+      if (d.tab) { tab = d.tab; if (tab !== "routes") resetArm = false; return render(); }
+      if (d.zoom != null) { const z = +d.zoom; if (z === 0) { const c = CITY[S.hub]; view = { lon: c[3], lat: c[2], z: 3.5, set: 1 }; } else view.z = clamp(view.z * (z > 0 ? 1.5 : 1 / 1.5), 1, 12); return drawMap(0); }
+      if (d.open) return openRoute();
+      if (d.buy) { const P = PLANES[d.buy]; if (P.lvl > S.rank || S.money < P.price) return; S.money -= P.price; S.planes.push({ id: S.nid++, type: d.buy, route: 0, t: 0, dir: 0 }); beep(880, 0.1); save(); msg(`🛩 Куплен ${P.n}! Поставь его на рейс в списке флота.`); Hero.say("v3a", "good", `Новый ${P.n}!`); return render(); }
+      if (d.sell) { const i = S.planes.findIndex((p) => p.id === +d.sell); if (i < 0) return; const P = PLANES[S.planes[i].type]; S.money += Math.round(P.price * 0.6); S.planes.splice(i, 1); save(); msg(`Продан ${P.n} за ${money(P.price * 0.6)}.`); return render(); }
+      if (d.price) { const [id, k] = d.price.split(":"), r = routeById(+id); if (r) { r.price = k; save(); } return render(); }
+      if (d.close) { const r = routeById(+d.close); if (!r) return; S.planes.forEach((p) => { if (p.route === r.id) p.route = 0; }); S.routes = S.routes.filter((q) => q !== r); selA = selB = null; save(); msg(`Рейс ${rname(r)} закрыт, самолёты в ангаре.`); return render(); }
+      if (d.fly != null) return startPilot(+d.fly);
+      if (d.reset) { if (!resetArm) { resetArm = true; return render(); } resetArm = false; S = null; PL = null; store.set(KEY, null); selA = selB = null; tab = "map"; return render(); }
+    });
+    $("#vaWrap").addEventListener("change", (e) => {
+      const s = e.target.closest("[data-assign]"); if (!s || !S) return;
+      const p = S.planes.find((q) => q.id === +s.dataset.assign), rid = +s.value, r = routeById(rid);
+      if (!p) return;
+      if (r && km(r.a, r.b) > PLANES[p.type].range) return render();
+      p.route = r ? rid : 0; p.t = 0; p.dir = 0; save();
+      msg(r ? `✈️ ${PLANES[p.type].n} летает по рейсу ${rname(r)}.` : `${PLANES[p.type].n} в ангаре.`); render();
+    });
+    const hold = (v) => { if (PL && !PL.res) { PL.hold = v; $("#vaPull").setAttribute("aria-pressed", String(v)); } };
+    const gear = () => { if (PL && !PL.res) { PL.gear = !PL.gear; beep(PL.gear ? 300 : 240, 0.15); renderPilotList(); } };
+    $("#vaPull").addEventListener("pointerdown", (e) => { e.preventDefault(); hold(true); });
+    ["pointerup", "pointerleave", "pointercancel"].forEach((t) => { $("#vaPull").addEventListener(t, () => hold(false)); pc.addEventListener(t, () => hold(false)); });
+    pc.addEventListener("pointerdown", (e) => { e.preventDefault(); hold(true); });
+    $("#vaGear").addEventListener("click", gear);
+    window.addEventListener("keydown", (e) => { if (!visible || tab !== "pilot") return; if (e.key === " " || e.key === "ArrowUp") { e.preventDefault(); hold(true); } if (e.key === "g" || e.key === "п") gear(); });
+    window.addEventListener("keyup", (e) => { if (visible && (e.key === " " || e.key === "ArrowUp")) hold(false); });
+    let drag = null;
+    cv.addEventListener("pointerdown", (e) => { const r = cv.getBoundingClientRect(); drag = { x: e.clientX, y: e.clientY, lon: view.lon, lat: view.lat, moved: false, px: e.clientX - r.left, py: e.clientY - r.top }; try { cv.setPointerCapture(e.pointerId); } catch (_) { /* optional */ } });
+    cv.addEventListener("pointermove", (e) => { if (!drag) return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.hypot(dx, dy) > 6) drag.moved = true; const s = MW / 360 * view.z; view.lon = clamp(drag.lon - dx / s, -180, 180); view.lat = clamp(drag.lat + dy / s, -55, 78); });
+    cv.addEventListener("pointerup", () => { if (drag && !drag.moved) tapMap(drag.px, drag.py); drag = null; });
+    cv.addEventListener("wheel", (e) => { e.preventDefault(); view.z = clamp(view.z * (e.deltaY < 0 ? 1.15 : 1 / 1.15), 1, 12); }, { passive: false });
+    if (/vadebug/.test(location.hash)) window.__va = { get S() { return S; }, get PL() { return PL; }, set ts(v) { S.ts = v; }, catchUp, leg, km, startPilot, tapMap, cxy, setTab(t) { tab = t; render(); } };
+    return {
+      enter() {
+        visible = true;
+        if (S) { const c = CITY[S.hub]; if (!view.set) view = { lon: c[3], lat: c[2], z: 3.5, set: 1 }; const got = catchUp(); if (got) msg(`🌙 Пока тебя не было, самолёты заработали <b>${money(got)}</b>.`); evNext = evNext || Date.now() + 45000; save(); }
+        render(); last = 0; if (!raf) raf = requestAnimationFrame(frame);
+        Hero.say("v3a", "start", S ? "С возвращением, капитан!" : "Основываем авиакомпанию!");
+      },
+      leave() { visible = false; if (PL && !PL.res) PL = null; if (raf) cancelAnimationFrame(raf); raf = 0; save(); },
+      key() {},
+      best: () => (S && S.planes.length ? `${S.planes.length} ✈` : "—"),
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -15192,7 +15669,7 @@ div.sc-pl { cursor: default; }
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -15449,6 +15926,7 @@ div.sc-pl { cursor: default; }
       { go: "tc", ico: "🏬", t: "ЧТО В ТЦ?", s: "Напиши «Игрушки» — и в твоём торговом центре откроется магазин игрушек!", bg: "linear-gradient(135deg,#3a8ad8,#ff8a3d)", fx: ["🏬", "🛍️", "🧸", "🍕"] },
       { go: "cod", ico: "🎖️", t: "CALL OF V3", s: "Роботы атакуют базу! Автомат, снайперка и волны врагов — в 3D.", bg: "linear-gradient(135deg,#3a4a2a,#c9a06a)", fx: ["🎖️", "🔥", "🤖", "💥"] },
       { go: "microscop", ico: "🔬", t: "MICROSCOP", s: "Загляни в микромир: инфузории, тихоходки, бактерии в чашках Петри!", bg: "linear-gradient(135deg,#0e3a4a,#2a8a6a)", fx: ["🔬", "🦠", "🧫", "🧪"] },
+      { go: "v3a", ico: "✈️", t: "V3A INTERNATIONAL", s: "Своя авиакомпания: самолёты, рейсы по всему миру и посадка своими руками!", bg: "linear-gradient(135deg,#1b5fb8,#4fa3ff)", fx: ["✈️", "🌍", "🛫", "🛬"] },
       { go: "soccerstar", ico: "⭐", t: "SOCCER STAR", s: "Начни карьеру в 17 лет, выбирай клубы сам и заверши её легендой с Золотым мячом!", bg: "linear-gradient(135deg,#16803a,#c89a2a)", fx: ["⚽", "⭐", "🏆", "🏅"] },
       { go: "voicerec", ico: "🎙", t: "VOICE REC", s: "Озвучь мемы своим голосом: «Поехали!», «Шок! Сенсация!» — и получи 3 звезды!", bg: "linear-gradient(135deg,#ff2d55,#5a1aa8)", fx: ["🎙", "😂", "⭐", "🎬"] },
       { go: "morger", ico: "🧔", t: "MORGER", s: "Морджер убегает от монстров Графа Мрака! 5 глав сюжета — успеешь к Башне Рассвета?", bg: "linear-gradient(135deg,#3a0f2a,#12081c)", fx: ["🧔", "👹", "🌅", "🏃"] },
@@ -15492,7 +15970,7 @@ div.sc-pl { cursor: default; }
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -15520,7 +15998,7 @@ div.sc-pl { cursor: default; }
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", v3a: "V3A International", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -18367,8 +18845,8 @@ div.sc-pl { cursor: default; }
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, v3a: V3A };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -18405,6 +18883,7 @@ div.sc-pl { cursor: default; }
     $("#hubVoicerec").textContent = VoiceRec.best();
     $("#hubSoccerstar").textContent = SoccerStar.best();
     $("#hubMicroscop").textContent = Microscop.best();
+    $("#hubV3a").textContent = V3A.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -18424,7 +18903,7 @@ div.sc-pl { cursor: default; }
     if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop" || name === "v3a";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -19609,6 +20088,7 @@ div.sc-pl { cursor: default; }
     if (document.hidden && current === "voicerec") VoiceRec.leave();
     if (document.hidden && current === "soccerstar") SoccerStar.leave();
     if (document.hidden && current === "microscop") Microscop.leave();
+    if (document.hidden && current === "v3a") V3A.leave();
     if (document.hidden && current === "enth") Enth.leave();
     if (!document.hidden && current === "enth") Enth.enter();
     if (document.hidden && current === "cash") Cash.leave();
