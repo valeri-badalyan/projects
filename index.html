@@ -247,8 +247,11 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
   padding: 6px 12px; border-radius: 10px; border: 2px solid var(--line); background: rgba(18,19,42,.85); color: var(--fg); font-weight: 800; cursor: pointer;
 }
 .ghost-wrap:not(.full) .ghost-close { display: none; }
-.ghost-wrap.full ~ .ghost-hide-when-full { visibility: hidden; }
+.ghost-wrap.full ~ .ghost-hide-when-full, .ghost-wrap.full ~ .v3a-hide-when-full { visibility: hidden; }
 #ghost .gtitle { font-size: 15px; }
+#v3aWrap { background: #17161d; }
+#v3aWrap iframe { background: #17161d; }
+#v3aWrap .ghost-close { top: auto; right: auto; left: 50%; transform: translateX(-50%); bottom: calc(8px + env(safe-area-inset-bottom, 0px)); padding: 4px 10px; font-size: 13px; opacity: .85; }
 /* ---------- Phone + V3 Snap ---------- */
 .phone-wrap { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(8,8,20,.72); padding: 12px; }
 .phone { position: relative; width: min(340px, 100%); height: min(700px, calc(100vh - 24px)); border-radius: 38px; background: #0b0b12; border: 3px solid #3a3a52; box-shadow: 0 20px 60px rgba(0,0,0,.6), inset 0 0 0 6px #000; padding: 10px; display: flex; flex-direction: column; overflow: hidden; }
@@ -1717,6 +1720,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubGhost">0</span></span>
       </button>
+      <button class="cart" data-go="v3a" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="v3asky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb35c"/><stop offset="1" stop-color="#ff3d7f"/></linearGradient></defs><rect width="64" height="64" fill="url(#v3asky)"/><rect x="0" y="22" width="64" height="20" fill="#3b3a44"/><rect x="4" y="31" width="10" height="2" fill="#e9c24a"/><rect x="22" y="31" width="10" height="2" fill="#e9c24a"/><rect x="40" y="31" width="10" height="2" fill="#e9c24a"/><rect x="2" y="2" width="18" height="16" fill="#8e6c8a"/><rect x="24" y="4" width="16" height="14" fill="#5f7c8f"/><rect x="44" y="2" width="18" height="16" fill="#c9785d"/><rect x="2" y="46" width="22" height="16" fill="#d8a26b"/><rect x="40" y="46" width="22" height="16" fill="#7f9468"/><rect x="18" y="25" width="22" height="11" rx="3" fill="#e2242c"/><rect x="24" y="27" width="10" height="7" rx="1" fill="#1d2a3a"/><rect x="38" y="26" width="2" height="3" fill="#fff6c8"/><rect x="38" y="32" width="2" height="3" fill="#fff6c8"/><text x="32" y="60" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-size="13" fill="#fff" stroke="#000" stroke-width="1.5" paint-order="stroke">V3A</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">V3A</span>
+          <span class="cart-desc">Открытый город Нова-Вэ: угоны, погони с полицией, ночные гонки и шесть миссий от Арно.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Деньги</span><span class="stat-val" id="hubV3a">0</span></span>
+      </button>
       <button class="cart" data-go="geo" type="button">
         <span class="cart-art" aria-hidden="true">
           <svg viewBox="0 0 64 64"><defs><linearGradient id="geobg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a1c9e"/><stop offset="1" stop-color="#0f6fb8"/></linearGradient></defs><rect width="64" height="64" fill="url(#geobg)"/><rect x="0" y="46" width="64" height="18" fill="#0c0a24"/><path d="M0 46 H64" stroke="#5ce1e6" stroke-width="2"/><g transform="rotate(-20 20 34)"><rect x="12" y="26" width="16" height="16" rx="2" fill="#ffd84d" stroke="#fff" stroke-width="2"/><rect x="16" y="31" width="3" height="3" fill="#12132a"/><rect x="22" y="31" width="3" height="3" fill="#12132a"/></g><path d="M36 46 L42 34 L48 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><path d="M48 46 L54 34 L60 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><g fill="#ffd84d" opacity=".7"><rect x="4" y="38" width="3" height="3"/><rect x="0" y="34" width="2" height="2"/></g></svg>
@@ -2228,6 +2241,26 @@ div.sc-pl { cursor: default; }
       <a class="btn ghost" id="ghostOpen" href="games/ghost-of-leyendas.html" target="_blank" rel="noopener">Открыть отдельно</a>
     </div>
     <p class="hint ghost-hide-when-full">Нажми на игру, чтобы управлять с клавиатуры. На телефоне кнопки управления — под полем игры. Каждые 1000 очков нового рекорда — +10 монет.</p>
+  </section>
+
+  <!-- ===== V3A (separate page in a frame) ===== -->
+  <section id="v3a" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3A</div>
+      <div class="chips">
+        <div class="chip hi"><span>Рекорд</span><b id="v3aBest">$0</b></div>
+      </div>
+    </div>
+    <div class="ghost-wrap" id="v3aWrap">
+      <button class="ghost-close" type="button" id="v3aClose">✕ Свернуть</button>
+      <iframe id="v3aFrame" title="V3A"></iframe>
+    </div>
+    <div class="row-actions v3a-hide-when-full">
+      <button class="btn" type="button" id="v3aFull">На весь экран</button>
+      <a class="btn ghost" href="games/v3a.html" target="_blank" rel="noopener">Открыть отдельно</a>
+    </div>
+    <p class="hint v3a-hide-when-full">Лучше всего играть на весь экран. Каждая заработанная тысяча долларов сверх рекорда — +10 монет.</p>
   </section>
 
   <!-- ===== Events ===== -->
@@ -6180,6 +6213,44 @@ div.sc-pl { cursor: default; }
       leave() { setFull(false); sync(); },
       key(e) { if (e.key === "Escape" && wrap.classList.contains("full")) setFull(false); },
       best: () => best(),
+    };
+  })();
+
+  /* ================= V3A ================= */
+  // Open-city game on its own page (games/v3a.html) shown in a frame, like Ghost of Leyendas.
+  const V3A = (() => {
+    const SRC = "games/v3a.html";
+    const frame = $("#v3aFrame"), wrap = $("#v3aWrap");
+    let loaded = false, seenBest = null;
+    // the game keeps its best cash total in this browser's storage under "v3a-best"
+    const best = () => { try { return +localStorage.getItem("v3a-best") || 0; } catch (e) { return 0; } };
+    function sync() {
+      const b = best();
+      $("#v3aBest").textContent = "$" + b.toLocaleString("ru-RU");
+      if (seenBest === null) seenBest = store.get("v3aPaid", 0);
+      const paid = Math.floor(seenBest / 1000), now = Math.floor(b / 1000);
+      if (now > paid) {
+        Hero.earn((now - paid) * 10);
+        Hero.say("v3a", "win", `Новый рекорд в V3A! +${(now - paid) * 10} монет`);
+        seenBest = b; store.set("v3aPaid", b); updateHub();
+      }
+    }
+    function setFull(on) {
+      wrap.classList.toggle("full", on);
+      $("#cop").hidden = on;
+      if (on) { try { frame.focus(); } catch (e) {} }
+    }
+    $("#v3aFull").addEventListener("click", () => setFull(true));
+    $("#v3aClose").addEventListener("click", () => setFull(false));
+    setInterval(() => { if (!$("#v3a").hidden) sync(); }, 2000);
+    return {
+      enter() {
+        if (!loaded) { frame.src = SRC; loaded = true; Hero.say("v3a", "start", "Нова-Вэ ждёт. Иди к розовой метке V у бара!"); }
+        sync();
+      },
+      leave() { setFull(false); sync(); },
+      key(e) { if (e.key === "Escape" && wrap.classList.contains("full")) setFull(false); },
+      best: () => "$" + best().toLocaleString("ru-RU"),
     };
   })();
 
@@ -15520,7 +15591,7 @@ div.sc-pl { cursor: default; }
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", v3a: "V3A", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -18367,8 +18438,8 @@ div.sc-pl { cursor: default; }
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, v3a: V3A, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "v3a", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -18380,6 +18451,7 @@ div.sc-pl { cursor: default; }
     $("#hubVr").textContent = VR.best();
     $("#hubSonic").textContent = Sonic.best();
     $("#hubGhost").textContent = Ghost.best();
+    $("#hubV3a").textContent = V3A.best();
     $("#hubGeo").textContent = Geo.best();
     $("#hubLinks").textContent = Links.best();
     $("#hubFix").textContent = Fix.best();
@@ -19587,6 +19659,7 @@ div.sc-pl { cursor: default; }
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
     if (e.key === "Escape" && current === "ghost" && $("#ghostWrap").classList.contains("full")) { GAMES.ghost.key(e); return; }
+    if (e.key === "Escape" && current === "v3a" && $("#v3aWrap").classList.contains("full")) { GAMES.v3a.key(e); return; }
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
     if (GAMES[current]) GAMES[current].key(e);
   });
