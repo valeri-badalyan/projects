@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Розовая метка <b style="color:var(--neon)">V</b> у бара — там Арно выдаёт работу.</p>
+      <p class="prog">Оружие лежит в порту, аптечки — в парках и у больницы, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -590,7 +590,10 @@ function endMission() {
   M.active = null; M.steps = null; M.hasTime = false; M.car = null; M.units = [];
   $("mission").hidden = true;
 }
+// Free roam: the mission code stays in the file but is switched off.
+const MISSIONS = false;
 function updMission(dt) {
+  if (!MISSIONS) return;
   if (!M.active) {
     if (!player.inCar && !player.dead && dist(player, places.bar) < 34 && state === "play" && !barLock) { barLock = true; openCard(); }
     if (dist(player, places.bar) > 70) barLock = false;
@@ -1055,7 +1058,7 @@ function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
 function progressText() {
-  return save.mission >= STORY.length ? `Сюжет пройден · работ выполнено: ${save.jobs} · ${fmt(money)}` : `Миссия ${save.mission + 1} из ${STORY.length} · ${fmt(money)}`;
+  return "Свободная игра · " + fmt(money);
 }
 function toggleMute() { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.55; $("muteBtn").setAttribute("aria-pressed", String(muted)); $("muteBtn").style.opacity = muted ? 0.45 : 1; }
 $("pauseBtn").addEventListener("click", () => (state === "play" ? pauseGame() : state === "pause" && resume()));
@@ -1069,11 +1072,11 @@ function bootStart() {
   const has = save.mission > 0 || save.money > 0;
   $("playBtn").textContent = has ? "Продолжить" : "Играть";
   $("newBtn").hidden = !has;
-  $("startProg").textContent = has ? progressText() : "Шесть сюжетных миссий, полиция, угоны и гонки по ночному городу.";
+  $("startProg").textContent = has ? progressText() : "Свободный город без миссий: угоняй машины, гоняй и уходи от полиции.";
   $("keysHelp").hidden = touchMode;
 }
-$("playBtn").addEventListener("click", () => { initAudio(); if (!started) { newWorld(false); started = true; } resume(); if (save.mission === 0) toast("Иди к розовой метке V — тебя ждёт Арно", 4); });
-$("newBtn").addEventListener("click", () => { initAudio(); newWorld(true); started = true; resume(); toast("Иди к розовой метке V — тебя ждёт Арно", 4); });
+$("playBtn").addEventListener("click", () => { initAudio(); if (!started) { newWorld(false); started = true; } resume(); if (save.mission === 0) toast("Город твой. Угоняй машины и уходи от полиции", 4); });
+$("newBtn").addEventListener("click", () => { initAudio(); newWorld(true); started = true; resume(); toast("Город твой. Угоняй машины и уходи от полиции", 4); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state === "play") pauseGame(); });
 
 /* ================= update ================= */
@@ -1444,7 +1447,7 @@ function render() {
   // trees in view
   const tx0 = Math.floor(view.x / T) - 1, tx1 = Math.floor((view.x + view.w) / T) + 1, ty0 = Math.floor(view.y / T) - 1, ty1 = Math.floor((view.y + view.h) / T) + 1;
   // markers
-  if (!M.active) drawMarker(places.bar.x, places.bar.y, "#ff3d7f", "V");
+  if (MISSIONS && !M.active) drawMarker(places.bar.x, places.bar.y, "#ff3d7f", "V");
   const tg = stepTarget();
   if (tg) {
     const s2 = M.steps[M.i];
@@ -1500,7 +1503,7 @@ function render() {
     ctx.globalCompositeOperation = "source-over";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (!M.active) drawEdgeArrow(places.bar, "#ff3d7f");
+  if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (MISSIONS && !M.active) drawEdgeArrow(places.bar, "#ff3d7f");
   if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
   drawMini();
 }
@@ -1518,7 +1521,7 @@ function drawMini() {
   const f = Math.floor(now * 4) % 2;
   for (const c of cars) if (c.type === "cop" && c.driver === "cop" && wanted > 0) dot(c.x, c.y, 3, f ? "#ff2d3d" : "#3d8bff");
   for (const p of people) if (p.kind === "cop" && !p.dead && wanted > 0) dot(p.x, p.y, 2, "#3d8bff");
-  if (!M.active) { dot(places.bar.x, places.bar.y, 5, "#ff3d7f"); }
+  if (MISSIONS && !M.active) { dot(places.bar.x, places.bar.y, 5, "#ff3d7f"); }
   const tg = stepTarget();
   if (tg) { const s = M.steps[M.i]; if (s.t === "kill") s.units.forEach((u) => !u.dead && dot(u.x, u.y, 3, "#ff3d3d")); else dot(tg.x, tg.y, 5, "#ffd23d"); }
   dot(places.hosp.x, places.hosp.y, 3, "#ffffff");
@@ -1765,7 +1768,7 @@ function sync3d() {
   for (const [id, o] of G3.ppl) if (!seen.has(id)) { G3.scene.remove(o.g); G3.ppl.delete(id); }
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
-  G3.mkBar.visible = started && !M.active; G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
+  G3.mkBar.visible = MISSIONS && started && !M.active; G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
   G3.mkT.visible = G3.mkN.visible = false;
   if (tg && (s2.t === "goto" || s2.t === "cps")) {
     const rr = s2.t === "cps" ? 60 : s2.r && s2.r > 100 ? 60 : 32;
@@ -1870,7 +1873,7 @@ function render3d(t) {
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
   if (started) {
-    const tg = stepTarget(), t2 = tg || (!M.active ? places.bar : null);
+    const tg = stepTarget(), t2 = tg || (MISSIONS && !M.active ? places.bar : null);
     if (t2) { const [sx, sy] = proj3d(t2.x, t2.y, 20); edgeArrowAt(sx, sy, tg ? "#ffd23d" : "#ff3d7f", t2); }
     if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
   }
