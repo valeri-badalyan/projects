@@ -163,7 +163,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Оружейный магазин — у оранжевой метки <b style="color:var(--warn)">$</b> рядом со стартом. Аптечки лежат в парках и у больницы, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -182,10 +182,10 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 
   <div class="ov dim" id="shop" hidden>
     <div class="card">
-      <span class="who">Оружейный «V3»</span>
-      <h3>Магазин оружия</h3>
+      <span class="who" id="shopWho">Оружейный «V3»</span>
+      <h3 id="shopTitle">Магазин оружия</h3>
       <p class="prog">У тебя: <b id="shopMoney" style="color:var(--cash)">$0</b></p>
-      <p class="bonus">С каждой покупкой ты получаешь +$6&nbsp;678</p>
+      <p class="bonus" id="shopBonus">С каждой покупкой ты получаешь +$6&nbsp;678</p>
       <div class="shop-list" id="shopList"></div>
       <button type="button" class="btn alt" id="shopOut">Выйти</button>
     </div>
@@ -275,14 +275,15 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
+const SPECIAL = { "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
   const cx = (x0 + 3) * T, cy = (y0 + 3) * T;
   if (kind === "city") cityBlock(ix, iy);
   else if (kind === "bar") { addB(ix, iy, 4, 2, "bar", "#4a2a4f"); fill(ix, iy + 2, 4, 2, LOT); places.bar = { x: cx, y: (y0 + 4) * T }; places.barLot = { x: x0, y: y0 }; }
-  else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; }
+  else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
+  else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
   else if (kind === "hosp") { addB(ix, iy, 4, 4, "hosp", "#e9ecef"); places.hosp = { x: cx, y: (y0 + 5.5) * T }; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 5.5) * T, kind: "hp" }); }
   else if (kind === "police") { addB(ix, iy, 4, 4, "police", "#2c3e66"); places.police = { x: cx, y: (y0 + 5.5) * T }; pickupSpots.push({ x: cx + T * 1.5, y: (y0 + 5.5) * T, kind: "armor" }); }
   else if (kind === "docks" || kind === "docks2") {
@@ -320,7 +321,7 @@ const mm = document.createElement("canvas"); mm.width = mm.height = N * MMS;
   const g = mm.getContext("2d");
   const col = { [ROAD]: "#4a4955", [WALK]: "#8f8577", [GRASS]: "#5c8a49", [PLAZA]: "#a99b84", [LOT]: "#5c5b64" };
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const t = tile(x, y); if (t !== BLD) { g.fillStyle = col[t]; g.fillRect(x * MMS, y * MMS, MMS, MMS); } }
-  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
+  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
 }
 
 /* ================= world helpers ================= */
@@ -491,7 +492,7 @@ function updHud() {
   if (hudCache.ar !== ar) { hudCache.ar = ar; $("arBar").style.width = ar + "%"; }
   let w;
   if (player.inCar) w = player.inCar.t.name + " · " + Math.max(0, player.inCar.hp | 0) + "%";
-  else { const k = player.weapons[player.w]; w = WEAP[k].name + (k === "fist" ? "" : " · " + player.ammo[k]); }
+  else { const k = player.weapons[player.w]; w = WEAP[k].name + (k === "fist" ? "" : " · " + player.ammo[k]) + (player.boost > 0 ? " · энергия " + Math.ceil(player.boost) + " с" : ""); }
   if (hudCache.weap !== w) { hudCache.weap = w; $("weap").textContent = w; }
   const mode = player.inCar ? "car" : "foot";
   if (hudCache.mode !== mode) { hudCache.mode = mode; $("pad").dataset.mode = mode; $("bEnter").textContent = player.inCar ? "ВЫЙТИ" : "СЕСТЬ"; }
@@ -611,47 +612,78 @@ function endMission() {
 }
 // Free roam: the mission code stays in the file but is switched off.
 const MISSIONS = false;
-/* gun shop (takes the bar's place in free roam) */
+/* shops (free roam): guns where the bar was, a car dealer in the garage, groceries next door */
 const SHOP_BONUS = 6678;
-const SHOP = [
-  { id: "ammo", name: "Патроны", info: "Пистолет +30, узи +60", price: 60 },
-  { id: "pistol", name: "Пистолет", info: "С обоймой на 30 патронов", price: 300 },
-  { id: "smg", name: "Узи", info: "Скорострельный, 90 патронов", price: 900 },
+const hasGun = () => player.weapons.some((w) => w !== "fist");
+const CAR_COLS = ["#e2242c", "#2f3e66", "#f2f2f2", "#1f1f24", "#ffb000", "#00b3a4", "#6b4a8a", "#5b7a4c"];
+function carSlots() { const L = places.garageLot, out = []; for (const row of [3.5, 4.5]) for (const col of [1.5, 4.5]) out.push({ x: (L.x + col) * T, y: (L.y + row) * T }); return out; }
+function ownCars() { return save.cars || (save.cars = []); }
+function placeOwned(o, slot) { const c = mkCar(o.type, slot.x, slot.y, -Math.PI / 2, o.col); c.keep = true; c.ownKey = o.k; return c; }
+function buyCar(type) {
+  const o = { k: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), type, col: pick(CAR_COLS) };
+  ownCars().push(o);
+  let slot = carSlots().find((sl) => !cars.some((c) => !c.wreck && Math.hypot(c.x - sl.x, c.y - sl.y) < 36));
+  if (!slot) slot = farRoad(places.garage, 64, 400);
+  placeOwned(o, slot);
+}
+const SHOPS = [
+  { id: "guns", who: "Оружейный «V3»", title: "Магазин оружия", col: "#ffb000", hex: 0xffb000, label: "$", at: () => places.bar, bonus: SHOP_BONUS, items: [
+    { id: "ammo", name: "Патроны", info: "Пистолет +30, узи +60", price: 60, no: () => (hasGun() ? "" : "Сначала купи пистолет или узи"),
+      act: () => { if (player.weapons.includes("pistol")) player.ammo.pistol += 30; if (player.weapons.includes("smg")) player.ammo.smg += 60; } },
+    { id: "pistol", name: "Пистолет", info: "С обоймой на 30 патронов", price: 300, act: () => giveWeapon("pistol", 30) },
+    { id: "smg", name: "Узи", info: "Скорострельный, 90 патронов", price: 900, act: () => giveWeapon("smg", 90) },
+  ] },
+  { id: "cars", who: "Автосалон «Нова»", title: "Магазин машин", col: "#4d93ff", hex: 0x4d93ff, label: "А", at: () => places.garage, bonus: 0,
+    note: "Машина встанет на стоянку у салона и останется твоей. Мест — 4.",
+    items: [["compact", 800, "Маленький и юркий"], ["sedan", 1500, "Надёжная городская машина"], ["van", 2000, "Большой и крепкий"], ["taxi", 1800, "Жёлтое такси с шашечками"], ["sport", 5000, "Самый быстрый в городе"]].map(([type, price, info]) => ({
+      id: type, name: CT[type].name, info, price, no: () => (ownCars().length >= 4 ? "Стоянка заполнена — 4 машины" : ""),
+      act: () => { buyCar(type); toast(CT[type].name + " ждёт тебя на стоянке", 2.6); }, quiet: true })) },
+  { id: "food", who: "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
+    note: "Еда лечит, энергетик даёт быстрый бег на 30 секунд.",
+    items: [
+      { id: "water", name: "Вода", info: "+10 здоровья", price: 5, heal: 10 },
+      { id: "shawarma", name: "Шаурма", info: "+35 здоровья", price: 15, heal: 35 },
+      { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
+      { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
+    ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
 ];
-let shopLock = true;
+let shopLock = "guns", shopNow = null;
 function renderShop() {
+  const sh = shopNow;
+  $("shopWho").textContent = sh.who; $("shopTitle").textContent = sh.title;
   $("shopMoney").textContent = fmt(money);
+  const bn = $("shopBonus"); bn.hidden = !sh.bonus && !sh.note;
+  bn.innerHTML = ""; bn.textContent = sh.bonus ? "С каждой покупкой ты получаешь +" + fmt(sh.bonus) : sh.note || "";
+  bn.style.color = sh.bonus ? "" : "var(--muted)";
   const list = $("shopList"); list.innerHTML = "";
-  for (const it of SHOP) {
+  for (const it of sh.items) {
     const b = document.createElement("button"); b.type = "button"; b.className = "shop-item"; b.id = "buy-" + it.id;
     const nm = document.createElement("span"); nm.textContent = it.name;
     const pr = document.createElement("b"); pr.textContent = fmt(it.price);
-    const sm = document.createElement("small"); sm.textContent = it.info;
+    const sm = document.createElement("small");
+    const why = it.no ? it.no() : "";
+    sm.textContent = why || it.info;
     b.append(nm, pr, sm);
-    const noGun = it.id === "ammo" && !player.weapons.some((w) => w !== "fist");
-    if (noGun) sm.textContent = "Сначала купи пистолет или узи";
-    b.disabled = money < it.price || noGun;
-    b.addEventListener("click", () => buy(it));
+    b.disabled = money < it.price || !!why;
+    b.addEventListener("click", () => buy(sh, it));
     list.appendChild(b);
   }
 }
-function buy(it) {
-  if (money < it.price) return;
-  if (it.id === "ammo") {
-    if (!player.weapons.some((w) => w !== "fist")) return;
-    if (player.weapons.includes("pistol")) player.ammo.pistol += 30;
-    if (player.weapons.includes("smg")) player.ammo.smg += 60;
-  } else giveWeapon(it.id, it.id === "smg" ? 90 : 30);
-  money += SHOP_BONUS - it.price;
-  sfx.cash(); toast(it.name + " куплено · бонус +" + fmt(SHOP_BONUS), 2);
+function buy(sh, it) {
+  if (money < it.price || (it.no && it.no())) return;
+  it.act();
+  money += (sh.bonus || 0) - it.price;
+  sfx.cash();
+  if (!it.quiet) toast(it.name + " куплено" + (sh.bonus ? " · бонус +" + fmt(sh.bonus) : ""), 2);
   writeSave(); renderShop(); updHud();
 }
-function openShop() { renderShop(); showOv("shop"); }
+function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
 function updMission(dt) {
   if (!MISSIONS) {
-    const d = dist(player, places.bar);
-    if (!player.inCar && !player.dead && d < 34 && state === "play" && !shopLock) { shopLock = true; openShop(); }
-    if (d > 70) shopLock = false;
+    let near = null, close = false;
+    for (const sh of SHOPS) { const d = dist(player, sh.at()); if (d < 34) near = sh; if (d < 70) close = true; }
+    if (near && !player.inCar && !player.dead && state === "play" && shopLock !== near.id) { shopLock = near.id; openShop(near); }
+    if (!close) shopLock = null;
     return;
   }
   if (!M.active) {
@@ -757,6 +789,7 @@ function playerAttack() {
   shoot(player, player.a, k, "player");
 }
 function explode(c) {
+  if (c.ownKey) { save.cars = ownCars().filter((o) => o.k !== c.ownKey); c.ownKey = null; c.keep = false; writeSave(); setTimeout(() => toast("Твоя машина уничтожена", 2.4), 300); }
   c.wreck = true; c.hp = 0; c.fire = 0; c.vx *= 0.3; c.vy *= 0.3; c.wreckT = 0;
   sfx.boom(); shake = 14;
   addDecal({ type: "scorch", x: c.x, y: c.y, r: 46, a: 0 });
@@ -796,7 +829,7 @@ function enterCar() {
   else if (best.driver === "cop") { const p = ejectDriver(best); p.alert = true; setWanted(Math.max(wanted, 2), "Угон полицейской машины!"); }
   else if (best.type === "cop") setWanted(Math.max(wanted, 1), "Угон полицейской машины!");
   best.driver = "player"; best.ai = null; best.deployed = false; best.keep = true;
-  if (player.lastCar && player.lastCar !== best && player.lastCar !== M.car) player.lastCar.keep = false;
+  if (player.lastCar && player.lastCar !== best && player.lastCar !== M.car && !player.lastCar.ownKey) player.lastCar.keep = false;
   player.inCar = best; player.lastCar = best; sfx.door();
 }
 function exitCar(force) {
@@ -1045,7 +1078,7 @@ function respawn() {
 function newWorld(fresh) {
   // starting cash: $1000 for a new game, and once for saves made before it existed
   const START_CASH = 1000;
-  if (fresh) { save = { money: START_CASH, mission: 0, jobs: 0, pistol: 0, smg: 0, startCash: 1 }; money = START_CASH; }
+  if (fresh) { save = { money: START_CASH, mission: 0, jobs: 0, pistol: 0, smg: 0, startCash: 1, cars: [] }; money = START_CASH; }
   else if (!save.startCash) { save.startCash = 1; money += START_CASH; }
   cars.length = 0; people.length = 0; bullets.length = 0; parts.length = 0; decals.length = 0; pickups.length = 0;
   player.weapons = ["fist"]; player.ammo = { pistol: 0, smg: 0 }; player.w = 0; player.armor = 0;
@@ -1058,7 +1091,8 @@ function newWorld(fresh) {
   mkCar("compact", (bl.x + 4.4) * T, (bl.y + 4.5) * T, Math.PI / 2);
   for (let i = 0; i < 40; i++) spawnTraffic();
   for (let i = 0; i < 50; i++) spawnPed();
-  barLock = true;
+  ownCars().slice(0, 4).forEach((o, i) => placeOwned(o, carSlots()[i]));
+  barLock = true; shopLock = "guns"; player.boost = 0;
   writeSave();
 }
 
@@ -1187,7 +1221,8 @@ function update(dt) {
     if (stick.on && (stick.x || stick.y)) { const m = Math.min(1, Math.hypot(stick.x, stick.y)); if (m > 0.15) { vx = stick.x; vy = stick.y; } }
     else if (kb) { const l = Math.hypot(mx, my); vx = mx / l; vy = my / l; }
     if (mode3d && (vx || vy)) { const m = Math.hypot(vx, vy), ang = cam3.yaw + Math.atan2(vx, -vy); vx = Math.cos(ang) * m; vy = Math.sin(ang) * m; }
-    const sp = 155;
+    if (player.boost > 0) player.boost -= dt;
+    const sp = player.boost > 0 ? 235 : 155;
     player.x += vx * sp * dt; player.y += vy * sp * dt;
     const [ox, oy] = pushOut(player.x, player.y, 9); player.x += ox; player.y += oy;
     const s = Math.hypot(vx, vy);
@@ -1462,7 +1497,8 @@ function drawBuilding(b) {
   if (b.kind === "hosp") { ctx.fillStyle = "#e0303e"; const mx = rx + b.w / 2, my = ry + b.h / 2; ctx.fillRect(mx - 30, my - 9, 60, 18); ctx.fillRect(mx - 9, my - 30, 18, 60); }
   if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЛИЦИЯ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
   if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
-  if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ГАРАЖ", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "food") { ctx.fillStyle = "#e9f7e0"; ctx.font = "34px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПРОДУКТЫ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e8c95d"; for (let k = 0; k < 6; k++) ctx.fillRect(rx + 10 + k * (b.w - 20) / 6, ry + b.h - 12, (b.w - 20) / 12, 8); }
 }
 function drawPickup(k) {
   const bob = Math.sin(now * 4 + k.x) * 3;
@@ -1513,7 +1549,7 @@ function render() {
   const tx0 = Math.floor(view.x / T) - 1, tx1 = Math.floor((view.x + view.w) / T) + 1, ty0 = Math.floor(view.y / T) - 1, ty1 = Math.floor((view.y + view.h) / T) + 1;
   // markers
   if (MISSIONS && !M.active) drawMarker(places.bar.x, places.bar.y, "#ff3d7f", "V");
-  if (!MISSIONS) drawMarker(places.bar.x, places.bar.y, "#ffb000", "$");
+  if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); drawMarker(q.x, q.y, sh.col, sh.label); }
   const tg = stepTarget();
   if (tg) {
     const s2 = M.steps[M.i];
@@ -1588,7 +1624,7 @@ function drawMini() {
   for (const c of cars) if (c.type === "cop" && c.driver === "cop" && wanted > 0) dot(c.x, c.y, 3, f ? "#ff2d3d" : "#3d8bff");
   for (const p of people) if (p.kind === "cop" && !p.dead && wanted > 0) dot(p.x, p.y, 2, "#3d8bff");
   if (MISSIONS && !M.active) { dot(places.bar.x, places.bar.y, 5, "#ff3d7f"); }
-  if (!MISSIONS) dot(places.bar.x, places.bar.y, 5, "#ffb000");
+  if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); dot(q.x, q.y, 5, sh.col); }
   const tg = stepTarget();
   if (tg) { const s = M.steps[M.i]; if (s.t === "kill") s.units.forEach((u) => !u.dead && dot(u.x, u.y, 3, "#ff3d3d")); else dot(tg.x, tg.y, 5, "#ffd23d"); }
   dot(places.hosp.x, places.hosp.y, 3, "#ffffff");
@@ -1694,7 +1730,8 @@ function init3d() {
     if (b.kind === "hosp") { g.fillStyle = "#e0303e"; g.fillRect(w / 2 - 70, h / 2 - 22, 140, 44); g.fillRect(w / 2 - 22, h / 2 - 70, 44, 140); }
     if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЛИЦИЯ", w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
     if (b.kind === "bar") { g.fillStyle = MISSIONS ? "#ff3d7f" : "#ffb000"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", w / 2, h / 2); }
-    if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText("ГАРАЖ", w / 2, h / 2); }
+    if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", w / 2, h / 2); }
+    if (b.kind === "food") { g.fillStyle = "#e9f7e0"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.fillText("ПРОДУКТЫ", w / 2, h / 2); }
   }
   for (const b of blds) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
@@ -1704,8 +1741,8 @@ function init3d() {
       const sp = new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 22, 10), lam(0xbdb4a2)); sp.position.set(cx, 11, cz); scene.add(sp);
       continue;
     }
-    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage";
-    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food";
+    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
     const geo = new THREE.BoxGeometry(b.w, h, b.h);
     if (b.kind !== "cont") {
       const uv = geo.attributes.uv;
@@ -1719,6 +1756,7 @@ function init3d() {
     const m = new THREE.Mesh(geo, [wall, wall, roof, roof, wall, wall]);
     m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
     for (const [ax, ay, s] of b.ac) { const a = new THREE.Mesh(BOX, mat(shade(b.roof, 0.78))); a.scale.set(s, s * 0.7, s); a.position.set(b.x + ax * b.w + s / 2, h + s * 0.35, b.y + ay * b.h + s / 2); a.castShadow = true; scene.add(a); }
+    if (b.kind === "food" || (b.kind === "garage" && !MISSIONS)) { const sign = new THREE.Mesh(BOX, basic(b.kind === "food" ? 0x8be38a : 0x4d93ff)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 34, b.y + b.h + 1); scene.add(sign); }
     if (b.kind === "bar") { const sign = new THREE.Mesh(BOX, basic(MISSIONS ? 0xff3d7f : 0xffb000)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 40, b.y + b.h + 1); scene.add(sign); }
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => roofArt.forEach(([b, c, t]) => { paintRoof(b, c); t.needsUpdate = true; }));
@@ -1798,7 +1836,7 @@ function init3d() {
     dec: pool(60, () => new THREE.Mesh(decalG, basic(0x6e0e12, { transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }))),
   });
   G3.mkN.children.forEach((m) => (m.material = m.material.clone(), m.material.opacity *= 0.45));
-  if (!MISSIONS) G3.mkBar.children.forEach((m) => m.material.color.setHex(0xffb000));
+  G3.shopMk = MISSIONS ? [] : SHOPS.map((sh) => { const g = markerObj(sh.hex); const q = sh.at(); g.position.set(q.x, 0, q.y); return g; });
 }
 function sync3d() {
   const P = player.inCar || player, night = G3.night;
@@ -1836,7 +1874,8 @@ function sync3d() {
   for (const [id, o] of G3.ppl) if (!seen.has(id)) { G3.scene.remove(o.g); G3.ppl.delete(id); }
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
-  G3.mkBar.visible = started && (!MISSIONS || !M.active); G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
+  G3.mkBar.visible = MISSIONS && started && !M.active;
+  G3.shopMk.forEach((g) => { g.visible = started; g.children[0].scale.setScalar(1 + Math.sin(now * 5) * 0.06); }); G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
   G3.mkT.visible = G3.mkN.visible = false;
   if (tg && (s2.t === "goto" || s2.t === "cps")) {
     const rr = s2.t === "cps" ? 60 : s2.r && s2.r > 100 ? 60 : 32;
