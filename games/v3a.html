@@ -1043,7 +1043,10 @@ function respawn() {
   writeSave();
 }
 function newWorld(fresh) {
-  if (fresh) { save = { money: 0, mission: 0, jobs: 0, pistol: 0, smg: 0 }; money = 0; }
+  // starting cash: $1000 for a new game, and once for saves made before it existed
+  const START_CASH = 1000;
+  if (fresh) { save = { money: START_CASH, mission: 0, jobs: 0, pistol: 0, smg: 0, startCash: 1 }; money = START_CASH; }
+  else if (!save.startCash) { save.startCash = 1; money += START_CASH; }
   cars.length = 0; people.length = 0; bullets.length = 0; parts.length = 0; decals.length = 0; pickups.length = 0;
   player.weapons = ["fist"]; player.ammo = { pistol: 0, smg: 0 }; player.w = 0; player.armor = 0;
   if (save.pistol) { player.weapons.push("pistol"); player.ammo.pistol = 40; }
@@ -1056,6 +1059,7 @@ function newWorld(fresh) {
   for (let i = 0; i < 40; i++) spawnTraffic();
   for (let i = 0; i < 50; i++) spawnPed();
   barLock = true;
+  writeSave();
 }
 
 /* ================= input ================= */
