@@ -230,6 +230,23 @@ textarea.field { min-height: 80px; resize: vertical; }
 .pool { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .pool .clip { aspect-ratio: 1; }
 
+/* Police */
+.evidence { overflow-x: auto; }
+.evi { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+.evi th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px; border-bottom: 1px solid var(--line); }
+.evi td { padding: 7px 6px; border-bottom: 1px solid var(--panel-2); }
+.chatlog { background: #0c0d1f; border-radius: 12px; padding: 10px 12px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.chatlog b { color: var(--cyan); }
+.suspects { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+.sus { padding: 10px 6px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-size: 12px; display: flex; flex-direction: column; align-items: center; gap: 2px; overflow-wrap: anywhere; }
+.sus span { font-size: 24px; }
+.sus.caught { border-color: var(--role, var(--cyan)); background: color-mix(in srgb, var(--role, var(--cyan)) 25%, var(--panel)); font-weight: 800; }
+.sus.free { opacity: .45; }
+.articles { display: flex; flex-direction: column; gap: 6px; }
+.art { text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); display: flex; flex-direction: column; }
+.art small { color: var(--muted); font-size: 12px; }
+.art[aria-pressed="true"] { border-color: var(--role, var(--cyan)); background: var(--panel-2); }
+
 /* Marketing */
 .covers { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
 .cover { width: 46px; height: 46px; border-radius: 10px; border: 3px solid transparent; font-size: 22px; }
@@ -256,7 +273,7 @@ textarea.field { min-height: 80px; resize: vertical; }
   <!-- 1: choose a role -->
   <section id="pick">
     <h1>Работай на V3</h1>
-    <p class="sub">Выбери роль в команде V3 — и погнали. Каждая задача открывает рабочее место твоей профессии: дизайнер рисует, программист пишет код, композитор собирает бит.</p>
+    <p class="sub">Выбери роль в команде V3 — и погнали. Каждая задача открывает рабочее место твоей профессии: дизайнер рисует, программист пишет код, композитор собирает бит, полицейский ловит читеров.</p>
     <label class="label" for="nameIn">Как тебя зовут</label>
     <input class="field" id="nameIn" maxlength="24" placeholder="Например, Валерий" autocomplete="nickname">
     <div class="roles" id="roles" role="group" aria-label="Роли"></div>
@@ -371,7 +388,10 @@ textarea.field { min-height: 80px; resize: vertical; }
     { id: "video", ico: "🎬", name: "Видеомонтажёр", color: "#ff6b7a", about: "Трейлеры и ролики V3.", studio: "Монтажная",
       tasks: [{ t: "Трейлер «{g}»", v: "trailer" }, { t: "Shorts про «{g}»", v: "shorts" }] },
     { id: "market", ico: "📣", name: "Маркетолог", color: "#ffb547", about: "Делает так, чтобы о V3 узнали все.", studio: "Редактор постов",
-      tasks: [{ t: "Пост про «{g}» в соцсети" }, { t: "Анонс турнира по «{g}»" }, { t: "Реклама «{g}» для новых игроков" }] }
+      tasks: [{ t: "Пост про «{g}» в соцсети" }, { t: "Анонс турнира по «{g}»" }, { t: "Реклама «{g}» для новых игроков" }] },
+    { id: "police", ico: "👮", name: "Полицейский", color: "#4c8dff", about: "Ловит читеров, грубиянов и воров монет.", studio: "Полицейский участок",
+      tasks: [{ t: "Читер в «{g}»: невозможный рекорд", v: "cheat" }, { t: "Грубиян в чате «{g}»", v: "chat" },
+              { t: "Кража монет в «{g}»", v: "theft" }] }
   ];
 
   const LEVELS = [["Стажёр", 0], ["Джуниор", 100], ["Мидл", 260], ["Сеньор", 500], ["Лид", 850], ["Директор V3", 1300]];
@@ -1005,6 +1025,98 @@ textarea.field { min-height: 80px; resize: vertical; }
         { label: `Хэштегов: ${Math.min(tags.size, 2)} / 2`, ok: tags.size >= 2 }
       ],
       submit: () => { const likes = 50 + Math.floor(Math.random() * 950); log(`📣 Пост про «${esc(t.game)}» набрал <b>♥ ${likes}</b>`); }
+    };
+  };
+
+  // Police: study the evidence, arrest the right player, pick the article of the V3 rules, write a report.
+  TOOLS.police = (t, body, brief) => {
+    const NAMES = ["Kiril_07", "ProGamer", "Masha2012", "NoobSlayer", "Тимур", "LuckyCat", "Артём_V3", "ZetaFox", "Dimon", "Sonya_Star"];
+    const ARTICLES = [
+      { id: "cheat", n: "Ст. 1 — Читы и взлом", p: "Бан на 7 дней, рекорд удаляется" },
+      { id: "chat", n: "Ст. 2 — Оскорбления в чате", p: "Бан чата на 1 день" },
+      { id: "theft", n: "Ст. 3 — Кража монет", p: "Бан навсегда, монеты вернуть" },
+      { id: "none", n: "Ст. 0 — Нарушения нет", p: "Отпустить" }
+    ];
+    const kind = t.v || "cheat";
+    const cnt = t.hot ? 5 : 4;
+    const people = shuffle(NAMES).slice(0, cnt);
+    const culprit = Math.floor(Math.random() * cnt);
+    const victim = shuffle(NAMES.filter(n => !people.includes(n)))[0];
+    const rnd = (a, b) => a + Math.floor(Math.random() * (b - a));
+    // In urgent cases one innocent player looks suspicious at first glance.
+    const decoy = t.hot ? (culprit + 1) % cnt : -1;
+    let evidence = "", clue = "";
+
+    if (kind === "cheat") {
+      clue = `В «${esc(t.game)}» появился невозможный рекорд. Честный игрок набирает не больше ~40 очков в минуту.`;
+      evidence = `<table class="evi"><tr><th>Игрок</th><th>Рекорд</th><th>Время игры</th></tr>` + people.map((n, i) => {
+        let score, min;
+        if (i === culprit) { score = rnd(9000, 99999); min = rnd(1, 3); }
+        else if (i === decoy) { score = rnd(9000, 12000); min = Math.ceil(score / 35); }
+        else { min = rnd(5, 60); score = min * rnd(10, 38); }
+        return `<tr><td>${n}</td><td>${score}</td><td>${min} мин</td></tr>`;
+      }).join("") + `</table>`;
+    } else if (kind === "chat") {
+      clue = `Игроки пожаловались на грубость в общем чате «${esc(t.game)}».`;
+      const nice = ["Кто со мной в команду?", "Классный уровень!", "Как пройти третий этап?", "gg всем 👍", "Я поставил новый рекорд!", "Спасибо за помощь", "Удачи всем!"];
+      const rude = ["ты нуб, удали игру 🤬", "вы все тупые, не пишите мне", "закрой рот, лузер"];
+      const lines = [];
+      people.forEach((n, i) => {
+        lines.push([n, i === culprit ? pick(rude) : i === decoy ? "я нуб, кто поможет? 😅" : pick(nice)]);
+        if (i !== culprit && Math.random() < .5) lines.push([n, pick(nice)]);
+      });
+      evidence = `<div class="chatlog">${shuffle(lines).map(([n, m]) => `<div><b>${n}:</b> ${esc(m)}</div>`).join("")}</div>`;
+    } else {
+      clue = `У игрока ${victim} пропали монеты. Он говорит, что никому их не отдавал и в тот день не заходил.`;
+      const rows = people.map((n, i) => i === culprit
+        ? [victim, n, rnd(300, 900), "без подтверждения, вход с нового устройства"]
+        : i === decoy ? [victim, n, rnd(20, 60), "подарок, подтверждён по почте"]
+        : [pick(people.filter(x => x !== n)), n, rnd(5, 80), "подтверждено"]);
+      evidence = `<table class="evi"><tr><th>От кого</th><th>Кому</th><th>◎</th><th>Статус</th></tr>` +
+        shuffle(rows).map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("") + `</table>`;
+    }
+
+    let arrested = -1, wrong = 0, article = null;
+    brief.innerHTML = `<b>Вызов:</b> ${clue} Изучи улики, задержи нарушителя и выбери статью из устава V3.`;
+    body.innerHTML = `
+      <div class="label">Улики</div>
+      <div class="evidence">${evidence}</div>
+      <div class="label" style="margin-top:12px">Подозреваемые — нажми, чтобы задержать</div>
+      <div class="suspects">${people.map((n, i) => `<button class="sus" type="button" data-sus="${i}"><span>🧑</span>${n}</button>`).join("")}</div>
+      <div class="label" style="margin-top:12px">Устав V3</div>
+      <div class="articles">${ARTICLES.map(a => `<button class="art" type="button" data-art="${a.id}" aria-pressed="false"><b>${a.n}</b><small>${a.p}</small></button>`).join("")}</div>
+      <label class="label" for="prot" style="margin-top:12px">Протокол</label>
+      <textarea class="field" id="prot" placeholder="Что сделал нарушитель и какие улики это доказывают…"></textarea>`;
+    body.addEventListener("click", (e) => {
+      const sb = e.target.closest("[data-sus]"), ab = e.target.closest("[data-art]");
+      if (sb) {
+        const i = +sb.dataset.sus;
+        if (arrested === culprit) return;
+        if (i === culprit) {
+          arrested = i; sb.classList.add("caught"); sb.querySelector("span").textContent = "🚔";
+          toast(`${people[i]} задержан!`);
+        } else {
+          wrong++; sb.classList.add("free"); sb.disabled = true; sb.querySelector("span").textContent = "🙅";
+          toast(`${people[i]} невиновен — улики не сходятся`);
+        }
+      } else if (ab) {
+        article = ab.dataset.art;
+        body.querySelectorAll("[data-art]").forEach(x => x.setAttribute("aria-pressed", x === ab));
+      } else return;
+      refresh();
+    });
+    const prot = body.querySelector("#prot");
+    prot.addEventListener("input", refresh);
+    return {
+      checks: () => [
+        { label: `Нарушитель задержан${wrong ? ` · ошибочных задержаний: ${wrong}` : ""}`, ok: arrested === culprit },
+        { label: "Выбрана правильная статья", ok: article === kind },
+        { label: "Протокол написан (от 20 символов)", ok: prot.value.trim().length >= 20 }
+      ],
+      submit: () => {
+        const a = ARTICLES.find(x => x.id === kind);
+        log(`👮 ${people[culprit]} наказан по «${a.n}»: ${a.p.toLowerCase()}`);
+      }
     };
   };
 
