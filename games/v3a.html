@@ -22,7 +22,7 @@ html,body{height:100%;margin:0;background:var(--asphalt);color:var(--ink);overfl
 body{font-family:var(--body);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 #game{position:fixed;inset:0;overflow:hidden;touch-action:none}
-#c{display:block;width:100%;height:100%;touch-action:none}
+#c,#c3{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none}
 button{font-family:var(--body);cursor:pointer}
 button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 
@@ -51,7 +51,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #mission{position:absolute;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));
   max-width:min(92vw,520px);width:max-content;padding:8px 14px;border-radius:12px;background:var(--panel);border:1px solid var(--line);
   text-align:center;display:flex;flex-direction:column;gap:2px;pointer-events:none}
-@media (max-width:640px){.topbtns{top:calc(12px + env(safe-area-inset-top,0px));left:calc(144px + env(safe-area-inset-left,0px))}#mission{top:calc(142px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));right:calc(10px + env(safe-area-inset-right,0px));transform:none;width:auto;max-width:none}}
+@media (max-width:640px){.topbtns{flex-direction:column;top:calc(12px + env(safe-area-inset-top,0px));left:calc(144px + env(safe-area-inset-left,0px))}#mission{top:calc(142px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px));right:calc(10px + env(safe-area-inset-right,0px));transform:none;width:auto;max-width:none}}
 #mTitle{font-family:var(--display);font-weight:400;font-size:12px;letter-spacing:.12em;color:var(--sunset);text-transform:uppercase}
 #mText{font-size:14px;font-weight:700;line-height:1.3;text-wrap:balance}
 #mTimer{font-family:var(--display);font-size:18px;color:var(--warn);font-variant-numeric:tabular-nums}
@@ -121,6 +121,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
   <div class="topbtns">
     <button type="button" id="pauseBtn" aria-label="Пауза">II</button>
     <button type="button" id="muteBtn" aria-label="Звук" aria-pressed="false">♪</button>
+    <button type="button" id="viewBtn" aria-label="Вид от третьего лица">3D</button>
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
@@ -144,11 +145,14 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <button type="button" class="btn" id="playBtn">Играть</button>
         <button type="button" class="btn alt" id="newBtn" hidden>Новая игра</button>
       </div>
+      <button type="button" class="btn alt" id="startView">Вид: 3D от третьего лица</button>
       <dl class="keys" id="keysHelp">
         <dt>WASD / стрелки</dt><dd>идти, газ и руль</dd>
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>V</dt><dd>вид: 3D от третьего лица или 2D сверху</dd>
+        <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
       <p class="prog">Розовая метка <b style="color:var(--neon)">V</b> у бара — там Арно выдаёт работу.</p>
@@ -175,6 +179,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
       <div class="row">
         <button type="button" class="btn" id="resumeBtn">Продолжить</button>
         <button type="button" class="btn alt" id="hospBtn">В больницу</button>
+        <button type="button" class="btn alt" id="pauseView">Сменить вид</button>
       </div>
     </div>
   </div>
@@ -184,7 +189,8 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 (() => {
 "use strict";
 const $ = (id) => document.getElementById(id);
-const cv = $("c"), ctx = cv.getContext("2d");
+const cv = $("c");
+let ctx = cv.getContext("2d");
 const mini = $("mini"), mctx = mini.getContext("2d");
 const T = 64, N = 50, WORLD = N * T, TAU = Math.PI * 2;
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -684,7 +690,7 @@ function playerAttack() {
   }
   if (player.ammo[k] <= 0) { player.weapons.splice(player.w, 1); player.w = 0; toast("Патроны кончились"); return; }
   player.ammo[k]--; player.cool = WEAP[k].rate;
-  if (!mouse.aim) { const t = autoAim(420, 0.55); if (t) player.a = Math.atan2(t.y - player.y, t.x - player.x); }
+  if (!mouse.aim || mode3d) { const t = autoAim(420, 0.55); if (t) player.a = Math.atan2(t.y - player.y, t.x - player.x); }
   shoot(player, player.a, k, "player");
 }
 function explode(c) {
@@ -996,27 +1002,30 @@ addEventListener("keydown", (e) => {
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
   if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "pause") resume(); }
   if (e.code === "KeyM") toggleMute();
+  if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
 addEventListener("blur", () => { for (const k in keys) keys[k] = false; stick.on = false; $("stick").hidden = true; });
 const stick = { on: false, id: -1, ox: 0, oy: 0, x: 0, y: 0 };
-const mouse = { down: false, aim: false, x: 0, y: 0 };
+const mouse = { down: false, rdown: false, aim: false, x: 0, y: 0 };
+const camDrag = { id: -1, x: 0 };
 let touchMode = matchMedia("(pointer:coarse)").matches;
 function setTouch(on) { touchMode = on; $("pad").hidden = !on; $("stickHint").hidden = !on || stickUsed; }
 let stickUsed = false;
 cv.addEventListener("pointerdown", (e) => {
   initAudio();
-  if (e.pointerType === "mouse") { if (touchMode) setTouch(false); mouse.down = true; mouse.aim = true; mouse.x = e.clientX; mouse.y = e.clientY; return; }
+  if (e.pointerType === "mouse") { if (touchMode) setTouch(false); mouse.x = e.clientX; mouse.y = e.clientY; if (e.button === 2) mouse.rdown = true; else { mouse.down = true; mouse.aim = true; } return; }
   if (!touchMode) setTouch(true);
   if (!stick.on && e.clientX < innerWidth * 0.62) {
     stick.on = true; stick.id = e.pointerId; stick.ox = e.clientX; stick.oy = e.clientY; stick.x = 0; stick.y = 0;
     const s = $("stick"); s.hidden = false; s.style.left = e.clientX + "px"; s.style.top = e.clientY + "px"; s.firstElementChild.style.transform = "";
     stickUsed = true; $("stickHint").hidden = true;
     try { cv.setPointerCapture(e.pointerId); } catch (er) {}
-  }
+  } else if (mode3d && camDrag.id < 0) { camDrag.id = e.pointerId; camDrag.x = e.clientX; try { cv.setPointerCapture(e.pointerId); } catch (er) {} }
 });
 cv.addEventListener("pointermove", (e) => {
-  if (e.pointerType === "mouse") { mouse.x = e.clientX; mouse.y = e.clientY; return; }
+  if (e.pointerType === "mouse") { if (mode3d && (mouse.down || mouse.rdown)) { cam3.yaw += (e.clientX - mouse.x) * 0.006; cam3.dragT = 1.5; } mouse.x = e.clientX; mouse.y = e.clientY; return; }
+  if (e.pointerId === camDrag.id) { cam3.yaw += (e.clientX - camDrag.x) * 0.009; camDrag.x = e.clientX; cam3.dragT = 2; return; }
   if (stick.on && e.pointerId === stick.id) {
     let dx = e.clientX - stick.ox, dy = e.clientY - stick.oy; const l = Math.hypot(dx, dy), m = 50;
     if (l > m) { dx = (dx / l) * m; dy = (dy / l) * m; }
@@ -1024,7 +1033,7 @@ cv.addEventListener("pointermove", (e) => {
     $("stick").firstElementChild.style.transform = `translate(${dx}px,${dy}px)`;
   }
 });
-const endStick = (e) => { if (e.pointerType === "mouse") { mouse.down = false; return; } if (e.pointerId === stick.id) { stick.on = false; stick.x = stick.y = 0; $("stick").hidden = true; } };
+const endStick = (e) => { if (e.pointerType === "mouse") { mouse.down = false; mouse.rdown = false; return; } if (e.pointerId === camDrag.id) camDrag.id = -1; if (e.pointerId === stick.id) { stick.on = false; stick.x = stick.y = 0; $("stick").hidden = true; } };
 cv.addEventListener("pointerup", endStick); cv.addEventListener("pointercancel", endStick);
 cv.addEventListener("contextmenu", (e) => e.preventDefault());
 const held = { fire: false, hand: false };
@@ -1098,7 +1107,7 @@ function update(dt) {
     if (stick.on && (stick.x || stick.y)) {
       const mag = Math.min(1, Math.hypot(stick.x, stick.y));
       if (mag > 0.2) {
-        const ja = Math.atan2(stick.y, stick.x), da = angDiff(ja, c.a);
+        const ja = mode3d ? cam3.yaw + Math.atan2(stick.x, -stick.y) : Math.atan2(stick.y, stick.x), da = angDiff(ja, c.a);
         if (Math.abs(da) < 2.1 || c.spd > 120) { th = mag * (1 - Math.min(0.5, Math.abs(da) * 0.22)); st = clamp(da * 2.3, -1, 1); }
         else { th = -mag * 0.85; st = -clamp(angDiff(ja, c.a + Math.PI) * 2.3, -1, 1); }
       }
@@ -1109,12 +1118,15 @@ function update(dt) {
     let vx = 0, vy = 0;
     if (stick.on && (stick.x || stick.y)) { const m = Math.min(1, Math.hypot(stick.x, stick.y)); if (m > 0.15) { vx = stick.x; vy = stick.y; } }
     else if (kb) { const l = Math.hypot(mx, my); vx = mx / l; vy = my / l; }
+    if (mode3d && (vx || vy)) { const m = Math.hypot(vx, vy), ang = cam3.yaw + Math.atan2(vx, -vy); vx = Math.cos(ang) * m; vy = Math.sin(ang) * m; }
     const sp = 155;
     player.x += vx * sp * dt; player.y += vy * sp * dt;
     const [ox, oy] = pushOut(player.x, player.y, 9); player.x += ox; player.y += oy;
     const s = Math.hypot(vx, vy);
-    if (mouse.aim && mouse.down) { const w = toWorld(mouse.x, mouse.y); player.a = Math.atan2(w.y - player.y, w.x - player.x); }
+    if (mouse.aim && mouse.down) { if (mode3d) player.a = cam3.yaw; else { const w = toWorld(mouse.x, mouse.y); player.a = Math.atan2(w.y - player.y, w.x - player.x); } }
     else if (s > 0.05) player.a = Math.atan2(vy, vx);
+    else if (mode3d && fire) player.a = cam3.yaw;
+    player.spd = s * sp;
     if (s > 0.05) player.walk += s * sp * dt * 0.16;
     player.cool -= dt; if (player.punch > 0) player.punch -= dt;
     if (fire && player.cool <= 0) playerAttack();
@@ -1406,8 +1418,9 @@ function drawArrowAbove(o, col) {
   ctx.fillStyle = col; ctx.strokeStyle = "#000"; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(o.x - 9, y - 10); ctx.lineTo(o.x + 9, y - 10); ctx.lineTo(o.x, y + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
 }
-function drawEdgeArrow(tg, col) {
-  const sx = (tg.x - view.x) * view.s, sy = (tg.y - view.y) * view.s, W = cv.clientWidth, H = cv.clientHeight;
+function drawEdgeArrow(tg, col) { edgeArrowAt((tg.x - view.x) * view.s, (tg.y - view.y) * view.s, col, tg); }
+function edgeArrowAt(sx, sy, col, tg) {
+  const W = cv.clientWidth, H = cv.clientHeight;
   if (sx > 20 && sx < W - 20 && sy > 20 && sy < H - 20) return;
   const cx = W / 2, cy = H / 2, a = Math.atan2(sy - cy, sx - cx);
   const m = 34, k = Math.min((W / 2 - m) / Math.abs(Math.cos(a) || 1e-6), (H / 2 - m) / Math.abs(Math.sin(a) || 1e-6));
@@ -1497,7 +1510,8 @@ function drawMini() {
   mctx.fillStyle = "#24597a"; mctx.fillRect(0, 0, S, S);
   const scale = 2; // minimap px per prerendered px
   const px = (Pp.x / T) * MMS, py = (Pp.y / T) * MMS;
-  mctx.setTransform(scale, 0, 0, scale, S / 2 - px * scale, S / 2 - py * scale);
+  const rot = mode3d && started ? -Math.PI / 2 - cam3.yaw : 0;
+  mctx.translate(S / 2, S / 2); mctx.rotate(rot); mctx.scale(scale, scale); mctx.translate(-px, -py);
   mctx.imageSmoothingEnabled = false;
   mctx.drawImage(mm, 0, 0);
   const dot = (x, y, r, col) => { mctx.fillStyle = col; mctx.beginPath(); mctx.arc((x / T) * MMS, (y / T) * MMS, r, 0, TAU); mctx.fill(); };
@@ -1511,14 +1525,356 @@ function drawMini() {
   mctx.setTransform(1, 0, 0, 1, 0, 0);
   // clamp off-map target dot to edge
   if (tg) {
-    const dx = ((tg.x - Pp.x) / T) * MMS * scale, dy = ((tg.y - Pp.y) / T) * MMS * scale, d = Math.hypot(dx, dy);
+    const ux = ((tg.x - Pp.x) / T) * MMS * scale, uy = ((tg.y - Pp.y) / T) * MMS * scale;
+    const dx = ux * Math.cos(rot) - uy * Math.sin(rot), dy = ux * Math.sin(rot) + uy * Math.cos(rot), d = Math.hypot(dx, dy);
     if (d > S / 2 - 10) { const k = (S / 2 - 10) / d; mctx.fillStyle = "#ffd23d"; mctx.beginPath(); mctx.arc(S / 2 + dx * k, S / 2 + dy * k, 7, 0, TAU); mctx.fill(); }
   }
   const a = player.inCar ? player.inCar.a : player.a;
-  mctx.save(); mctx.translate(S / 2, S / 2); mctx.rotate(a);
+  mctx.save(); mctx.translate(S / 2, S / 2); mctx.rotate(a + rot);
   mctx.fillStyle = "#fff"; mctx.strokeStyle = "#000"; mctx.lineWidth = 2;
   mctx.beginPath(); mctx.moveTo(12, 0); mctx.lineTo(-8, -8); mctx.lineTo(-4, 0); mctx.lineTo(-8, 8); mctx.closePath(); mctx.fill(); mctx.stroke();
   mctx.restore();
+}
+
+/* ================= 3D view (third person) ================= */
+// Same game logic; this layer only redraws the world with Three.js. World (x, y) becomes 3D (x, height, z = y).
+let mode3d = false;
+const want3d = (() => { try { return localStorage.getItem("v3a-view") !== "2d"; } catch (e) { return true; } })();
+const G3 = { ready: false, loading: false, night: -1 };
+const cam3 = { yaw: -Math.PI / 2, dragT: 0, px: 0, py: 0, pz: 0, init: false };
+function loadThree(cb) {
+  if (window.THREE) return cb(true);
+  const s = document.createElement("script");
+  s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+  s.onload = () => cb(!!window.THREE); s.onerror = () => cb(false);
+  document.head.appendChild(s);
+}
+function setView(on) {
+  if (on && !G3.ready) {
+    if (G3.loading) return;
+    G3.loading = true; $("viewBtn").textContent = "…"; $("startView").textContent = "Загружаю 3D…";
+    loadThree((ok) => {
+      G3.loading = false;
+      if (ok) { try { init3d(); } catch (e) { ok = false; console.warn(e); } }
+      if (!ok) { toast("3D не загрузилось — играем в 2D", 3); applyView(false); return; }
+      applyView(true);
+    });
+    return;
+  }
+  applyView(on);
+}
+function applyView(on) {
+  mode3d = !!on && G3.ready;
+  if (G3.canvas) G3.canvas.hidden = !mode3d;
+  try { localStorage.setItem("v3a-view", mode3d ? "3d" : "2d"); } catch (e) {}
+  $("viewBtn").textContent = mode3d ? "2D" : "3D";
+  $("viewBtn").setAttribute("aria-label", mode3d ? "Вид сверху" : "Вид от третьего лица");
+  $("startView").textContent = mode3d ? "Вид: 3D от третьего лица" : "Вид: 2D сверху";
+  $("stickHint").textContent = mode3d ? "Слева — идти и рулить, справа — тянуть камеру" : "Веди пальцем слева, чтобы идти или рулить";
+  const P = player.inCar || player; cam3.yaw = P.a; cam3.init = false;
+}
+function init3d() {
+  const THREE = window.THREE;
+  const c3 = document.createElement("canvas"); c3.id = "c3"; c3.setAttribute("aria-hidden", "true"); c3.hidden = true;
+  $("game").insertBefore(c3, cv);
+  const r = new THREE.WebGLRenderer({ canvas: c3, antialias: (devicePixelRatio || 1) < 2 });
+  r.setPixelRatio(Math.min(1.5, devicePixelRatio || 1));
+  r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#f3b48c"); scene.fog = new THREE.Fog(0xf3b48c, 380, 1250);
+  const camera = new THREE.PerspectiveCamera(62, 1, 2, 3200);
+  const hemi = new THREE.HemisphereLight(0xfff0e0, 0x51475a, 0.85);
+  const sun = new THREE.DirectionalLight(0xffd6b0, 0.85);
+  sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -0.0012;
+  const sc = sun.shadow.camera; sc.left = -420; sc.right = 420; sc.top = 420; sc.bottom = -420; sc.near = 10; sc.far = 1500; sc.updateProjectionMatrix();
+  scene.add(hemi, sun, sun.target);
+  const BOX = new THREE.BoxGeometry(1, 1, 1), SPH = new THREE.SphereGeometry(1, 10, 8);
+  const lam = (c, o) => new THREE.MeshLambertMaterial(Object.assign({ color: c }, o || {}));
+  const basic = (c, o) => new THREE.MeshBasicMaterial(Object.assign({ color: c }, o || {}));
+  const cache = new Map();
+  const mat = (c) => { let m = cache.get(c); if (!m) { m = lam(c); cache.set(c, m); } return m; };
+
+  // ground: the top-down tile art painted once into one texture
+  const GS = 2048, gc = document.createElement("canvas"); gc.width = gc.height = GS;
+  const keepCtx = ctx, keepView = Object.assign({}, view);
+  ctx = gc.getContext("2d"); ctx.setTransform(GS / WORLD, 0, 0, GS / WORLD, 0, 0);
+  Object.assign(view, { x: 0, y: 0, w: WORLD, h: WORLD }); drawGround();
+  ctx = keepCtx; Object.assign(view, keepView);
+  const gt = new THREE.CanvasTexture(gc); gt.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy());
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD, WORLD), lam(0xffffff, { map: gt }));
+  ground.rotation.x = -Math.PI / 2; ground.position.set(WORLD / 2, 0, WORLD / 2); ground.receiveShadow = true; scene.add(ground);
+  const quay = new THREE.Mesh(BOX, lam(0x6e675e)); quay.scale.set(WORLD + 18, 6, WORLD + 18); quay.position.set(WORLD / 2, -3.6, WORLD / 2); scene.add(quay);
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(WORLD * 5, WORLD * 5), lam(0x24597a)); water.rotation.x = -Math.PI / 2; water.position.set(WORLD / 2, -5, WORLD / 2); scene.add(water);
+
+  // buildings with window textures that light up at night
+  const tex = (n, f) => { const c = document.createElement("canvas"); c.width = c.height = n; f(c.getContext("2d")); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
+  const winT = tex(128, (g) => {
+    g.fillStyle = "#fff"; g.fillRect(0, 0, 128, 128); g.fillStyle = "rgba(0,0,0,.1)"; for (let j = 0; j < 4; j++) g.fillRect(0, j * 32 + 30, 128, 2);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { g.fillStyle = "#3a4760"; g.fillRect(i * 32 + 7, j * 32 + 7, 18, 17); g.fillStyle = "rgba(255,255,255,.28)"; g.fillRect(i * 32 + 7, j * 32 + 7, 18, 3); }
+  });
+  const litT = tex(128, (g) => {
+    g.fillStyle = "#000"; g.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) if (Math.random() < 0.45) { g.fillStyle = Math.random() < 0.5 ? "#ffcf73" : "#ffe9b8"; g.fillRect(i * 32 + 7, j * 32 + 7, 18, 17); }
+  });
+  const winMats = [], roofArt = [];
+  function paintRoof(b, c) {
+    const g = c.getContext("2d"), w = c.width, h = c.height;
+    g.fillStyle = b.roof; g.fillRect(0, 0, w, h); g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
+    g.textAlign = "center"; g.textBaseline = "middle";
+    if (b.kind === "hosp") { g.fillStyle = "#e0303e"; g.fillRect(w / 2 - 70, h / 2 - 22, 140, 44); g.fillRect(w / 2 - 22, h / 2 - 70, 44, 140); }
+    if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЛИЦИЯ", w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
+    if (b.kind === "bar") { g.fillStyle = "#ff3d7f"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText("БАР «V»", w / 2, h / 2); }
+    if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText("ГАРАЖ", w / 2, h / 2); }
+  }
+  for (const b of blds) {
+    const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
+    if (b.kind === "fount") {
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(b.w / 2, b.w / 2 + 2, 9, 28), lam(0xcfc6b5)); base.position.set(cx, 4.5, cz); base.castShadow = base.receiveShadow = true; scene.add(base);
+      const wat = new THREE.Mesh(new THREE.CylinderGeometry(b.w / 2 - 6, b.w / 2 - 6, 1, 28), lam(0x4aa3c8, { emissive: 0x0a2a3a })); wat.position.set(cx, 8.8, cz); scene.add(wat);
+      const sp = new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 22, 10), lam(0xbdb4a2)); sp.position.set(cx, 11, cz); scene.add(sp);
+      continue;
+    }
+    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage";
+    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    const geo = new THREE.BoxGeometry(b.w, h, b.h);
+    if (b.kind !== "cont") {
+      const uv = geo.attributes.uv;
+      for (const f of [0, 1, 4, 5]) { const fw = f < 2 ? b.h : b.w; for (let k = 0; k < 4; k++) { const i = f * 4 + k; uv.setXY(i, (uv.getX(i) * fw) / 128, (uv.getY(i) * h) / 128); } }
+    }
+    const wall = b.kind === "cont" ? lam(b.roof) : lam(shade(b.roof, 0.95), { map: winT, emissive: 0xffc46b, emissiveMap: litT, emissiveIntensity: 0 });
+    if (b.kind !== "cont") winMats.push(wall);
+    let roof;
+    if (special) { const c = document.createElement("canvas"); c.width = 256; c.height = Math.round((256 * b.h) / b.w); paintRoof(b, c); const t = new THREE.CanvasTexture(c); roofArt.push([b, c, t]); roof = lam(0xffffff, { map: t }); }
+    else roof = lam(b.roof);
+    const m = new THREE.Mesh(geo, [wall, wall, roof, roof, wall, wall]);
+    m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
+    for (const [ax, ay, s] of b.ac) { const a = new THREE.Mesh(BOX, mat(shade(b.roof, 0.78))); a.scale.set(s, s * 0.7, s); a.position.set(b.x + ax * b.w + s / 2, h + s * 0.35, b.y + ay * b.h + s / 2); a.castShadow = true; scene.add(a); }
+    if (b.kind === "bar") { const sign = new THREE.Mesh(BOX, basic(0xff3d7f)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 40, b.y + b.h + 1); scene.add(sign); }
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => roofArt.forEach(([b, c, t]) => { paintRoof(b, c); t.needsUpdate = true; }));
+
+  // trees
+  const trunkG = new THREE.CylinderGeometry(2.2, 3.2, 20, 6), crownG = new THREE.IcosahedronGeometry(1, 0);
+  const crownM = [new THREE.MeshPhongMaterial({ color: 0x3f7a3a, flatShading: true, shininess: 0 }), new THREE.MeshPhongMaterial({ color: 0x4f8a3c, flatShading: true, shininess: 0 })];
+  for (const list of treeGrid.values()) for (const t of list) {
+    const tr = new THREE.Mesh(trunkG, mat("#6b4a32")); tr.position.set(t.x, 10, t.y); tr.castShadow = true; scene.add(tr);
+    const cr = new THREE.Mesh(crownG, crownM[t.hue < 0.5 ? 0 : 1]); cr.scale.setScalar(t.r * 1.15); cr.position.set(t.x, 20 + t.r * 0.7, t.y); cr.rotation.y = t.hue * 6; cr.castShadow = true; scene.add(cr);
+  }
+
+  // shared materials for moving things
+  const M3 = {
+    glass: lam(0x1d2a3a), tire: lam(0x161616), head: basic(0xfff6c8), tail: basic(0x8a1c1c), tailOn: basic(0xff3030),
+    red: basic(0xff2d3d), redOff: basic(0x5a1016), blue: basic(0x3d8bff), blueOff: basic(0x14306e), gun: lam(0x1a1a1a),
+    beam: basic(0xffe9b0, { transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
+    bulletP: basic(0xffe08a), bulletE: basic(0xff8c78),
+  };
+  const beamGeo = new THREE.ConeGeometry(42, 150, 14, 1, true); beamGeo.rotateZ(Math.PI / 2); beamGeo.translate(75, 0, 0); beamGeo.scale(1, 0.32, 1);
+
+  function carMesh(c) {
+    const g = new THREE.Group(), L = c.t.len, W = c.t.wid;
+    const paint = lam(c.wreck ? 0x2b2725 : c.col);
+    const add = (m, sx, sy, sz, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; g.add(b); return b; };
+    const van = c.type === "van", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
+    add(paint, L, bh, W, 0, base + bh / 2, 0, true);
+    let top = base + bh;
+    if (van) { add(M3.glass, 2, 7, W - 3, L / 2 - 0.4, base + bh - 5, 0); add(M3.glass, L * 0.22, 5, W + 0.4, L * 0.3, base + bh - 5, 0); }
+    else { const ch = sport ? 6 : 7.5; add(M3.glass, L * 0.48, ch, W - 3, -L * 0.04, base + bh + ch / 2, 0, true); add(paint, L * 0.32, 1.2, W - 4, -L * 0.07, base + bh + ch + 0.6, 0); top = base + bh + ch + 1.2; }
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) add(M3.tire, 8, 8, 3.2, sx * L * 0.31, 4, sz * (W / 2 - 0.6));
+    for (const sz of [-1, 1]) add(M3.head, 1, 2.6, 4, L / 2 + 0.3, base + bh * 0.6, sz * W * 0.3);
+    const tails = [-1, 1].map((sz) => add(M3.tail, 1, 2.4, 4, -L / 2 - 0.3, base + bh * 0.6, sz * W * 0.3));
+    let red = null, blue = null;
+    if (c.type === "cop") { add(mat("#1c2b55"), L * 0.36, bh * 0.5, W + 0.3, 0, base + bh * 0.45, 0); red = add(M3.redOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, -W / 4); blue = add(M3.blueOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, W / 4); }
+    if (c.type === "taxi") add(mat("#fff4a0"), 4, 3, 9, -L * 0.07, top + 1.5, 0);
+    if (sport) add(mat("#111111"), L * 0.99, 0.4, 3.5, 0, base + bh + 0.2, 0);
+    const beam = new THREE.Mesh(beamGeo, M3.beam); beam.position.set(L / 2, base + 4, 0); beam.rotation.z = -0.07; beam.visible = false; g.add(beam);
+    return { g, paint, tails, red, blue, beam, wrecked: !!c.wreck };
+  }
+  function personMesh(p, me) {
+    const g = new THREE.Group();
+    const shirt = mat(me ? player.col : p.col), pants = mat(p.kind === "cop" ? "#1a2546" : me ? "#2a3550" : "#2c2f3d"), skin = mat(p.skin);
+    const limb = (m, sx, sy, sz, x, y, z) => { const piv = new THREE.Group(); piv.position.set(x, y, z); const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.y = -sy / 2; piv.add(b); g.add(piv); return piv; };
+    const lL = limb(pants, 2.8, 7, 2.6, 0, 7, -1.7), lR = limb(pants, 2.8, 7, 2.6, 0, 7, 1.7);
+    const torso = new THREE.Mesh(BOX, shirt); torso.scale.set(4, 7, 7.2); torso.position.y = 10.5; torso.castShadow = true; g.add(torso);
+    const aL = limb(shirt, 2.3, 6.4, 2.3, 0, 13.6, -4.7), aR = limb(shirt, 2.3, 6.4, 2.3, 0, 13.6, 4.7);
+    for (const a of [aL, aR]) { const hnd = new THREE.Mesh(BOX, skin); hnd.scale.setScalar(2.2); hnd.position.y = -7.4; a.add(hnd); }
+    const gun = new THREE.Mesh(BOX, M3.gun); gun.scale.set(1.4, 6, 1.6); gun.position.set(0, -9, 0); aR.add(gun);
+    const head = new THREE.Mesh(SPH, skin); head.scale.setScalar(2.7); head.position.y = 16.8; g.add(head);
+    const hair = new THREE.Mesh(SPH, mat(p.kind === "cop" ? "#16244a" : me ? "#222222" : p.hair)); hair.scale.set(2.9, 1.7, 2.9); hair.position.set(-0.4, 18.1, 0); g.add(hair);
+    if (p.kind === "cop" || me) { const brim = new THREE.Mesh(BOX, mat(me ? "#222222" : "#16244a")); brim.scale.set(3.2, 0.6, 4.6); brim.position.set(2.5, 18.3, 0); g.add(brim); }
+    if (p.kind === "gang") { const band = new THREE.Mesh(BOX, mat("#e0213b")); band.scale.set(5.8, 1.3, 5.8); band.position.y = 17.6; g.add(band); }
+    return { g, lL, lR, aL, aR, gun };
+  }
+  function markerObj(col) {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.RingGeometry(28, 32, 40), basic(col, { transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.8;
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(27, 27, 320, 24, 1, true), basic(col, { transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.y = 160; g.add(ring, beam); g.visible = false; scene.add(g); return g;
+  }
+  const pool = (n, make) => { const a = []; for (let i = 0; i < n; i++) { const m = make(i); m.visible = false; scene.add(m); a.push(m); } return a; };
+  const arrowG = new THREE.ConeGeometry(5, 11, 4); arrowG.rotateX(Math.PI);
+  const decalG = new THREE.CircleGeometry(1, 14); decalG.rotateX(-Math.PI / 2);
+  const PKC = { cash: 0x5fd35f, hp: 0xffffff, armor: 0x4d93ff, smg: 0xffd23d, pistol: 0xffd23d };
+  const pkMats = {}; for (const k in PKC) pkMats[k] = lam(PKC[k], { emissive: PKC[k], emissiveIntensity: 0.35 });
+  Object.assign(G3, {
+    ready: true, canvas: c3, r, scene, camera, hemi, sun, M3, winMats, carMesh, personMesh, mat,
+    cars: new Map(), ppl: new Map(), v: new THREE.Vector3(),
+    cDay: new THREE.Color(0.62, 0.78, 0.93), cSet: new THREE.Color(0.96, 0.62, 0.45), cNight: new THREE.Color(0.05, 0.06, 0.16), cTmp: new THREE.Color(),
+    mkBar: markerObj(0xff3d7f), mkT: markerObj(0xffd23d), mkN: markerObj(0xffd23d),
+    arrows: pool(14, () => new THREE.Mesh(arrowG, basic(0xffd23d))),
+    pks: pool(24, () => { const m = new THREE.Mesh(BOX, pkMats.cash); m.scale.set(9, 9, 9); return m; }), pkMats,
+    bul: pool(60, () => { const m = new THREE.Mesh(BOX, M3.bulletP); m.scale.set(14, 1.2, 1.2); return m; }),
+    fx: pool(260, () => new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xffffff, transparent: true, depthWrite: false }))),
+    dec: pool(60, () => new THREE.Mesh(decalG, basic(0x6e0e12, { transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }))),
+  });
+  G3.mkN.children.forEach((m) => (m.material = m.material.clone(), m.material.opacity *= 0.45));
+}
+function sync3d() {
+  const P = player.inCar || player, night = G3.night;
+  const near = (o, d) => Math.abs(o.x - P.x) < d && Math.abs(o.y - P.y) < d;
+  const seen = new Set();
+  for (const c of cars) {
+    seen.add(c.id);
+    let o = G3.cars.get(c.id);
+    if (!near(c, 1400)) { if (o) o.g.visible = false; continue; }
+    if (!o) { o = G3.carMesh(c); G3.cars.set(c.id, o); G3.scene.add(o.g); }
+    o.g.visible = true; o.g.position.set(c.x, 0, c.y); o.g.rotation.y = -c.a;
+    if (c.wreck && !o.wrecked) { o.wrecked = true; o.paint.color.set(0x2b2725); }
+    const tm = c.brake ? G3.M3.tailOn : G3.M3.tail; o.tails[0].material = o.tails[1].material = tm;
+    if (o.red) { const on = c.driver === "cop" && wanted > 0, f = Math.floor(now * 8) % 2; o.red.material = on && f ? G3.M3.red : G3.M3.redOff; o.blue.material = on && !f ? G3.M3.blue : G3.M3.blueOff; }
+    o.beam.visible = night > 0.12 && !!c.driver && !c.wreck;
+  }
+  for (const [id, o] of G3.cars) if (!seen.has(id)) { G3.scene.remove(o.g); o.paint.dispose(); G3.cars.delete(id); }
+  seen.clear();
+  const putPerson = (p, key, me) => {
+    seen.add(key);
+    let o = G3.ppl.get(key);
+    const hide = me ? !!player.inCar : !near(p, 1300);
+    if (hide) { if (o) o.g.visible = false; return; }
+    if (!o) { o = G3.personMesh(p, me); G3.ppl.set(key, o); G3.scene.add(o.g); }
+    o.g.visible = true;
+    o.g.position.set(p.x, p.dead ? 3 : 0, p.y); o.g.rotation.set(0, -p.a, p.dead ? Math.PI / 2 : 0);
+    const moving = (p.spd || 0) > 3 && !p.dead, sw = moving ? Math.sin(p.walk) * 0.75 : 0;
+    const armed = me ? player.weapons[player.w] !== "fist" : p.armed;
+    o.lL.rotation.z = sw; o.lR.rotation.z = -sw; o.aL.rotation.z = -sw * 0.8;
+    o.aR.rotation.z = armed || (me && player.punch > 0) ? Math.PI / 2 : sw * 0.8;
+    o.gun.visible = armed;
+  };
+  for (const p of people) putPerson(p, p.id, false);
+  if (started) putPerson(player, "me", true);
+  for (const [id, o] of G3.ppl) if (!seen.has(id)) { G3.scene.remove(o.g); G3.ppl.delete(id); }
+  // markers
+  const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
+  G3.mkBar.visible = started && !M.active; G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
+  G3.mkT.visible = G3.mkN.visible = false;
+  if (tg && (s2.t === "goto" || s2.t === "cps")) {
+    const rr = s2.t === "cps" ? 60 : s2.r && s2.r > 100 ? 60 : 32;
+    G3.mkT.visible = true; G3.mkT.position.set(tg.x, 0, tg.y); G3.mkT.scale.set(rr / 32, 1, rr / 32);
+    if (s2.t === "cps" && s2.pts[s2.k + 1]) { const n = s2.pts[s2.k + 1]; G3.mkN.visible = true; G3.mkN.position.set(n.x, 0, n.y); }
+  }
+  const pulse = 1 + Math.sin(now * 5) * 0.06;
+  G3.mkBar.children[0].scale.setScalar(pulse); G3.mkT.children[0].scale.setScalar(pulse);
+  // arrows over mission targets
+  const heads = [];
+  if (s2 && s2.t === "kill") s2.units.forEach((u) => !u.dead && heads.push([u, 0xff3d3d, 30]));
+  if (s2 && s2.t === "steal") heads.push([s2.car, 0xffd23d, 44]);
+  if (M.car && player.inCar !== M.car && s2 && s2.t !== "steal") heads.push([M.car, 0xffd23d, 44]);
+  G3.arrows.forEach((a, i) => {
+    const h = heads[i]; a.visible = !!h; if (!h) return;
+    a.material.color.setHex(h[1]); a.position.set(h[0].x, h[2] + Math.sin(now * 6) * 3, h[0].y); a.rotation.y = now * 2;
+  });
+  // pickups
+  G3.pks.forEach((m, i) => {
+    const k = pickups[i]; m.visible = !!k && near(k, 1100); if (!m.visible) return;
+    m.material = G3.pkMats[k.kind] || G3.pkMats.cash; m.position.set(k.x, 8 + Math.sin(now * 4 + k.x) * 2.5, k.y); m.rotation.set(0.4, now * 2, 0);
+  });
+  // bullets
+  G3.bul.forEach((m, i) => {
+    const b = bullets[i]; m.visible = !!b; if (!b) return;
+    m.material = b.owner === "player" ? G3.M3.bulletP : G3.M3.bulletE; m.position.set(b.x, 13, b.y); m.rotation.set(0, -Math.atan2(b.vy, b.vx), 0);
+  });
+  // particles
+  G3.fx.forEach((s, i) => {
+    const p = parts[i]; s.visible = !!p; if (!p) return;
+    const a = clamp(p.life / p.max, 0, 1), age = p.max - p.life;
+    const hgt = p.type === "smoke" ? 14 + age * 34 : p.type === "fire" ? 8 + age * 26 : p.type === "flash" ? 13 : 10;
+    s.position.set(p.x, hgt, p.y);
+    const sz = p.type === "smoke" ? p.size * 1.6 : p.type === "dot" ? p.size * 1.3 : p.size * (0.6 + a * 0.6) * 1.4; s.scale.set(sz, sz, 1);
+    s.material.color.set(p.col); s.material.opacity = p.type === "smoke" ? a * 0.55 : a;
+  });
+  // ground marks (blood and scorch; skid marks stay in the top-down view)
+  let di = 0;
+  for (let i = decals.length - 1; i >= 0 && di < G3.dec.length; i--) {
+    const d = decals[i]; if (d.type === "skid" || !near(d, 1000)) continue;
+    const m = G3.dec[di++]; m.visible = true; m.position.set(d.x, 0.3, d.y); m.scale.set(d.r, 1, d.r * (d.type === "blood" ? 0.7 : 1));
+    m.material.color.setHex(d.type === "blood" ? 0x6e0e12 : 0x0a0808); m.material.opacity = d.type === "blood" ? 0.75 : 0.6;
+  }
+  for (; di < G3.dec.length; di++) G3.dec[di].visible = false;
+}
+function dayNight3d() {
+  const sunv = Math.sin(dayT * TAU), k = clamp(-sunv * 0.75 + 0.05, 0, 0.58) / 0.58, warm = Math.max(0, 1 - Math.abs(sunv) * 2.2);
+  const c = G3.cTmp.copy(G3.cDay).lerp(G3.cSet, warm).lerp(G3.cNight, k);
+  G3.scene.background.copy(c); G3.scene.fog.color.copy(c);
+  G3.hemi.intensity = 0.85 - 0.58 * k; G3.sun.intensity = 0.9 - 0.8 * k;
+  G3.sun.color.setRGB(1, 0.92 - warm * 0.22, 0.82 - warm * 0.32);
+  G3.M3.beam.opacity = k * 0.3;
+  if (Math.abs(k - G3.night) > 0.02) { G3.night = k; for (const m of G3.winMats) m.emissiveIntensity = k * 0.95; }
+}
+function proj3d(x, y, h) {
+  const v = G3.v.set(x, h, y).project(G3.camera), W = cv.clientWidth, H = cv.clientHeight;
+  let sx = ((v.x + 1) / 2) * W, sy = ((1 - v.y) / 2) * H;
+  if (v.z > 1) { sx = W - sx; sy = H * 4; }
+  return [sx, sy];
+}
+let last3d = 0;
+function render3d(t) {
+  const dt = Math.min(0.05, last3d ? t - last3d : 0.016); last3d = t;
+  const W = cv.clientWidth, H = cv.clientHeight, cam = G3.camera;
+  if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
+  const P = player.inCar || player, inCar = !!player.inCar;
+  dayNight3d();
+  if (!started) {
+    // slow orbit over the city behind the title card
+    const a = t * 0.06;
+    cam.position.set(WORLD / 2 + Math.cos(a) * 900, 420, WORLD / 2 + Math.sin(a) * 900); cam.lookAt(WORLD / 2, 0, WORLD / 2);
+  } else {
+    cam3.dragT = Math.max(0, cam3.dragT - dt);
+    if (state === "play") {
+      if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; }
+      if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
+      if (inCar) { const k = cam3.dragT > 0 ? 0.35 : 3.2; cam3.yaw += angDiff(player.inCar.a, cam3.yaw) * Math.min(1, dt * k); }
+      else if (!player.dead && (player.spd || 0) > 20 && cam3.dragT <= 0) { const d = angDiff(player.a, cam3.yaw); if (Math.abs(d) < 2.2) cam3.yaw += d * Math.min(1, dt * 1.1); }
+    }
+    const spd = inCar ? Math.abs(player.inCar.spd) : 0;
+    const tall = W < H ? 1.18 : 1;
+    const back = (inCar ? 118 + Math.min(70, spd * 0.17) : 76) * tall, up = (inCar ? 56 + Math.min(20, spd * 0.05) : 42) * tall;
+    const fx = Math.cos(cam3.yaw), fz = Math.sin(cam3.yaw);
+    let bd = back;
+    for (let s = 10; s <= back; s += 6) if (tile(Math.floor((P.x - fx * s) / T), Math.floor((P.y - fz * s) / T)) === BLD) { bd = Math.max(16, s - 12); break; }
+    const tx = P.x - fx * bd, tz = P.y - fz * bd, ty = up * (0.5 + (0.5 * bd) / back);
+    if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
+    const kk = Math.min(1, dt * 9);
+    cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
+    if (tile(Math.floor(cam3.px / T), Math.floor(cam3.pz / T)) === BLD) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; }
+    const sh = shake ? rand(-shake, shake) * 0.5 : 0;
+    cam.position.set(cam3.px + sh, cam3.py + sh * 0.4, cam3.pz - sh);
+    cam.lookAt(P.x + fx * 26, inCar ? 16 : 14, P.y + fz * 26);
+    // spawning uses this box to keep new cars and people away from the player
+    view.x = P.x - 520; view.y = P.y - 520; view.w = view.h = 1040;
+  }
+  G3.sun.position.set(P.x + 260, 520, P.y + 160); G3.sun.target.position.set(P.x, 0, P.y); G3.sun.target.updateMatrixWorld();
+  sync3d();
+  G3.r.render(G3.scene, cam);
+  // 2D overlay on top: target arrow at the screen edge, low-health flash, minimap
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (started) {
+    const tg = stepTarget(), t2 = tg || (!M.active ? places.bar : null);
+    if (t2) { const [sx, sy] = proj3d(t2.x, t2.y, 20); edgeArrowAt(sx, sy, tg ? "#ffd23d" : "#ff3d7f", t2); }
+    if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
+  }
+  drawMini();
 }
 
 /* ================= loop ================= */
@@ -1526,7 +1882,8 @@ let last = performance.now();
 function frame(t) {
   const dt = Math.min(0.05, (t - last) / 1000); last = t;
   if (state === "play") update(dt);
-  if (started) render(); else renderIdle(t / 1000);
+  if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
+  else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
 }
 function renderIdle(t) {
@@ -1534,8 +1891,12 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, get wanted() { return wanted; } };
+if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, get wanted() { return wanted; } };
+$("viewBtn").addEventListener("click", () => setView(!mode3d));
+$("startView").addEventListener("click", () => setView(!mode3d));
+$("pauseView").addEventListener("click", () => setView(!mode3d));
 bootStart();
+if (want3d) setView(true); else applyView(false);
 requestAnimationFrame(frame);
 })();
 </script>
