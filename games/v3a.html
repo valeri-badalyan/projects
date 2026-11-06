@@ -974,7 +974,7 @@ function useItem(id) {
 }
 function deliverCar(o) {
   if (money < 25 || player.inCar) return;
-  const P = player, spot = randFrom(laneTiles, P, 60, 220) || randFrom(walkTiles, P, 40, 200);
+  const P = player, spot = freeSpot(P.x + Math.cos(P.a) * 96, P.y + Math.sin(P.a) * 96) || freeSpot(P.x, P.y + 96);
   if (!spot) return toast("Некуда подогнать машину", 1.5);
   let c = cars.find((q) => q.ownKey === o.k && !q.wreck);
   if (c) { if (c.driver === "player") return; c.x = spot.x; c.y = spot.y; c.vx = c.vy = 0; c.spd = 0; c.driver = null; }
@@ -2369,8 +2369,9 @@ setTouch(touchMode);
 
 /* ================= overlays ================= */
 // a tap that opens a window must not also press a button inside it when the finger lifts
-let ovOpenedAt = 0;
-document.addEventListener("click", (e) => { if (performance.now() - ovOpenedAt < 400 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
+let ovOpenedAt = 0, lastDown = 0;
+document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
+document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
 function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
 function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
