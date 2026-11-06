@@ -138,6 +138,15 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #mFeed li:first-child{color:var(--ink)}
 #mFeed li{color:var(--muted)}
 #mSkip{flex:none}
+.mbottom{display:flex;flex-direction:column;gap:10px}
+#match.live{background:none;pointer-events:none;align-items:stretch}
+#match.live .match-card{margin:0;width:100%;max-width:none;min-height:100%;background:none;border:0;box-shadow:none;padding:0;justify-content:space-between}
+#match.live .board{align-self:center;width:min(100%,520px);padding:8px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+#match.live #pitch{display:none}
+#match.live .mbottom{align-self:center;width:min(100%,520px);pointer-events:auto}
+#match.live #mFeed{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px;max-height:92px}
+#match.live #mFeed:empty{display:none}
+#game.watching .mini-wrap,#game.watching .stats,#game.watching .topbtns,#game.watching .pad,#game.watching .stick-hint,#game.watching #stick{display:none!important}
 </style>
 
 <div id="game">
@@ -228,8 +237,10 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
     <div class="card match-card">
       <div class="board"><span id="mHome">V3</span><b id="mScore">0:0</b><span id="mAway"></span><span id="mMin">0'</span></div>
       <canvas id="pitch" width="600" height="380" aria-label="Матч на стадионе V3"></canvas>
-      <ol id="mFeed"></ol>
-      <button type="button" class="btn alt" id="mSkip">Пропустить</button>
+      <div class="mbottom">
+        <ol id="mFeed"></ol>
+        <button type="button" class="btn alt" id="mSkip">Пропустить</button>
+      </div>
     </div>
   </div>
 
@@ -797,8 +808,17 @@ function renderStadium() {
 const PW = 600, PH = 380, MATCH_SECS = 40;
 const FORM = [[40, 190], [150, 110], [150, 270], [280, 190], [410, 120], [410, 260]];
 let MT = null;
+function ensure3d(cb) {
+  if (G3.ready) return cb(true);
+  loadThree((ok) => { if (ok) { try { init3d(); } catch (e) { ok = false; } } cb(ok); });
+}
 function startMatch() {
   const key = dayKey(), m = genMatch(key), amt = stPick ? stAmt : 0, cost = TICKET + amt;
+  if (money < cost) return;
+  $("stGo").disabled = true; $("stGo").textContent = "Проходим на трибуну…";
+  ensure3d((ok) => beginMatch(ok, key, m, amt, cost));
+}
+function beginMatch(live, key, m, amt, cost) {
   if (money < cost) return;
   money -= cost;
   save.stadium = { day: key, pick: stPick, amt, paid: 0 }; writeSave();
@@ -806,17 +826,30 @@ function startMatch() {
   for (const home of [true, false]) FORM.forEach(([x, y], i) => { const hx = home ? x : PW - x; pl.push({ home, gk: i === 0, hx, hy: y, x: hx, y }); });
   MT = { m, t: 0, score: [0, 0], next: 0, pl, ball: { x: PW / 2, y: PH / 2, tx: PW / 2, ty: PH / 2, sp: 260 }, mode: "play", flash: 0, done: false, feed: [] };
   $("mHome").textContent = "V3"; $("mAway").textContent = m.opp; $("mFeed").innerHTML = ""; $("mSkip").textContent = "Пропустить";
+  MT.live = live && !!G3.stad;
+  if (MT.live) { MT.prev3d = mode3d; mode3d = true; G3.canvas.hidden = false; G3.stad.mgroup.visible = true; G3.stad.look.x = G3.stad.cx; G3.stad.look.z = G3.stad.cz; }
+  $("match").classList.toggle("live", MT.live); $("game").classList.toggle("watching", MT.live);
   showOv("match"); noise(1.5, 0.18, 900);
+  if (MT.live) toast("Ты на трибуне стадиона V3. Матч начинается!", 2.5);
+}
+function exitMatch() {
+  if (MT && MT.live) { mode3d = MT.prev3d; G3.canvas.hidden = !mode3d; G3.stad.mgroup.visible = false; cam3.init = false; }
+  $("match").classList.remove("live"); $("game").classList.remove("watching");
+  MT = null; resume();
 }
 function addFeed(text) { const li = el("li", null, text); $("mFeed").prepend(li); }
 function goal(g) {
   MT.score[g.home ? 0 : 1]++; MT.flash = 1.4;
   addFeed(`${g.min}' Гол! ${g.who} (${g.home ? "V3" : MT.m.opp})`);
   noise(1.4, 0.35, 1400);
+  MT.cheer = g.home ? 3 : 1.2;
+  if (MT.live && !MT.skipping) big("ГОЛ!", `${g.who} · ${g.home ? "V3" : MT.m.opp}`, g.home ? "#ff7a3d" : "#7fa4ff", 2.2);
 }
 function finishMatch() {
   if (MT.done) return;
+  MT.skipping = true;
   while (MT.next < MT.m.goals.length) goal(MT.m.goals[MT.next++]);
+  MT.skipping = false;
   MT.done = true; MT.t = MATCH_SECS; MT.mode = "end";
   const res = outcome(MT.m), st = save.stadium;
   let msg = `Финальный свисток: V3 ${MT.m.a}:${MT.m.b} ${MT.m.opp}.`;
@@ -825,10 +858,14 @@ function finishMatch() {
     else { sfx.fail(); msg += ` Ставка «${PICK_NAME[st.pick]}» не сыграла.`; }
   }
   addFeed(msg); writeSave();
+  if (MT.live) big("ФИНАЛ", `V3 ${MT.m.a}:${MT.m.b} ${MT.m.opp}`, "#ffd23d", 3);
   $("mSkip").textContent = "Выйти со стадиона";
 }
 function updMatch(dt) {
   if (!MT) return;
+  // the city is paused while you watch, so tick the on-screen messages here
+  if (toastT > 0 && (toastT -= dt) <= 0) $("toast").classList.remove("on");
+  if (bigT > 0 && (bigT -= dt) <= 0) $("big").innerHTML = "";
   if (!MT.done) {
     MT.t += dt;
     const min = Math.min(90, Math.floor((MT.t / MATCH_SECS) * 90));
@@ -852,9 +889,11 @@ function updMatch(dt) {
     p.x += (wx - p.x) * Math.min(1, dt * 2.5); p.y += (wy - p.y) * Math.min(1, dt * 2.5);
   }
   if (MT.flash > 0) MT.flash -= dt;
+  if (MT.cheer > 0) MT.cheer -= dt;
+  if (Math.random() < dt * 0.9) noise(1.1, 0.045 + (MT.cheer > 0 ? 0.08 : 0), 650);
   const min = MT.done ? 90 : Math.min(90, Math.floor((MT.t / MATCH_SECS) * 90));
   setText("mScore", MT.score[0] + ":" + MT.score[1]); setText("mMin", MT.done ? "Конец" : min + "'");
-  drawMatch();
+  if (!MT.live) drawMatch();
 }
 function drawPitch(g, x, y, w, h) {
   for (let i = 0; i < 10; i++) { g.fillStyle = i % 2 ? "#2f8a3a" : "#34973f"; g.fillRect(x + (w * i) / 10, y, w / 10 + 0.5, h); }
@@ -1305,7 +1344,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else resume(); } else if (state === "pause" || state === "shop" || state === "stadium") resume(); }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium") resume(); }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
 });
@@ -1371,7 +1410,7 @@ $("cGo").addEventListener("click", () => { resume(); startMission(offer); toast(
 $("cNo").addEventListener("click", resume);
 $("shopOut").addEventListener("click", resume);
 $("stOut").addEventListener("click", resume);
-$("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else { MT = null; resume(); } });
+$("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else exitMatch(); });
 let started = false;
 function bootStart() {
   const has = save.mission > 0 || save.money > 0;
@@ -1955,10 +1994,36 @@ function init3d() {
       const field = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), lam(0xffffff, { map: new THREE.CanvasTexture(fc) }));
       field.rotation.x = -Math.PI / 2; field.position.set(cx, 0.6, cz); field.receiveShadow = true; scene.add(field);
       const seats = tex(64, (g) => { const cols = ["#ff7a3d", "#f2f2f2", "#ff3d7f", "#3a3550"]; for (let k = 0; k < 8; k++) { g.fillStyle = cols[k % 4]; g.fillRect(0, k * 8, 64, 6); g.fillStyle = "#2a2733"; g.fillRect(0, k * 8 + 6, 64, 2); } });
-      const standM = lam(0xffffff, { map: seats }), sh = 38;
-      const stand = (w, d, x, z) => { const m = new THREE.Mesh(BOX, [lam(0x8f8b9a), lam(0x8f8b9a), standM, lam(0x8f8b9a), lam(0x8f8b9a), lam(0x8f8b9a)]); m.scale.set(w, sh, d); m.position.set(x, sh / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m); };
-      stand(b.w, ins, cx, b.y + ins / 2); stand(b.w, ins, cx, b.y + b.h - ins / 2);
-      stand(ins, fh, b.x + ins / 2, cz); stand(ins, fh, b.x + b.w - ins / 2, cz);
+      const standM = lam(0xffffff, { map: seats }), greyM = lam(0x8f8b9a), sh = 38, stepD = ins / 3;
+      const stand = (w, d, x, z, h) => { const m = new THREE.Mesh(BOX, [greyM, greyM, standM, greyM, greyM, greyM]); m.scale.set(w, h, d); m.position.set(x, h / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m); };
+      // three steps per side, rising away from the pitch, with fans sitting on each step
+      const fans = [];
+      const seatX = cx, seatStep = 1, seatZ = b.y + b.h - ins + (seatStep + 0.5) * stepD;
+      for (let i = 0; i < 3; i++) {
+        const h = (i + 1) * 12.5, o = ins - (i + 0.5) * stepD;
+        stand(b.w - 2 * (ins - (i + 1) * stepD) + 0.1, stepD, cx, b.y + o, h); stand(b.w - 2 * (ins - (i + 1) * stepD) + 0.1, stepD, cx, b.y + b.h - o, h);
+        stand(stepD, b.h - 2 * (ins - (i + 1) * stepD) + 0.1, b.x + o, cz, h); stand(stepD, b.h - 2 * (ins - (i + 1) * stepD) + 0.1, b.x + b.w - o, cz, h);
+        const rowLen = fw + 2 * (i + 1) * stepD - 16;
+        for (let k = 0; k * 8 < rowLen; k++) {
+          const t = -rowLen / 2 + k * 8 + 4;
+          fans.push([cx + t, h, b.y + o, 0]);
+          if (!(i === seatStep && Math.abs(t) < 14) && !(i < seatStep && Math.abs(t) < 9)) fans.push([cx + t, h, b.y + b.h - o, Math.PI]);
+          fans.push([b.x + o, h, cz + t, Math.PI / 2]); fans.push([b.x + b.w - o, h, cz + t, -Math.PI / 2]);
+        }
+      }
+      const shirts = ["#ff7a3d", "#ff3d7f", "#f2f2f2", "#ffd23d", "#3d6dff", "#2c2f3d", "#7ad18a"], skins = ["#f1c7a5", "#d9a47c", "#a9714b", "#7a4b2f"];
+      const fanBody = new THREE.InstancedMesh(BOX, lam(0xffffff), fans.length), fanHead = new THREE.InstancedMesh(BOX, lam(0xffffff), fans.length);
+      const mtx = new THREE.Matrix4(), col = new THREE.Color();
+      fans.forEach((f, n) => {
+        f.push(Math.random() * TAU);
+        mtx.makeScale(5, 7, 4.5).setPosition(f[0], f[1] + 3.5, f[2]); fanBody.setMatrixAt(n, mtx); fanBody.setColorAt(n, col.set(shirts[n % shirts.length]));
+        mtx.makeScale(3.4, 3.4, 3.4).setPosition(f[0], f[1] + 8.8, f[2]); fanHead.setMatrixAt(n, mtx); fanHead.setColorAt(n, col.set(skins[(n * 7) % skins.length]));
+      });
+      scene.add(fanBody, fanHead);
+      const mgroup = new THREE.Group(); mgroup.visible = false; scene.add(mgroup);
+      const ball = new THREE.Mesh(SPH, lam(0xffffff)); ball.scale.setScalar(1.8); ball.castShadow = true; mgroup.add(ball);
+      G3.stad = { b, cx, cz, fx0: b.x + ins, fz0: b.y + ins, fw, fh, fans, fanBody, fanHead, mtx, mgroup, ball, players: [],
+        seat: { x: seatX, y: (seatStep + 1) * 12.5 + 11, z: seatZ }, look: { x: cx, z: cz } };
       for (const [px, pz] of [[b.x + 6, b.y + 6], [b.x + b.w - 6, b.y + 6], [b.x + 6, b.y + b.h - 6], [b.x + b.w - 6, b.y + b.h - 6]]) {
         const pole = new THREE.Mesh(BOX, lam(0x5d5a66)); pole.scale.set(4, 120, 4); pole.position.set(px, 60, pz); pole.castShadow = true; scene.add(pole);
         const lamp = new THREE.Mesh(BOX, basic(0xfff6d8)); lamp.scale.set(16, 9, 4); lamp.position.set(px, 122, pz); lamp.lookAt(cx, 122, cz); scene.add(lamp);
@@ -2172,6 +2237,40 @@ function proj3d(x, y, h) {
   if (v.z > 1) { sx = W - sx; sy = H * 4; }
   return [sx, sy];
 }
+function watchMatch3d(dt) {
+  const S = G3.stad, cam = G3.camera;
+  if (!S.players.length) {
+    for (let i = 0; i < 12; i++) {
+      const home = i < 6, gk = i % 6 === 0;
+      const o = G3.personMesh({ kind: "ped", col: home ? (gk ? "#ffd23d" : "#ff7a3d") : gk ? "#9cff9c" : "#3d6dff", skin: pick(SKIN), hair: pick(HAIR) }, false);
+      o.g.scale.setScalar(0.62); o.gun.visible = false; o.walk = Math.random() * 6; S.mgroup.add(o.g); S.players.push(o);
+    }
+  }
+  const W = (x) => S.fx0 + (x / PW) * S.fw, Z = (y) => S.fz0 + (y / PH) * S.fh;
+  const bx = W(MT.ball.x), bz = Z(MT.ball.y);
+  MT.pl.forEach((p, i) => {
+    const o = S.players[i], x = W(p.x), z = Z(p.y), px = o.g.position.x, pz = o.g.position.z;
+    const sp = Math.hypot(x - px, z - pz) / Math.max(dt, 0.001);
+    o.walk += sp * dt * 0.35;
+    o.g.position.set(x, 0, z); o.g.rotation.y = -Math.atan2(bz - z, bx - x);
+    const sw = sp > 4 ? Math.sin(o.walk) * 0.8 : 0;
+    o.lL.rotation.z = sw; o.lR.rotation.z = -sw; o.aL.rotation.z = -sw * 0.8; o.aR.rotation.z = sw * 0.8;
+  });
+  S.ball.position.set(bx, 1.8 + Math.abs(Math.sin(MT.t * 9)) * (MT.ball.sp > 400 ? 3 : 1), bz);
+  // fans bob, and jump when a goal goes in
+  const jump = MT.cheer > 0 ? Math.min(1, MT.cheer) : 0;
+  S.fans.forEach((f, n) => {
+    const h = Math.max(0, Math.sin(now * (jump ? 14 : 3) + f[4])) * (jump ? 4.5 : 0.35);
+    S.mtx.makeScale(5, 7, 4.5).setPosition(f[0], f[1] + 3.5 + h, f[2]); S.fanBody.setMatrixAt(n, S.mtx);
+    S.mtx.makeScale(3.4, 3.4, 3.4).setPosition(f[0], f[1] + 8.8 + h, f[2]); S.fanHead.setMatrixAt(n, S.mtx);
+  });
+  S.fanBody.instanceMatrix.needsUpdate = true; S.fanHead.instanceMatrix.needsUpdate = true;
+  // you sit in the south stand; your head follows the ball
+  S.look.x = lerp(S.look.x, bx, Math.min(1, dt * 2.2)); S.look.z = lerp(S.look.z, bz, Math.min(1, dt * 2.2));
+  const jy = jump ? Math.abs(Math.sin(now * 14)) * 2 : 0;
+  cam.position.set(S.seat.x + Math.sin(now * 0.6) * 0.5, S.seat.y + jy, S.seat.z);
+  cam.lookAt(lerp(S.cx, S.look.x, 0.85), 3, lerp(S.cz, S.look.z, 0.85));
+}
 let last3d = 0;
 function render3d(t) {
   const dt = Math.min(0.05, last3d ? t - last3d : 0.016); last3d = t;
@@ -2179,7 +2278,9 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (!started) {
+  if (state === "match" && MT && MT.live && G3.stad) {
+    watchMatch3d(dt);
+  } else if (!started) {
     // slow orbit over the city behind the title card
     const a = t * 0.06;
     cam.position.set(WORLD / 2 + Math.cos(a) * 900, 420, WORLD / 2 + Math.sin(a) * 900); cam.lookAt(WORLD / 2, 0, WORLD / 2);
