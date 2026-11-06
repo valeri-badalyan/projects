@@ -661,6 +661,7 @@ function addDecal(d) { decals.push(d); if (decals.length > 420) decals.shift(); 
 function addPart(p) { if (parts.length < 500) parts.push(p); }
 
 /* ================= audio ================= */
+let rainSnd = null;
 let ac = null, master = null, noiseBuf = null, eng = null, sir = null, muted = false;
 function initAudio() {
   if (ac) { if (ac.state === "suspended") ac.resume(); return; }
@@ -673,6 +674,10 @@ function initAudio() {
     const g = ac.createGain(); g.gain.value = 0; o.connect(f); f.connect(g); g.connect(master); o.start(); eng = { o, g };
     const so = ac.createOscillator(); so.type = "square"; const sf = ac.createBiquadFilter(); sf.type = "lowpass"; sf.frequency.value = 1600;
     const sg = ac.createGain(); sg.gain.value = 0; so.connect(sf); sf.connect(sg); sg.connect(master); so.start(); sir = { o: so, g: sg };
+    // rain: looping filtered noise, volume follows the weather
+    const rs = ac.createBufferSource(); rs.buffer = noiseBuf; rs.loop = true;
+    const rf = ac.createBiquadFilter(); rf.type = "bandpass"; rf.frequency.value = 1400; rf.Q.value = 0.6;
+    const rg = ac.createGain(); rg.gain.value = 0; rs.connect(rf); rf.connect(rg); rg.connect(master); rs.start(); rainSnd = rg;
   } catch (e) { ac = null; }
 }
 function noise(dur, vol, freq) {
@@ -1535,7 +1540,7 @@ function physCar(c, th, st, hand, dt) {
   else vf -= vf * 1.1 * dt;
   if (hand) { vf -= vf * 1.6 * dt; c.brake = true; }
   vf = clamp(vf, -t.max * 0.38, t.max);
-  const grip = hand ? 1.6 : t.grip;
+  const grip = hand ? 1.6 : t.grip * (1 - WX.rain * 0.38);
   vr -= vr * Math.min(1, grip * dt);
   const turn = 2.7 * clamp(vf / 130, -1, 1) * (1 - Math.min(0.35, Math.abs(vf) / 1400));
   c.a += st * turn * dt * (hand ? 1.35 : 1);
@@ -1656,7 +1661,7 @@ function updPerson(p, dt) {
   if (p.down > 0) { p.down -= dt; p.spd = 0; if (p.down <= 0 && p.kind === "ped") { p.flee = 8; p.from = player; } return; }
   const tgt = player.inCar || player;
   if (p.kind === "ped") {
-    let sp = 42, vx = 0, vy = 0;
+    let sp = WX.rain > 0.4 ? 58 : 42, vx = 0, vy = 0;
     if (p.flee > 0) {
       p.flee -= dt; sp = 140;
       const a = Math.atan2(p.y - p.from.y, p.x - p.from.x) + Math.sin(p.id + p.flee * 2) * 0.5;
@@ -1907,7 +1912,7 @@ function renderPhone(app) {
   $("phClock").textContent = gameClock(); $("phMoney").textContent = fmt(money);
   const scr = $("phScreen"); scr.innerHTML = ""; scr.classList.toggle("app", app !== "home");
   if (app === "home") {
-    scr.append(el("div", "ph-time", gameClock()), el("div", "ph-date", "Нова-Вэ · " + ruDate(new Date())));
+    scr.append(el("div", "ph-time", gameClock()), el("div", "ph-date", "Нова-Вэ · " + ruDate(new Date()) + " · " + weatherName()));
     const grid = el("div", "ph-apps");
     for (const a of APPS) { const b = el("button", "ph-app"); b.type = "button"; b.id = "app-" + a.id; const ic = el("i", null, a.g); ic.style.setProperty("--ac", a.col); b.append(ic, el("span", null, a.name)); b.addEventListener("click", () => renderPhone(a.id)); grid.appendChild(b); }
     scr.appendChild(grid);
@@ -1984,6 +1989,27 @@ $("playBtn").addEventListener("click", () => { initAudio(); if (!started) { newW
 $("newBtn").addEventListener("click", () => { initAudio(); newWorld(true); started = true; resume(); toast("Город твой. Оружейный магазин — у метки $ рядом", 4); });
 document.addEventListener("visibilitychange", () => { if (document.hidden && state === "play") pauseGame(); });
 
+/* ================= weather ================= */
+// Rain comes and goes: a clear spell, then rain (sometimes a thunderstorm), then clear again.
+const WX = { rain: 0, target: 0, t: 25, storm: false, flash: 0, drops: [] };
+for (let i = 0; i < 320; i++) WX.drops.push({ x: Math.random(), y: Math.random(), sp: 0.9 + Math.random() * 0.8, len: 0.6 + Math.random() * 0.8 });
+const weatherName = () => (WX.target > 0 ? (WX.storm ? "Гроза" : "Дождь") : WX.rain > 0.05 ? "Дождь стихает" : "Ясно");
+function updWeather(dt) {
+  WX.t -= dt;
+  if (WX.t <= 0) {
+    if (WX.target > 0) { WX.target = 0; WX.t = rand(70, 140); toast("Дождь закончился", 2); }
+    else { WX.storm = Math.random() < 0.35; WX.target = WX.storm ? 1 : rand(0.45, 0.8); WX.t = rand(55, 110); toast(WX.storm ? "Начинается гроза" : "Начинается дождь", 2.2); }
+  }
+  WX.rain += clamp(WX.target - WX.rain, -dt * 0.12, dt * 0.12);
+  if (WX.storm && WX.rain > 0.6 && Math.random() < dt * 0.07) {
+    WX.flash = 1;
+    setTimeout(() => { noise(2.6, 0.55, 160); tone(70, 35, 1.8, 0.3, "sine"); }, rand(250, 1400));
+  }
+  WX.flash = Math.max(0, WX.flash - dt * 2.8);
+  for (const d of WX.drops) { d.y += d.sp * dt * 1.6; d.x -= d.sp * dt * 0.25; if (d.y > 1.05) { d.y -= 1.1; d.x = Math.random() * 1.2; } if (d.x < -0.05) d.x += 1.1; }
+  if (rainSnd) rainSnd.gain.value = muted ? 0 : WX.rain * 0.14;
+}
+
 /* ================= update ================= */
 let fieldT = 0, manageT = 0, saveT = 0;
 function update(dt) {
@@ -1997,6 +2023,7 @@ function update(dt) {
   fieldT -= dt; if (fieldT <= 0) { fieldT = 0.3; buildField(P.x, P.y); }
   manageT -= dt; if (manageT <= 0) { manageT = 0.25; manage(); }
   tickGadgets(dt);
+  updWeather(dt);
   saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); }
 
   // input
@@ -2297,6 +2324,11 @@ function drawHuman(p, isPlayer) {
   ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(0.5, 0, 5, 0, TAU); ctx.fill();
   if (p.kind === "cop") { ctx.fillStyle = "#16244a"; ctx.beginPath(); ctx.arc(0.5, 0, 5.4, 0, TAU); ctx.fill(); ctx.fillRect(3, -4, 4, 8); ctx.fillStyle = "#e9c24a"; ctx.fillRect(0, -1, 2, 2); }
   if (p.kind === "gang") { ctx.fillStyle = "#e0213b"; ctx.fillRect(-4, -5, 3, 10); }
+  if (p.kind === "ped" && WX.rain > 0.3) {
+    ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.arc(3, 3, 14, 0, TAU); ctx.fill();
+    for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? p.col : shade(p.col, 0.7); ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 14, (k * TAU) / 8, ((k + 1) * TAU) / 8); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(0, 0, 1.6, 0, TAU); ctx.fill();
+  }
   if (isPlayer) { ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(0.5, 0, 5.2, Math.PI * 0.5, Math.PI * 1.5); ctx.fill(); ctx.fillRect(2, -3.5, 5, 7); }
   ctx.restore();
 }
@@ -2486,9 +2518,20 @@ function render() {
     ctx.globalCompositeOperation = "source-over";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  drawRain2D(W, H);
   if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (MISSIONS && !M.active) drawEdgeArrow(places.bar, "#ff3d7f");
   if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
   drawMini();
+}
+function drawRain2D(W, H, only) {
+  if (WX.rain < 0.02 && WX.flash <= 0) return;
+  if (!only) { ctx.fillStyle = `rgba(30,40,60,${0.28 * WX.rain})`; ctx.fillRect(0, 0, W, H); }
+  const n = Math.floor(WX.drops.length * WX.rain);
+  ctx.strokeStyle = `rgba(205,220,255,${0.3 + 0.3 * WX.rain})`; ctx.lineWidth = 1.3; ctx.beginPath();
+  for (let i = 0; i < n; i++) { const d = WX.drops[i], x = d.x * W, y = d.y * H, l = 16 * d.len; ctx.moveTo(x, y); ctx.lineTo(x - l * 0.22, y - l); }
+  ctx.stroke();
+  if (!only) { ctx.strokeStyle = `rgba(220,230,255,${0.35 * WX.rain})`; ctx.lineWidth = 1; for (let i = 0; i < 14 * WX.rain; i++) { ctx.beginPath(); ctx.ellipse(Math.random() * W, Math.random() * H, 4, 2, 0, 0, TAU); ctx.stroke(); } }
+  if (WX.flash > 0) { ctx.fillStyle = `rgba(235,240,255,${WX.flash * 0.55})`; ctx.fillRect(0, 0, W, H); }
 }
 function drawMini() {
   const S = 248, Pp = player.inCar || player;
@@ -2588,7 +2631,7 @@ function init3d() {
   Object.assign(view, { x: 0, y: 0, w: WORLD, h: WORLD }); drawGround();
   ctx = keepCtx; Object.assign(view, keepView);
   const gt = new THREE.CanvasTexture(gc); gt.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy());
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD, WORLD), lam(0xffffff, { map: gt }));
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD, WORLD), lam(0xffffff, { map: gt })); G3.groundMat = ground.material;
   ground.rotation.x = -Math.PI / 2; ground.position.set(WORLD / 2, 0, WORLD / 2); ground.receiveShadow = true; scene.add(ground);
   const quay = new THREE.Mesh(BOX, lam(0x6e675e)); quay.scale.set(WORLD + 18, 6, WORLD + 18); quay.position.set(WORLD / 2, -3.6, WORLD / 2); scene.add(quay);
   const water = new THREE.Mesh(new THREE.PlaneGeometry(WORLD * 5, WORLD * 5), lam(0x24597a)); water.rotation.x = -Math.PI / 2; water.position.set(WORLD / 2, -5, WORLD / 2); scene.add(water);
@@ -2882,7 +2925,14 @@ function init3d() {
     const hair = new THREE.Mesh(SPH, mat(p.kind === "cop" ? "#16244a" : me ? "#222222" : p.hair)); hair.scale.set(2.9, 1.7, 2.9); hair.position.set(-0.4, 18.1, 0); g.add(hair);
     if (p.kind === "cop" || me) { const brim = new THREE.Mesh(BOX, mat(me ? "#222222" : "#16244a")); brim.scale.set(3.2, 0.6, 4.6); brim.position.set(2.5, 18.3, 0); g.add(brim); }
     if (p.kind === "gang") { const band = new THREE.Mesh(BOX, mat("#e0213b")); band.scale.set(5.8, 1.3, 5.8); band.position.y = 17.6; g.add(band); }
-    return { g, lL, lR, aL, aR, gun };
+    let umb = null;
+    if (p.kind === "ped") {
+      umb = new THREE.Group(); umb.visible = false;
+      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 12, 0.6); pole.position.set(2.5, 18, 3); umb.add(pole);
+      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: p.col, side: THREE.DoubleSide })); can.position.set(2.5, 25.5, 3); umb.add(can);
+      g.add(umb);
+    }
+    return { g, lL, lR, aL, aR, gun, umb };
   }
   function markerObj(col) {
     const g = new THREE.Group();
@@ -2896,6 +2946,14 @@ function init3d() {
   const decalG = new THREE.CircleGeometry(1, 14); decalG.rotateX(-Math.PI / 2);
   const PKC = { cash: 0x5fd35f, hp: 0xffffff, armor: 0x4d93ff, smg: 0xffd23d, pistol: 0xffd23d };
   const pkMats = {}; for (const k in PKC) pkMats[k] = lam(PKC[k], { emissive: PKC[k], emissiveIntensity: 0.35 });
+  // rain streaks: short slanted lines kept in a box around the camera
+  const RN = 1400, rpos = new Float32Array(RN * 6), rdat = [];
+  for (let i = 0; i < RN; i++) rdat.push([rand(-260, 260), rand(0, 230), rand(-260, 260), rand(380, 520)]);
+  const rgeo = new THREE.BufferGeometry(); rgeo.setAttribute("position", new THREE.BufferAttribute(rpos, 3));
+  const rain = new THREE.LineSegments(rgeo, new THREE.LineBasicMaterial({ color: 0xb8c8e8, transparent: true, opacity: 0, depthWrite: false }));
+  rain.frustumCulled = false; scene.add(rain);
+  G3.rain = { mesh: rain, pos: rpos, dat: rdat, n: RN };
+  G3.cRain = new THREE.Color();
   Object.assign(G3, {
     ready: true, canvas: c3, r, scene, camera, hemi, sun, M3, winMats, carMesh, personMesh, mat,
     cars: new Map(), ppl: new Map(), v: new THREE.Vector3(),
@@ -2944,6 +3002,7 @@ function sync3d() {
     o.lL.rotation.z = sw + sit * 1.45; o.lR.rotation.z = -sw + sit * 1.45; o.aL.rotation.z = grab ? Math.PI / 2 : -sw * 0.8 + sit * 0.7;
     o.aR.rotation.z = armed || grab || (me && player.punch > 0) ? Math.PI / 2 : sw * 0.8 + sit * 0.7;
     o.gun.visible = armed;
+    if (o.umb) { o.umb.visible = WX.rain > 0.3 && !lying; if (o.umb.visible) o.aR.rotation.z = 2.6; }
   };
   for (const p of people) putPerson(p, p.id, false);
   if (started) putPerson(player, "me", true);
@@ -3005,6 +3064,15 @@ function dayNight3d() {
   G3.hemi.intensity = 0.85 - 0.58 * k; G3.sun.intensity = 0.9 - 0.8 * k;
   G3.sun.color.setRGB(1, 0.92 - warm * 0.22, 0.82 - warm * 0.32);
   G3.M3.beam.opacity = k * 0.3;
+  const r = WX.rain;
+  if (r > 0.001 || WX.flash > 0) {
+    c.lerp(G3.cRain.setRGB(0.42 - k * 0.3, 0.46 - k * 0.32, 0.52 - k * 0.34), r * 0.75);
+    if (WX.flash > 0) c.lerp(G3.cRain.setRGB(0.9, 0.92, 1), WX.flash * 0.7);
+    G3.scene.background.copy(c); G3.scene.fog.color.copy(c);
+    G3.hemi.intensity = G3.hemi.intensity * (1 - 0.4 * r) + WX.flash * 1.6; G3.sun.intensity *= 1 - 0.75 * r;
+  }
+  G3.scene.fog.near = 380 - 230 * r; G3.scene.fog.far = 1250 - 650 * r;
+  G3.groundMat.color.setScalar(1 - 0.28 * r);
   if (Math.abs(k - G3.night) > 0.02) { G3.night = k; for (const m of G3.winMats) m.emissiveIntensity = k * 0.95; }
 }
 function proj3d(x, y, h) {
@@ -3087,6 +3155,21 @@ function render3d(t) {
   }
   G3.sun.position.set(P.x + 260, 520, P.y + 160); G3.sun.target.position.set(P.x, 0, P.y); G3.sun.target.updateMatrixWorld();
   sync3d();
+  if (G3.rain) {
+    const R = G3.rain, on = WX.rain > 0.02; R.mesh.visible = on;
+    if (on) {
+      const cx0 = cam.position.x, cz0 = cam.position.z, n = Math.floor(R.n * WX.rain);
+      R.mesh.material.opacity = 0.3 + 0.35 * WX.rain;
+      for (let i = 0; i < R.n; i++) {
+        const d = R.dat[i];
+        d[1] -= d[3] * dt; if (d[1] < 0) { d[1] += 230; d[0] = rand(-260, 260); d[2] = rand(-260, 260); }
+        const o = i * 6, x = cx0 + d[0], z = cz0 + d[2], vis = i < n;
+        R.pos[o] = x; R.pos[o + 1] = vis ? d[1] : -50; R.pos[o + 2] = z;
+        R.pos[o + 3] = x - 2.5; R.pos[o + 4] = vis ? d[1] + 13 : -50; R.pos[o + 5] = z - 1;
+      }
+      R.mesh.geometry.attributes.position.needsUpdate = true;
+    }
+  }
   G3.r.render(G3.scene, cam);
   // 2D overlay on top: target arrow at the screen edge, low-health flash, minimap
   const dpr = Math.min(2, devicePixelRatio || 1);
@@ -3117,7 +3200,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; } };
+if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
