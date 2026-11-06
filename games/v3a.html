@@ -196,7 +196,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной на север и юг, проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины и стадион, на юге больница, полиция, пожарная часть и кладбища. Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -289,7 +289,7 @@ function writeSave() {
 /* ================= city ================= */
 let seed = 73021;
 const srnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-const ROAD = 0, WALK = 1, BLD = 2, GRASS = 3, PLAZA = 4, LOT = 5;
+const ROAD = 0, WALK = 1, BLD = 2, GRASS = 3, PLAZA = 4, LOT = 5, CEM = 6;
 const tiles = new Uint8Array(N * N);
 const tile = (x, y) => (x < 0 || y < 0 || x >= N || y >= N ? -1 : tiles[y * N + x]);
 const isR = (i) => i % 8 < 2;
@@ -308,18 +308,19 @@ function addB(tx, ty, w, h, kind = "bld", col) {
   for (let y = ty; y < ty + h; y++) for (let x = tx; x < tx + w; x++) tiles[y * N + x] = BLD;
   const c = col || ROOFS[(srnd() * ROOFS.length) | 0];
   const inset = kind === "cont" ? 5 : kind === "fount" ? 10 : 3;
-  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : kind === "wall" ? 0.03 : 0.05 + srnd() * 0.13;
+  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : kind === "wall" ? 0.03 : kind === "chapel" ? 0.06 : 0.05 + srnd() * 0.13;
   const b = { x: tx * T + inset, y: ty * T + inset, w: w * T - inset * 2, h: h * T - inset * 2, kind, roof: c, wall: shade(c, 0.62), side: shade(c, 0.45), hgt, ac: [] };
   const n = kind === "bld" ? 1 + ((srnd() * 3) | 0) : 0;
   for (let i = 0; i < n; i++) b.ac.push([0.15 + srnd() * 0.6, 0.15 + srnd() * 0.6, 8 + srnd() * 10]);
   blds.push(b);
   return b;
 }
-function addTree(x, y, r) {
+function addTree(x, y, r, kind) {
   const k = Math.floor(y / T) * N + Math.floor(x / T);
   if (!treeGrid.has(k)) treeGrid.set(k, []);
-  treeGrid.get(k).push({ x, y, r, hue: srnd() });
+  treeGrid.get(k).push({ x, y, r, hue: srnd(), kind: kind || "tree" });
 }
+const parkSpots = [];
 function fill(x0, y0, w, h, v) { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) tiles[y * N + x] = v; }
 function cityBlock(ix, iy) {
   const r = srnd();
@@ -328,7 +329,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
+const SPECIAL = { "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -338,8 +339,23 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
-  else if (kind === "hosp") { addB(ix, iy, 4, 4, "hosp", "#e9ecef"); places.hosp = { x: cx, y: (y0 + 5.5) * T }; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 5.5) * T, kind: "hp" }); }
-  else if (kind === "police") { addB(ix, iy, 4, 4, "police", "#2c3e66"); places.police = { x: cx, y: (y0 + 5.5) * T }; pickupSpots.push({ x: cx + T * 1.5, y: (y0 + 5.5) * T, kind: "armor" }); }
+  else if (kind === "fire") {
+    addB(ix, iy, 4, 2, "fire", "#a8322a"); fill(ix, iy + 2, 4, 2, LOT); places.fire = { x: cx, y: (y0 + 4) * T };
+    parkSpots.push({ type: "fire", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "fire", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
+  }
+  else if (kind === "cemetery") {
+    fill(ix, iy, 4, 4, CEM);
+    addB(ix + 1, iy, 2, 1, "chapel", "#5a4a6a");
+    // rows of graves either side of the central path, cypresses in the corners
+    for (let gy = iy + 1.35; gy < iy + 3.9; gy += 0.42) for (let gx = ix + 0.3; gx < ix + 3.9; gx += 0.46) {
+      if (Math.abs(gx - (ix + 2)) < 0.32) continue;
+      addTree(gx * T, gy * T, 9, srnd() < 0.35 ? "cross" : "grave");
+    }
+    for (const [ax, ay] of [[ix + 0.3, iy + 0.35], [ix + 3.7, iy + 0.35]]) addTree(ax * T, ay * T, 10, "cypress");
+    places.cemeteries = (places.cemeteries || []).concat([{ x: cx, y: cy }]);
+  }
+  else if (kind === "hosp") { addB(ix, iy, 4, 4, "hosp", "#e9ecef"); places.hosp = { x: cx, y: (y0 + 5.5) * T }; parkSpots.push({ type: "ambulance", x: (x0 + 4.5) * T, y: (y0 + 5.5) * T, a: 0 }); pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 5.5) * T, kind: "hp" }); }
+  else if (kind === "police") { addB(ix, iy, 4, 4, "police", "#2c3e66"); places.police = { x: cx, y: (y0 + 5.5) * T }; parkSpots.push({ type: "cop", x: (x0 + 1.5) * T, y: (y0 + 5.5) * T, a: 0 }); pickupSpots.push({ x: cx + T * 1.5, y: (y0 + 5.5) * T, kind: "armor" }); }
   else if (kind === "docks" || kind === "docks2") {
     fill(ix, iy, 4, 4, LOT);
     const cols = ["#d9482b", "#2b78d9", "#e3a72f", "#2f9e6b", "#8d3fd1"];
@@ -375,7 +391,7 @@ const laneTiles = [], walkTiles = [];
 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
   const t = tile(x, y);
   if (t === ROAD && !(isR(x) && isR(y))) laneTiles.push([x, y]);
-  if (t === WALK || t === PLAZA || t === GRASS) walkTiles.push([x, y]);
+  if (t === WALK || t === PLAZA || t === GRASS || t === CEM) walkTiles.push([x, y]);
 }
 
 /* prerendered minimap: 4 px per tile */
@@ -383,9 +399,9 @@ const MMS = 4;
 const mm = document.createElement("canvas"); mm.width = mm.height = N * MMS;
 {
   const g = mm.getContext("2d");
-  const col = { [ROAD]: "#4a4955", [WALK]: "#8f8577", [GRASS]: "#5c8a49", [PLAZA]: "#a99b84", [LOT]: "#5c5b64" };
+  const col = { [ROAD]: "#4a4955", [WALK]: "#8f8577", [GRASS]: "#5c8a49", [PLAZA]: "#a99b84", [LOT]: "#5c5b64", [CEM]: "#4c6a44" };
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const t = tile(x, y); if (t !== BLD) { g.fillStyle = col[t]; g.fillRect(x * MMS, y * MMS, MMS, MMS); } }
-  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
+  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : b.kind === "fire" ? "#d7261e" : b.kind === "chapel" ? "#e8e2d4" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
 }
 
 /* ================= world helpers ================= */
@@ -470,6 +486,8 @@ const CT = {
   sport: { name: "Спорткар", len: 46, wid: 22, max: 440, acc: 390, grip: 9, cols: ["#ffb000", "#00b3a4", "#f2f2f2", "#ff5fa2"] },
   van: { name: "Фургон", len: 54, wid: 25, max: 260, acc: 190, grip: 6, cols: ["#e9e3d6", "#5d6f86", "#b8673d"] },
   taxi: { name: "Такси", len: 46, wid: 22, max: 320, acc: 260, grip: 7.5, cols: ["#f5c518"] },
+  fire: { name: "Пожарная машина", len: 64, wid: 26, max: 290, acc: 220, grip: 6.5, cols: ["#d7261e"] },
+  ambulance: { name: "Скорая", len: 54, wid: 25, max: 330, acc: 270, grip: 7, cols: ["#f4f4f4"] },
   cop: { name: "Полиция", len: 48, wid: 22, max: 385, acc: 350, grip: 9.5, cols: ["#f4f4f4"] },
 };
 const TRAFFIC = ["compact", "compact", "sedan", "sedan", "sedan", "van", "taxi", "sport"];
@@ -1204,7 +1222,7 @@ function aiCop(c, dt) {
 /* ================= people AI ================= */
 function walkTarget(p) {
   const tx = Math.floor(p.x / T), ty = Math.floor(p.y / T), opts = [];
-  for (const [dx, dy] of DIRS) { const t = tile(tx + dx, ty + dy); if (t === WALK || t === PLAZA || t === GRASS || t === LOT) opts.push([tx + dx, ty + dy]); }
+  for (const [dx, dy] of DIRS) { const t = tile(tx + dx, ty + dy); if (t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM) opts.push([tx + dx, ty + dy]); }
   if (!opts.length) return { x: p.x + rand(-40, 40), y: p.y + rand(-40, 40) };
   let o = pick(opts);
   if (p.lastT && opts.length > 1) { const f = opts.filter((q) => !(q[0] === p.lastT[0] && q[1] === p.lastT[1])); if (f.length) o = pick(f); }
@@ -1309,6 +1327,12 @@ function manage() {
   const copCars = cars.filter((c) => c.type === "cop" && c.driver === "cop" && !c.wreck).length;
   const want = [0, 1, 2, 3, 5, 7][wanted];
   if (copCars < want) spawnTraffic("cop");
+  for (const sp of parkSpots) {
+    const d = Math.hypot(sp.x - P.x, sp.y - P.y);
+    if (d < 600 || d > 1500 || !offscreen(sp.x, sp.y, 60)) continue;
+    if (cars.some((c) => Math.hypot(c.x - sp.x, c.y - sp.y) < 40)) continue;
+    mkCar(sp.type, sp.x, sp.y, sp.a);
+  }
   for (const s of pickupSpots) {
     if (s.t > 0) continue;
     if (!pickups.some((p) => p.spot === s)) pickups.push({ x: s.x, y: s.y, kind: s.kind, spot: s, t: 0, val: s.kind === "cash" ? 150 : 0 });
@@ -1635,7 +1659,7 @@ function update(dt) {
 /* ================= render ================= */
 function toWorld(sx, sy) { return { x: view.x + sx / view.s, y: view.y + sy / view.s }; }
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-const GROUND = { [ROAD]: "#3b3a44", [WALK]: "#a69c8e", [GRASS]: "#5f8f4b", [PLAZA]: "#bcae96", [LOT]: "#4f4e57" };
+const GROUND = { [ROAD]: "#3b3a44", [WALK]: "#a69c8e", [GRASS]: "#5f8f4b", [PLAZA]: "#bcae96", [LOT]: "#4f4e57", [CEM]: "#536f48" };
 function drawGround() {
   const x0 = Math.max(0, Math.floor(view.x / T)), y0 = Math.max(0, Math.floor(view.y / T));
   const x1 = Math.min(N - 1, Math.floor((view.x + view.w) / T)), y1 = Math.min(N - 1, Math.floor((view.y + view.h) / T));
@@ -1657,6 +1681,15 @@ function drawGround() {
       if (hR && !vR && (isR(x + 1) || isR(x - 1))) { const ex = isR(x + 1) ? px + T - 14 : px + 4; for (let k = 0; k < 6; k++) ctx.fillRect(ex, py + 4 + k * 10, 10, 6); }
       if (y === WALL_Y) { for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#1a1a1a" : "#ffcc00"; ctx.fillRect(px + k * 8, py, 8, 6); ctx.fillRect(px + k * 8, py + T - 6, 8, 6); } ctx.fillStyle = "rgba(240,240,240,.75)"; }
       if (vR && !hR && (isR(y + 1) || isR(y - 1))) { const ey = isR(y + 1) ? py + T - 14 : py + 4; for (let k = 0; k < 6; k++) ctx.fillRect(px + 4 + k * 10, ey, 6, 10); }
+    } else if (t === CEM) {
+      ctx.fillStyle = "#b9ae98";
+      if (x % 8 === 4) ctx.fillRect(px + T - 9, py, 9, T); if (x % 8 === 5) ctx.fillRect(px, py, 9, T);
+      ctx.fillStyle = "#26231f";
+      const gate = (x % 8 === 4 || x % 8 === 5);
+      if (tile(x, y - 1) === WALK) { ctx.fillRect(px, py, T, 2); for (let k = 0; k < T; k += 8) ctx.fillRect(px + k, py, 2, 5); }
+      if (tile(x, y + 1) === WALK && !gate) { ctx.fillRect(px, py + T - 2, T, 2); for (let k = 0; k < T; k += 8) ctx.fillRect(px + k, py + T - 5, 2, 5); }
+      if (tile(x - 1, y) === WALK) { ctx.fillRect(px, py, 2, T); for (let k = 0; k < T; k += 8) ctx.fillRect(px, py + k, 5, 2); }
+      if (tile(x + 1, y) === WALK) { ctx.fillRect(px + T - 2, py, 2, T); for (let k = 0; k < T; k += 8) ctx.fillRect(px + T - 5, py + k, 5, 2); }
     } else if (t === GRASS) {
       ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(px + ((x * 17) % 40), py + ((y * 23) % 44), 6, 3);
     } else if (t === LOT) {
@@ -1695,7 +1728,9 @@ function drawCar(c) {
   if (!c.wreck) {
     // glass + roof
     ctx.fillStyle = "#1d2a3a";
-    if (c.type === "van") { rr(L * 0.18, -W / 2 + 3, L * 0.16, W - 6, 2); ctx.fill(); ctx.fillStyle = shade(c.col, 0.92); rr(-L / 2 + 3, -W / 2 + 3, L * 0.66, W - 6, 2); ctx.fill(); }
+    if (c.type === "fire") { rr(L * 0.3, -W / 2 + 3, L * 0.12, W - 6, 2); ctx.fill(); ctx.fillStyle = "#9a9a9a"; ctx.fillRect(-L / 2 + 4, -5, L * 0.72, 3); ctx.fillRect(-L / 2 + 4, 2, L * 0.72, 3); for (let k = 0; k < 9; k++) ctx.fillRect(-L / 2 + 6 + k * 5, -5, 1.5, 10); ctx.fillStyle = "#f2f2f2"; ctx.fillRect(-L / 2, W / 2 - 3, L, 2); ctx.fillRect(-L / 2, -W / 2 + 1, L, 2); }
+    else if (c.type === "ambulance") { rr(L * 0.22, -W / 2 + 3, L * 0.14, W - 6, 2); ctx.fill(); ctx.fillStyle = "#e0303e"; ctx.fillRect(-L / 2, -W / 2 + 1, L, 3); ctx.fillRect(-L / 2, W / 2 - 4, L, 3); ctx.fillRect(-L * 0.2 - 6, -2, 12, 4); ctx.fillRect(-L * 0.2 - 2, -6, 4, 12); ctx.fillStyle = "#3d8bff"; ctx.fillRect(L * 0.12, -W / 2 + 2, 4, W - 4); }
+    else if (c.type === "van") { rr(L * 0.18, -W / 2 + 3, L * 0.16, W - 6, 2); ctx.fill(); ctx.fillStyle = shade(c.col, 0.92); rr(-L / 2 + 3, -W / 2 + 3, L * 0.66, W - 6, 2); ctx.fill(); }
     else {
       rr(-L * 0.22, -W / 2 + 3, L * 0.5, W - 6, 4); ctx.fill();
       ctx.fillStyle = shade(c.col, 1.08); rr(-L * 0.12, -W / 2 + 4.5, L * 0.26, W - 9, 3); ctx.fill();
@@ -1735,6 +1770,9 @@ function drawHuman(p, isPlayer) {
   ctx.restore();
 }
 function drawTree(t) {
+  if (t.kind === "grave") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(t.x - 4, t.y - 1, 10, 6); ctx.fillStyle = "#8d8a86"; rr(t.x - 6, t.y - 4, 12, 7, 2); ctx.fill(); ctx.fillStyle = "#6d6a66"; ctx.fillRect(t.x - 5, t.y + 4, 10, 6); return; }
+  if (t.kind === "cross") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(t.x - 1, t.y - 4, 4, 14); ctx.fillStyle = "#3b3632"; ctx.fillRect(t.x - 1.5, t.y - 7, 3, 14); ctx.fillRect(t.x - 5, t.y - 3, 10, 3); return; }
+  if (t.kind === "cypress") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(t.x + 5, t.y + 5, t.r * 0.7, t.r, 0, 0, TAU); ctx.fill(); ctx.fillStyle = "#24452a"; ctx.beginPath(); ctx.ellipse(t.x, t.y, t.r * 0.7, t.r, 0, 0, TAU); ctx.fill(); return; }
   ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.arc(t.x + 6, t.y + 6, t.r, 0, TAU); ctx.fill();
   ctx.fillStyle = t.hue < 0.5 ? "#3f7a3a" : "#4f8a3c"; ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, TAU); ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.beginPath(); ctx.arc(t.x - t.r * 0.3, t.y - t.r * 0.3, t.r * 0.5, 0, TAU); ctx.fill();
@@ -1779,6 +1817,8 @@ function drawBuilding(b) {
   if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЛИЦИЯ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
   if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "fire") { ctx.fillStyle = "#f2f2f2"; ctx.font = "28px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЖАРНАЯ ЧАСТЬ", rx + b.w / 2, ry + b.h / 2 - 14); ctx.fillStyle = "#ffd23d"; ctx.fillText("01", rx + b.w / 2, ry + b.h / 2 + 22); }
+  if (b.kind === "chapel") { ctx.fillStyle = "#e8d48a"; ctx.fillRect(rx + b.w / 2 - 3, ry + b.h / 2 - 16, 6, 32); ctx.fillRect(rx + b.w / 2 - 11, ry + b.h / 2 - 8, 22, 6); }
   if (b.kind === "food") { ctx.fillStyle = "#e9f7e0"; ctx.font = "34px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПРОДУКТЫ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e8c95d"; for (let k = 0; k < 6; k++) ctx.fillRect(rx + 10 + k * (b.w - 20) / 6, ry + b.h - 12, (b.w - 20) / 12, 8); }
 }
 function drawPickup(k) {
@@ -2012,10 +2052,22 @@ function init3d() {
     if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЛИЦИЯ", w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
     if (b.kind === "bar") { g.fillStyle = MISSIONS ? "#ff3d7f" : "#ffb000"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", w / 2, h / 2); }
     if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", w / 2, h / 2); }
+    if (b.kind === "fire") { g.fillStyle = "#f2f2f2"; g.font = "36px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЖАРНАЯ ЧАСТЬ", w / 2, h / 2 - 18); g.fillStyle = "#ffd23d"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("01", w / 2, h / 2 + 26); }
     if (b.kind === "food") { g.fillStyle = "#e9f7e0"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.fillText("ПРОДУКТЫ", w / 2, h / 2); }
   }
   for (const b of blds) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
+    if (b.kind === "chapel") {
+      const body = new THREE.Mesh(BOX, lam(0xe8e2d4)); body.scale.set(b.w * 0.8, 40, b.h * 0.8); body.position.set(cx, 20, cz); body.castShadow = body.receiveShadow = true; scene.add(body);
+      const roofG = new THREE.ConeGeometry(b.w * 0.6, 26, 4); roofG.rotateY(Math.PI / 4);
+      const rf = new THREE.Mesh(roofG, lam(0x5a4a6a)); rf.scale.set(1, 1, b.h / b.w); rf.position.set(cx, 53, cz); rf.castShadow = true; scene.add(rf);
+      const drum = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 14, 12), lam(0xe8e2d4)); drum.position.set(cx, 66, cz); scene.add(drum);
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(7, 12, 8), lam(0xd9b44a, { emissive: 0x3a2a00 })); dome.position.set(cx, 76, cz); scene.add(dome);
+      const c1 = new THREE.Mesh(BOX, lam(0xd9b44a)); c1.scale.set(1.4, 14, 1.4); c1.position.set(cx, 89, cz); scene.add(c1);
+      const c2 = new THREE.Mesh(BOX, lam(0xd9b44a)); c2.scale.set(8, 1.4, 1.4); c2.position.set(cx, 92, cz); scene.add(c2);
+      const door = new THREE.Mesh(BOX, lam(0x4a3426)); door.scale.set(10, 18, 1); door.position.set(cx, 9, b.y + b.h * 0.9 + 0.6); scene.add(door);
+      continue;
+    }
     if (b.kind === "wall") {
       if (!G3.wallT) {
         const mkC = (graffiti) => tex(128, (g) => {
@@ -2094,8 +2146,8 @@ function init3d() {
       const sp = new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 22, 10), lam(0xbdb4a2)); sp.position.set(cx, 11, cz); scene.add(sp);
       continue;
     }
-    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food";
-    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food" || b.kind === "fire";
+    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
     const geo = new THREE.BoxGeometry(b.w, h, b.h);
     if (b.kind !== "cont") {
       const uv = geo.attributes.uv;
@@ -2114,6 +2166,17 @@ function init3d() {
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => roofArt.forEach(([b, c, t]) => { paintRoof(b, c); t.needsUpdate = true; }));
 
+  // iron fences around the cemeteries, open at the south path
+  const fenceM = lam(0x26231f);
+  for (const c of places.cemeteries || []) {
+    const x0 = c.x - 2 * T, x1 = c.x + 2 * T, z0 = c.y - 2 * T, z1 = c.y + 2 * T, fh = 9;
+    const rail = (w, d, x, z) => { const m = new THREE.Mesh(BOX, fenceM); m.scale.set(w, 1.2, d); m.position.set(x, fh, z); scene.add(m); };
+    rail(x1 - x0, 1.2, c.x, z0); rail(1.2, z1 - z0, x0, c.y); rail(1.2, z1 - z0, x1, c.y);
+    rail(2 * T - 16, 1.2, x0 + T - 8, z1); rail(2 * T - 16, 1.2, x1 - T + 8, z1);
+    const post = (x, z) => { const m = new THREE.Mesh(BOX, fenceM); m.scale.set(1, fh + 2, 1); m.position.set(x, (fh + 2) / 2, z); scene.add(m); };
+    for (let x = x0; x <= x1; x += 8) { post(x, z0); if (Math.abs(x - c.x) > 16) post(x, z1); }
+    for (let z = z0; z <= z1; z += 8) { post(x0, z); post(x1, z); }
+  }
   // checkpoints in the wall: a guard tower on each side and a raised striped barrier
   const stripeT = tex(32, (g) => { for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : "#e0213b"; g.fillRect(0, k * 8, 32, 8); } });
   for (const gt of places.gates) {
@@ -2129,7 +2192,11 @@ function init3d() {
   // trees
   const trunkG = new THREE.CylinderGeometry(2.2, 3.2, 20, 6), crownG = new THREE.IcosahedronGeometry(1, 0);
   const crownM = [new THREE.MeshPhongMaterial({ color: 0x3f7a3a, flatShading: true, shininess: 0 }), new THREE.MeshPhongMaterial({ color: 0x4f8a3c, flatShading: true, shininess: 0 })];
+  const stoneM = lam(0x8d8a86), crossM = lam(0x3b3632), cypM = new THREE.MeshPhongMaterial({ color: 0x24452a, flatShading: true, shininess: 0 });
   for (const list of treeGrid.values()) for (const t of list) {
+    if (t.kind === "grave") { const m = new THREE.Mesh(BOX, stoneM); m.scale.set(3, 9, 9); m.position.set(t.x, 4.5, t.y); m.castShadow = true; scene.add(m); const sl = new THREE.Mesh(BOX, mat("#6d6a66")); sl.scale.set(12, 1.2, 8); sl.position.set(t.x + 6, 0.6, t.y); scene.add(sl); continue; }
+    if (t.kind === "cross") { const v = new THREE.Mesh(BOX, crossM); v.scale.set(1.6, 13, 1.6); v.position.set(t.x, 6.5, t.y); v.castShadow = true; scene.add(v); const hz = new THREE.Mesh(BOX, crossM); hz.scale.set(1.6, 1.6, 8); hz.position.set(t.x, 9.5, t.y); scene.add(hz); continue; }
+    if (t.kind === "cypress") { const cy = new THREE.Mesh(new THREE.ConeGeometry(7, 46, 7), cypM); cy.position.set(t.x, 23, t.y); cy.castShadow = true; scene.add(cy); continue; }
     const tr = new THREE.Mesh(trunkG, mat("#6b4a32")); tr.position.set(t.x, 10, t.y); tr.castShadow = true; scene.add(tr);
     const cr = new THREE.Mesh(crownG, crownM[t.hue < 0.5 ? 0 : 1]); cr.scale.setScalar(t.r * 1.15); cr.position.set(t.x, 20 + t.r * 0.7, t.y); cr.rotation.y = t.hue * 6; cr.castShadow = true; scene.add(cr);
   }
@@ -2147,7 +2214,7 @@ function init3d() {
     const g = new THREE.Group(), L = c.t.len, W = c.t.wid;
     const paint = lam(c.wreck ? 0x2b2725 : c.col);
     const add = (m, sx, sy, sz, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; g.add(b); return b; };
-    const van = c.type === "van", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
+    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
     add(paint, L, bh, W, 0, base + bh / 2, 0, true);
     let top = base + bh;
     if (van) { add(M3.glass, 2, 7, W - 3, L / 2 - 0.4, base + bh - 5, 0); add(M3.glass, L * 0.22, 5, W + 0.4, L * 0.3, base + bh - 5, 0); }
@@ -2158,6 +2225,8 @@ function init3d() {
     let red = null, blue = null;
     if (c.type === "cop") { add(mat("#1c2b55"), L * 0.36, bh * 0.5, W + 0.3, 0, base + bh * 0.45, 0); red = add(M3.redOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, -W / 4); blue = add(M3.blueOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, W / 4); }
     if (c.type === "taxi") add(mat("#fff4a0"), 4, 3, 9, -L * 0.07, top + 1.5, 0);
+    if (c.type === "fire") { for (const z of [-5, 5]) add(mat("#9a9a9a"), L * 0.72, 1.4, 1.4, -L * 0.1, top + 2, z); for (let k = 0; k < 9; k++) add(mat("#9a9a9a"), 1.2, 1.2, 10, -L * 0.42 + k * 5, top + 2, 0); add(mat("#f2f2f2"), L + 0.2, 1.6, W + 0.2, 0, base + bh * 0.35, 0); add(M3.red, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
+    if (c.type === "ambulance") { add(mat("#e0303e"), L + 0.2, 2.2, W + 0.2, 0, base + bh * 0.4, 0); add(mat("#e0303e"), 10, 0.6, 3, -L * 0.15, top + 0.3, 0); add(mat("#e0303e"), 3, 0.6, 10, -L * 0.15, top + 0.3, 0); add(M3.blue, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
     if (sport) add(mat("#111111"), L * 0.99, 0.4, 3.5, 0, base + bh + 0.2, 0);
     const beam = new THREE.Mesh(beamGeo, M3.beam); beam.position.set(L / 2, base + 4, 0); beam.rotation.z = -0.07; beam.visible = false; g.add(beam);
     return { g, paint, tails, red, blue, beam, wrecked: !!c.wreck };
