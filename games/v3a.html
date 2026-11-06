@@ -837,7 +837,7 @@ const SHOPS = [
       { id: "shawarma", name: "Шаурма", info: "+35 здоровья", price: 15, heal: 35 },
       { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
       { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
-    ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
+    ].map((it) => (it.heal ? Object.assign(it, { act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
   { id: "electro", who: "Электроника «Вольт»", title: "Магазин электроники", col: "#c77ae8", hex: 0xc77ae8, label: "Э", at: () => places.electro, bonus: 0,
     note: "Гаджеты покупаются один раз и остаются навсегда. Их делают на заводе электроники на юге.",
     items: [
@@ -855,7 +855,7 @@ const SHOPS = [
       { id: "shake", name: "Коктейль «Прилив»", info: "Быстрый бег 20 с", price: 15, act: () => { player.boost = Math.max(player.boost || 0, 20); } },
       { id: "combo", name: "Комбо «Капитан»", info: "Полное здоровье и быстрый бег 30 с", price: 60, act: () => { player.hp = 100; player.boost = 30; } },
       { id: "cook", name: "Встать к плите", info: "Собирай бургеры по заказам — $40 за каждый", price: 0, priceText: "работа", open: () => openKitchen() },
-    ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
+    ].map((it) => (it.heal ? Object.assign(it, { act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
   { id: "factory", col: "#5de0d0", hex: 0x5de0d0, label: "З", at: () => places.factory, open: () => openFactory() },
   { id: "stadium", col: "#e8f0ff", hex: 0xe8f0ff, label: "V3", at: () => places.stadium, open: () => openStadium() },
 ];
@@ -1838,9 +1838,8 @@ function renderPhone(app) {
     if (st) list.appendChild(phRow("Матч сыгран", st.pick ? (st.paid ? "Ставка сыграла: +" + fmt(st.paid) : "Ставка не сыграла") : "Ты был на трибуне", `${m.a}:${m.b}`));
     else { list.appendChild(phRow("Победа V3", null, "×" + m.odds.home.toFixed(2))); list.appendChild(phRow("Ничья", null, "×" + m.odds.draw.toFixed(2))); list.appendChild(phRow("Победа гостей", null, "×" + m.odds.away.toFixed(2))); scr.appendChild(el("p", "ph-note", "Билет $20 — у белой метки V3 возле стадиона.")); }
   } else if (app === "ems") {
-    const full = player.hp >= 100;
     scr.appendChild(el("p", "ph-note", "Скорая приедет туда, где ты стоишь, и поставит на ноги."));
-    list.appendChild(phRow("Вызвать скорую", full ? "Ты и так здоров" : "Здоровье " + Math.round(player.hp) + " → 100", "$100", () => { money -= 100; player.hp = 100; sfx.cash(); writeSave(); resume(); toast("Скорая подлатала тебя. Здоровье 100", 2.4); }, full || money < 100));
+    list.appendChild(phRow("Вызвать скорую", "Здоровье " + Math.round(player.hp) + " → 100", "$100", () => { money -= 100; player.hp = 100; sfx.cash(); writeSave(); resume(); toast("Скорая подлатала тебя. Здоровье 100", 2.4); }, money < 100));
   } else if (app === "settings") {
     list.appendChild(phRow("Вид", mode3d ? "3D от третьего лица" : "2D сверху", "сменить", () => { setView(!mode3d); setTimeout(() => state === "phone" && renderPhone("settings"), 300); }));
     list.appendChild(phRow("Звук", muted ? "выключен" : "включён", "сменить", () => { initAudio(); toggleMute(); renderPhone("settings"); }));
