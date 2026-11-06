@@ -1054,7 +1054,7 @@ function renderHome() {
     box.appendChild(ul);
     const can = money >= HOME_PRICE;
     const b = el("button", "btn", can ? "Купить квартиру — " + fmt(HOME_PRICE) : "Не хватает " + fmt(HOME_PRICE - money)); b.type = "button"; b.id = "hmBuy"; b.disabled = !can;
-    b.addEventListener("click", () => { if (money < HOME_PRICE) return; money -= HOME_PRICE; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win(); big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя", "#2fd0a0", 2.6); resume(); enterHome(); });
+    b.addEventListener("click", () => { if (buyHome()) { resume(); enterHome(); } });
     box.appendChild(b);
     return;
   }
@@ -1066,6 +1066,12 @@ function renderHome() {
     box.appendChild(sw);
     const back = el("button", "btn", "Готово"); back.type = "button"; back.id = "hmDone"; back.addEventListener("click", resume); box.appendChild(back);
   }
+}
+function buyHome() {
+  if (save.home || money < HOME_PRICE) return false;
+  money -= HOME_PRICE; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win();
+  big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя", "#2fd0a0", 2.6);
+  return true;
 }
 function sleepHome() {
   player.hp = 100; dayT = 2 / 24; // 08:00
@@ -2168,6 +2174,10 @@ function renderPhone(app) {
     list.appendChild(phRow("Вызвать скорую", "Здоровье " + Math.round(player.hp) + " → 100", "$100", () => { money -= 100; player.hp = 100; sfx.cash(); writeSave(); resume(); toast("Скорая подлатала тебя. Здоровье 100", 2.4); }, money < 100));
   } else if (app === "shop") {
     scr.appendChild(el("p", "ph-note", "Покупай из любого магазина города, не выходя из дома. Еда — в сумку, оружие — в руки, машина — на стоянку автосалона."));
+    const re = el("p", "ph-note", "ЖК «Нова» · недвижимость"); re.style.color = "#2fd0a0"; re.style.marginTop = "6px"; list.appendChild(re);
+    list.appendChild(phRow("Квартира в ЖК «Нова»", save.home ? "Уже твоя" : "Однушка на 12-м этаже: кровать, шкаф, ТВ, диван", fmt(HOME_PRICE), () => {
+      if (!buyHome()) return; resume(); setTimeout(() => toast("Квартира твоя! «Домой» — в Телепорте и Такси", 3), 400);
+    }, !!save.home || money < HOME_PRICE));
     for (const sh of SHOPS) {
       if (!sh.items) continue;
       const head = el("p", "ph-note", sh.who + (sh.bonus ? " · бонус +" + fmt(sh.bonus) + " за покупку" : "")); head.style.color = sh.col; head.style.marginTop = "6px"; list.appendChild(head);
