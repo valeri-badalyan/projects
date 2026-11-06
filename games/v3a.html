@@ -65,6 +65,21 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #bHome svg,#homeBtn svg{width:22px;height:22px}
 #homeBtn{display:flex;align-items:center;justify-content:center;color:#2fd0a0}
 body.touch #homeBtn{display:none}
+#dash{position:absolute;right:calc(12px + env(safe-area-inset-right,0px));top:calc(112px + env(safe-area-inset-top,0px));width:168px;padding:8px;border-radius:14px;background:rgba(12,14,20,.82);border:1px solid rgba(212,175,55,.55);display:flex;flex-direction:column;gap:6px;z-index:3;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#dash .dsh-top{display:flex;align-items:center;gap:8px}
+#dGear{width:44px;height:44px;border-radius:10px;background:#1b1f28;border:2px solid #d4af37;color:#ffd977;font-family:var(--display);font-size:26px;font-weight:400;display:flex;align-items:center;justify-content:center}
+#dash .dsh-num{flex:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:3px}
+#dSpd{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums;color:#fff}
+#dash small{font-size:10px;color:var(--muted);font-weight:700}
+#dash i{display:block;width:100%;height:7px;border-radius:4px;background:#2a2e38;overflow:hidden}
+#dRpm{display:block;height:100%;width:10%;background:linear-gradient(90deg,#5fd35f,#ffd23d 70%,#ff3d3d)}
+#dash.lim #dRpm{background:#ff3d3d}
+#dash .dsh-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:5px}
+#dash button{min-height:34px;border-radius:9px;border:1px solid rgba(255,255,255,.25);background:#232733;color:var(--ink);font-weight:800;font-size:12px;touch-action:manipulation}
+#dash #dMode.on{background:#d4af37;color:#1b1406;border-color:#ffd977}
+#dash #dDown:disabled,#dash #dUp:disabled{opacity:.35}
+#dRadio{text-align:left;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dRadio.off{color:var(--muted)}
 #tvBar{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:3}
 #tvBar button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(20,18,28,.82);color:var(--ink);font-weight:800;font-size:13px;text-align:left}
 #tvBar button.on{background:#2a7de1;border-color:#9cc6ff}
@@ -266,6 +281,11 @@ button.ph-row:disabled{opacity:.45}
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
   <div id="roomHint" hidden></div>
+  <div id="dash" hidden>
+    <div class="dsh-top"><b id="dGear">1</b><div class="dsh-num"><span id="dSpd">0</span><small>км/ч</small><i><u id="dRpm"></u></i></div></div>
+    <div class="dsh-row" id="dGearRow"><button type="button" id="dMode">АВТО</button><button type="button" id="dDown" aria-label="Передача вниз">▼</button><button type="button" id="dUp" aria-label="Передача вверх">▲</button></div>
+    <button type="button" id="dRadio">📻 V3 FM</button>
+  </div>
   <div id="tvBar" hidden>
     <button type="button" data-ch="0">1 · WorldNews</button>
     <button type="button" data-ch="1">2 · Sport</button>
@@ -719,6 +739,7 @@ const CT = {
   fire: { name: "Пожарная машина", len: 64, wid: 26, max: 290, acc: 220, grip: 6.5, cols: ["#d7261e"] },
   ambulance: { name: "Скорая", len: 54, wid: 25, max: 330, acc: 270, grip: 7, cols: ["#f4f4f4"] },
   cop: { name: "Полиция", len: 48, wid: 22, max: 385, acc: 350, grip: 9.5, cols: ["#f4f4f4"] },
+  ters: { name: "V3 TERS", len: 50, wid: 23, max: 480, acc: 420, grip: 9.8, gears: 6, radio: true, cols: ["#14171c", "#e9e9ee", "#6e0f1f", "#1b2f5a"] },
 };
 const TRAFFIC = ["compact", "compact", "sedan", "sedan", "sedan", "van", "taxi", "sport"];
 const cars = [], people = [], bullets = [], parts = [], decals = [], pickups = [];
@@ -800,6 +821,29 @@ function big(title, sub, color, s = 2.6) {
 }
 const hudCache = {};
 function setText(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
+function gearUp() { const c = player.inCar; if (c && c.t.gears) { if (!c.manual) { c.manual = true; hudCache.dash = null; } shiftGear(c, 1, false); } }
+function gearDown() { const c = player.inCar; if (c && c.t.gears) { if (!c.manual) { c.manual = true; hudCache.dash = null; } shiftGear(c, -1, false); } }
+function gearMode() { const c = player.inCar; if (!c || !c.t.gears) return; c.manual = !c.manual; hudCache.dash = null; toast(c.manual ? "Ручная коробка: ▲ ▼ (X / Q)" : "Автомат", 1.6); }
+function updDash() {
+  const c = player.inCar, radio = hasRadio(), show = !!c && !indoor && (!!c.t.gears || radio);
+  if (hudCache.dashOn !== show) { hudCache.dashOn = show; $("dash").hidden = !show; hudCache.dash = null; }
+  if (!show) return;
+  const gears = !!c.t.gears, stn = save.station == null ? 0 : save.station;
+  const key = gears + "|" + !!c.manual + "|" + c.gear + "|" + stn + "|" + radio;
+  if (hudCache.dash !== key) {
+    hudCache.dash = key;
+    $("dGearRow").hidden = !gears; $("dash").querySelector(".dsh-top").style.display = gears ? "" : "none";
+    $("dMode").textContent = c.manual ? "РУЧНАЯ" : "АВТО"; $("dMode").classList.toggle("on", !!c.manual);
+    $("dRadio").hidden = !radio; $("dRadio").textContent = "📻 " + (stn < 0 ? "Радио выкл" : STATIONS[stn]); $("dRadio").classList.toggle("off", stn < 0);
+    $("dUp").disabled = !gears || c.gear >= c.t.gears; $("dDown").disabled = !gears || (c.gear || 1) <= 1;
+  }
+  if (gears) {
+    const vf = c.spd || 0, g = vf < -3 ? "R" : Math.abs(vf) < 3 && !c.manual ? "N" : String(c.gear || 1);
+    setText("dGear", g); setText("dSpd", String(Math.round(Math.abs(vf) * 0.36)));
+    const w = Math.round((c.rpm || 0.12) * 100); if (hudCache.rpm !== w) { hudCache.rpm = w; $("dRpm").style.width = w + "%"; }
+    const lim = !!c.limiter; if (hudCache.lim !== lim) { hudCache.lim = lim; $("dash").classList.toggle("lim", lim); }
+  }
+}
 function updHud() {
   setText("money", fmt(money));
   const st = $("stars"), key = wanted + "|" + (seenT > 0);
@@ -813,6 +857,7 @@ function updHud() {
   if (hudCache.weap !== w) { hudCache.weap = w; $("weap").textContent = w; }
   const homeKey = !!save.home && !indoor;
   if (hudCache.homeBtn !== homeKey) { hudCache.homeBtn = homeKey; $("bHome").hidden = !homeKey; $("homeBtn").hidden = !homeKey; }
+  updDash();
   const mode = player.inCar ? "car" : "foot";
   if (hudCache.mode !== mode) { hudCache.mode = mode; $("pad").dataset.mode = mode; $("bEnter").textContent = player.inCar ? "ВЫЙТИ" : "СЕСТЬ"; }
 }
@@ -942,7 +987,7 @@ function carSlots() { const L = places.garageLot, out = []; for (const row of [3
 function ownCars() { return save.cars || (save.cars = []); }
 function placeOwned(o, slot) { const c = mkCar(o.type, slot.x, slot.y, -Math.PI / 2, o.col); c.keep = true; c.ownKey = o.k; return c; }
 function buyCar(type) {
-  const o = { k: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), type, col: pick(CAR_COLS) };
+  const o = { k: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), type, col: CT[type].gears ? pick(CT[type].cols) : pick(CAR_COLS) };
   ownCars().push(o);
   let slot = carSlots().find((sl) => !cars.some((c) => !c.wreck && Math.hypot(c.x - sl.x, c.y - sl.y) < 36));
   if (!slot) slot = farRoad(places.garage, 64, 400);
@@ -957,7 +1002,7 @@ const SHOPS = [
   ] },
   { id: "cars", who: "Автосалон «Нова»", title: "Магазин машин", col: "#4d93ff", hex: 0x4d93ff, label: "А", at: () => places.garage, bonus: 0,
     note: "Машина встанет на стоянку у салона и останется твоей. Мест — 4.",
-    items: [["compact", 800, "Маленький и юркий"], ["sedan", 1500, "Надёжная городская машина"], ["van", 2000, "Большой и крепкий"], ["taxi", 1800, "Жёлтое такси с шашечками"], ["sport", 5000, "Самый быстрый в городе"]].map(([type, price, info]) => ({
+    items: [["compact", 800, "Маленький и юркий"], ["sedan", 1500, "Надёжная городская машина"], ["van", 2000, "Большой и крепкий"], ["taxi", 1800, "Жёлтое такси с шашечками"], ["sport", 5000, "Самый быстрый в городе"], ["ters", 12000, "Элитная модель: 6 передач (автомат или ручная), встроенное радио"]].map(([type, price, info]) => ({
       id: type, name: CT[type].name, info, price, no: () => (ownCars().length >= 4 ? "Стоянка заполнена — 4 машины" : ""),
       act: () => { buyCar(type); toast(CT[type].name + " ждёт тебя на стоянке", 2.6); }, quiet: true })) },
   { id: "food", who: "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
@@ -1860,11 +1905,41 @@ function updFactory(dt) {
 const RADIO_BASS = [45, 45, 57, 45, 43, 43, 55, 43, 41, 41, 53, 41, 43, 43, 55, 47];
 const RADIO_LEAD = [69, 0, 72, 74, 76, 0, 74, 72, 67, 0, 69, 72, 74, 0, 72, 69, 69, 0, 72, 74, 76, 79, 76, 74, 72, 0, 74, 76, 72, 0, 69, 0];
 let radioT = 0, radioStep = 0, laptopT = 0;
+const STATIONS = ["V3 FM", "Lounge 101", "Neon Drive"];
+const LOUNGE = [[57, 60, 64, 67], [50, 53, 57, 60], [55, 59, 62, 65], [48, 52, 55, 59]];
+const DRIVE_BASS = [38, 38, 50, 38, 41, 41, 53, 41, 36, 36, 48, 36, 43, 43, 55, 43];
+const DRIVE_LEAD = [74, 0, 0, 77, 0, 0, 79, 0, 81, 0, 79, 0, 77, 0, 74, 0];
+function hasRadio() { return !!player.inCar && (gadget("radio") || !!player.inCar.t.radio); }
+function radioNext() {
+  if (!hasRadio()) return;
+  const st = save.station == null ? 0 : save.station, nx = st >= STATIONS.length - 1 ? -1 : st + 1;
+  save.station = nx; radioT = 0; radioStep = 0; writeSave(); hudCache.dash = null;
+  toast(nx < 0 ? "Радио выключено" : "Радио «" + STATIONS[nx] + "»", 1.4);
+}
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 function tickGadgets(dt) {
   if (gadget("laptop")) { laptopT += dt; if (laptopT >= 60) { laptopT -= 60; money += 25; sfx.cash(); toast("Ноутбук: удалённая работа +$25", 1.6); } }
-  if (!ac || muted || !player.inCar || !gadget("radio")) { radioT = 0; return; }
+  const stn = save.station == null ? 0 : save.station;
+  if (!ac || muted || !hasRadio() || stn < 0) { radioT = 0; return; }
   radioT -= dt;
+  if (stn === 1) {
+    while (radioT <= 0) {
+      radioT += 0.3; const i = radioStep++, ch = LOUNGE[(i >> 3) % 4];
+      const n = ch[[0, 1, 2, 3, 2, 1, 2, 3][i % 8]]; tone(midi(n + 12), midi(n + 12), 0.5, 0.03, "sine");
+      if (i % 8 === 0) tone(midi(ch[0] - 12), midi(ch[0] - 12), 1.6, 0.06, "triangle");
+      if (i % 4 === 2) noise(0.03, 0.025, 6000);
+    }
+    return;
+  }
+  if (stn === 2) {
+    while (radioT <= 0) {
+      radioT += 0.15; const i = radioStep++;
+      const b = DRIVE_BASS[i % 16]; tone(midi(b), midi(b), 0.13, 0.05, "sawtooth");
+      const ld = DRIVE_LEAD[(i >> 1) % 16]; if (ld && i % 2 === 0) tone(midi(ld), midi(ld) * 1.003, 0.28, 0.022, "square");
+      if (i % 4 === 0) tone(120, 45, 0.14, 0.1, "sine"); if (i % 8 === 4) noise(0.08, 0.06, 1800);
+    }
+    return;
+  }
   while (radioT <= 0) {
     radioT += 0.19;
     const i = radioStep++;
@@ -2293,7 +2368,9 @@ function takeCar(best) {
   best.driver = "player"; best.ai = null; best.deployed = false; best.keep = true; best.hold = false;
   if (player.lastCar && player.lastCar !== best && player.lastCar !== M.car && !player.lastCar.ownKey) player.lastCar.keep = false;
   player.inCar = best; player.lastCar = best;
-  if (gadget("radio")) toast("Радио «V3 FM»", 1.4);
+  const stn = save.station == null ? 0 : save.station;
+  if (best.t.gears) toast(`${best.t.name}: ${best.manual ? "ручная коробка" : "автомат"}${stn >= 0 ? " · радио «" + STATIONS[stn] + "»" : ""}`, 2.2);
+  else if (gadget("radio") && stn >= 0) toast("Радио «" + STATIONS[stn] + "»", 1.4);
 }
 function pullDriver(c, P, sd) {
   STATS.jacks++;
@@ -2365,6 +2442,30 @@ function exitCar(force) {
   player.anim = { type: "out", car: c, side: c.doorSide, ph: "open", t: 0, sit: 1 };
   sfx.doorOpen();
 }
+/* V3 TERS gearbox: six gears, automatic or manual. Each gear pulls hardest low in its band; shifting takes a moment */
+function gearBand(c) { return (c.t.max * 1.04) / c.t.gears; }
+function gearbox(c, vf, th, dt) {
+  const n = c.t.gears, band = gearBand(c);
+  if (!c.gear) { c.gear = 1; c.shiftT = 0; c.rpm = 0.12; }
+  if (c.shiftT > 0) c.shiftT -= dt;
+  if (!c.manual) {
+    const up = vf > c.gear * band * 0.94 && c.gear < n, down = c.gear > 1 && vf < (c.gear - 1) * band * 0.7;
+    if (up || down) shiftGear(c, up ? 1 : -1, true);
+  }
+  const lo = (c.gear - 1) * band, hi = c.gear * band;
+  c.rpm = clamp(0.14 + (Math.max(0, vf) / hi) * 0.86, 0.12, 1) * (vf < -3 ? 0.5 : 1);
+  if (vf < -3) c.rpm = clamp(0.2 + -vf / 200, 0.2, 0.8);
+  if (c.shiftT > 0) return 0;
+  if (vf >= hi * 0.995) { c.limiter = true; return 0; }
+  c.limiter = false;
+  const lug = vf < lo * 0.55 ? 0.4 : 1;
+  return (1.3 - (c.gear - 1) * 0.07) * lug;
+}
+function shiftGear(c, d, auto) {
+  const g2 = clamp((c.gear || 1) + d, 1, c.t.gears); if (g2 === c.gear) return;
+  c.gear = g2; c.shiftT = auto ? 0.16 : 0.12;
+  if (c === player.inCar) { tone(d > 0 ? 300 : 220, d > 0 ? 180 : 320, 0.07, 0.05, "square"); noise(0.05, 0.12, 2400); hudCache.dash = null; }
+}
 function carCircles(c) {
   const o = c.t.len * 0.26, ca = Math.cos(c.a), sa = Math.sin(c.a), r = c.t.wid * 0.56;
   return [[c.x + ca * o, c.y + sa * o, r], [c.x - ca * o, c.y - sa * o, r]];
@@ -2373,7 +2474,9 @@ function physCar(c, th, st, hand, dt) {
   const t = c.t, fx = Math.cos(c.a), fy = Math.sin(c.a), rx = -fy, ry = fx;
   let vf = c.vx * fx + c.vy * fy, vr = c.vx * rx + c.vy * ry;
   c.brake = false;
-  if (th > 0) { if (vf < -5) { vf += 620 * dt; c.brake = true; } else vf += t.acc * th * dt * (1 - Math.max(0, vf) / (t.max * 1.05)); }
+  let gk = 1;
+  if (t.gears) { gk = gearbox(c, vf, th, dt); if (gk === 0 && th > 0 && vf >= -5) th = 0.0001; }
+  if (th > 0) { if (vf < -5) { vf += 620 * dt; c.brake = true; } else vf += t.acc * gk * th * dt * (1 - Math.max(0, vf) / (t.max * 1.05)); }
   else if (th < 0) { if (vf > 5) { vf -= 620 * -th * dt; c.brake = true; } else vf += t.acc * 0.6 * th * dt; }
   else vf -= vf * 1.1 * dt;
   if (hand) { vf -= vf * 1.6 * dt; c.brake = true; }
@@ -2864,6 +2967,10 @@ function taxiTo(name, at, lock) {
 $("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
 $("bagBtn").addEventListener("click", () => { initAudio(); toggleInv(); });
 $("homeBtn").addEventListener("click", () => { initAudio(); goHome(); });
+$("dUp").addEventListener("click", gearUp);
+$("dDown").addEventListener("click", gearDown);
+$("dMode").addEventListener("click", gearMode);
+$("dRadio").addEventListener("click", radioNext);
 $("bHome").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); goHome(); });
 $("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRain(); });
 $("bBag").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); toggleInv(); });
@@ -2968,6 +3075,8 @@ function update(dt) {
       }
     } else if (kb) { th = -my; st = mx; }
     physCar(c, th, st, hand, dt);
+    if (c.t.gears) { if (hit.KeyX) gearUp(); if (hit.KeyQ) gearDown(); if (hit.KeyG) gearMode(); }
+    if (hit.KeyN) radioNext();
     if (hit.KeyF || hit.KeyE) exitCar(false);
   } else {
     let vx = 0, vy = 0;
@@ -3116,7 +3225,7 @@ function update(dt) {
 
   // audio
   if (ac && !muted) {
-    if (eng) { eng.g.gain.value = player.inCar ? 0.035 : 0; if (player.inCar) eng.o.frequency.value = 45 + Math.abs(player.inCar.spd) * 0.32; }
+    if (eng) { eng.g.gain.value = player.inCar ? 0.035 : 0; if (player.inCar) eng.o.frequency.value = player.inCar.t.gears ? 52 + (player.inCar.rpm || 0.12) * 150 + (player.inCar.limiter ? Math.sin(now * 90) * 12 : 0) : 45 + Math.abs(player.inCar.spd) * 0.32; }
     if (sir) { const near = wanted > 0 && cars.some((c) => c.type === "cop" && c.driver === "cop" && dist(c, P) < 700); sir.g.gain.value = near ? 0.02 : 0; sir.o.frequency.value = 620 + 260 * Math.sin(now * 3.2); }
   }
   updHud();
@@ -3203,6 +3312,7 @@ function drawCar(c) {
       ctx.fillStyle = shade(c.col, 1.08); rr(-L * 0.12, -W / 2 + 4.5, L * 0.26, W - 9, 3); ctx.fill();
     }
     if (c.type === "sport") { ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillRect(-L / 2 + 2, -2, L - 4, 4); }
+    if (c.type === "ters") { ctx.fillStyle = "#d4af37"; ctx.fillRect(-L / 2 + 2, -W / 2 + 1, L - 6, 1.6); ctx.fillRect(-L / 2 + 2, W / 2 - 2.6, L - 6, 1.6); ctx.fillStyle = "#0b0b0e"; ctx.fillRect(-L / 2 - 1, -W / 2 + 2, 4, W - 4); ctx.fillStyle = "#d4af37"; ctx.fillRect(L / 2 - 6, -2, 3, 4); }
     if (c.type === "taxi") { ctx.fillStyle = "#222"; ctx.fillRect(-3, -6, 7, 12); ctx.fillStyle = "#fff4a0"; ctx.fillRect(-2, -5, 5, 10); }
     if (c.type === "cop") {
       ctx.fillStyle = "#1c2b55"; ctx.fillRect(L * 0.3, -W / 2, L * 0.2, W); ctx.fillRect(-L / 2, -W / 2, L * 0.16, W);
@@ -3827,7 +3937,7 @@ function init3d() {
     const g = new THREE.Group(), L = c.t.len, W = c.t.wid;
     const paint = lam(c.wreck ? 0x2b2725 : c.col);
     const add = (m, sx, sy, sz, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; g.add(b); return b; };
-    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance" || c.type === "bus", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
+    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance" || c.type === "bus", sport = c.type === "sport" || c.type === "ters", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
     add(paint, L, bh, W, 0, base + bh / 2, 0, true);
     let top = base + bh;
     if (van) { add(M3.glass, 2, 7, W - 3, L / 2 - 0.4, base + bh - 5, 0); add(M3.glass, L * 0.22, 5, W + 0.4, L * 0.3, base + bh - 5, 0); }
@@ -3841,7 +3951,15 @@ function init3d() {
     if (c.type === "bus") { add(M3.glass, L * 0.82, 5.5, W + 0.3, -L * 0.04, base + bh - 5, 0); add(M3.glass, 1, 9, W - 4, L / 2 + 0.1, base + bh - 6, 0); add(mat("#f2f2f2"), L + 0.2, 1.4, W + 0.2, 0, base + 5, 0); }
     if (c.type === "fire") { for (const z of [-5, 5]) add(mat("#9a9a9a"), L * 0.72, 1.4, 1.4, -L * 0.1, top + 2, z); for (let k = 0; k < 9; k++) add(mat("#9a9a9a"), 1.2, 1.2, 10, -L * 0.42 + k * 5, top + 2, 0); add(mat("#f2f2f2"), L + 0.2, 1.6, W + 0.2, 0, base + bh * 0.35, 0); add(M3.red, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
     if (c.type === "ambulance") { add(mat("#e0303e"), L + 0.2, 2.2, W + 0.2, 0, base + bh * 0.4, 0); add(mat("#e0303e"), 10, 0.6, 3, -L * 0.15, top + 0.3, 0); add(mat("#e0303e"), 3, 0.6, 10, -L * 0.15, top + 0.3, 0); add(M3.blue, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
-    if (sport) add(mat("#111111"), L * 0.99, 0.4, 3.5, 0, base + bh + 0.2, 0);
+    if (c.type === "sport") add(mat("#111111"), L * 0.99, 0.4, 3.5, 0, base + bh + 0.2, 0);
+    if (c.type === "ters") {
+      const gold = mat("#d4af37");
+      for (const sz of [-1, 1]) add(gold, L * 0.9, 0.9, 0.3, 0, base + bh * 0.62, sz * (W / 2 + 0.15));
+      for (const sz of [-1, 1]) add(mat("#0b0b0e"), 1.4, 5, 1.4, -L / 2 + 2.5, base + bh + 2.5, sz * W * 0.32);
+      add(mat("#0b0b0e"), 5, 0.9, W + 1, -L / 2 + 2.2, base + bh + 5.2, 0);
+      add(gold, 0.6, 2, 5, L / 2 + 0.35, base + bh * 0.45, 0);
+      for (const sz of [-1, 1]) add(mat("#c0c4cc"), 2, 1.4, 1.4, -L / 2 - 0.6, base + 1.6, sz * W * 0.18);
+    }
     const doors = [-1, 1].map((sd) => {
       const piv = new THREE.Group(); piv.position.set(L * 0.1, 0, sd * (W / 2 + 0.4));
       const panel = new THREE.Mesh(BOX, paint); panel.scale.set(L * 0.27, bh * 0.86, 0.9); panel.position.set(-L * 0.135, base + bh * 0.5, 0); panel.castShadow = true; piv.add(panel);
