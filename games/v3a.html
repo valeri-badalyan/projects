@@ -196,7 +196,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной на север и юг, проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -308,7 +308,7 @@ function addB(tx, ty, w, h, kind = "bld", col) {
   for (let y = ty; y < ty + h; y++) for (let x = tx; x < tx + w; x++) tiles[y * N + x] = BLD;
   const c = col || ROOFS[(srnd() * ROOFS.length) | 0];
   const inset = kind === "cont" ? 5 : kind === "fount" ? 10 : 3;
-  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : 0.05 + srnd() * 0.13;
+  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : kind === "wall" ? 0.03 : 0.05 + srnd() * 0.13;
   const b = { x: tx * T + inset, y: ty * T + inset, w: w * T - inset * 2, h: h * T - inset * 2, kind, roof: c, wall: shade(c, 0.62), side: shade(c, 0.45), hgt, ac: [] };
   const n = kind === "bld" ? 1 + ((srnd() * 3) | 0) : 0;
   for (let i = 0; i < n; i++) b.ac.push([0.15 + srnd() * 0.6, 0.15 + srnd() * 0.6, 8 + srnd() * 10]);
@@ -361,6 +361,16 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "plaza") { fill(ix, iy, 4, 4, PLAZA); addB(ix + 1, iy + 1, 2, 2, "fount", "#9fb8c4"); pickupSpots.push({ x: cx - T * 1.5, y: cy - T * 1.5, kind: "cash" }); }
 }
 
+/* the wall: splits the city into a north and a south half along the middle road; two checkpoints let you through */
+const WALL_Y = 24, GATES = [16, 32];
+{
+  let x0 = 0;
+  const segs = [];
+  for (const gx of GATES) { segs.push([x0, gx - x0]); x0 = gx + 2; }
+  segs.push([x0, N - x0]);
+  for (const [sx, w] of segs) addB(sx, WALL_Y, w, 1, "wall", "#a9a397");
+  places.gates = GATES.map((gx) => ({ x: (gx + 1) * T, y: (WALL_Y + 0.5) * T }));
+}
 const laneTiles = [], walkTiles = [];
 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
   const t = tile(x, y);
@@ -1141,9 +1151,14 @@ function aiTraffic(c, dt) {
       else ai.dir = (ai.dir + 2) % 4;
     } else {
       ai.inInter = false;
-      if (tile(cx + DIRS[ai.dir][0], cy + DIRS[ai.dir][1]) !== ROAD) ai.dir = (ai.dir + 2) % 4;
+      if (tile(cx + DIRS[ai.dir][0], cy + DIRS[ai.dir][1]) !== ROAD) {
+        // dead end (the wall): U-turn into the other lane instead of turning round in our own
+        const side = [[0, -1], [1, 0], [0, 1], [-1, 0]][ai.dir];
+        ai.dir = (ai.dir + 2) % 4;
+        if (laneOk(ai.dir, cx + side[0], cy + side[1])) { ai.tx = cx + side[0]; ai.ty = cy + side[1]; ai.uturn = true; }
+      }
     }
-    ai.tx = cx + DIRS[ai.dir][0]; ai.ty = cy + DIRS[ai.dir][1];
+    if (ai.uturn) ai.uturn = false; else { ai.tx = cx + DIRS[ai.dir][0]; ai.ty = cy + DIRS[ai.dir][1]; }
   }
   const want = Math.atan2((ai.ty + 0.5) * T - c.y, (ai.tx + 0.5) * T - c.x);
   const da = angDiff(want, c.a);
@@ -1155,6 +1170,9 @@ function aiTraffic(c, dt) {
   for (const o of cars) if (o !== c && block(o, 22)) { target = 0; break; }
   if (target > 0) for (const p of people) if (!p.dead && block(p, 18)) { target = 0; break; }
   if (target > 0 && !player.inCar && block(player, 18)) { target = 0; ai.honk = (ai.honk || 0) + dt; if (ai.honk > 1.2) { ai.honk = 0; if (dist(c, player) < 300) sfx.honk(); } }
+  // anti-jam: a car stuck for 5 s squeezes past for a moment (cars push each other apart)
+  if (target === 0 && c.spd < 5) { ai.wait = (ai.wait || 0) + dt; if (ai.wait > 5) { ai.wait = 0; ai.force = 1.6; } } else ai.wait = 0;
+  if (ai.force > 0) { ai.force -= dt; target = ai.cruise * 0.45; }
   if (ai.panic > 0) { ai.panic -= dt; target = c.t.max * 0.7; }
   c.spd = lerp(c.spd, target, Math.min(1, dt * (target < c.spd ? 6 : 1.4)));
   c.vx = fx * c.spd; c.vy = fy * c.spd;
@@ -1275,6 +1293,7 @@ function manage() {
   for (let i = cars.length - 1; i >= 0; i--) {
     const c = cars[i], d = dist(c, P);
     if (c.keep || c.driver === "player") continue;
+    if (c.driver === "ai" && c.ai && c.ai.wait > 3 && offscreen(c.x, c.y, 80)) { cars.splice(i, 1); continue; }
     const lim = c.type === "cop" && wanted > 0 ? 2200 : c.wreck ? 1300 : 1600;
     if (d > lim && offscreen(c.x, c.y, 100)) cars.splice(i, 1);
   }
@@ -1636,6 +1655,7 @@ function drawGround() {
       // crosswalks next to junctions
       ctx.fillStyle = "rgba(240,240,240,.75)";
       if (hR && !vR && (isR(x + 1) || isR(x - 1))) { const ex = isR(x + 1) ? px + T - 14 : px + 4; for (let k = 0; k < 6; k++) ctx.fillRect(ex, py + 4 + k * 10, 10, 6); }
+      if (y === WALL_Y) { for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#1a1a1a" : "#ffcc00"; ctx.fillRect(px + k * 8, py, 8, 6); ctx.fillRect(px + k * 8, py + T - 6, 8, 6); } ctx.fillStyle = "rgba(240,240,240,.75)"; }
       if (vR && !hR && (isR(y + 1) || isR(y - 1))) { const ey = isR(y + 1) ? py + T - 14 : py + 4; for (let k = 0; k < 6; k++) ctx.fillRect(px + 4 + k * 10, ey, 6, 10); }
     } else if (t === GRASS) {
       ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(px + ((x * 17) % 40), py + ((y * 23) % 44), 6, 3);
@@ -1733,6 +1753,14 @@ function drawBuilding(b) {
     ctx.fillStyle = "#cfc6b5"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2, b.w / 2, 0, TAU); ctx.fill();
     ctx.fillStyle = "#4aa3c8"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2, b.w / 2 - 7, 0, TAU); ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2, 8 + Math.sin(now * 3) * 2, 0, TAU); ctx.fill();
+    return;
+  }
+  if (b.kind === "wall") {
+    ctx.fillStyle = b.roof; ctx.fillRect(rx, ry, b.w, b.h);
+    ctx.fillStyle = "rgba(0,0,0,.18)"; for (let x = 0; x < b.w; x += 32) ctx.fillRect(rx + x, ry, 2, b.h);
+    ctx.strokeStyle = "#3a3a3a"; ctx.lineWidth = 2; ctx.beginPath();
+    for (let x = 0; x <= b.w; x += 8) ctx.lineTo(rx + x, ry + b.h / 2 + (x % 16 ? 4 : -4));
+    ctx.stroke();
     return;
   }
   if (b.kind === "stadium") {
@@ -1988,6 +2016,30 @@ function init3d() {
   }
   for (const b of blds) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
+    if (b.kind === "wall") {
+      if (!G3.wallT) {
+        const mkC = (graffiti) => tex(128, (g) => {
+          g.fillStyle = "#b5afa3"; g.fillRect(0, 0, 128, 128);
+          for (let k = 0; k < 60; k++) { g.fillStyle = `rgba(0,0,0,${Math.random() * 0.06})`; g.fillRect(Math.random() * 128, Math.random() * 128, 6, 6); }
+          g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(0, 0, 3, 128); g.fillRect(64, 0, 3, 128); g.fillRect(0, 0, 128, 6);
+          g.fillStyle = "rgba(60,40,20,.12)"; g.fillRect(0, 110, 128, 18);
+          if (graffiti) { g.save(); g.translate(64, 70); g.rotate(-0.12); g.font = "34px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 5; g.strokeStyle = "#1a1a1a"; g.strokeText(graffiti, 0, 0); g.fillStyle = pick(["#ff3d7f", "#ff7a3d", "#3d8bff", "#8be38a"]); g.fillText(graffiti, 0, 0); g.restore(); }
+        });
+        G3.wallT = [mkC(""), mkC("V3"), mkC("НОВА"), mkC("ЮГ"), mkC("СЕВЕР")];
+      }
+      const h = 46, n = Math.round(b.w / 128);
+      for (let i = 0; i < n; i++) {
+        const w = b.w / n, geo = new THREE.BoxGeometry(w + 0.2, h, b.h);
+        const uv = geo.attributes.uv; for (const f of [0, 1]) for (let k = 0; k < 4; k++) { const j = f * 4 + k; uv.setXY(j, (uv.getX(j) * b.h) / 128, (uv.getY(j) * h) / 128); }
+        for (const f of [4, 5]) for (let k = 0; k < 4; k++) { const j = f * 4 + k; uv.setXY(j, (uv.getX(j) * w) / 128, (uv.getY(j) * h) / 128); }
+        const face = lam(0xffffff, { map: G3.wallT[(i * 7 + Math.round(b.x)) % 3 === 0 ? 1 + ((i + Math.round(b.x / 64)) % 4) : 0] });
+        const m = new THREE.Mesh(geo, [face, face, lam(0x8a857b), lam(0x8a857b), face, face]);
+        m.position.set(b.x + w * (i + 0.5), h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
+      }
+      const wire = new THREE.Mesh(BOX, lam(0x2a2a2a)); wire.scale.set(b.w, 2.2, 2.2); wire.position.set(cx, h + 6, cz); scene.add(wire);
+      for (let x = b.x + 8; x < b.x + b.w; x += 32) { const post = new THREE.Mesh(BOX, lam(0x3a3a3a)); post.scale.set(1.6, 8, 1.6); post.position.set(x, h + 4, cz); scene.add(post); }
+      continue;
+    }
     if (b.kind === "stadium") {
       const ins = 34, fw = b.w - ins * 2, fh = b.h - ins * 2;
       const fc = document.createElement("canvas"); fc.width = 512; fc.height = Math.round((512 * fh) / fw); drawPitch(fc.getContext("2d"), 0, 0, fc.width, fc.height);
@@ -2062,6 +2114,18 @@ function init3d() {
   }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => roofArt.forEach(([b, c, t]) => { paintRoof(b, c); t.needsUpdate = true; }));
 
+  // checkpoints in the wall: a guard tower on each side and a raised striped barrier
+  const stripeT = tex(32, (g) => { for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : "#e0213b"; g.fillRect(0, k * 8, 32, 8); } });
+  for (const gt of places.gates) {
+    for (const side of [-1, 1]) {
+      const tx = gt.x + side * (T + 18), tz = gt.y;
+      const tw = new THREE.Mesh(BOX, lam(0x7d786d)); tw.scale.set(26, 78, 26); tw.position.set(tx, 39, tz); tw.castShadow = true; scene.add(tw);
+      const cab = new THREE.Mesh(BOX, [lam(0x5f5a52), lam(0x5f5a52), lam(0x4a4640), lam(0x4a4640), lam(0x1d2a3a), lam(0x1d2a3a)]); cab.scale.set(38, 16, 38); cab.position.set(tx, 86, tz); cab.castShadow = true; scene.add(cab);
+      const lid = new THREE.Mesh(BOX, lam(0x3a3632)); lid.scale.set(44, 3, 44); lid.position.set(tx, 96, tz); scene.add(lid);
+      const lamp = new THREE.Mesh(BOX, basic(0xfff1c0)); lamp.scale.set(5, 4, 5); lamp.position.set(tx - side * 20, 90, tz); scene.add(lamp);
+    }
+    const pole = new THREE.Mesh(BOX, lam(0xffffff, { map: stripeT })); pole.scale.set(3, 70, 3); pole.position.set(gt.x - T + 4, 35, gt.y - 20); scene.add(pole);
+  }
   // trees
   const trunkG = new THREE.CylinderGeometry(2.2, 3.2, 20, 6), crownG = new THREE.IcosahedronGeometry(1, 0);
   const crownM = [new THREE.MeshPhongMaterial({ color: 0x3f7a3a, flatShading: true, shininess: 0 }), new THREE.MeshPhongMaterial({ color: 0x4f8a3c, flatShading: true, shininess: 0 })];
