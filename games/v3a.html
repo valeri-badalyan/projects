@@ -225,6 +225,7 @@ button.ph-row:disabled{opacity:.45}
 #mAway{text-align:right}
 #mScore{font-size:34px;color:var(--warn);font-variant-numeric:tabular-nums;text-align:center;line-height:1}
 #mMin{grid-column:1/-1;text-align:center;font-size:13px;color:var(--muted)}
+#mSay{grid-column:1/-1;text-align:center;font-family:var(--body);font-size:13px;font-weight:700;font-style:italic;color:#ffe9a8;min-height:1.2em;line-height:1.35}
 #pitch{display:block;width:100%;max-width:100%;height:auto;border-radius:10px}
 #mFeed{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;max-height:120px;overflow:auto;font-size:14px;font-weight:700}
 #mFeed li:first-child{color:var(--ink)}
@@ -347,7 +348,7 @@ button.ph-row:disabled{opacity:.45}
 
   <div class="ov dim" id="match" hidden>
     <div class="card match-card">
-      <div class="board"><span id="mHome">V3</span><b id="mScore">0:0</b><span id="mAway"></span><span id="mMin">0'</span></div>
+      <div class="board"><span id="mHome">V3</span><b id="mScore">0:0</b><span id="mAway"></span><span id="mMin">0'</span><span id="mSay"></span></div>
       <canvas id="pitch" width="600" height="380" aria-label="Матч на стадионе V3"></canvas>
       <div class="mbottom">
         <ol id="mFeed"></ol>
@@ -1147,6 +1148,7 @@ const TV = { on: false, ch: 0, t: 0, cv: document.createElement("canvas"), sim: 
 TV.cv.width = 384; TV.cv.height = 216;
 const TV_CH = ["WorldNews", "Sport", "YouTube Shorts"];
 function tvSet(ch) {
+  commHush();
   TV.on = ch >= 0; tvOn = TV.on;
   if (TV.on) { TV.ch = ch; TV.t = 0; TV.sim = null; }
   tone(TV.on ? 700 + ch * 150 : 300, TV.on ? 1000 + ch * 150 : 180, 0.08, 0.06);
@@ -1285,10 +1287,14 @@ function tvSport(g, W, H, dt) {
   const m = genMatch(dayKey()), LOOP = 60;
   if (!TV.sim) {
     const pl = []; for (const home of [true, false]) FORM.forEach(([x, y], i) => { const hx = home ? x : PW - x; pl.push({ home, gk: i === 0, hx, hy: y, x: hx, y }); });
-    TV.sim = { t: 0, next: 0, score: [0, 0], pl, ball: { x: PW / 2, y: PH / 2, tx: PW / 2, ty: PH / 2, sp: 260 }, flash: 0, last: "Матч начался! V3 против " + m.opp, atk: null };
+    commSay(COMM.kickoff(m.opp), { priority: true, vol: 0.85 });
+    TV.sim = { commT: 7, half: false, t: 0, next: 0, score: [0, 0], pl, ball: { x: PW / 2, y: PH / 2, tx: PW / 2, ty: PH / 2, sp: 260 }, flash: 0, last: "Матч начался! V3 против " + m.opp, atk: null };
   }
   const S = TV.sim; S.t += dt;
-  if (S.t >= LOOP) { TV.sim = null; return tvSport(g, W, H, 0); }
+  if (S.t >= LOOP) { commSay(COMM.final(S.score[0], S.score[1], m.opp), { priority: true, vol: 0.85 }); TV.sim = null; return tvSport(g, W, H, 0); }
+  if (!S.half && S.t >= LOOP / 2) { S.half = true; S.last = COMM.half(S.score[0], S.score[1]); commSay(S.last, { priority: true, vol: 0.85 }); S.commT = 6; }
+  S.commT -= dt;
+  if (S.commT <= 0 && !S.atk) { const line = COMM.play(S.ball.x > PW / 2, m.opp); if (commSay(line, { vol: 0.85 }) || !VOICE.ok || muted) { S.last = line; S.commT = rand(5, 8); } else S.commT = 1; }
   const min = Math.min(90, Math.floor((S.t / LOOP) * 90)), b = S.ball, gl = m.goals[S.next];
   if (gl && !S.atk && min >= gl.min) { S.atk = gl; b.tx = gl.home ? PW - 80 : 80; b.ty = PH / 2 + rand(-50, 50); b.sp = 420; }
   const dx = b.tx - b.x, dy = b.ty - b.y, d = Math.hypot(dx, dy);
@@ -1296,7 +1302,7 @@ function tvSport(g, W, H, dt) {
   else if (S.atk) {
     const gx = S.atk.home ? PW - 6 : 6;
     if (Math.abs(b.x - gx) > 10) { b.tx = gx; b.ty = PH / 2 + rand(-16, 16); b.sp = 520; }
-    else { S.score[S.atk.home ? 0 : 1]++; S.next++; S.flash = 1.3; S.last = `${S.atk.min}' ГОЛ! ${S.atk.who} (${S.atk.home ? "V3" : m.opp})`; S.atk = null; b.x = b.tx = PW / 2; b.y = b.ty = PH / 2; b.sp = 260; noise(0.9, 0.12, 1300); }
+    else { S.score[S.atk.home ? 0 : 1]++; S.next++; S.flash = 1.3; S.last = `${S.atk.min}' ГОЛ! ${S.atk.who} (${S.atk.home ? "V3" : m.opp})`; commSay(COMM.goal(S.atk, m.opp, S.score[0], S.score[1]), { priority: true, rate: 1.25, pitch: 1.25, vol: 0.9 }); S.commT = 7; S.atk = null; b.x = b.tx = PW / 2; b.y = b.ty = PH / 2; b.sp = 260; noise(0.9, 0.12, 1300); }
   } else { const p2 = pick(S.pl.filter((q) => !q.gk)); b.tx = clamp(p2.x + rand(-20, 20), 20, PW - 20); b.ty = clamp(p2.y + rand(-20, 20), 20, PH - 20); b.sp = rand(200, 320); }
   for (const p2 of S.pl) { const pull = p2.gk ? 0.12 : 0.4; p2.x += (p2.hx + (b.x - p2.hx) * pull - p2.x) * Math.min(1, dt * 2.5); p2.y += (p2.hy + (b.y - p2.hy) * pull * (p2.gk ? 0.6 : 1) - p2.y) * Math.min(1, dt * 2.5); }
   if (S.flash > 0) S.flash -= dt;
@@ -1476,6 +1482,7 @@ function enterHome() {
   if (G3.room) G3.room.g.visible = true;
 }
 function leaveHome() {
+  commHush();
   indoor = false; player.couch = false;
   const q = places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
@@ -1790,9 +1797,36 @@ function beginMatch(live, key, m, amt, cost) {
   if (MT.live) { MT.prev3d = mode3d; mode3d = true; G3.canvas.hidden = false; G3.stad.mgroup.visible = true; G3.stad.look.x = G3.stad.cx; G3.stad.look.z = G3.stad.cz; }
   $("match").classList.toggle("live", MT.live); $("game").classList.toggle("watching", MT.live);
   showOv("match"); noise(1.5, 0.18, 900);
+  MT.commT = 7; $("mSay").textContent = ""; stadSay(COMM.kickoff(m.opp), { priority: true });
   if (MT.live) toast("Ты на трибуне стадиона V3. Матч начинается!", 2.5);
 }
+/* ===== match commentator: a real voice through the browser's speech synthesis ===== */
+const VOICE = { ok: typeof speechSynthesis !== "undefined" && typeof SpeechSynthesisUtterance !== "undefined", voice: null };
+function pickVoice() { if (!VOICE.ok) return; const vs = speechSynthesis.getVoices(); VOICE.voice = vs.find((v) => /^ru/i.test(v.lang) && /(male|Yuri|Dmitri|Pavel|Maxim)/i.test(v.name)) || vs.find((v) => /^ru/i.test(v.lang)) || null; }
+if (VOICE.ok) { try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch (e) { VOICE.ok = false; } }
+function commSay(text, o = {}) {
+  if (!VOICE.ok || muted) return false;
+  try {
+    if (o.priority) speechSynthesis.cancel(); else if (speechSynthesis.speaking || speechSynthesis.pending) return false;
+    const u = new SpeechSynthesisUtterance(text); u.lang = "ru-RU"; try { if (VOICE.voice) u.voice = VOICE.voice; } catch (e) {}
+    u.rate = o.rate || 1.12; u.pitch = o.pitch || 1; u.volume = o.vol == null ? 1 : o.vol;
+    speechSynthesis.speak(u); return true;
+  } catch (e) { return false; }
+}
+function commHush() { if (VOICE.ok) { try { speechSynthesis.cancel(); } catch (e) {} } }
+const COMM = {
+  kickoff: (opp) => pick([`Добрый вечер, друзья! Стадион V3 полон. Сегодня V3 принимает команду «${opp}». Свисток — начинаем!`, `Мы в прямом эфире со стадиона V3! В гостях «${opp}». Поехали!`]),
+  play: (attackHome, opp) => {
+    const who = attackHome ? pick(V3_SQUAD) : pick(AWAY_SQUAD), team = attackHome ? "V3" : `«${opp}»`;
+    return pick([`${who} с мячом, ищет передачу.`, `${team} идёт в атаку по флангу!`, `Опасно! ${who} бьёт... мимо ворот!`, `Удар ${who}! Вратарь на месте.`, `Навес в штрафную... выбили!`, `Трибуны поют, стадион гудит!`, `${who} обыгрывает одного, второго...`, `Угловой у ворот соперника.`, `${team} не торопится, катают мяч в центре.`, `Жёлтая карточка! ${who} опоздал в подкате.`]);
+  },
+  goal: (g, opp, a, b) => `Го-о-о-ол! ${g.who} забивает! ${g.home ? "V3" : `«${opp}»`} — счёт ${a}:${b}!`,
+  half: (a, b) => `Свисток на перерыв. На табло ${a}:${b}.`,
+  final: (a, b, opp) => `Финальный свисток! V3 — ${a}, «${opp}» — ${b}. ${a > b ? "Победа хозяев! Трибуны ликуют!" : a === b ? "Ничья. Боевой был матч." : "Гости увозят победу."}`,
+};
+function stadSay(text, o) { $("mSay").textContent = "Комментатор: " + text; commSay(text, o); }
 function exitMatch() {
+  commHush();
   if (MT && MT.live) { mode3d = MT.prev3d; G3.canvas.hidden = !mode3d; G3.stad.mgroup.visible = false; cam3.init = false; }
   $("match").classList.remove("live"); $("game").classList.remove("watching");
   MT = null; resume();
@@ -1803,6 +1837,7 @@ function goal(g) {
   addFeed(`${g.min}' Гол! ${g.who} (${g.home ? "V3" : MT.m.opp})`);
   noise(1.4, 0.35, 1400);
   MT.cheer = g.home ? 3 : 1.2;
+  if (!MT.skipping) { stadSay(COMM.goal(g, MT.m.opp, MT.score[0], MT.score[1]), { priority: true, rate: 1.25, pitch: 1.25 }); MT.commT = 7; }
   if (MT.live && !MT.skipping) big("ГОЛ!", `${g.who} · ${g.home ? "V3" : MT.m.opp}`, g.home ? "#ff7a3d" : "#7fa4ff", 2.2);
 }
 function finishMatch() {
@@ -1818,6 +1853,7 @@ function finishMatch() {
     else { sfx.fail(); msg += ` Ставка «${PICK_NAME[st.pick]}» не сыграла.`; }
   }
   addFeed(msg); writeSave();
+  stadSay(COMM.final(MT.m.a, MT.m.b, MT.m.opp), { priority: true });
   if (MT.live) big("ФИНАЛ", `V3 ${MT.m.a}:${MT.m.b} ${MT.m.opp}`, "#ffd23d", 3);
   $("mSkip").textContent = "Выйти со стадиона";
 }
@@ -1832,7 +1868,9 @@ function updMatch(dt) {
     const g = MT.m.goals[MT.next];
     if (g && MT.mode === "play" && min >= g.min) { MT.mode = "attack"; MT.atk = g; MT.ball.tx = g.home ? PW - 90 : 90; MT.ball.ty = PH / 2 + rand(-60, 60); MT.ball.sp = 420; }
     if (MT.t >= MATCH_SECS && MT.mode === "play" && MT.next >= MT.m.goals.length) finishMatch();
-    if (MT.t >= MATCH_SECS * 0.5 && !MT.half) { MT.half = true; addFeed("45' Перерыв"); }
+    if (MT.t >= MATCH_SECS * 0.5 && !MT.half) { MT.half = true; addFeed("45' Перерыв"); stadSay(COMM.half(MT.score[0], MT.score[1]), { priority: true }); MT.commT = 6; }
+    MT.commT -= dt;
+    if (MT.commT <= 0 && MT.mode === "play") { const line = COMM.play(MT.ball.x > PW / 2, MT.m.opp); if (commSay(line)) { $("mSay").textContent = "Комментатор: " + line; MT.commT = rand(5, 8); } else MT.commT = VOICE.ok && !muted ? 1 : rand(5, 8); if (!VOICE.ok || muted) $("mSay").textContent = "Комментатор: " + line; }
   }
   const b = MT.ball, dx = b.tx - b.x, dy = b.ty - b.y, d = Math.hypot(dx, dy);
   if (d > 4) { const s = Math.min(d, b.sp * dt); b.x += (dx / d) * s; b.y += (dy / d) * s; }
@@ -2469,7 +2507,7 @@ function pauseGame() {
 function progressText() {
   return "Свободная игра · " + fmt(money);
 }
-function toggleMute() { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.55; $("muteBtn").setAttribute("aria-pressed", String(muted)); $("muteBtn").style.opacity = muted ? 0.45 : 1; }
+function toggleMute() { muted = !muted; if (muted) commHush(); if (master) master.gain.value = muted ? 0 : 0.55; $("muteBtn").setAttribute("aria-pressed", String(muted)); $("muteBtn").style.opacity = muted ? 0.45 : 1; }
 $("pauseBtn").addEventListener("click", () => (state === "play" ? pauseGame() : state === "pause" && resume()));
 $("muteBtn").addEventListener("click", () => { initAudio(); toggleMute(); });
 $("resumeBtn").addEventListener("click", resume);
