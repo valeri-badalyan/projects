@@ -68,7 +68,7 @@ body.touch #homeBtn{display:none}
 #tvBar{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:3}
 #tvBar button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(20,18,28,.82);color:var(--ink);font-weight:800;font-size:13px;text-align:left}
 #tvBar button.on{background:#2a7de1;border-color:#9cc6ff}
-#game.indoor .mini-wrap,#game.indoor #bFire,#game.indoor #bWeap,#game.indoor #rainBtn{display:none!important}
+#game.indoor .mini-wrap,#game.indoor #bFire,#game.indoor #bWeap{display:none!important}
 #big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;pointer-events:none;text-align:center;padding:0 16px}
 #big h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,84px);letter-spacing:.04em;line-height:1;
   -webkit-text-stroke:2px #000;text-shadow:0 5px 0 #000;animation:pop .5s ease-out}
@@ -131,6 +131,7 @@ body.touch #phoneBtn{display:none}
 .shop-item b{grid-column:2;grid-row:1/3;font-family:var(--display);font-weight:400;font-size:18px;color:var(--warn);font-variant-numeric:tabular-nums}
 .shop-item:disabled{opacity:.45;cursor:not-allowed}
 .shop-item:not(:disabled):hover{border-color:var(--warn)}
+.shop-item.on{border-color:#9cc6ff;background:#26304a}
 .bonus{font-weight:800;color:var(--cash);font-size:14px}
 #shopOut{flex:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
@@ -297,6 +298,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>Окно дома</dt><dd>выбрать погоду: ясно, дождь, ливень, гроза или как в природе</dd>
         <dt>1 / 2 / 3 / 0</dt><dd>дома: каналы телевизора — WorldNews, Sport, YouTube Shorts, выключить</dd>
         <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
@@ -1077,6 +1079,7 @@ function renderHome() {
     box.appendChild(b);
     return;
   }
+  if (hmView === "weather") { renderWeatherPick(box); return; }
   $("hmTitle").textContent = "Гардероб";
   {
     box.appendChild(el("p", "prog", "Выбери цвет куртки"));
@@ -1098,6 +1101,35 @@ function sleepHome() {
   writeSave(); tone(440, 220, 0.6, 0.08, "sine");
   big("ДОБРОЕ УТРО", "Ты выспался · здоровье 100", "#ffe08a", 2.4);
   if (indoor) { const L = toLocal(); setLocal(Math.min(L.x, 112), L.y); }
+}
+const WEATHER_PICKS = [
+  { id: "clear", name: "Ясно", info: "Ни облачка, дождь не пойдёт", target: 0, storm: false },
+  { id: "light", name: "Лёгкий дождь", info: "Моросит, прохожие с зонтами", target: 0.45, storm: false },
+  { id: "heavy", name: "Ливень", info: "Сильный дождь, скользкие дороги", target: 0.9, storm: false },
+  { id: "storm", name: "Гроза", info: "Ливень с молниями и громом", target: 1, storm: true },
+  { id: "auto", name: "Как в природе", info: "Погода снова меняется сама", auto: true },
+];
+function setWeather(id) {
+  const w = WEATHER_PICKS.find((q) => q.id === id); if (!w) return;
+  WX.pick = id;
+  if (w.auto) { WX.manual = false; WX.t = rand(20, 50); }
+  else { WX.manual = true; WX.t = 1e9; WX.target = w.target; WX.storm = w.storm; WX.rain = lerp(WX.rain, w.target, 0.6); }
+  syncRainBtn(); tone(520, 880, 0.12, 0.07, "triangle");
+  toast("Погода: " + w.name.toLowerCase(), 1.6);
+}
+function renderWeatherPick(box) {
+  $("hmTitle").textContent = "Погода за окном";
+  box.appendChild(el("p", "prog", `Сейчас ${gameClock()}, ${weatherName().toLowerCase()}. Выбери, что будет за окном и во всём городе.`));
+  const cur = WX.manual ? WX.pick : "auto";
+  const list = el("div", "shop-list");
+  for (const w of WEATHER_PICKS) {
+    const b = el("button", "shop-item" + (w.id === cur ? " on" : "")); b.type = "button"; b.id = "wx-" + w.id;
+    b.append(el("span", null, w.name), el("b", null, w.id === cur ? "✓" : ""), el("small", null, w.info));
+    b.addEventListener("click", () => { setWeather(w.id); renderHome(); });
+    list.appendChild(b);
+  }
+  box.appendChild(list);
+  const done = el("button", "btn", "Готово"); done.type = "button"; done.id = "hmDone"; done.addEventListener("click", resume); box.appendChild(done);
 }
 function setOutfit(col) {
   player.col = col; save.outfit = col; writeSave();
@@ -1332,7 +1364,7 @@ const ROOM_SPOTS = [
   { id: "door", x: 160, y: RH - 16, r: 30, label: "ВЫЙТИ", text: "Выйти на улицу" },
   { id: "bed", x: 104, y: 84, r: 26, label: "СПАТЬ", text: "Поспать до утра" },
   { id: "wardrobe", x: 140, y: 52, r: 24, label: "ШКАФ", text: "Гардероб" },
-  { id: "window", x: 222, y: 30, r: 26, label: "ОКНО", text: "Посмотреть в окно" },
+  { id: "window", x: 222, y: 30, r: 26, label: "ПОГОДА", text: "Выбрать погоду за окном" },
   { id: "fridge", x: RW - 32, y: 66, r: 26, label: "ЕДА", text: "Холодильник — еда из сумки" },
   { id: "tv", x: RW - 70, y: 118, r: 22, label: "ТВ", text: "Телевизор" },
   { id: "sofa", x: RW - 82, y: 182, r: 24, label: "СЕСТЬ", text: "Сесть на диван" },
@@ -1360,6 +1392,7 @@ function leaveHome() {
   indoor = false; player.couch = false;
   const q = places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
   if (G3.room) G3.room.g.visible = false;
 }
@@ -1368,7 +1401,7 @@ function roomAct(sp) {
   if (sp.id === "bed") return sleepHome();
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
   if (sp.id === "fridge") return toggleInv();
-  if (sp.id === "window") return toast(`За окном ${gameClock()}, ${weatherName().toLowerCase()}`, 2);
+  if (sp.id === "window") { hmView = "weather"; renderHome(); showOv("home"); return; }
   if (sp.id === "tv") return tvNext();
   if (sp.id === "sofa") { player.couch = true; setLocal(RW - 109, 137); player.a = 0; return; }
 }
@@ -1397,6 +1430,7 @@ function updIndoor(dt) {
   if (hudCache.spot !== key) {
     hudCache.spot = key;
     $("bEnter").textContent = spot ? (spot.id === "tv" ? (!TV.on ? "ВКЛ" : TV.ch < 2 ? "КАНАЛ" : "ВЫКЛ") : spot.label) : "—";
+    $("bEnter").style.fontSize = $("bEnter").textContent.length > 5 ? "10px" : "";
     const h = $("roomHint"); h.hidden = !spot;
     if (spot) h.textContent = (touchMode ? "Кнопка «" + $("bEnter").textContent + "» — " : "F — ") + (spot.id === "tv" ? (!TV.on ? "включить телевизор" : TV.ch < 2 ? "канал " + (TV.ch + 2) + ": " + TV_CH[TV.ch + 1] : "выключить телевизор") : spot.text.toLowerCase());
   }
@@ -2334,7 +2368,10 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+// a tap that opens a window must not also press a button inside it when the finger lifts
+let ovOpenedAt = 0;
+document.addEventListener("click", (e) => { if (performance.now() - ovOpenedAt < 400 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
 function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
@@ -2523,8 +2560,8 @@ const WX = { rain: 0, target: 0, t: 25, storm: false, flash: 0, drops: [] };
 for (let i = 0; i < 320; i++) WX.drops.push({ x: Math.random(), y: Math.random(), sp: 0.9 + Math.random() * 0.8, len: 0.6 + Math.random() * 0.8 });
 WX.manual = false;
 function toggleRain() {
-  if (WX.target > 0) { WX.target = 0; WX.manual = false; WX.t = rand(70, 140); toast("Дождь выключен", 1.6); }
-  else { WX.target = 0.8; WX.storm = false; WX.manual = true; WX.t = 1e9; toast("Пошёл дождь", 1.6); }
+  if (WX.target > 0) { WX.target = 0; WX.manual = false; WX.pick = null; WX.t = rand(70, 140); toast("Дождь выключен", 1.6); }
+  else { WX.target = 0.8; WX.storm = false; WX.manual = true; WX.pick = "heavy"; WX.t = 1e9; toast("Пошёл дождь", 1.6); }
   syncRainBtn();
 }
 function syncRainBtn() { const on = WX.target > 0; $("rainBtn").setAttribute("aria-pressed", String(on)); $("rainBtn").setAttribute("aria-label", on ? "Выключить дождь (R)" : "Включить дождь (R)"); }
