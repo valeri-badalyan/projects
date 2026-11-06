@@ -137,6 +137,7 @@ body.touch #phoneBtn{display:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
 #stBody .btn{flex:none;min-height:52px}
 #fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
+#dtBoard{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:16px;touch-action:manipulation}
 .inv-card{width:min(100%,540px)}
 .home-card{width:min(100%,600px)}
 #hmBody{display:flex;flex-direction:column;gap:12px}
@@ -309,7 +310,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000 — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -372,6 +373,17 @@ button.ph-row:disabled{opacity:.45}
       <h3>Инвентарь</h3>
       <div id="invBody"></div>
       <button type="button" class="btn alt" id="invOut" style="flex:none">Закрыть</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="darts" hidden>
+    <div class="card">
+      <span class="who">V BAR</span>
+      <h3>Дартс</h3>
+      <canvas id="dtBoard" width="360" height="360" aria-label="Мишень для дартса"></canvas>
+      <p class="prog" id="dtInfo"></p>
+      <button type="button" class="btn" id="dtGo" style="flex:none;min-height:52px">Играть</button>
+      <button type="button" class="btn alt" id="dtOut" style="flex:none">Вернуться к стойке</button>
     </div>
   </div>
 
@@ -487,7 +499,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "1,2": "home", "0,1": "crab", "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
+const SPECIAL = { "1,2": "home", "0,1": "crab", "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "vbar", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -497,6 +509,11 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
+  else if (kind === "vbar") {
+    const b = addB(ix, iy, 4, 2, "svc", "#241a2e"); b.label = "V BAR"; b.labelCol = "#ff3d7f"; b.h3 = 50; b.neon = true; fill(ix, iy + 2, 4, 2, PLAZA);
+    places.vbar = { x: cx, y: (y0 + 4) * T };
+    for (const [tx2, ty2] of [[1.55, 3.45], [1.55, 4.35], [4.45, 3.45], [4.45, 4.35]]) addTree((x0 + tx2) * T, (y0 + ty2) * T, 12, "table");
+  }
   else if (kind === "home") {
     const b = addB(ix, iy, 4, 3, "svc", "#7e8fa6"); b.label = "ЖК «НОВА»"; b.labelCol = "#2fd0a0"; b.h3 = 170; fill(ix, iy + 3, 4, 1, LOT);
     places.home = { x: cx, y: (y0 + 4.5) * T };
@@ -942,6 +959,15 @@ const SHOPS = [
       { id: "radio", name: "Автомагнитола", info: "В машине играет радио «V3 FM»", price: 300 },
       { id: "laptop", name: "Ноутбук", info: "Удалённая работа: +$25 каждую минуту игры", price: 1500 },
     ].map((it) => Object.assign(it, { no: () => (gadget(it.id) ? "Уже есть" : ""), act: () => { (save.gadgets || (save.gadgets = {}))[it.id] = 1; } })) },
+  { id: "vbar", who: "V BAR", title: "Барная карта", col: "#ff3d7f", hex: 0xff3d7f, label: "VB", at: () => places.vbar, bonus: 0,
+    note: "Бар у ЖК «Нова». Все коктейли безалкогольные. А за стойкой — дартс на деньги.",
+    items: [
+      { id: "lemonade", name: "Лимонад «V»", info: "+15 здоровья", price: 8 },
+      { id: "cola", name: "Кола V3", info: "Быстрый бег 15 с", price: 6 },
+      { id: "milkshake", name: "Молочный коктейль", info: "+30 здоровья", price: 12 },
+      { id: "neon", name: "Коктейль «Неон»", info: "+50 здоровья и быстрый бег 20 с", price: 25 },
+      { id: "darts", name: "Дартс", info: "Вход $15 · 60+ очков = $50, 100+ = $150", price: 0, priceText: "играть", open: () => openDarts() },
+    ] },
   { id: "home", col: "#2fd0a0", hex: 0x2fd0a0, label: "Д", at: () => places.home, open: () => openHome() },
   { id: "crab", who: "Ресторан Crusty Crab", title: "Меню", col: "#ff5a3d", hex: 0xff5a3d, label: "CC", at: () => places.crab, bonus: 0,
     note: "Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
@@ -963,7 +989,9 @@ const ITEMS = {
   lunch: { name: "Бизнес-ланч", col: "#e89a5d", g: "БЛ", heal: 100 }, energy: { name: "Энергетик", col: "#8be38a", g: "E", boost: 30 },
   crabburger: { name: "Крабовый бургер", col: "#ff7a5d", g: "КБ", heal: 50 }, fries: { name: "Картошка «Клешня»", col: "#ffd23d", g: "К", heal: 20 },
   chowder: { name: "Суп из мидий", col: "#c9a0dc", g: "С", heal: 35 }, shake: { name: "Коктейль «Прилив»", col: "#7fa4ff", g: "П", boost: 20 },
-  combo: { name: "Комбо «Капитан»", col: "#ff9a5a", g: "КК", heal: 100, boost: 30 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
+  combo: { name: "Комбо «Капитан»", col: "#ff9a5a", g: "КК", heal: 100, boost: 30 },
+  lemonade: { name: "Лимонад «V»", col: "#f2f27a", g: "Л", heal: 15 }, cola: { name: "Кола V3", col: "#b5562f", g: "К3", boost: 15 },
+  milkshake: { name: "Молочный коктейль", col: "#f7d6e6", g: "МК", heal: 30 }, neon: { name: "Коктейль «Неон»", col: "#ff3d7f", g: "Н", heal: 50, boost: 20 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
 };
 const inv = () => save.inv || (save.inv = {});
 function invAdd(id, n = 1) { inv()[id] = (inv()[id] || 0) + n; }
@@ -1638,6 +1666,53 @@ function addIngr(g) {
   renderKitchen();
 }
 function finishCook() { if (!KJ || !KJ.on) return; KJ.on = false; KJ.done = true; money += KJ.score * COOK_PAY; if (KJ.score) sfx.cash(); writeSave(); }
+/* V BAR darts: three throws at a board, the sight drifts, tap to throw */
+const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+let DJ = null;
+function openDarts() { DJ = { on: false, done: false, t: 0, darts: [], score: 0 }; showOv("darts"); renderDarts(); }
+function dartScore(x, y) {
+  const r = Math.hypot(x, y); if (r > 1) return 0;
+  if (r < 0.06) return 50; if (r < 0.13) return 25;
+  const a = (Math.atan2(y, x) * 180) / Math.PI, idx = Math.floor((((90 + a) % 360) + 360 + 9) % 360 / 18) % 20, base = DART_SEG[idx];
+  if (r > 0.58 && r < 0.65) return base * 3; if (r > 0.93) return base * 2; return base;
+}
+function renderDarts() {
+  const info = $("dtInfo"), btn = $("dtGo");
+  if (!DJ.on && !DJ.done) { info.textContent = `Вход ${fmt(DARTS_FEE)}. Три дротика. 60+ очков — ${fmt(50)}, 100+ — ${fmt(150)}.`; btn.textContent = money >= DARTS_FEE ? "Играть — " + fmt(DARTS_FEE) : "Нужно " + fmt(DARTS_FEE); btn.disabled = money < DARTS_FEE; }
+  else if (DJ.on) { info.textContent = `Дротик ${DJ.darts.length + 1} из 3 · очков: ${DJ.score}`; btn.textContent = "Бросок!"; btn.disabled = false; }
+  else { const win = DJ.score >= 100 ? 150 : DJ.score >= 60 ? 50 : 0; info.textContent = `Итог: ${DJ.score} очков. ` + (win ? `Выигрыш ${fmt(win)}!` : "В этот раз без выигрыша."); btn.textContent = money >= DARTS_FEE ? "Ещё раз — " + fmt(DARTS_FEE) : "Нужно " + fmt(DARTS_FEE); btn.disabled = money < DARTS_FEE; }
+  drawDarts();
+}
+function dartsButton() {
+  if (!DJ) return;
+  if (!DJ.on) { if (money < DARTS_FEE) return; money -= DARTS_FEE; DJ = { on: true, done: false, t: 0, darts: [], score: 0 }; updHud(); writeSave(); renderDarts(); return; }
+  const sx = Math.sin(DJ.t * 1.7) * 0.75 + Math.sin(DJ.t * 3.1) * 0.15, sy = Math.cos(DJ.t * 1.3) * 0.7 + Math.sin(DJ.t * 2.3) * 0.12;
+  const x = sx + rand(-0.04, 0.04), y = sy + rand(-0.04, 0.04), pts = dartScore(x, y);
+  DJ.darts.push({ x, y, pts }); DJ.score += pts; noise(0.08, 0.3, 900); tone(pts >= 25 ? 990 : 520, pts >= 25 ? 1480 : 400, 0.1, 0.07);
+  toast(pts ? (pts >= 50 ? "Яблочко! +50" : "+" + pts) : "Мимо доски!", 0.9);
+  if (DJ.darts.length >= 3) { DJ.on = false; DJ.done = true; const win = DJ.score >= 100 ? 150 : DJ.score >= 60 ? 50 : 0; if (win) { money += win; sfx.win(); } updHud(); writeSave(); }
+  renderDarts();
+}
+function drawDarts() {
+  const c = $("dtBoard"); if (!c || !DJ) return; const g = c.getContext("2d"), W = c.width, R = W * 0.42, cx = W / 2, cy = W / 2;
+  g.fillStyle = "#1b1424"; g.fillRect(0, 0, W, W);
+  g.fillStyle = "#111"; g.beginPath(); g.arc(cx, cy, R * 1.12, 0, TAU); g.fill();
+  for (let i = 0; i < 20; i++) {
+    const a0 = ((i * 18 - 9 - 90) * Math.PI) / 180, a1 = a0 + (18 * Math.PI) / 180;
+    for (const [r0, r1, odd, even] of [[0.13, 0.58, "#f2e6c9", "#1a1a1a"], [0.58, 0.65, "#2f9e5a", "#d23a2a"], [0.65, 0.93, "#f2e6c9", "#1a1a1a"], [0.93, 1, "#2f9e5a", "#d23a2a"]]) {
+      g.fillStyle = i % 2 ? odd : even; g.beginPath(); g.arc(cx, cy, R * r1, a0, a1); g.arc(cx, cy, R * r0, a1, a0, true); g.closePath(); g.fill();
+    }
+    g.fillStyle = "#fff"; g.font = `bold ${Math.round(W * 0.04)}px Manrope,sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
+    const am = (a0 + a1) / 2; g.fillText(DART_SEG[i], cx + Math.cos(am) * R * 1.06, cy + Math.sin(am) * R * 1.06);
+  }
+  g.fillStyle = "#2f9e5a"; g.beginPath(); g.arc(cx, cy, R * 0.13, 0, TAU); g.fill(); g.fillStyle = "#d23a2a"; g.beginPath(); g.arc(cx, cy, R * 0.06, 0, TAU); g.fill();
+  for (const d of DJ.darts) { const x = cx + d.x * R, y = cy + d.y * R; g.strokeStyle = "#ffd23d"; g.lineWidth = 3; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 14, y - 14); g.stroke(); g.fillStyle = "#ff3d7f"; g.beginPath(); g.moveTo(x + 14, y - 14); g.lineTo(x + 22, y - 12); g.lineTo(x + 16, y - 22); g.closePath(); g.fill(); g.fillStyle = "#fff"; g.beginPath(); g.arc(x, y, 2.5, 0, TAU); g.fill(); }
+  if (DJ.on) {
+    const sx = cx + (Math.sin(DJ.t * 1.7) * 0.75 + Math.sin(DJ.t * 3.1) * 0.15) * R, sy = cy + (Math.cos(DJ.t * 1.3) * 0.7 + Math.sin(DJ.t * 2.3) * 0.12) * R;
+    g.strokeStyle = "#5de0d0"; g.lineWidth = 2.5; g.beginPath(); g.arc(sx, sy, 12, 0, TAU); g.moveTo(sx - 18, sy); g.lineTo(sx + 18, sy); g.moveTo(sx, sy - 18); g.lineTo(sx, sy + 18); g.stroke();
+  }
+}
+function updDarts(dt) { if (DJ && DJ.on) { DJ.t += dt; drawDarts(); } }
 function updKitchen(dt) {
   if (!KJ || !KJ.on) return;
   KJ.t -= dt;
@@ -2442,7 +2517,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
@@ -2499,8 +2574,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -2533,7 +2608,7 @@ function taxiStops() {
   const c = (places.cemeteries || [])[0];
   return [
     ["Оружейный магазин", places.bar, "guns"], ["Продукты", places.food, "food"], ["Электроника", places.electro, "electro"], ["Автосалон", places.garage, "cars"],
-    ["Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
+    ["Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
     c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
   ].filter((x) => x && x[1]);
 }
@@ -2574,7 +2649,7 @@ function renderPhone(app) {
     dot(places.hosp, "#ffffff"); dot(places.police, "#3d8bff");
     const P = player.inCar || player; dot(P, "#ffd23d", 7);
     scr.appendChild(c);
-    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
+    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["V BAR VB", "#ff3d7f"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
     const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
     scr.appendChild(lg); scr.appendChild(el("p", "ph-note", "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП."));
   } else if (app === "bank") {
@@ -2668,6 +2743,9 @@ $("bPhone").addEventListener("pointerdown", (e) => { e.preventDefault(); initAud
 $("phHome").addEventListener("click", resume);
 $("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
 $("kjOut").addEventListener("click", () => { finishCook(); KJ = null; resume(); });
+$("dtGo").addEventListener("click", dartsButton);
+$("dtBoard").addEventListener("click", () => { if (DJ && DJ.on) dartsButton(); });
+$("dtOut").addEventListener("click", () => { DJ = null; shopLock = "vbar"; openShop(SHOPS.find((q) => q.id === "vbar")); });
 $("fjOut").addEventListener("click", () => { if (FJ && FJ.on) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; writeSave(); } FJ = null; resume(); });
 $("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else exitMatch(); });
 let started = false;
@@ -3534,6 +3612,13 @@ function init3d() {
       const ch = new THREE.Mesh(new THREE.CylinderGeometry(7, 10, 120, 12), lam(0x8d8a86)); ch.position.set(b.x + b.w - 20, h + 60, b.y + 20); ch.castShadow = true; scene.add(ch);
     }
     if (b.chimneys) for (const fx of [0.2, 0.8]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 170, 14), lam(0xffffff, { map: tex(32, (g) => { for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : "#d23a2a"; g.fillRect(0, k * 8, 32, 8); } }) })); ch.position.set(b.x + b.w * fx, h + 85, b.y + b.h * 0.3); ch.castShadow = true; scene.add(ch); }
+    if (b.neon) {
+      const nc = document.createElement("canvas"); nc.width = 512; nc.height = 160;
+      { const g = nc.getContext("2d"); g.fillStyle = "#0b0810"; g.fillRect(0, 0, 512, 160); g.shadowColor = "#ff3d7f"; g.shadowBlur = 26; g.fillStyle = "#ff7ab0"; g.font = "110px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("V BAR", 256, 86); }
+      const sign = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(nc) })); sign.scale.set(110, 34, 2); sign.position.set(cx, h + 22, b.y + b.h - 4); scene.add(sign);
+      (G3.neons || (G3.neons = [])).push(sign);
+      const glow = new THREE.PointLight(0xff3d7f, 0.9, 220, 1.6); glow.position.set(cx, h + 10, b.y + b.h + 20); scene.add(glow);
+    }
     if (b.flag) { const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1.5, 40, 1.5); pole.position.set(cx, h + 20, cz); scene.add(pole); const fl = new THREE.Mesh(BOX, lam(0xff7a3d)); fl.scale.set(22, 13, 0.8); fl.position.set(cx + 11, h + 33, cz); scene.add(fl); }
     if (b.bars) for (const [qx, qz] of [[b.x + 12, b.y + 12], [b.x + b.w - 12, b.y + 12], [b.x + 12, b.y + b.h - 12], [b.x + b.w - 12, b.y + b.h - 12]]) { const tw = new THREE.Mesh(BOX, lam(0x5a5650)); tw.scale.set(20, 30, 20); tw.position.set(qx, h + 15, qz); tw.castShadow = true; scene.add(tw); const lp = new THREE.Mesh(BOX, basic(0xfff1c0)); lp.scale.set(5, 4, 5); lp.position.set(qx, h + 32, qz); scene.add(lp); }
     if (b.kind === "food" || (b.kind === "garage" && !MISSIONS)) { const sign = new THREE.Mesh(BOX, basic(b.kind === "food" ? 0x8be38a : 0x4d93ff)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 34, b.y + b.h + 1); scene.add(sign); }
@@ -3780,6 +3865,7 @@ function sync3d() {
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
   G3.mkBar.visible = MISSIONS && started && !M.active;
+  if (G3.neons) { const on = Math.sin(now * 7) > -0.92 || Math.random() < 0.5; for (const n of G3.neons) n.visible = on; }
   if (G3.crabJaws) for (const c of G3.crabJaws) { c.jaw.rotation.z = -Math.abs(Math.sin(now * 3 + c.sd)) * 0.6; c.arm.rotation.x = Math.sin(now * 1.5 + c.sd) * 0.15; }
   G3.shopMk.forEach((g) => { g.visible = started; g.children[0].scale.setScalar(1 + Math.sin(now * 5) * 0.06); }); G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
   G3.mkT.visible = G3.mkN.visible = false;
@@ -3975,6 +4061,7 @@ function frame(t) {
   if (state === "match") updMatch(dt);
   if (state === "factory") updFactory(dt);
   if (state === "kitchen") updKitchen(dt);
+  if (state === "darts") updDarts(dt);
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
