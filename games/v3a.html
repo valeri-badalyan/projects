@@ -196,7 +196,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины и стадион, на юге больница, полиция, пожарная часть и кладбища. Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины и стадион, на юге только городские службы: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция и склады. Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -329,7 +329,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
+const SPECIAL = { "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -339,6 +339,24 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
+  else if (kind === "ems") {
+    const b = addB(ix, iy, 4, 2, "svc", "#f2f2f2"); b.label = "СКОРАЯ ПОМОЩЬ"; b.labelCol = "#e0303e"; b.h3 = 56; fill(ix, iy + 2, 4, 2, LOT);
+    parkSpots.push({ type: "ambulance", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "ambulance", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
+  }
+  else if (kind === "court") { const b = addB(ix, iy, 4, 2, "svc", "#c8bfa8"); b.label = "СУД"; b.h3 = 70; b.columns = true; fill(ix, iy + 2, 4, 2, PLAZA); }
+  else if (kind === "cityhall") { const b = addB(ix, iy, 4, 3, "svc", "#d8cdb6"); b.label = "МЭРИЯ"; b.h3 = 120; b.columns = true; b.flag = true; fill(ix, iy + 3, 4, 1, PLAZA); }
+  else if (kind === "prison") { const b = addB(ix, iy, 4, 4, "svc", "#77736b"); b.label = "ТЮРЬМА"; b.h3 = 64; b.bars = true; b.labelCol = "#ffcc00"; }
+  else if (kind === "depot") {
+    const b = addB(ix, iy, 4, 1, "svc", "#3a6e9e"); b.label = "АВТОБУСНЫЙ ПАРК"; b.h3 = 46; fill(ix, iy + 1, 4, 3, LOT);
+    for (const bx2 of [0.75, 2, 3.25]) parkSpots.push({ type: "bus", x: (ix + bx2) * T, y: (iy + 2.45) * T, a: Math.PI / 2 });
+  }
+  else if (kind === "power") { const b = addB(ix, iy, 4, 2, "svc", "#8b8f94"); b.label = "ЭЛЕКТРОСТАНЦИЯ"; b.h3 = 80; b.chimneys = true; fill(ix, iy + 2, 4, 2, LOT); }
+  else if (kind === "stores") { for (const sx of [ix, ix + 2]) { const b = addB(sx, iy, 2, 4, "svc", "#9a7b55"); b.label = "СКЛАД"; b.h3 = 44; b.labelVert = true; } }
+  else if (kind === "police2") { addB(ix, iy, 4, 4, "police", "#2c3e66"); parkSpots.push({ type: "cop", x: (x0 + 1.5) * T, y: (y0 + 5.5) * T, a: 0 }); }
+  else if (kind === "fire2") {
+    addB(ix, iy, 4, 2, "fire", "#a8322a"); fill(ix, iy + 2, 4, 2, LOT);
+    parkSpots.push({ type: "fire", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "ambulance", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
+  }
   else if (kind === "fire") {
     addB(ix, iy, 4, 2, "fire", "#a8322a"); fill(ix, iy + 2, 4, 2, LOT); places.fire = { x: cx, y: (y0 + 4) * T };
     parkSpots.push({ type: "fire", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "fire", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
@@ -388,6 +406,7 @@ const WALL_Y = 24, GATES = [16, 32];
   places.gates = GATES.map((gx) => ({ x: (gx + 1) * T, y: (WALL_Y + 0.5) * T }));
 }
 const laneTiles = [], walkTiles = [];
+for (const b of blds) if (b.kind === "bld" && b.y > WALL_Y * T) console.warn("housing south of the wall at", b.x, b.y);
 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
   const t = tile(x, y);
   if (t === ROAD && !(isR(x) && isR(y))) laneTiles.push([x, y]);
@@ -486,6 +505,7 @@ const CT = {
   sport: { name: "Спорткар", len: 46, wid: 22, max: 440, acc: 390, grip: 9, cols: ["#ffb000", "#00b3a4", "#f2f2f2", "#ff5fa2"] },
   van: { name: "Фургон", len: 54, wid: 25, max: 260, acc: 190, grip: 6, cols: ["#e9e3d6", "#5d6f86", "#b8673d"] },
   taxi: { name: "Такси", len: 46, wid: 22, max: 320, acc: 260, grip: 7.5, cols: ["#f5c518"] },
+  bus: { name: "Автобус", len: 82, wid: 26, max: 240, acc: 170, grip: 6, cols: ["#2a7de1", "#e8b923", "#e04a3a"] },
   fire: { name: "Пожарная машина", len: 64, wid: 26, max: 290, acc: 220, grip: 6.5, cols: ["#d7261e"] },
   ambulance: { name: "Скорая", len: 54, wid: 25, max: 330, acc: 270, grip: 7, cols: ["#f4f4f4"] },
   cop: { name: "Полиция", len: 48, wid: 22, max: 385, acc: 350, grip: 9.5, cols: ["#f4f4f4"] },
@@ -1728,7 +1748,8 @@ function drawCar(c) {
   if (!c.wreck) {
     // glass + roof
     ctx.fillStyle = "#1d2a3a";
-    if (c.type === "fire") { rr(L * 0.3, -W / 2 + 3, L * 0.12, W - 6, 2); ctx.fill(); ctx.fillStyle = "#9a9a9a"; ctx.fillRect(-L / 2 + 4, -5, L * 0.72, 3); ctx.fillRect(-L / 2 + 4, 2, L * 0.72, 3); for (let k = 0; k < 9; k++) ctx.fillRect(-L / 2 + 6 + k * 5, -5, 1.5, 10); ctx.fillStyle = "#f2f2f2"; ctx.fillRect(-L / 2, W / 2 - 3, L, 2); ctx.fillRect(-L / 2, -W / 2 + 1, L, 2); }
+    if (c.type === "bus") { rr(L * 0.42, -W / 2 + 3, L * 0.06, W - 6, 2); ctx.fill(); ctx.fillStyle = shade(c.col, 1.12); rr(-L / 2 + 3, -W / 2 + 3, L * 0.86, W - 6, 3); ctx.fill(); ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 4; k++) ctx.fillRect(-L / 2 + 12 + k * 16, -4, 8, 8); }
+    else if (c.type === "fire") { rr(L * 0.3, -W / 2 + 3, L * 0.12, W - 6, 2); ctx.fill(); ctx.fillStyle = "#9a9a9a"; ctx.fillRect(-L / 2 + 4, -5, L * 0.72, 3); ctx.fillRect(-L / 2 + 4, 2, L * 0.72, 3); for (let k = 0; k < 9; k++) ctx.fillRect(-L / 2 + 6 + k * 5, -5, 1.5, 10); ctx.fillStyle = "#f2f2f2"; ctx.fillRect(-L / 2, W / 2 - 3, L, 2); ctx.fillRect(-L / 2, -W / 2 + 1, L, 2); }
     else if (c.type === "ambulance") { rr(L * 0.22, -W / 2 + 3, L * 0.14, W - 6, 2); ctx.fill(); ctx.fillStyle = "#e0303e"; ctx.fillRect(-L / 2, -W / 2 + 1, L, 3); ctx.fillRect(-L / 2, W / 2 - 4, L, 3); ctx.fillRect(-L * 0.2 - 6, -2, 12, 4); ctx.fillRect(-L * 0.2 - 2, -6, 4, 12); ctx.fillStyle = "#3d8bff"; ctx.fillRect(L * 0.12, -W / 2 + 2, 4, W - 4); }
     else if (c.type === "van") { rr(L * 0.18, -W / 2 + 3, L * 0.16, W - 6, 2); ctx.fill(); ctx.fillStyle = shade(c.col, 0.92); rr(-L / 2 + 3, -W / 2 + 3, L * 0.66, W - 6, 2); ctx.fill(); }
     else {
@@ -1817,6 +1838,16 @@ function drawBuilding(b) {
   if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЛИЦИЯ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
   if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "svc") {
+    if (b.bars) { ctx.fillStyle = "#5f5b54"; ctx.fillRect(rx + 30, ry + 30, b.w - 60, b.h - 60); ctx.fillStyle = "#2a2826"; for (let x = rx + 30; x < rx + b.w - 30; x += 12) ctx.fillRect(x, ry + 30, 3, b.h - 60); for (const [qx, qy] of [[rx + 12, ry + 12], [rx + b.w - 12, ry + 12], [rx + 12, ry + b.h - 12], [rx + b.w - 12, ry + b.h - 12]]) { ctx.fillStyle = "#4a4640"; ctx.fillRect(qx - 10, qy - 10, 20, 20); } }
+    if (b.columns) { ctx.fillStyle = "rgba(255,255,255,.55)"; for (let x = rx + 12; x < rx + b.w - 8; x += 22) ctx.fillRect(x, ry + b.h - 14, 8, 10); }
+    if (b.chimneys) for (const qx of [rx + b.w * 0.2, rx + b.w * 0.8]) { ctx.fillStyle = "#c9c9c9"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 14, 0, TAU); ctx.fill(); ctx.fillStyle = "#2a2a2a"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 8, 0, TAU); ctx.fill(); }
+    if (b.flag) { ctx.fillStyle = "#ff7a3d"; ctx.fillRect(rx + b.w / 2 - 14, ry + 10, 28, 16); }
+    ctx.save(); ctx.translate(rx + b.w / 2, ry + b.h / 2); if (b.labelVert) ctx.rotate(-Math.PI / 2);
+    const lw = b.labelVert ? b.h : b.w;
+    ctx.fillStyle = b.labelCol || "#ffffff"; ctx.font = Math.min(32, Math.floor((lw * 0.85) / (b.label.length * 0.68))) + "px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(b.label, 0, b.bars ? 0 : 0); ctx.restore();
+  }
   if (b.kind === "fire") { ctx.fillStyle = "#f2f2f2"; ctx.font = "28px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЖАРНАЯ ЧАСТЬ", rx + b.w / 2, ry + b.h / 2 - 14); ctx.fillStyle = "#ffd23d"; ctx.fillText("01", rx + b.w / 2, ry + b.h / 2 + 22); }
   if (b.kind === "chapel") { ctx.fillStyle = "#e8d48a"; ctx.fillRect(rx + b.w / 2 - 3, ry + b.h / 2 - 16, 6, 32); ctx.fillRect(rx + b.w / 2 - 11, ry + b.h / 2 - 8, 22, 6); }
   if (b.kind === "food") { ctx.fillStyle = "#e9f7e0"; ctx.font = "34px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПРОДУКТЫ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e8c95d"; for (let k = 0; k < 6; k++) ctx.fillRect(rx + 10 + k * (b.w - 20) / 6, ry + b.h - 12, (b.w - 20) / 12, 8); }
@@ -2052,6 +2083,12 @@ function init3d() {
     if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЛИЦИЯ", w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
     if (b.kind === "bar") { g.fillStyle = MISSIONS ? "#ff3d7f" : "#ffb000"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", w / 2, h / 2); }
     if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", w / 2, h / 2); }
+    if (b.kind === "svc") {
+      if (b.bars) { g.fillStyle = "#2a2826"; for (let x = 30; x < w - 30; x += 14) g.fillRect(x, 30, 4, h - 60); }
+      g.save(); g.translate(w / 2, h / 2); if (b.labelVert) g.rotate(-Math.PI / 2);
+      const lw = b.labelVert ? h : w;
+      g.fillStyle = b.labelCol || "#ffffff"; g.font = Math.min(60, Math.floor((lw * 0.85) / (b.label.length * 0.68))) + "px 'Russo One','Arial Black',sans-serif"; g.fillText(b.label, 0, 0); g.restore();
+    }
     if (b.kind === "fire") { g.fillStyle = "#f2f2f2"; g.font = "36px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЖАРНАЯ ЧАСТЬ", w / 2, h / 2 - 18); g.fillStyle = "#ffd23d"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("01", w / 2, h / 2 + 26); }
     if (b.kind === "food") { g.fillStyle = "#e9f7e0"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.fillText("ПРОДУКТЫ", w / 2, h / 2); }
   }
@@ -2146,8 +2183,8 @@ function init3d() {
       const sp = new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 22, 10), lam(0xbdb4a2)); sp.position.set(cx, 11, cz); scene.add(sp);
       continue;
     }
-    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food" || b.kind === "fire";
-    const h = b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food" || b.kind === "fire" || b.kind === "svc";
+    const h = b.h3 ? b.h3 : b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
     const geo = new THREE.BoxGeometry(b.w, h, b.h);
     if (b.kind !== "cont") {
       const uv = geo.attributes.uv;
@@ -2161,6 +2198,21 @@ function init3d() {
     const m = new THREE.Mesh(geo, [wall, wall, roof, roof, wall, wall]);
     m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
     for (const [ax, ay, s] of b.ac) { const a = new THREE.Mesh(BOX, mat(shade(b.roof, 0.78))); a.scale.set(s, s * 0.7, s); a.position.set(b.x + ax * b.w + s / 2, h + s * 0.35, b.y + ay * b.h + s / 2); a.castShadow = true; scene.add(a); }
+    if (b.kind === "svc" || b.kind === "fire" || b.kind === "police" || b.kind === "hosp") {
+      // a sign on the street side so the building reads from the ground
+      const label = b.kind === "svc" ? b.label : b.kind === "fire" ? "ПОЖАРНАЯ ЧАСТЬ 01" : b.kind === "police" ? "ПОЛИЦИЯ" : "БОЛЬНИЦА";
+      const bg = b.kind === "svc" ? (b.labelCol ? "#14121a" : shade(b.roof, 0.55)) : b.kind === "fire" ? "#f2f2f2" : b.kind === "police" ? "#1c2b55" : "#ffffff";
+      const fg = b.kind === "svc" ? b.labelCol || "#ffffff" : b.kind === "fire" ? "#d7261e" : b.kind === "police" ? "#ffffff" : "#e0303e";
+      const sc = document.createElement("canvas"); sc.width = 512; sc.height = 72;
+      const g = sc.getContext("2d"); g.fillStyle = bg; g.fillRect(0, 0, 512, 72); g.fillStyle = fg; g.textAlign = "center"; g.textBaseline = "middle";
+      g.font = Math.min(50, Math.floor(480 / (label.length * 0.66))) + "px 'Russo One','Arial Black',sans-serif"; g.fillText(label, 256, 38);
+      const sw = Math.min(b.w * 0.9, 220), sign = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(sc) }));
+      sign.scale.set(sw, sw * 72 / 512, 1.5); sign.position.set(cx, Math.min(h - 10, 30), b.y + b.h + 1.2); scene.add(sign);
+    }
+    if (b.columns) { for (let x = b.x + 10; x < b.x + b.w - 6; x += 22) { const col = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, h * 0.8, 10), lam(0xf2eee4)); col.position.set(x, h * 0.4, b.y + b.h + 5); col.castShadow = true; scene.add(col); } const pd = new THREE.Mesh(BOX, lam(shade(b.roof, 0.9))); pd.scale.set(b.w, 6, 14); pd.position.set(cx, h * 0.8 + 3, b.y + b.h + 4); scene.add(pd); }
+    if (b.chimneys) for (const fx of [0.2, 0.8]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 170, 14), lam(0xffffff, { map: tex(32, (g) => { for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : "#d23a2a"; g.fillRect(0, k * 8, 32, 8); } }) })); ch.position.set(b.x + b.w * fx, h + 85, b.y + b.h * 0.3); ch.castShadow = true; scene.add(ch); }
+    if (b.flag) { const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1.5, 40, 1.5); pole.position.set(cx, h + 20, cz); scene.add(pole); const fl = new THREE.Mesh(BOX, lam(0xff7a3d)); fl.scale.set(22, 13, 0.8); fl.position.set(cx + 11, h + 33, cz); scene.add(fl); }
+    if (b.bars) for (const [qx, qz] of [[b.x + 12, b.y + 12], [b.x + b.w - 12, b.y + 12], [b.x + 12, b.y + b.h - 12], [b.x + b.w - 12, b.y + b.h - 12]]) { const tw = new THREE.Mesh(BOX, lam(0x5a5650)); tw.scale.set(20, 30, 20); tw.position.set(qx, h + 15, qz); tw.castShadow = true; scene.add(tw); const lp = new THREE.Mesh(BOX, basic(0xfff1c0)); lp.scale.set(5, 4, 5); lp.position.set(qx, h + 32, qz); scene.add(lp); }
     if (b.kind === "food" || (b.kind === "garage" && !MISSIONS)) { const sign = new THREE.Mesh(BOX, basic(b.kind === "food" ? 0x8be38a : 0x4d93ff)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 34, b.y + b.h + 1); scene.add(sign); }
     if (b.kind === "bar") { const sign = new THREE.Mesh(BOX, basic(MISSIONS ? 0xff3d7f : 0xffb000)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 40, b.y + b.h + 1); scene.add(sign); }
   }
@@ -2214,7 +2266,7 @@ function init3d() {
     const g = new THREE.Group(), L = c.t.len, W = c.t.wid;
     const paint = lam(c.wreck ? 0x2b2725 : c.col);
     const add = (m, sx, sy, sz, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; g.add(b); return b; };
-    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
+    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance" || c.type === "bus", sport = c.type === "sport", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
     add(paint, L, bh, W, 0, base + bh / 2, 0, true);
     let top = base + bh;
     if (van) { add(M3.glass, 2, 7, W - 3, L / 2 - 0.4, base + bh - 5, 0); add(M3.glass, L * 0.22, 5, W + 0.4, L * 0.3, base + bh - 5, 0); }
@@ -2225,6 +2277,7 @@ function init3d() {
     let red = null, blue = null;
     if (c.type === "cop") { add(mat("#1c2b55"), L * 0.36, bh * 0.5, W + 0.3, 0, base + bh * 0.45, 0); red = add(M3.redOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, -W / 4); blue = add(M3.blueOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, W / 4); }
     if (c.type === "taxi") add(mat("#fff4a0"), 4, 3, 9, -L * 0.07, top + 1.5, 0);
+    if (c.type === "bus") { add(M3.glass, L * 0.82, 5.5, W + 0.3, -L * 0.04, base + bh - 5, 0); add(M3.glass, 1, 9, W - 4, L / 2 + 0.1, base + bh - 6, 0); add(mat("#f2f2f2"), L + 0.2, 1.4, W + 0.2, 0, base + 5, 0); }
     if (c.type === "fire") { for (const z of [-5, 5]) add(mat("#9a9a9a"), L * 0.72, 1.4, 1.4, -L * 0.1, top + 2, z); for (let k = 0; k < 9; k++) add(mat("#9a9a9a"), 1.2, 1.2, 10, -L * 0.42 + k * 5, top + 2, 0); add(mat("#f2f2f2"), L + 0.2, 1.6, W + 0.2, 0, base + bh * 0.35, 0); add(M3.red, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
     if (c.type === "ambulance") { add(mat("#e0303e"), L + 0.2, 2.2, W + 0.2, 0, base + bh * 0.4, 0); add(mat("#e0303e"), 10, 0.6, 3, -L * 0.15, top + 0.3, 0); add(mat("#e0303e"), 3, 0.6, 10, -L * 0.15, top + 0.3, 0); add(M3.blue, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
     if (sport) add(mat("#111111"), L * 0.99, 0.4, 3.5, 0, base + bh + 0.2, 0);
