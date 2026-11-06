@@ -1307,7 +1307,7 @@ function buy(sh, it) {
   sfx.cash();
   if (it.bag) toast(it.name + " — в сумке", 1.6);
   else if (!it.quiet) toast(it.name + " куплено" + (sh.bonus ? " · бонус +" + fmt(sh.bonus) : ""), 2);
-  writeSave(); renderShop(); updHud();
+  writeSave(); if (state === "shop") renderShop(); updHud();
 }
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
@@ -2096,6 +2096,8 @@ const APPS = [
   { id: "bank", name: "Банк", col: "#2f9e5a", g: "$" },
   { id: "match", name: "Матч дня", col: "#ff7a3d", g: "V3" },
   { id: "ems", name: "Скорая 03", col: "#e0303e", g: "+" },
+  { id: "shop", name: "Магазин", col: "#ff3d7f", g: "М" },
+  { id: "tele", name: "Телепорт", col: "#8d3fd1", g: "TP" },
   { id: "settings", name: "Настройки", col: "#6d6a86", g: "≡" },
 ];
 const TAXI = 50;
@@ -2164,11 +2166,55 @@ function renderPhone(app) {
   } else if (app === "ems") {
     scr.appendChild(el("p", "ph-note", "Скорая приедет туда, где ты стоишь, и поставит на ноги."));
     list.appendChild(phRow("Вызвать скорую", "Здоровье " + Math.round(player.hp) + " → 100", "$100", () => { money -= 100; player.hp = 100; sfx.cash(); writeSave(); resume(); toast("Скорая подлатала тебя. Здоровье 100", 2.4); }, money < 100));
+  } else if (app === "shop") {
+    scr.appendChild(el("p", "ph-note", "Покупай из любого магазина города, не выходя из дома. Еда — в сумку, оружие — в руки, машина — на стоянку автосалона."));
+    for (const sh of SHOPS) {
+      if (!sh.items) continue;
+      const head = el("p", "ph-note", sh.who + (sh.bonus ? " · бонус +" + fmt(sh.bonus) + " за покупку" : "")); head.style.color = sh.col; head.style.marginTop = "6px"; list.appendChild(head);
+      for (const it of sh.items) {
+        if (it.open) continue;
+        const why = it.no ? it.no() : "";
+        list.appendChild(phRow(it.name, why || it.info, fmt(it.price), () => { const y = $("phScreen").scrollTop; buy(sh, it); renderPhone("shop"); $("phScreen").scrollTop = y; }, money < it.price || !!why));
+      }
+    }
+  } else if (app === "tele") {
+    scr.appendChild(el("p", "ph-note", "Нажми на любое место на карте — и ты мгновенно там. Бесплатно."));
+    const c = document.createElement("canvas"); c.id = "phMap"; c.width = c.height = N * MMS; const g = c.getContext("2d");
+    g.drawImage(mm, 0, 0);
+    const dot = (q, col, r = 5) => { if (!q) return; g.fillStyle = col; g.beginPath(); g.arc((q.x / T) * MMS, (q.y / T) * MMS, r, 0, TAU); g.fill(); g.strokeStyle = "#000"; g.lineWidth = 1.5; g.stroke(); };
+    for (const sh of SHOPS) dot(sh.at(), sh.col);
+    dot(indoor ? places.home : player.inCar || player, "#ffd23d", 7);
+    c.style.cursor = "crosshair";
+    c.addEventListener("click", (e) => {
+      const r = c.getBoundingClientRect(), wx = ((e.clientX - r.left) / r.width) * WORLD, wy = ((e.clientY - r.top) / r.height) * WORLD;
+      const spot = freeSpot(wx, wy); if (spot) teleportTo(spot.x, spot.y, "точка на карте", null);
+    });
+    scr.appendChild(c);
+    for (const [name, at, lock] of taxiStops()) list.appendChild(phRow(name, "мгновенно", "бесплатно", () => teleportTo(at.x, at.y, name, lock)));
   } else if (app === "settings") {
     list.appendChild(phRow("Вид", mode3d ? "3D от третьего лица" : "2D сверху", "сменить", () => { setView(!mode3d); setTimeout(() => state === "phone" && renderPhone("settings"), 300); }));
     list.appendChild(phRow("Звук", muted ? "выключен" : "включён", "сменить", () => { initAudio(); toggleMute(); renderPhone("settings"); }));
   }
   scr.appendChild(list);
+}
+// nearest open ground to a tapped map point
+function freeSpot(wx, wy) {
+  const tx = Math.floor(wx / T), ty = Math.floor(wy / T);
+  for (let r = 0; r < 8; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+    const x = tx + dx, y = ty + dy, t = tile(x, y);
+    if (t === ROAD || t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM) { const p2 = { x: (x + 0.5) * T, y: (y + 0.5) * T }; if (!pushOut(p2.x, p2.y, 10).some((v) => Math.abs(v) > 0.5)) return p2; }
+  }
+  return null;
+}
+function teleportTo(x, y, name, lock) {
+  if (indoor) leaveHome();
+  if (player.inCar) exitCar(true);
+  if (player.anim) endAnim();
+  player.x = x; player.y = y; shopLock = lock; cam.x = x; cam.y = y; cam3.init = false;
+  for (let i = 0; i < 24; i++) { const a = rand(0, TAU), sp = rand(40, 180); addPart({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.6, max: 0.6, size: rand(4, 9), col: pick(["#c77ae8", "#8d3fd1", "#ffffff"]), type: "fire" }); }
+  resume(); tone(300, 1600, 0.35, 0.1, "sine"); setTimeout(() => tone(1600, 600, 0.25, 0.06, "triangle"), 120);
+  big("ТЕЛЕПОРТ", name, "#c77ae8", 1.6);
 }
 function taxiTo(name, at, lock) {
   if (money < TAXI || wanted > 0) return;
