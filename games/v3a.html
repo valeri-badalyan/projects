@@ -1467,6 +1467,7 @@ function roomPush(x, y, r) {
 }
 function nearSpot() { const L = toLocal(); let best = null, bd = 1e9; for (const s2 of ROOM_SPOTS) { const d = Math.hypot(L.x - s2.x, L.y - s2.y); if (d < s2.r && d < bd) { bd = d; best = s2; } } return best; }
 function enterHome() {
+  player.umbOn = false;
   if (player.inCar) exitCar(true);
   indoor = true; player.couch = false; setLocal(160, RH - 40); player.a = -Math.PI / 2;
   cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
@@ -2687,6 +2688,8 @@ function update(dt) {
   manageT -= dt; if (manageT <= 0) { manageT = 0.25; manage(); }
   tickGadgets(dt);
   updWeather(dt);
+  const umb = WX.rain > 0.3 && !player.inCar && !player.anim && !player.dead;
+  if (umb !== !!player.umbOn) { player.umbOn = umb; if (umb) { tone(380, 760, 0.09, 0.07, "triangle"); noise(0.12, 0.12, 1800); toast("Зонтик раскрыт", 1.2); } }
   saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); }
 
   // input
@@ -2993,6 +2996,11 @@ function drawHuman(p, isPlayer) {
     ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(0, 0, 1.6, 0, TAU); ctx.fill();
   }
   if (isPlayer) { ctx.fillStyle = "#222"; ctx.beginPath(); ctx.arc(0.5, 0, 5.2, Math.PI * 0.5, Math.PI * 1.5); ctx.fill(); ctx.fillRect(2, -3.5, 5, 7); }
+  if (isPlayer && player.umbOn && !indoor) {
+    ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.beginPath(); ctx.arc(1, -2, 15, 0, TAU); ctx.fill();
+    for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#22222a" : player.col; ctx.beginPath(); ctx.moveTo(-2, -5); ctx.arc(-2, -5, 15, (k * TAU) / 8, ((k + 1) * TAU) / 8); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle = "#ddd"; ctx.beginPath(); ctx.arc(-2, -5, 1.8, 0, TAU); ctx.fill();
+  }
   ctx.restore();
 }
 function drawTree(t) {
@@ -3590,10 +3598,12 @@ function init3d() {
     if (p.kind === "cop" || me) { const brim = new THREE.Mesh(BOX, mat(me ? "#222222" : "#16244a")); brim.scale.set(3.2, 0.6, 4.6); brim.position.set(2.5, 18.3, 0); g.add(brim); }
     if (p.kind === "gang") { const band = new THREE.Mesh(BOX, mat("#e0213b")); band.scale.set(5.8, 1.3, 5.8); band.position.y = 17.6; g.add(band); }
     let umb = null;
-    if (p.kind === "ped") {
+    if (p.kind === "ped" || me) {
+      const uz = me ? -3 : 3, ucol = me ? "#22222a" : p.col;
       umb = new THREE.Group(); umb.visible = false;
-      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 12, 0.6); pole.position.set(2.5, 18, 3); umb.add(pole);
-      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: p.col, side: THREE.DoubleSide })); can.position.set(2.5, 25.5, 3); umb.add(can);
+      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 12, 0.6); pole.position.set(2.5, 18, uz); umb.add(pole);
+      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: ucol, side: THREE.DoubleSide })); can.position.set(2.5, 25.5, uz); umb.add(can);
+      if (me) { const rim = new THREE.Mesh(new THREE.ConeGeometry(12.3, 1.2, 8, 1, true), new THREE.MeshLambertMaterial({ color: player.col, side: THREE.DoubleSide })); rim.position.set(2.5, 23.4, uz); umb.add(rim); }
       g.add(umb);
     }
     return { g, lL, lR, aL, aR, gun, umb };
@@ -3721,7 +3731,10 @@ function sync3d() {
     o.lL.rotation.z = sw + sit * 1.45; o.lR.rotation.z = -sw + sit * 1.45; o.aL.rotation.z = grab ? Math.PI / 2 : -sw * 0.8 + sit * 0.7;
     o.aR.rotation.z = armed || grab || (me && player.punch > 0) ? Math.PI / 2 : sw * 0.8 + sit * 0.7;
     o.gun.visible = armed;
-    if (o.umb) { o.umb.visible = WX.rain > 0.3 && !lying; if (o.umb.visible) o.aR.rotation.z = 2.6; }
+    if (o.umb) {
+      o.umb.visible = me ? !!player.umbOn && !indoor : WX.rain > 0.3 && !lying;
+      if (o.umb.visible) { if (me) o.aL.rotation.z = 2.6; else o.aR.rotation.z = 2.6; }
+    }
   };
   for (const p of people) putPerson(p, p.id, false);
   if (started) putPerson(player, "me", true);
