@@ -116,6 +116,15 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #shopOut{flex:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
 #stBody .btn{flex:none;min-height:52px}
+#fjBody{display:flex;flex-direction:column;gap:12px}
+#fjBody .btn{flex:none;min-height:52px}
+.fj-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fj-time{font-family:var(--display);font-size:28px;color:var(--warn);font-variant-numeric:tabular-nums}
+.fj-want{margin:0;font-family:var(--display);font-size:24px;text-align:center}
+.fj-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fj-part{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:14px;background:#2c2937;border:2px solid var(--line);color:var(--ink);font-weight:800;font-size:15px;touch-action:manipulation}
+.fj-part i{display:block;width:34px;height:34px;border-radius:8px;background:var(--pc);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25)}
+.fj-part:active{border-color:var(--pc)}
 .ov{align-items:flex-start}
 .ov>.card{margin:auto}
 .bet-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -196,7 +205,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины и стадион, на юге только городские службы: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция и склады. Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -241,6 +250,15 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <ol id="mFeed"></ol>
         <button type="button" class="btn alt" id="mSkip">Пропустить</button>
       </div>
+    </div>
+  </div>
+
+  <div class="ov dim" id="factory" hidden>
+    <div class="card">
+      <span class="who">Завод «V3 Электроникс»</span>
+      <h3>Смена на конвейере</h3>
+      <div id="fjBody"></div>
+      <button type="button" class="btn alt" id="fjOut" style="flex:none">Уйти</button>
     </div>
   </div>
 
@@ -329,7 +347,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
+const SPECIAL = { "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -339,6 +357,15 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
+  else if (kind === "electro") {
+    const b = addB(ix, iy, 4, 2, "svc", "#2b2f45"); b.label = "ЭЛЕКТРОНИКА"; b.labelCol = "#c77ae8"; b.h3 = 58; fill(ix, iy + 2, 4, 2, LOT);
+    places.electro = { x: cx, y: (y0 + 4) * T };
+  }
+  else if (kind === "factory") {
+    const b = addB(ix, iy, 4, 3, "svc", "#6f8a9c"); b.label = "ЗАВОД ЭЛЕКТРОНИКИ"; b.labelCol = "#5de0d0"; b.h3 = 62; b.factory = true; fill(ix, iy + 3, 4, 1, LOT);
+    places.factory = { x: cx, y: (y0 + 4.5) * T };
+    parkSpots.push({ type: "van", x: (x0 + 1.6) * T, y: (y0 + 4.5) * T, a: 0 });
+  }
   else if (kind === "ems") {
     const b = addB(ix, iy, 4, 2, "svc", "#f2f2f2"); b.label = "СКОРАЯ ПОМОЩЬ"; b.labelCol = "#e0303e"; b.h3 = 56; fill(ix, iy + 2, 4, 2, LOT);
     parkSpots.push({ type: "ambulance", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "ambulance", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
@@ -748,9 +775,80 @@ const SHOPS = [
       { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
       { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
     ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
+  { id: "electro", who: "Электроника «Вольт»", title: "Магазин электроники", col: "#c77ae8", hex: 0xc77ae8, label: "Э", at: () => places.electro, bonus: 0,
+    note: "Гаджеты покупаются один раз и остаются навсегда. Их делают на заводе электроники на юге.",
+    items: [
+      { id: "scanner", name: "Полицейский сканер", info: "Копы всегда видны на мини-карте, розыск спадает быстрее", price: 700 },
+      { id: "gps", name: "GPS-навигатор", info: "Мини-карта показывает втрое больше города", price: 400 },
+      { id: "radio", name: "Автомагнитола", info: "В машине играет радио «V3 FM»", price: 300 },
+      { id: "laptop", name: "Ноутбук", info: "Удалённая работа: +$25 каждую минуту игры", price: 1500 },
+    ].map((it) => Object.assign(it, { no: () => (gadget(it.id) ? "Уже есть" : ""), act: () => { (save.gadgets || (save.gadgets = {}))[it.id] = 1; } })) },
+  { id: "factory", col: "#5de0d0", hex: 0x5de0d0, label: "З", at: () => places.factory, open: () => openFactory() },
   { id: "stadium", col: "#e8f0ff", hex: 0xe8f0ff, label: "V3", at: () => places.stadium, open: () => openStadium() },
 ];
 let shopLock = "guns", shopNow = null;
+const gadget = (k) => !!(save.gadgets && save.gadgets[k]);
+/* electronics factory: a 20-second shift on the assembly line */
+const PARTS = [{ id: "chip", name: "Чип", col: "#3d6dff" }, { id: "cap", name: "Конденсатор", col: "#ffd23d" }, { id: "res", name: "Резистор", col: "#ff7a3d" }, { id: "led", name: "Светодиод", col: "#8be38a" }];
+const SHIFT = 20, PAY = 25;
+let FJ = null;
+function openFactory() { FJ = { on: false, done: false }; renderFactory(); showOv("factory"); }
+function renderFactory() {
+  const box = $("fjBody"); box.innerHTML = "";
+  if (!FJ.on && !FJ.done) {
+    box.appendChild(el("p", "prog", `Смена длится ${SHIFT} секунд. На экране — деталь, которую нужно поставить на плату. Жми её, пока не кончилось время. За каждую верную деталь — ${fmt(PAY)}, ошибка отнимает секунду.`));
+    const go = el("button", "btn", "Начать смену"); go.type = "button"; go.id = "fjGo"; go.addEventListener("click", startShift); box.appendChild(go);
+    return;
+  }
+  if (FJ.done) {
+    box.appendChild(el("p", "st-final", `Собрано плат: ${FJ.score}`));
+    box.appendChild(el("p", "bonus", FJ.score ? `Зарплата за смену: +${fmt(FJ.score * PAY)}` : "Сегодня без зарплаты. Попробуй ещё раз."));
+    const go = el("button", "btn", "Ещё смена"); go.type = "button"; go.id = "fjGo"; go.addEventListener("click", startShift); box.appendChild(go);
+    return;
+  }
+  const top = el("div", "fj-top"); top.append(el("b", "fj-time", Math.ceil(FJ.t) + " с"), el("span", "prog", "Собрано: " + FJ.score + " · " + fmt(FJ.score * PAY)));
+  box.appendChild(top);
+  const want = el("p", "fj-want"); want.append(el("span", null, "Поставь: "), Object.assign(el("b", null, FJ.target.name), { style: "color:" + FJ.target.col }));
+  box.appendChild(want);
+  const grid = el("div", "fj-grid");
+  for (const pt of FJ.order) {
+    const b = el("button", "fj-part"); b.type = "button"; b.id = "part-" + pt.id; b.style.setProperty("--pc", pt.col);
+    b.append(el("i"), el("span", null, pt.name));
+    b.addEventListener("click", () => pickPart(pt));
+    grid.appendChild(b);
+  }
+  box.appendChild(grid);
+}
+function nextPart() { FJ.target = pick(PARTS); FJ.order = PARTS.slice().sort(() => Math.random() - 0.5); }
+function startShift() { FJ = { on: true, done: false, t: SHIFT, score: 0 }; nextPart(); renderFactory(); }
+function pickPart(pt) {
+  if (!FJ || !FJ.on) return;
+  if (pt.id === FJ.target.id) { FJ.score++; tone(880, 1320, 0.07, 0.08); } else { FJ.t -= 1; tone(200, 140, 0.15, 0.1, "sawtooth"); }
+  nextPart(); renderFactory();
+}
+function updFactory(dt) {
+  if (!FJ || !FJ.on) return;
+  FJ.t -= dt;
+  if (FJ.t <= 0) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; if (FJ.score) sfx.cash(); writeSave(); renderFactory(); return; }
+  const tm = document.querySelector("#fjBody .fj-time"); if (tm) tm.textContent = Math.ceil(FJ.t) + " с";
+}
+/* radio in the car (with the car stereo from the electronics shop) */
+const RADIO_BASS = [45, 45, 57, 45, 43, 43, 55, 43, 41, 41, 53, 41, 43, 43, 55, 47];
+const RADIO_LEAD = [69, 0, 72, 74, 76, 0, 74, 72, 67, 0, 69, 72, 74, 0, 72, 69, 69, 0, 72, 74, 76, 79, 76, 74, 72, 0, 74, 76, 72, 0, 69, 0];
+let radioT = 0, radioStep = 0, laptopT = 0;
+const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
+function tickGadgets(dt) {
+  if (gadget("laptop")) { laptopT += dt; if (laptopT >= 60) { laptopT -= 60; money += 25; sfx.cash(); toast("Ноутбук: удалённая работа +$25", 1.6); } }
+  if (!ac || muted || !player.inCar || !gadget("radio")) { radioT = 0; return; }
+  radioT -= dt;
+  while (radioT <= 0) {
+    radioT += 0.19;
+    const i = radioStep++;
+    if (i % 2 === 0) tone(midi(RADIO_BASS[(i >> 1) % 16]), midi(RADIO_BASS[(i >> 1) % 16]) * 0.99, 0.3, 0.06, "triangle");
+    const ld = RADIO_LEAD[i % 32]; if (ld) tone(midi(ld), midi(ld), 0.16, 0.025, "square");
+    if (i % 4 === 0) tone(110, 40, 0.12, 0.09, "sine");
+  }
+}
 function renderShop() {
   const sh = shopNow;
   $("shopWho").textContent = sh.who; $("shopTitle").textContent = sh.title;
@@ -1122,6 +1220,7 @@ function enterCar() {
   best.driver = "player"; best.ai = null; best.deployed = false; best.keep = true;
   if (player.lastCar && player.lastCar !== best && player.lastCar !== M.car && !player.lastCar.ownKey) player.lastCar.keep = false;
   player.inCar = best; player.lastCar = best; sfx.door();
+  if (gadget("radio")) toast("Радио «V3 FM»", 1.4);
 }
 function exitCar(force) {
   const c = player.inCar; if (!c) return;
@@ -1407,7 +1506,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium") resume(); }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory") resume(); }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
 });
@@ -1456,8 +1555,8 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -1473,6 +1572,7 @@ $("cGo").addEventListener("click", () => { resume(); startMission(offer); toast(
 $("cNo").addEventListener("click", resume);
 $("shopOut").addEventListener("click", resume);
 $("stOut").addEventListener("click", resume);
+$("fjOut").addEventListener("click", () => { if (FJ && FJ.on) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; writeSave(); } FJ = null; resume(); });
 $("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else exitMatch(); });
 let started = false;
 function bootStart() {
@@ -1498,6 +1598,7 @@ function update(dt) {
 
   fieldT -= dt; if (fieldT <= 0) { fieldT = 0.3; buildField(P.x, P.y); }
   manageT -= dt; if (manageT <= 0) { manageT = 0.25; manage(); }
+  tickGadgets(dt);
   saveT += dt; if (saveT > 10) { saveT = 0; writeSave(); }
 
   // input
@@ -1614,7 +1715,7 @@ function update(dt) {
   for (const p of people) updPerson(p, dt);
   if (wanted > 0) {
     if (cars.some((c) => c.type === "cop" && c.driver === "cop" && !c.deployed && dist(c, P) < 420)) seenT = 1;
-    if (seenT > 0) lostT = 0; else { lostT += dt; if (lostT > 9 + wanted * 2.5) { setWanted(wanted - 1); lostT = 0; toast(wanted ? "Розыск снижен" : "Ты оторвался от полиции", 1.8); } }
+    if (seenT > 0) lostT = 0; else { lostT += dt; if (lostT > (9 + wanted * 2.5) * (gadget("scanner") ? 0.6 : 1)) { setWanted(wanted - 1); lostT = 0; toast(wanted ? "Розыск снижен" : "Ты оторвался от полиции", 1.8); } }
   }
   // melee from cops at close range
   // bullets
@@ -1839,6 +1940,7 @@ function drawBuilding(b) {
   if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "svc") {
+    if (b.factory) for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? "rgba(0,0,0,.18)" : "rgba(160,220,255,.35)"; ctx.fillRect(rx + (b.w * k) / 6, ry, b.w / 12, b.h); }
     if (b.bars) { ctx.fillStyle = "#5f5b54"; ctx.fillRect(rx + 30, ry + 30, b.w - 60, b.h - 60); ctx.fillStyle = "#2a2826"; for (let x = rx + 30; x < rx + b.w - 30; x += 12) ctx.fillRect(x, ry + 30, 3, b.h - 60); for (const [qx, qy] of [[rx + 12, ry + 12], [rx + b.w - 12, ry + 12], [rx + 12, ry + b.h - 12], [rx + b.w - 12, ry + b.h - 12]]) { ctx.fillStyle = "#4a4640"; ctx.fillRect(qx - 10, qy - 10, 20, 20); } }
     if (b.columns) { ctx.fillStyle = "rgba(255,255,255,.55)"; for (let x = rx + 12; x < rx + b.w - 8; x += 22) ctx.fillRect(x, ry + b.h - 14, 8, 10); }
     if (b.chimneys) for (const qx of [rx + b.w * 0.2, rx + b.w * 0.8]) { ctx.fillStyle = "#c9c9c9"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 14, 0, TAU); ctx.fill(); ctx.fillStyle = "#2a2a2a"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 8, 0, TAU); ctx.fill(); }
@@ -1965,7 +2067,7 @@ function drawMini() {
   const S = 248, Pp = player.inCar || player;
   mctx.setTransform(1, 0, 0, 1, 0, 0);
   mctx.fillStyle = "#24597a"; mctx.fillRect(0, 0, S, S);
-  const scale = 2; // minimap px per prerendered px
+  const scale = gadget("gps") ? 1.15 : 2; // minimap px per prerendered px (GPS zooms out)
   const px = (Pp.x / T) * MMS, py = (Pp.y / T) * MMS;
   const rot = mode3d && started ? -Math.PI / 2 - cam3.yaw : 0;
   mctx.translate(S / 2, S / 2); mctx.rotate(rot); mctx.scale(scale, scale); mctx.translate(-px, -py);
@@ -1973,8 +2075,8 @@ function drawMini() {
   mctx.drawImage(mm, 0, 0);
   const dot = (x, y, r, col) => { mctx.fillStyle = col; mctx.beginPath(); mctx.arc((x / T) * MMS, (y / T) * MMS, r, 0, TAU); mctx.fill(); };
   const f = Math.floor(now * 4) % 2;
-  for (const c of cars) if (c.type === "cop" && c.driver === "cop" && wanted > 0) dot(c.x, c.y, 3, f ? "#ff2d3d" : "#3d8bff");
-  for (const p of people) if (p.kind === "cop" && !p.dead && wanted > 0) dot(p.x, p.y, 2, "#3d8bff");
+  for (const c of cars) if (c.type === "cop" && c.driver === "cop" && (wanted > 0 || gadget("scanner"))) dot(c.x, c.y, 3, f ? "#ff2d3d" : "#3d8bff");
+  for (const p of people) if (p.kind === "cop" && !p.dead && (wanted > 0 || gadget("scanner"))) dot(p.x, p.y, 2, "#3d8bff");
   if (MISSIONS && !M.active) { dot(places.bar.x, places.bar.y, 5, "#ff3d7f"); }
   if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); dot(q.x, q.y, 5, sh.col); }
   const tg = stepTarget();
@@ -2210,6 +2312,15 @@ function init3d() {
       sign.scale.set(sw, sw * 72 / 512, 1.5); sign.position.set(cx, Math.min(h - 10, 30), b.y + b.h + 1.2); scene.add(sign);
     }
     if (b.columns) { for (let x = b.x + 10; x < b.x + b.w - 6; x += 22) { const col = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, h * 0.8, 10), lam(0xf2eee4)); col.position.set(x, h * 0.4, b.y + b.h + 5); col.castShadow = true; scene.add(col); } const pd = new THREE.Mesh(BOX, lam(shade(b.roof, 0.9))); pd.scale.set(b.w, 6, 14); pd.position.set(cx, h * 0.8 + 3, b.y + b.h + 4); scene.add(pd); }
+    if (b.factory) {
+      const glassM = lam(0x9fd8f0, { emissive: 0x204050 }), slabM = lam(0x5b6f7c);
+      for (let k = 0; k < 4; k++) {
+        const x = b.x + (k + 0.5) * (b.w / 4);
+        const slab = new THREE.Mesh(BOX, slabM); slab.scale.set(b.w / 4 + 2, 3, b.h - 12); slab.position.set(x, h + 8, cz); slab.rotation.z = -0.42; slab.castShadow = true; scene.add(slab);
+        const gl = new THREE.Mesh(BOX, glassM); gl.scale.set(1.5, 16, b.h - 14); gl.position.set(x + b.w / 8 - 2, h + 8, cz); scene.add(gl);
+      }
+      const ch = new THREE.Mesh(new THREE.CylinderGeometry(7, 10, 120, 12), lam(0x8d8a86)); ch.position.set(b.x + b.w - 20, h + 60, b.y + 20); ch.castShadow = true; scene.add(ch);
+    }
     if (b.chimneys) for (const fx of [0.2, 0.8]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(9, 12, 170, 14), lam(0xffffff, { map: tex(32, (g) => { for (let k = 0; k < 4; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : "#d23a2a"; g.fillRect(0, k * 8, 32, 8); } }) })); ch.position.set(b.x + b.w * fx, h + 85, b.y + b.h * 0.3); ch.castShadow = true; scene.add(ch); }
     if (b.flag) { const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1.5, 40, 1.5); pole.position.set(cx, h + 20, cz); scene.add(pole); const fl = new THREE.Mesh(BOX, lam(0xff7a3d)); fl.scale.set(22, 13, 0.8); fl.position.set(cx + 11, h + 33, cz); scene.add(fl); }
     if (b.bars) for (const [qx, qz] of [[b.x + 12, b.y + 12], [b.x + b.w - 12, b.y + 12], [b.x + 12, b.y + b.h - 12], [b.x + b.w - 12, b.y + b.h - 12]]) { const tw = new THREE.Mesh(BOX, lam(0x5a5650)); tw.scale.set(20, 30, 20); tw.position.set(qx, h + 15, qz); tw.castShadow = true; scene.add(tw); const lp = new THREE.Mesh(BOX, basic(0xfff1c0)); lp.scale.set(5, 4, 5); lp.position.set(qx, h + 32, qz); scene.add(lp); }
@@ -2516,6 +2627,7 @@ function frame(t) {
   const dt = Math.min(0.05, (t - last) / 1000); last = t;
   if (state === "play") update(dt);
   if (state === "match") updMatch(dt);
+  if (state === "factory") updFactory(dt);
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
