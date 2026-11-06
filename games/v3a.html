@@ -783,8 +783,11 @@ function updHud() {
 }
 
 /* ================= wanted ================= */
+const STATS = { jacks: 0, maxWanted: 0, booms: 0, chases: 0 };
 function setWanted(n, why) {
   n = clamp(n, 0, 5);
+  if (n > STATS.maxWanted) STATS.maxWanted = n;
+  if (n > 0 && wanted === 0) STATS.chases++;
   if (n > wanted) { sfx.star(); if (why) toast(why); }
   if (n !== wanted) lostT = 0;
   wanted = n;
@@ -1150,50 +1153,133 @@ function tvSet(ch) {
   drawTvFrame(0); hudCache.spot = null; hudCache.tvbar = null;
 }
 function tvNext() { tvSet(!TV.on ? 0 : TV.ch >= 2 ? -1 : TV.ch + 1); toast(TV.on ? `Канал ${TV.ch + 1}: ${TV_CH[TV.ch]}` : "Телевизор выключен", 1.2); }
-function newsHeadlines() {
-  const m = genMatch(dayKey());
-  return [
-    `Погода в Нова-Вэ: ${weatherName().toLowerCase()}, на часах ${gameClock()}`,
-    `Стадион V3: сегодня V3 — ${m.opp}, ставки на победу ×${m.odds.home.toFixed(2)}`,
-    "Завод «V3 Электроникс» ищет сборщиков плат",
-    "Crusty Crab представил новый крабовый бургер",
-    "Мэрия обещает расширить КПП в городской стене",
-    "Пожарные Нова-Вэ провели учения у электростанции",
-    "Автосалон «Нова»: спорткары снова в продаже",
-    "В порту разгрузили рекордную партию контейнеров",
-    "Синоптики советуют держать зонт под рукой",
-  ];
+// The bulletin: stories about the city. Some come from what really happened in the game today, the rest are invented local news.
+function newsStories() {
+  const m = genMatch(dayKey()), st = save.stadium && save.stadium.day === m.key, out = [];
+  if (STATS.maxWanted >= 3 || STATS.booms >= 2) out.push({ tag: "СРОЧНО", pic: "police", breaking: true, title: STATS.booms >= 2 ? `Взрывы на улицах: сгорело машин — ${STATS.booms}` : `Погоня века: полиция объявила розыск ${STATS.maxWanted} ★`,
+    lines: [STATS.booms >= 2 ? "Сегодня в Нова-Вэ одна за другой взрывались машины." : "Полиция всю смену гонялась за неизвестным водителем.", `Всего за день — ${STATS.chases} погонь и ${STATS.jacks} угонов.`, "Шеф полиции призывает горожан запирать машины и не выходить на проезжую часть."] });
+  out.push({ tag: "СПОРТ", pic: "stadium", title: st ? `V3 сыграл с «${m.opp}» — ${m.a}:${m.b}` : `Матч дня: V3 принимает «${m.opp}»`,
+    lines: st ? [`Стадион V3 гудел весь вечер: финальный счёт ${m.a}:${m.b}.`, m.a > m.b ? "Болельщики празднуют победу прямо на трибунах." : m.a === m.b ? "Ничья — и споры о судействе уже идут в соцсетях." : "Фанаты расстроены, но тренер обещает реванш.", "Следующий матч — завтра, билеты по 20 долларов."]
+      : [`Сегодня на стадионе V3 гости — «${m.opp}».`, `Букмекеры дают ×${m.odds.home.toFixed(2)} на победу хозяев и ×${m.odds.away.toFixed(2)} на гостей.`, "Трансляция — на нашем канале Sport, билеты — у белой метки V3."] });
+  out.push({ tag: "ПОГОДА", pic: WX.storm && WX.target > 0 ? "storm" : WX.target > 0 ? "rain" : "sun", title: `Погода: ${weatherName().toLowerCase()}, ${gameClock()}`,
+    lines: WX.target > 0 ? ["Над городом идёт дождь, дороги скользкие.", WX.storm ? "Синоптики предупреждают о грозе — держитесь подальше от высоких мачт стадиона." : "Водителей просят сбавить скорость на поворотах.", "Прохожие уже достали зонты."] : ["В Нова-Вэ ясно и тепло.", "Синоптики говорят: дождь может начаться в любой момент.", "Зонт лучше держать под рукой."] });
+  if (STATS.jacks > 0 && !out[0].breaking) out.push({ tag: "ПРОИСШЕСТВИЯ", pic: "police", title: `Угоны: за день угнано машин — ${STATS.jacks}`,
+    lines: ["Неизвестный вытаскивает водителей прямо из машин.", "Полиция просматривает записи камер у КПП.", "Свидетели описывают его как человека в яркой куртке."] });
+  if (save.home) out.push({ tag: "ГОРОД", pic: "tower", title: "В ЖК «Нова» въехал новый жилец",
+    lines: ["Однушку на 12-м этаже купили за 20 тысяч долларов.", "Соседи говорят, новый жилец часто смотрит наш канал.", "Привет, сосед!"] });
+  out.push(
+    { tag: "ГОРОД", pic: "wall", title: "Очереди на КПП: мэрия обещает третий проезд",
+      lines: ["Утром очередь на северном КПП растянулась на два квартала.", "Мэрия обещает открыть третий проезд в городской стене.", "Пока горожанам советуют пользоваться такси и телепортом."] },
+    { tag: "ПРОИСШЕСТВИЯ", pic: "fire", title: "Пожарные потушили склады за семь минут",
+      lines: ["Ночью на южных складах загорелись поддоны.", "Расчёт части 01 прибыл через три минуты и справился за семь.", "Никто не пострадал, причину ищут."] },
+    { tag: "ЭКОНОМИКА", pic: "factory", title: "Завод «V3 Электроникс» собрал миллионную плату",
+      lines: ["Конвейер завода выпустил юбилейную миллионную плату.", "Сборщикам платят 25 долларов за каждую.", "Завод по-прежнему ищет людей — смена всего двадцать секунд."] },
+    { tag: "ГОРОД", pic: "crab", title: "Crusty Crab: очередь до самой набережной",
+      lines: ["Новый крабовый бургер оказался хитом сезона.", "Очередь в Crusty Crab тянулась до самой воды.", "Ресторан набирает поваров — платят 40 долларов за бургер."] },
+    { tag: "ЭКОНОМИКА", pic: "port", title: "Порт принял рекордную партию контейнеров",
+      lines: ["В порт пришло рекордное судно с контейнерами.", "Говорят, внутри — новые спорткары для автосалона «Нова».", "Цены на машины могут снизиться уже на этой неделе."] },
+    { tag: "КУЛЬТУРА", pic: "chapel", title: "На кладбищенской часовне обновили купол",
+      lines: ["Реставраторы покрыли купол часовни свежей позолотой.", "Теперь его видно даже с северного берега.", "Жители благодарят мэрию и пожарных за помощь."] },
+  );
+  return out;
+}
+function newsPic(g, kind, x, y, w, h, t) {
+  g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+  const sky = (c) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  if (kind === "stadium") {
+    sky("#7fb6e8"); g.fillStyle = "#454060"; g.fillRect(x, y + h * 0.3, w, h * 0.25);
+    for (let k = 0; k < 40; k++) { g.fillStyle = ["#ff7a3d", "#fff", "#3d6dff", "#ffd23d"][k % 4]; g.fillRect(x + ((k * 13) % w), y + h * 0.33 + ((k * 7) % 14) + Math.abs(Math.sin(t * 6 + k)) * 2, 3, 3); }
+    g.fillStyle = "#36993f"; g.fillRect(x, y + h * 0.55, w, h); g.strokeStyle = "#fff"; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x + w / 2, y + h * 0.55); g.lineTo(x + w / 2, y + h); g.stroke();
+    g.fillStyle = "#fff"; g.beginPath(); g.arc(x + w * (0.5 + Math.sin(t) * 0.3), y + h * 0.8, 3, 0, TAU); g.fill();
+  } else if (kind === "sun" || kind === "rain" || kind === "storm") {
+    sky(kind === "sun" ? "#8cc4f0" : "#55627a");
+    if (kind === "sun") { g.fillStyle = "#ffd23d"; g.beginPath(); g.arc(x + w / 2, y + h / 2, 18 + Math.sin(t * 2) * 2, 0, TAU); g.fill(); }
+    else { g.fillStyle = "#c9d2e0"; for (const [dx, dy, r] of [[-14, 0, 14], [6, -6, 17], [24, 2, 12]]) { g.beginPath(); g.arc(x + w / 2 + dx, y + h * 0.38 + dy, r, 0, TAU); g.fill(); }
+      g.strokeStyle = "#9cc6ff"; g.lineWidth = 1.5; g.beginPath(); for (let k = 0; k < 12; k++) { const rx = x + w * 0.2 + ((k * 17) % (w * 0.6)), ry = y + h * 0.55 + ((t * 60 + k * 11) % (h * 0.4)); g.moveTo(rx, ry); g.lineTo(rx - 2, ry + 6); } g.stroke();
+      if (kind === "storm" && t % 2 < 0.15) { g.fillStyle = "#fff6a0"; g.beginPath(); g.moveTo(x + w / 2, y + h * 0.5); g.lineTo(x + w / 2 - 8, y + h * 0.75); g.lineTo(x + w / 2 + 2, y + h * 0.72); g.lineTo(x + w / 2 - 6, y + h); g.lineTo(x + w / 2 + 10, y + h * 0.66); g.lineTo(x + w / 2, y + h * 0.69); g.closePath(); g.fill(); } }
+  } else if (kind === "police") {
+    sky("#1d2236"); g.fillStyle = "#3b3a44"; g.fillRect(x, y + h * 0.6, w, h);
+    const cx = x + ((t * 50) % (w + 60)) - 30; g.fillStyle = "#f4f4f4"; g.fillRect(cx - 22, y + h * 0.6 - 14, 44, 14); g.fillStyle = "#1d2a3a"; g.fillRect(cx - 10, y + h * 0.6 - 22, 22, 9);
+    g.fillStyle = Math.floor(t * 8) % 2 ? "#ff2d3d" : "#3d8bff"; g.fillRect(cx - 4, y + h * 0.6 - 26, 8, 4);
+    g.fillStyle = `rgba(${Math.floor(t * 8) % 2 ? "255,45,61" : "61,139,255"},.25)`; g.fillRect(x, y, w, h);
+  } else if (kind === "tower") {
+    sky("#9cc6ff"); g.fillStyle = "#7e8fa6"; g.fillRect(x + w * 0.3, y + 8, w * 0.4, h);
+    g.fillStyle = "#ffcf73"; for (let r = 0; r < 8; r++) for (let c2 = 0; c2 < 4; c2++) if ((r * 3 + c2) % 4) g.fillRect(x + w * 0.33 + c2 * w * 0.09, y + 14 + r * 10, 5, 6);
+    g.fillStyle = "#2fd0a0"; g.fillRect(x + w * 0.33 + w * 0.09, y + 14 + 2 * 10, 5, 6);
+  } else if (kind === "wall") {
+    sky("#9cc6ff"); g.fillStyle = "#b5afa3"; g.fillRect(x, y + h * 0.4, w, h * 0.35); g.fillStyle = "#3b3a44"; g.fillRect(x + w * 0.42, y + h * 0.4, w * 0.16, h * 0.35);
+    g.fillStyle = "#e0213b"; g.fillRect(x + w * 0.4, y + h * 0.3, 3, h * 0.45);
+    for (let k = 0; k < 6; k++) { g.fillStyle = ["#e8433a", "#3d6dff", "#ffd23d", "#f2f2f2"][k % 4]; g.fillRect(x + w * 0.62 + k * 10 + ((t * 4) % 10), y + h * 0.8, 8, 5); }
+    g.fillStyle = "#3b3a44"; g.fillRect(x, y + h * 0.75, w, h);
+  } else if (kind === "fire") {
+    sky("#2a1d24"); g.fillStyle = "#6b4a32"; g.fillRect(x + w * 0.2, y + h * 0.45, w * 0.6, h * 0.55);
+    for (let k = 0; k < 7; k++) { const fx = x + w * 0.25 + k * w * 0.08, fh = 14 + Math.abs(Math.sin(t * 9 + k)) * 14; g.fillStyle = k % 2 ? "#ff7a2a" : "#ffd23d"; g.beginPath(); g.moveTo(fx - 6, y + h * 0.45); g.lineTo(fx, y + h * 0.45 - fh); g.lineTo(fx + 6, y + h * 0.45); g.fill(); }
+    g.fillStyle = "#d7261e"; g.fillRect(x + w * 0.02, y + h * 0.78, w * 0.3, h * 0.16);
+    g.strokeStyle = "#9cc6ff"; g.lineWidth = 2; g.beginPath(); g.moveTo(x + w * 0.3, y + h * 0.8); g.quadraticCurveTo(x + w * 0.4, y + h * 0.3, x + w * 0.5, y + h * 0.45); g.stroke();
+  } else if (kind === "factory") {
+    sky("#9cc6ff"); g.fillStyle = "#6f8a9c"; g.fillRect(x + 6, y + h * 0.5, w - 12, h * 0.5);
+    for (let k = 0; k < 4; k++) { g.fillStyle = "#5b6f7c"; g.beginPath(); g.moveTo(x + 6 + k * (w - 12) / 4, y + h * 0.5); g.lineTo(x + 6 + (k + 1) * (w - 12) / 4, y + h * 0.5); g.lineTo(x + 6 + (k + 1) * (w - 12) / 4, y + h * 0.36); g.closePath(); g.fill(); }
+    g.fillStyle = "#8d8a86"; g.fillRect(x + w - 26, y + 6, 10, h * 0.5);
+    for (let k = 0; k < 4; k++) { g.fillStyle = `rgba(200,200,200,${0.6 - k * 0.12})`; g.beginPath(); g.arc(x + w - 21 + k * 6, y + 4 - ((t * 10 + k * 8) % 30), 6 + k * 2, 0, TAU); g.fill(); }
+    g.fillStyle = "#5de0d0"; g.font = "bold 9px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("1 000 000", x + w * 0.45, y + h * 0.75);
+  } else if (kind === "crab") {
+    sky("#4aa3d8"); g.fillStyle = "#f2d9a0"; g.fillRect(x, y + h * 0.6, w, h);
+    g.fillStyle = "#9b6a43"; g.fillRect(x + w * 0.15, y + h * 0.3, w * 0.7, h * 0.32);
+    const bob = Math.sin(t * 4) * 2; g.fillStyle = "#e8433a"; g.beginPath(); g.ellipse(x + w / 2, y + h * 0.26 + bob, 16, 9, 0, 0, TAU); g.fill();
+    for (const sd of [-1, 1]) { g.beginPath(); g.ellipse(x + w / 2 + sd * 20, y + h * 0.14 + bob - Math.abs(Math.sin(t * 5)) * 3, 6, 4, 0, 0, TAU); g.fill(); }
+    for (let k = 0; k < 7; k++) { g.fillStyle = ["#ff7a3d", "#3d6dff", "#7ad18a", "#c77ae8"][k % 4]; g.fillRect(x + 4 + k * 12, y + h * 0.7, 6, 12); }
+  } else if (kind === "port") {
+    sky("#9cc6ff"); g.fillStyle = "#24597a"; g.fillRect(x, y + h * 0.7, w, h);
+    const sx = x + ((t * 12) % (w + 80)) - 60; g.fillStyle = "#2a2f45"; g.fillRect(sx, y + h * 0.58, 70, 12);
+    for (let k = 0; k < 6; k++) { g.fillStyle = ["#d9482b", "#2b78d9", "#e3a72f", "#2f9e6b"][k % 4]; g.fillRect(sx + 4 + k * 11, y + h * 0.5, 10, 8); }
+    g.strokeStyle = "#e3a72f"; g.lineWidth = 3; g.beginPath(); g.moveTo(x + w * 0.85, y + h * 0.7); g.lineTo(x + w * 0.85, y + 10); g.lineTo(x + w * 0.5, y + 10); g.stroke();
+  } else if (kind === "chapel") {
+    sky("#9cc6ff"); g.fillStyle = "#536f48"; g.fillRect(x, y + h * 0.75, w, h);
+    g.fillStyle = "#e8e2d4"; g.fillRect(x + w * 0.35, y + h * 0.45, w * 0.3, h * 0.3); g.fillStyle = "#5a4a6a"; g.beginPath(); g.moveTo(x + w * 0.32, y + h * 0.45); g.lineTo(x + w / 2, y + h * 0.3); g.lineTo(x + w * 0.68, y + h * 0.45); g.fill();
+    g.fillStyle = `rgb(${217 + Math.sin(t * 3) * 30},180,74)`; g.beginPath(); g.arc(x + w / 2, y + h * 0.24, 8, 0, TAU); g.fill(); g.fillRect(x + w / 2 - 1, y + h * 0.06, 2, 12); g.fillRect(x + w / 2 - 4, y + h * 0.1, 8, 2);
+  }
+  g.restore();
 }
 function fitText(g, text, maxW) { if (g.measureText(text).width <= maxW) return text; let t = text; while (t.length > 3 && g.measureText(t + "…").width > maxW) t = t.slice(0, -1); return t + "…"; }
 function tvNews(g, W, H, t) {
-  const heads = newsHeadlines();
+  if (!TV.news || TV.newsAt > t) { TV.news = newsStories(); TV.newsAt = t; }
+  const SEG = 12, stories = TV.news, si = Math.floor((t - TV.newsAt) / SEG), st = stories[si % stories.length], lt = (t - TV.newsAt) % SEG;
+  if (si >= stories.length) { TV.news = null; return tvNews(g, W, H, t); } // fresh bulletin each loop
   const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#0b1a3a"); gr.addColorStop(1, "#173a70"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
-  g.strokeStyle = "rgba(120,170,255,.14)"; g.lineWidth = 1; for (let x = 0; x < W; x += 24) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H * 0.62); g.stroke(); }
-  const gx = W * 0.73, gy = H * 0.36; g.fillStyle = "rgba(70,130,255,.28)"; g.beginPath(); g.arc(gx, gy, 46, 0, TAU); g.fill();
-  g.strokeStyle = "rgba(170,210,255,.55)"; g.lineWidth = 1.2;
-  for (let k = 0; k < 4; k++) { g.beginPath(); g.ellipse(gx, gy, 46 * Math.abs(Math.cos(t * 0.6 + k * 0.8)), 46, 0, 0, TAU); g.stroke(); }
-  for (const yy of [-24, 0, 24]) { g.beginPath(); g.ellipse(gx, gy + yy, Math.sqrt(46 * 46 - yy * yy), 6, 0, 0, TAU); g.stroke(); }
-  g.fillStyle = "#c8102e"; g.fillRect(0, H * 0.62, W, 10); g.fillStyle = "#1d2433"; g.fillRect(0, H * 0.62 + 10, W, H);
-  // anchor at the desk
-  const ax = W * 0.28, ay = H * 0.62;
+  g.strokeStyle = "rgba(120,170,255,.12)"; g.lineWidth = 1; for (let x = 0; x < W; x += 24) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H * 0.62); g.stroke(); }
+  // story picture on the studio screen
+  const px = W * 0.5, py = 38, pw = W * 0.46, ph = H * 0.42;
+  g.fillStyle = "#081226"; g.fillRect(px - 4, py - 4, pw + 8, ph + 8); newsPic(g, st.pic, px, py, pw, ph, t);
+  g.fillStyle = st.breaking ? "#c8102e" : "#2a7de1"; g.fillRect(px, py + ph - 14, 8 + g.measureText(st.tag).width * 1.2 + 10, 14);
+  g.fillStyle = "#fff"; g.font = "bold 9px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(st.tag, px + 6, py + ph - 7);
+  g.fillStyle = "#c8102e"; g.fillRect(0, H * 0.62, W, 8); g.fillStyle = "#1d2433"; g.fillRect(0, H * 0.62 + 8, W, H);
+  // the anchor
+  const ax = W * 0.24, ay = H * 0.62;
   g.fillStyle = "#2a2f45"; g.beginPath(); g.moveTo(ax - 36, ay); g.lineTo(ax - 28, ay - 42); g.lineTo(ax + 28, ay - 42); g.lineTo(ax + 36, ay); g.closePath(); g.fill();
   g.fillStyle = "#f2f2f2"; g.beginPath(); g.moveTo(ax - 10, ay - 42); g.lineTo(ax, ay - 22); g.lineTo(ax + 10, ay - 42); g.closePath(); g.fill();
   g.fillStyle = "#c8102e"; g.fillRect(ax - 3, ay - 38, 6, 16);
-  g.fillStyle = "#e2b08a"; g.beginPath(); g.arc(ax, ay - 60, 17, 0, TAU); g.fill();
-  g.fillStyle = "#3b2a1f"; g.beginPath(); g.arc(ax, ay - 64, 18, Math.PI * 1.05, Math.PI * 1.95); g.fill(); g.fillRect(ax - 18, ay - 66, 6, 16);
-  g.fillStyle = "#1a1a1a"; if (t % 4 < 0.12) { g.fillRect(ax - 8, ay - 62, 6, 1.5); g.fillRect(ax + 2, ay - 62, 6, 1.5); } else { g.fillRect(ax - 7, ay - 64, 3, 4); g.fillRect(ax + 4, ay - 64, 3, 4); }
-  g.fillStyle = "#8a2b2b"; const mh = 2 + Math.abs(Math.sin(t * 13)) * 4; g.fillRect(ax - 5, ay - 52, 10, mh);
-  g.fillStyle = "#c8102e"; g.fillRect(10, 10, 118, 24); g.fillStyle = "#fff"; g.font = "bold 15px 'Russo One','Arial Black',sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("WORLD NEWS", 18, 23);
-  if (Math.floor(t * 2) % 2) { g.fillStyle = "#ff3030"; g.beginPath(); g.arc(142, 22, 5, 0, TAU); g.fill(); }
-  g.fillStyle = "#fff"; g.font = "bold 12px Manrope,sans-serif"; g.fillText("LIVE", 152, 23);
-  g.textAlign = "right"; g.fillText(gameClock(), W - 12, 23);
-  const hi = Math.floor(t / 6) % heads.length;
-  g.fillStyle = "#ffffff"; g.fillRect(10, H - 64, W - 20, 28); g.fillStyle = "#c8102e"; g.fillRect(10, H - 64, 6, 28);
-  g.fillStyle = "#0b1a3a"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.fillText(fitText(g, heads[hi], W - 44), 24, H - 50);
-  g.fillStyle = "#c8102e"; g.fillRect(0, H - 28, W, 28);
-  const tick = heads.join("     •     "); g.font = "bold 12px Manrope,sans-serif"; const tw = g.measureText(tick).width;
-  g.fillStyle = "#fff"; g.fillText(tick, W - ((t * 60) % (tw + W)), H - 14);
-  g.fillStyle = "#8a0b1e"; g.fillRect(0, H - 28, 78, 28); g.fillStyle = "#fff"; g.fillText("НОВОСТИ", 8, H - 14);
+  const nod = Math.sin(t * 2.2) * 1.5;
+  g.fillStyle = "#e2b08a"; g.beginPath(); g.arc(ax + nod * 0.4, ay - 60 + nod, 17, 0, TAU); g.fill();
+  g.fillStyle = "#3b2a1f"; g.beginPath(); g.arc(ax + nod * 0.4, ay - 64 + nod, 18, Math.PI * 1.05, Math.PI * 1.95); g.fill(); g.fillRect(ax - 18 + nod * 0.4, ay - 66 + nod, 6, 16);
+  g.fillStyle = "#1a1a1a"; if (t % 4 < 0.12) { g.fillRect(ax - 8, ay - 62 + nod, 6, 1.5); g.fillRect(ax + 2, ay - 62 + nod, 6, 1.5); } else { g.fillRect(ax - 7, ay - 64 + nod, 3, 4); g.fillRect(ax + 4, ay - 64 + nod, 3, 4); }
+  const talking = (lt % 4) < 3.4; g.fillStyle = "#8a2b2b"; g.fillRect(ax - 5, ay - 52 + nod, 10, talking ? 2 + Math.abs(Math.sin(t * 13)) * 4 : 1.5);
+  // logo, live, clock
+  g.fillStyle = "#c8102e"; g.fillRect(10, 8, 118, 22); g.fillStyle = "#fff"; g.font = "bold 14px 'Russo One','Arial Black',sans-serif"; g.textAlign = "left"; g.fillText("WORLD NEWS", 18, 20);
+  if (Math.floor(t * 2) % 2) { g.fillStyle = "#ff3030"; g.beginPath(); g.arc(140, 19, 4.5, 0, TAU); g.fill(); }
+  g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.fillText("LIVE", 149, 20);
+  g.textAlign = "right"; g.fillText(gameClock(), W - 10, 20);
+  if (st.breaking && Math.floor(t * 3) % 2) { g.fillStyle = "#ffd23d"; g.fillRect(176, 9, 54, 20); g.fillStyle = "#c8102e"; g.textAlign = "center"; g.font = "bold 11px 'Russo One',sans-serif"; g.fillText("СРОЧНО", 203, 20); }
+  // headline + what the anchor is saying (subtitles)
+  g.fillStyle = "#ffffff"; g.fillRect(8, H - 74, W - 16, 22); g.fillStyle = st.breaking ? "#c8102e" : "#2a7de1"; g.fillRect(8, H - 74, 5, 22);
+  g.fillStyle = "#0b1a3a"; g.font = "bold 12px Manrope,sans-serif"; g.textAlign = "left"; g.fillText(fitText(g, st.title, W - 34), 18, H - 63);
+  const line = st.lines[Math.min(st.lines.length - 1, Math.floor(lt / 4))];
+  g.fillStyle = "rgba(0,0,0,.6)"; g.fillRect(8, H - 50, W - 16, 20); g.fillStyle = "#ffe9a8"; g.font = "11px Manrope,sans-serif"; g.fillText(fitText(g, "— " + line, W - 30), 14, H - 40);
+  // ticker with the rest of the bulletin
+  g.fillStyle = "#c8102e"; g.fillRect(0, H - 26, W, 26);
+  const tick = stories.map((q) => q.title).join("     •     "); g.font = "bold 11px Manrope,sans-serif"; const tw = g.measureText(tick).width;
+  g.fillStyle = "#fff"; g.fillText(tick, W - ((t * 55) % (tw + W)), H - 13);
+  g.fillStyle = "#8a0b1e"; g.fillRect(0, H - 26, 70, 26); g.fillStyle = "#fff"; g.fillText("НОВОСТИ", 7, H - 13);
+  g.fillStyle = "rgba(255,255,255,.7)"; g.font = "bold 9px Manrope,sans-serif"; g.textAlign = "right"; g.fillText(`сюжет ${si + 1}/${stories.length}`, W - 10, 34);
 }
 function tvSport(g, W, H, dt) {
   const m = genMatch(dayKey()), LOOP = 60;
@@ -1438,12 +1524,12 @@ function updIndoor(dt) {
 }
 function drawIndoor2D(dpr, W, H) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
-  let top = 150;
+  let top = W < 640 ? 196 : 150; // clear the button column on phones
   if (TV.on) {
     const tw = Math.min(W - 32, 520, (H - 420) * 16 / 9), th = (tw * 9) / 16, tx = (W - tw) / 2;
     ctx.fillStyle = "#111"; ctx.fillRect(tx - 6, top - 6, tw + 12, th + 12); ctx.drawImage(TV.cv, tx, top, tw, th); top += th + 16;
   }
-  const k = Math.min((W - 32) / (RW + 16), (H - top - 110) / (RH + 16), 2.6), ox = (W - RW * k) / 2, oy = TV.on ? top : Math.max(150, (H - RH * k) / 2);
+  const k = Math.min((W - 32) / (RW + 16), (H - top - 110) / (RH + 16), 2.6), ox = (W - RW * k) / 2, oy = TV.on ? top : Math.max(top, (H - RH * k) / 2);
   ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
   ctx.fillStyle = "#9b6a43"; ctx.fillRect(0, 0, RW, RH);
   ctx.fillStyle = "rgba(0,0,0,.12)"; for (let y = 0; y < RH; y += 16) ctx.fillRect(0, y, RW, 1.5);
@@ -1905,6 +1991,7 @@ function playerAttack() {
   shoot(player, player.a, k, "player");
 }
 function explode(c) {
+  STATS.booms++;
   if (c.ownKey) { save.cars = ownCars().filter((o) => o.k !== c.ownKey); c.ownKey = null; c.keep = false; writeSave(); setTimeout(() => toast("Твоя машина уничтожена", 2.4), 300); }
   c.wreck = true; c.hp = 0; c.fire = 0; c.vx *= 0.3; c.vy *= 0.3; c.wreckT = 0;
   sfx.boom(); shake = 14;
@@ -1963,6 +2050,7 @@ function takeCar(best) {
   if (gadget("radio")) toast("Радио «V3 FM»", 1.4);
 }
 function pullDriver(c, P, sd) {
+  STATS.jacks++;
   const cop = c.driver === "cop";
   const p = mkPerson(cop ? "cop" : "ped", P.seat.x, P.seat.y);
   const out = { x: P.door.x + Math.cos(c.a + (sd * Math.PI) / 2) * 14, y: P.door.y + Math.sin(c.a + (sd * Math.PI) / 2) * 14 };
@@ -3845,7 +3933,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; } };
+if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
