@@ -60,6 +60,8 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
   padding:8px 14px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-weight:800;font-size:14px;
   max-width:86vw;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none}
 #toast.on{opacity:1}
+#roomHint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(24% + env(safe-area-inset-bottom,0px));padding:8px 14px;border-radius:999px;background:rgba(47,208,160,.9);color:#08251c;font-weight:800;font-size:14px;max-width:86vw;text-align:center;pointer-events:none}
+#game.indoor .mini-wrap,#game.indoor #bFire,#game.indoor #bWeap,#game.indoor #rainBtn{display:none!important}
 #big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;pointer-events:none;text-align:center;padding:0 16px}
 #big h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,84px);letter-spacing:.04em;line-height:1;
   -webkit-text-stroke:2px #000;text-shadow:0 5px 0 #000;animation:pop .5s ease-out}
@@ -251,6 +253,7 @@ button.ph-row:disabled{opacity:.45}
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
+  <div id="roomHint" hidden></div>
   <div id="big"></div>
 
   <div class="stick-hint" id="stickHint" hidden>Веди пальцем слева, чтобы идти или рулить</div>
@@ -1004,7 +1007,7 @@ function renderInv() {
 const HOME_PRICE = 20000;
 const OUTFITS = ["#ff7a3d", "#3d6dff", "#2fd0a0", "#e8433a", "#f2f2f2", "#1f1f24", "#c77ae8", "#ffd23d"];
 let hmView = "room";
-function openHome() { hmView = "room"; renderHome(); showOv("home"); }
+function openHome() { if (save.home) { enterHome(); return; } hmView = "room"; renderHome(); showOv("home"); }
 function skyColor() {
   const sunv = Math.sin(dayT * TAU), k = clamp(-sunv * 0.75 + 0.05, 0, 0.58) / 0.58, warm = Math.max(0, 1 - Math.abs(sunv) * 2.2);
   const mix = (a, b2, t) => a.map((v, i) => v + (b2[i] - v) * t);
@@ -1041,46 +1044,139 @@ function drawRoom() {
 }
 function renderHome() {
   const box = $("hmBody"); box.innerHTML = "";
+  $("hmOut").hidden = !!save.home;
   if (!save.home) {
     $("hmTitle").textContent = "Квартира продаётся";
     box.appendChild(el("p", "prog", "Однушка на 12-м этаже с видом на город. Своя кровать, гардероб и такси до двери."));
     box.appendChild(el("p", "hm-price", fmt(HOME_PRICE)));
     const ul = el("ul", "hm-perks");
-    ["Спишь до утра — здоровье полностью восстанавливается", "Гардероб: меняй цвет куртки", "В телефоне появится такси «Домой»", "Квартира остаётся твоей навсегда"].forEach((t) => ul.appendChild(el("li", null, t)));
+    ["Заходишь внутрь и ходишь по квартире", "Кровать: спишь до утра — здоровье 100", "Шкаф с одеждой, холодильник, телевизор с матчем дня, диван", "В телефоне появится такси «Домой»"].forEach((t) => ul.appendChild(el("li", null, t)));
     box.appendChild(ul);
     const can = money >= HOME_PRICE;
     const b = el("button", "btn", can ? "Купить квартиру — " + fmt(HOME_PRICE) : "Не хватает " + fmt(HOME_PRICE - money)); b.type = "button"; b.id = "hmBuy"; b.disabled = !can;
-    b.addEventListener("click", () => { if (money < HOME_PRICE) return; money -= HOME_PRICE; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win(); big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя", "#2fd0a0", 2.6); renderHome(); });
+    b.addEventListener("click", () => { if (money < HOME_PRICE) return; money -= HOME_PRICE; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win(); big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя", "#2fd0a0", 2.6); resume(); enterHome(); });
     box.appendChild(b);
     return;
   }
-  $("hmTitle").textContent = "Твоя квартира";
-  const c = document.createElement("canvas"); c.id = "room"; c.width = 640; c.height = 360; box.appendChild(c); drawRoom();
-  if (hmView === "wardrobe") {
+  $("hmTitle").textContent = "Гардероб";
+  {
     box.appendChild(el("p", "prog", "Выбери цвет куртки"));
     const sw = el("div", "hm-swatches");
     OUTFITS.forEach((col) => { const b = el("button", col === player.col ? "on" : ""); b.type = "button"; b.style.setProperty("--sw", col); b.setAttribute("aria-label", "Цвет " + col); b.addEventListener("click", () => setOutfit(col)); sw.appendChild(b); });
     box.appendChild(sw);
-    const back = el("button", "btn alt", "Готово"); back.type = "button"; back.addEventListener("click", () => { hmView = "room"; renderHome(); }); box.appendChild(back);
-    return;
+    const back = el("button", "btn", "Готово"); back.type = "button"; back.id = "hmDone"; back.addEventListener("click", resume); box.appendChild(back);
   }
-  box.appendChild(el("p", "prog", `${gameClock()} · ${weatherName()} · здоровье ${Math.round(player.hp)}`));
-  const acts = el("div", "hm-acts");
-  const sleep = el("button", null, "Поспать до утра"); sleep.type = "button"; sleep.id = "hmSleep"; sleep.addEventListener("click", sleepHome);
-  const ward = el("button", null, "Гардероб"); ward.type = "button"; ward.id = "hmWard"; ward.addEventListener("click", () => { hmView = "wardrobe"; renderHome(); });
-  acts.append(sleep, ward); box.appendChild(acts);
 }
 function sleepHome() {
   player.hp = 100; dayT = 2 / 24; // 08:00
   if (!WX.manual) WX.target = 0;
   writeSave(); tone(440, 220, 0.6, 0.08, "sine");
   big("ДОБРОЕ УТРО", "Ты выспался · здоровье 100", "#ffe08a", 2.4);
-  renderHome();
+  if (indoor) { const L = toLocal(); setLocal(Math.min(L.x, 112), L.y); }
 }
 function setOutfit(col) {
   player.col = col; save.outfit = col; writeSave();
   if (G3.ppl) { const o = G3.ppl.get("me"); if (o) { G3.scene.remove(o.g); G3.ppl.delete("me"); } }
   renderHome();
+}
+/* ===== inside the apartment: a real room you walk around in ===== */
+const RW = 320, RH = 260, OX = WORLD + 2600, OZ = WORLD / 2;
+let indoor = false, tvOn = false;
+// furniture you bump into (local x, y, w, h)
+const ROOM_SOLIDS = [[20, 20, 70, 110], [110, 10, 60, 26], [RW - 130, 12, 76, 26], [RW - 50, 12, 36, 34], [RW - 26, 100, 18, 70], [RW - 130, 105, 34, 64], [RW - 39, RH - 39, 16, 16], [16, RH - 34, 8, 8]];
+const ROOM_SPOTS = [
+  { id: "door", x: 160, y: RH - 16, r: 30, label: "ВЫЙТИ", text: "Выйти на улицу" },
+  { id: "bed", x: 104, y: 84, r: 26, label: "СПАТЬ", text: "Поспать до утра" },
+  { id: "wardrobe", x: 140, y: 52, r: 24, label: "ШКАФ", text: "Гардероб" },
+  { id: "window", x: 222, y: 30, r: 26, label: "ОКНО", text: "Посмотреть в окно" },
+  { id: "fridge", x: RW - 32, y: 66, r: 26, label: "ЕДА", text: "Холодильник — еда из сумки" },
+  { id: "tv", x: RW - 70, y: 118, r: 22, label: "ТВ", text: "Телевизор" },
+  { id: "sofa", x: RW - 82, y: 182, r: 24, label: "СЕСТЬ", text: "Сесть на диван" },
+];
+const toLocal = () => ({ x: player.x - OX, y: player.y - OZ });
+function setLocal(x, y) { player.x = OX + x; player.y = OZ + y; }
+function roomPush(x, y, r) {
+  x = clamp(x, 6 + r, RW - 6 - r); y = clamp(y, 6 + r, RH - 6 - r);
+  for (const [rx, ry, rw, rh] of ROOM_SOLIDS) {
+    const cx = clamp(x, rx, rx + rw), cy = clamp(y, ry, ry + rh), dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy);
+    if (d < r) { if (d > 0.01) { x = cx + (dx / d) * r; y = cy + (dy / d) * r; } else y = ry + rh + r; }
+  }
+  return [x, y];
+}
+function nearSpot() { const L = toLocal(); let best = null, bd = 1e9; for (const s2 of ROOM_SPOTS) { const d = Math.hypot(L.x - s2.x, L.y - s2.y); if (d < s2.r && d < bd) { bd = d; best = s2; } } return best; }
+function enterHome() {
+  if (player.inCar) exitCar(true);
+  indoor = true; player.couch = false; setLocal(160, RH - 40); player.a = -Math.PI / 2;
+  cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.add("indoor"); sfx.door(); toast("Дом, милый дом", 1.6);
+  if (G3.ready && !G3.room) G3.buildRoom();
+  if (G3.room) G3.room.g.visible = true;
+}
+function leaveHome() {
+  indoor = false; player.couch = false;
+  const q = places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = "home";
+  cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.remove("indoor"); $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
+  if (G3.room) G3.room.g.visible = false;
+}
+function roomAct(sp) {
+  if (sp.id === "door") return leaveHome();
+  if (sp.id === "bed") return sleepHome();
+  if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
+  if (sp.id === "fridge") return toggleInv();
+  if (sp.id === "window") return toast(`За окном ${gameClock()}, ${weatherName().toLowerCase()}`, 2);
+  if (sp.id === "tv") { tvOn = !tvOn; tone(tvOn ? 880 : 300, tvOn ? 1200 : 200, 0.08, 0.06); if (G3.room) G3.room.drawTv(); toast(tvOn ? "Телевизор: матч дня" : "Телевизор выключен", 1.2); return; }
+  if (sp.id === "sofa") { player.couch = true; setLocal(RW - 109, 137); player.a = 0; return; }
+}
+function updIndoor(dt) {
+  let mx = 0, my = 0;
+  if (keys.KeyA || keys.ArrowLeft) mx -= 1; if (keys.KeyD || keys.ArrowRight) mx += 1;
+  if (keys.KeyW || keys.ArrowUp) my -= 1; if (keys.KeyS || keys.ArrowDown) my += 1;
+  let vx = 0, vy = 0;
+  if (stick.on && (stick.x || stick.y)) { if (Math.hypot(stick.x, stick.y) > 0.15) { vx = stick.x; vy = stick.y; } }
+  else if (mx || my) { const l = Math.hypot(mx, my); vx = mx / l; vy = my / l; }
+  if (mode3d && (vx || vy)) { const m = Math.hypot(vx, vy), ang = cam3.yaw + Math.atan2(vx, -vy); vx = Math.cos(ang) * m; vy = Math.sin(ang) * m; }
+  const s2 = Math.hypot(vx, vy);
+  if (player.couch && s2 > 0.05) { player.couch = false; setLocal(RW - 84, 137); }
+  if (!player.couch) {
+    const L = toLocal(), sp = 120, [nx, ny] = roomPush(L.x + vx * sp * dt, L.y + vy * sp * dt, 9);
+    setLocal(nx, ny);
+    if (s2 > 0.05) { player.a = Math.atan2(vy, vx); player.walk += s2 * sp * dt * 0.16; }
+    player.spd = s2 * sp;
+  } else player.spd = 0;
+  const spot = nearSpot();
+  const key = spot ? spot.id + (spot.id === "tv" ? (tvOn ? 1 : 0) : "") : "";
+  if (hudCache.spot !== key) {
+    hudCache.spot = key;
+    $("bEnter").textContent = spot ? (spot.id === "tv" ? (tvOn ? "ВЫКЛ" : "ВКЛ") : spot.label) : "—";
+    const h = $("roomHint"); h.hidden = !spot;
+    if (spot) h.textContent = (touchMode ? "Кнопка «" + $("bEnter").textContent + "» — " : "F — ") + (spot.id === "tv" ? (tvOn ? "выключить телевизор" : "включить телевизор") : spot.text.toLowerCase());
+  }
+  if ((hit.KeyF || hit.KeyE) && spot) roomAct(spot);
+}
+function drawIndoor2D(dpr, W, H) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
+  const k = Math.min((W - 32) / (RW + 16), (H - 260) / (RH + 16), 2.6), ox = (W - RW * k) / 2, oy = Math.max(150, (H - RH * k) / 2);
+  ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
+  ctx.fillStyle = "#9b6a43"; ctx.fillRect(0, 0, RW, RH);
+  ctx.fillStyle = "rgba(0,0,0,.12)"; for (let y = 0; y < RH; y += 16) ctx.fillRect(0, y, RW, 1.5);
+  ctx.fillStyle = "#b8463a"; ctx.fillRect(130, 150, 90, 70); ctx.fillStyle = "rgba(255,255,255,.15)"; ctx.fillRect(138, 158, 74, 54);
+  const sky = skyColor(); ctx.fillStyle = sky.c; ctx.fillRect(176, -6, 92, 8);
+  ctx.fillStyle = "#e3d6bf"; ctx.fillRect(-8, -8, RW + 16, 8); ctx.fillRect(-8, 0, 8, RH + 8); ctx.fillRect(RW, 0, 8, RH + 8); ctx.fillRect(-8, RH, 148, 8); ctx.fillRect(180, RH, RW - 172, 8);
+  ctx.fillStyle = sky.c; ctx.fillRect(176, -8, 92, 6);
+  ctx.fillStyle = "#6b4630"; ctx.fillRect(140, RH + 2, 40, 4);
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  R(20, 20, 70, 110, "#5b3a26"); R(23, 23, 64, 104, "#f2efe4"); R(23, 60, 64, 67, player.col === "#3d6dff" ? "#2fd0a0" : "#3d6dff"); R(30, 28, 50, 18, "#fff");
+  R(110, 10, 60, 26, "#8a5a3c"); R(139, 12, 2, 22, "#5b3a26");
+  R(RW - 130, 12, 76, 26, "#cfc6b5"); R(RW - 120, 16, 20, 14, "#9fb8c4");
+  R(RW - 50, 12, 36, 34, "#f2f2f2"); R(RW - 46, 30, 2, 12, "#888");
+  R(RW - 26, 100, 18, 70, "#3a3632"); R(RW - 14, 108, 4, 54, tvOn ? "#2a7de1" : "#111");
+  R(RW - 130, 105, 34, 64, "#5d6f86"); R(RW - 130, 105, 9, 64, "#4a5a6e");
+  ctx.fillStyle = "#3f7a3a"; ctx.beginPath(); ctx.arc(RW - 31, RH - 31, 13, 0, TAU); ctx.fill();
+  ctx.fillStyle = "#ffe9a8"; ctx.beginPath(); ctx.arc(20, RH - 30, 7, 0, TAU); ctx.fill();
+  const spot = nearSpot();
+  if (spot) { ctx.strokeStyle = "#2fd0a0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
+  const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
 }
 function toggleInv() { if (state === "inv") resume(); else if (state === "play") { renderInv(); showOv("inv"); } }
 const gadget = (k) => !!(save.gadgets && save.gadgets[k]);
@@ -2143,6 +2239,7 @@ function update(dt) {
   if (toastT > 0 && (toastT -= dt) <= 0) $("toast").classList.remove("on");
   if (bigT > 0 && (bigT -= dt) <= 0) $("big").innerHTML = "";
   shake = Math.max(0, shake - dt * 30);
+  if (indoor) { tickGadgets(dt); updWeather(dt); updIndoor(dt); for (const k in hit) delete hit[k]; updHud(); return; }
   const P = player.inCar || player;
 
   fieldT -= dt; if (fieldT <= 0) { fieldT = 0.3; buildField(P.x, P.y); }
@@ -2575,6 +2672,7 @@ function edgeArrowAt(sx, sy, col, tg) {
 }
 function render() {
   const dpr = Math.min(2, devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+  if (indoor) { if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); } drawIndoor2D(dpr, W, H); return; }
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   const s = cam.z;
   const shx = shake ? rand(-shake, shake) : 0, shy = shake ? rand(-shake, shake) : 0;
@@ -3079,6 +3177,71 @@ function init3d() {
   rain.frustumCulled = false; scene.add(rain);
   G3.rain = { mesh: rain, pos: rpos, dat: rdat, n: RN };
   G3.cRain = new THREE.Color();
+  G3.buildRoom = () => {
+    const g = new THREE.Group(); g.position.set(OX, 0, OZ); scene.add(g);
+    const box = (m, w, h, d, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(w, h, d); b.position.set(x, y, z); if (sh) { b.castShadow = true; b.receiveShadow = true; } g.add(b); return b; };
+    const HH = 62;
+    const wood = tex(64, (c) => { c.fillStyle = "#9b6a43"; c.fillRect(0, 0, 64, 64); for (let y = 0; y < 64; y += 16) { c.fillStyle = "rgba(0,0,0,.18)"; c.fillRect(0, y, 64, 1.5); c.fillStyle = "rgba(255,255,255,.06)"; c.fillRect((y * 7) % 64, y + 3, 30, 4); } });
+    wood.repeat.set(RW / 64, RH / 64);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(RW, RH), lam(0xffffff, { map: wood })); floor.rotation.x = -Math.PI / 2; floor.position.set(RW / 2, 0.3, RH / 2); floor.receiveShadow = true; g.add(floor);
+    const rug = new THREE.Mesh(new THREE.PlaneGeometry(90, 70), lam(0xb8463a)); rug.rotation.x = -Math.PI / 2; rug.position.set(175, 0.6, 185); g.add(rug);
+    box(lam(0xf4efe6), RW + 12, 2, RH + 12, RW / 2, HH + 1, RH / 2, true);
+    const wallM = lam(0xe3d6bf);
+    box(wallM, RW + 12, HH, 6, RW / 2, HH / 2, -3, true); box(wallM, 6, HH, RH, -3, HH / 2, RH / 2, true); box(wallM, 6, HH, RH, RW + 3, HH / 2, RH / 2, true);
+    box(wallM, 140, HH, 6, 70, HH / 2, RH + 3, true); box(wallM, RW - 180, HH, 6, 180 + (RW - 180) / 2, HH / 2, RH + 3, true); box(wallM, 40, HH - 40, 6, 160, 40 + (HH - 40) / 2, RH + 3, true);
+    box(lam(0x6b4630), 38, 38, 2, 160, 19, RH + 0.5);
+    // window with the live sky
+    const wc = document.createElement("canvas"); wc.width = 256; wc.height = 128; const winTex = new THREE.CanvasTexture(wc);
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(90, 36), basic(0xffffff, { map: winTex })); win.position.set(222, 36, 0.4); g.add(win);
+    box(lam(0xf4ede0), 94, 3, 3, 222, 55, 1); box(lam(0xf4ede0), 94, 3, 3, 222, 17, 1); box(lam(0xf4ede0), 3, 40, 3, 176, 36, 1); box(lam(0xf4ede0), 3, 40, 3, 268, 36, 1); box(lam(0xf4ede0), 2, 36, 2, 222, 36, 1);
+    box(lam(0xb8463a), 10, 48, 2, 168, 32, 2); box(lam(0xb8463a), 10, 48, 2, 276, 32, 2);
+    function drawWin() {
+      const c = wc.getContext("2d"), sky = skyColor(); c.fillStyle = sky.c; c.fillRect(0, 0, 256, 128);
+      if (sky.night > 0.5) { c.fillStyle = "#fff"; for (let i = 0; i < 20; i++) c.fillRect((i * 53) % 250, (i * 37) % 60, 2, 2); }
+      else if (WX.rain < 0.3) { c.fillStyle = "#ffe08a"; c.beginPath(); c.arc(200, 34, 14, 0, TAU); c.fill(); }
+      c.fillStyle = sky.night > 0.5 ? "#1a1c30" : "#5f6f86"; [[10, 70, 30, 58], [46, 50, 34, 78], [86, 78, 26, 50], [118, 60, 38, 68], [162, 82, 30, 46], [198, 66, 40, 62]].forEach(([x, y, w, h]) => c.fillRect(x, y, w, h));
+      if (sky.night > 0.5) { c.fillStyle = "#ffcf73"; for (let i = 0; i < 26; i++) c.fillRect(14 + ((i * 41) % 220), 64 + ((i * 29) % 56), 4, 4); }
+      if (WX.rain > 0.05) { c.strokeStyle = "rgba(220,230,255,.65)"; c.lineWidth = 1.2; c.beginPath(); for (let i = 0; i < 60 * WX.rain; i++) { const x = Math.random() * 256, y = Math.random() * 128; c.moveTo(x, y); c.lineTo(x - 3, y + 12); } c.stroke(); }
+      winTex.needsUpdate = true;
+    }
+    // bed
+    box(lam(0x5b3a26), 70, 10, 110, 55, 5, 75, true); box(lam(0x5b3a26), 70, 30, 6, 55, 15, 22, true);
+    box(lam(0xf2efe4), 66, 8, 106, 55, 14, 75); box(lam(0x3d6dff), 67, 3, 66, 55, 19.5, 96); box(lam(0xffffff), 46, 5, 18, 55, 20, 36);
+    // wardrobe
+    box(lam(0x8a5a3c), 60, 56, 26, 140, 28, 23, true); box(lam(0x5b3a26), 1.5, 50, 1, 140, 28, 36.5); box(lam(0xd9b44a), 2, 6, 1.5, 136, 30, 37); box(lam(0xd9b44a), 2, 6, 1.5, 144, 30, 37);
+    // kitchen: counter + fridge
+    box(lam(0xcfc6b5), 76, 24, 26, RW - 92, 12, 25, true); box(lam(0x3a3632), 78, 2, 28, RW - 92, 25, 25); box(lam(0x9fb8c4), 18, 2, 14, RW - 110, 26.2, 25);
+    box(lam(0xf2f2f2), 36, 52, 34, RW - 32, 26, 29, true); box(lam(0x888888), 1.5, 14, 1.5, RW - 22, 36, 46.5); box(lam(0xdddddd), 36, 0.8, 34.5, RW - 32, 34, 29);
+    // TV corner + sofa
+    box(lam(0x3a3632), 18, 14, 70, RW - 17, 7, 135, true); box(lam(0x111111), 4, 30, 56, RW - 12, 31, 135, true);
+    const tc = document.createElement("canvas"); tc.width = 256; tc.height = 144; const tvTex = new THREE.CanvasTexture(tc);
+    const scr = new THREE.Mesh(new THREE.PlaneGeometry(52, 27), basic(0xffffff, { map: tvTex })); scr.rotation.y = -Math.PI / 2; scr.position.set(RW - 14.2, 31, 135); g.add(scr);
+    function drawTv() {
+      const c = tc.getContext("2d");
+      if (!tvOn) { c.fillStyle = "#0b0b0e"; c.fillRect(0, 0, 256, 144); c.fillStyle = "rgba(255,255,255,.06)"; c.fillRect(20, 10, 60, 120); tvTex.needsUpdate = true; return; }
+      const m = genMatch(dayKey()), st = save.stadium && save.stadium.day === m.key;
+      const gr = c.createLinearGradient(0, 0, 0, 144); gr.addColorStop(0, "#2a7de1"); gr.addColorStop(1, "#16306e"); c.fillStyle = gr; c.fillRect(0, 0, 256, 144);
+      c.fillStyle = "#ff7a3d"; c.font = "34px 'Russo One','Arial Black',sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("V3 СПОРТ", 128, 30);
+      c.fillStyle = "#fff"; c.font = "18px 'Manrope',sans-serif"; c.fillText("Матч дня", 128, 62);
+      c.font = "20px 'Russo One','Arial Black',sans-serif"; c.fillText("V3 — " + m.opp, 128, 90);
+      c.fillStyle = "#ffd23d"; c.font = "18px 'Russo One','Arial Black',sans-serif"; c.fillText(st ? `Итог ${m.a}:${m.b}` : `П1 ${m.odds.home.toFixed(2)} · X ${m.odds.draw.toFixed(2)} · П2 ${m.odds.away.toFixed(2)}`, 128, 120);
+      tvTex.needsUpdate = true;
+    }
+    box(lam(0x5d6f86), 34, 12, 64, RW - 113, 6, 137, true); box(lam(0x4a5a6e), 8, 24, 64, RW - 126, 16, 137, true);
+    box(lam(0x4a5a6e), 34, 16, 6, RW - 113, 8, 107, true); box(lam(0x4a5a6e), 34, 16, 6, RW - 113, 8, 167, true);
+    box(lam(0xffd23d), 10, 10, 4, RW - 120, 17, 125);
+    // plant, lamp, poster
+    box(lam(0x8a5a3c), 16, 14, 16, RW - 31, 7, RH - 31, true); const leaves = new THREE.Mesh(SPH, lam(0x3f7a3a)); leaves.scale.setScalar(13); leaves.position.set(RW - 31, 25, RH - 31); leaves.castShadow = true; g.add(leaves);
+    box(lam(0x555555), 2, 40, 2, 20, 20, RH - 30); const shadeM = new THREE.Mesh(new THREE.CylinderGeometry(5, 9, 10, 12, 1, true), basic(0xffe9a8, { side: THREE.DoubleSide })); shadeM.position.set(20, 43, RH - 30); g.add(shadeM);
+    const pc = document.createElement("canvas"); pc.width = 128; pc.height = 176;
+    { const c = pc.getContext("2d"); c.fillStyle = "#1b1830"; c.fillRect(0, 0, 128, 176); c.fillStyle = "#ff7a3d"; c.font = "64px 'Russo One','Arial Black',sans-serif"; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("V3", 64, 70); c.fillStyle = "#fff"; c.font = "16px 'Manrope',sans-serif"; c.fillText("НОВА-ВЭ", 64, 130); }
+    const poster = new THREE.Mesh(new THREE.PlaneGeometry(26, 36), basic(0xffffff, { map: new THREE.CanvasTexture(pc) })); poster.rotation.y = Math.PI / 2; poster.position.set(0.5, 36, 190); g.add(poster);
+    const light = new THREE.PointLight(0xffe2b8, 1.1, 420, 1.2); light.position.set(RW / 2, 54, RH / 2); g.add(light);
+    const lamp2 = new THREE.PointLight(0xffd59a, 0.6, 160, 1.5); lamp2.position.set(20, 40, RH - 30); g.add(lamp2);
+    let wt = 0;
+    drawWin(); drawTv();
+    G3.room = { g, drawTv, tick: (dt) => { wt -= dt; if (wt <= 0) { wt = 0.4; drawWin(); } } };
+  };
   Object.assign(G3, {
     ready: true, canvas: c3, r, scene, camera, hemi, sun, M3, winMats, carMesh, personMesh, mat,
     cars: new Map(), ppl: new Map(), v: new THREE.Vector3(),
@@ -3119,8 +3282,8 @@ function sync3d() {
     if (hide) { if (o) o.g.visible = false; return; }
     if (!o) { o = G3.personMesh(p, me); G3.ppl.set(key, o); G3.scene.add(o.g); }
     o.g.visible = true;
-    const lying = p.dead || p.down > 0, sit = me && player.anim ? player.anim.sit || 0 : 0;
-    o.g.position.set(p.x, lying ? 3 : -sit * 1.5, p.y); o.g.rotation.set(0, -p.a, lying ? Math.PI / 2 : 0);
+    const lying = p.dead || p.down > 0, sit = me && player.couch ? 0.85 : me && player.anim ? player.anim.sit || 0 : 0;
+    o.g.position.set(p.x, lying ? 3 : me && player.couch ? 6 : -sit * 1.5, p.y); o.g.rotation.set(0, -p.a, lying ? Math.PI / 2 : 0);
     const moving = (p.spd || 0) > 3 && !lying, sw = moving ? Math.sin(p.walk) * 0.75 : 0;
     const armed = me ? player.weapons[player.w] !== "fist" && !player.anim : p.armed;
     const grab = me && player.anim && player.anim.ph === "pull";
@@ -3247,7 +3410,21 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (state === "match" && MT && MT.live && G3.stad) {
+  if (indoor && G3.room) {
+    const L = toLocal(), cam = G3.camera;
+    cam3.dragT = Math.max(0, cam3.dragT - dt);
+    if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; } if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
+    if ((player.spd || 0) > 20 && cam3.dragT <= 0) { const d = angDiff(player.a, cam3.yaw); if (Math.abs(d) < 2.2) cam3.yaw += d * Math.min(1, dt * 1.6); }
+    if (player.couch && cam3.dragT <= 0) cam3.yaw += angDiff(0, cam3.yaw) * Math.min(1, dt * 2.5); // watch the TV over the shoulder
+    const fx = Math.cos(cam3.yaw), fz = Math.sin(cam3.yaw);
+    let bd = W < H ? 74 : 62;
+    for (let s2 = 8; s2 <= bd; s2 += 4) { const x = L.x - fx * s2, z = L.y - fz * s2; if (x < 10 || x > RW - 10 || z < 10 || z > RH - 10) { bd = Math.max(8, s2 - 4); break; } }
+    const tx = OX + L.x - fx * bd, tz = OZ + L.y - fz * bd, ty = player.couch ? 57 : 44;
+    if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
+    const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
+    cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
+    G3.room.tick(dt);
+  } else if (state === "match" && MT && MT.live && G3.stad) {
     watchMatch3d(dt);
   } else if (!started) {
     // slow orbit over the city behind the title card
@@ -3281,7 +3458,7 @@ function render3d(t) {
   G3.sun.position.set(P.x + 260, 520, P.y + 160); G3.sun.target.position.set(P.x, 0, P.y); G3.sun.target.updateMatrixWorld();
   sync3d();
   if (G3.rain) {
-    const R = G3.rain, on = WX.rain > 0.02; R.mesh.visible = on;
+    const R = G3.rain, on = WX.rain > 0.02 && !indoor; R.mesh.visible = on;
     if (on) {
       const cx0 = cam.position.x, cz0 = cam.position.z, n = Math.floor(R.n * WX.rain);
       R.mesh.material.opacity = 0.3 + 0.35 * WX.rain;
