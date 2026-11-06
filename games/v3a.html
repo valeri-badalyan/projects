@@ -120,7 +120,14 @@ body.touch #phoneBtn{display:none}
 #shopOut{flex:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
 #stBody .btn{flex:none;min-height:52px}
-#fjBody{display:flex;flex-direction:column;gap:12px}
+#fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
+#kjBody .btn{flex:none;min-height:52px}
+.kj-ticket{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-radius:12px;background:#f4ecd8;color:#2a1a10;border:2px dashed #b9a57e}
+.kj-chip{padding:6px 10px;border-radius:999px;background:#e6dcc4;font-weight:800;font-size:13px;border-left:8px solid var(--pc)}
+.kj-chip.now{background:#fff;outline:2px solid #2a1a10}
+.kj-chip.done{opacity:.35;text-decoration:line-through}
+.kj-grid{grid-template-columns:1fr 1fr 1fr}
+.kj-grid .fj-part{padding:10px 4px;font-size:12px}
 #fjBody .btn{flex:none;min-height:52px}
 .fj-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .fj-time{font-family:var(--display);font-size:28px;color:var(--warn);font-variant-numeric:tabular-nums}
@@ -238,7 +245,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -283,6 +290,15 @@ button.ph-row:disabled{opacity:.45}
         <ol id="mFeed"></ol>
         <button type="button" class="btn alt" id="mSkip">Пропустить</button>
       </div>
+    </div>
+  </div>
+
+  <div class="ov dim" id="kitchen" hidden>
+    <div class="card">
+      <span class="who">Кухня Crusty Crab</span>
+      <h3>Смена у плиты</h3>
+      <div id="kjBody"></div>
+      <button type="button" class="btn alt" id="kjOut" style="flex:none">Уйти</button>
     </div>
   </div>
 
@@ -389,7 +405,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
+const SPECIAL = { "0,1": "crab", "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -399,6 +415,11 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
+  else if (kind === "crab") {
+    addB(ix, iy, 4, 2, "crab", "#c2452d"); fill(ix, iy + 2, 4, 2, PLAZA);
+    places.crab = { x: cx, y: (y0 + 4) * T };
+    for (const [tx2, ty2] of [[1.55, 3.45], [2.35, 3.45], [1.55, 4.35], [2.35, 4.35], [3.65, 3.45], [4.45, 3.45], [3.65, 4.35], [4.45, 4.35]]) addTree((x0 + tx2) * T, (y0 + ty2) * T, 12, "table");
+  }
   else if (kind === "electro") {
     const b = addB(ix, iy, 4, 2, "svc", "#2b2f45"); b.label = "ЭЛЕКТРОНИКА"; b.labelCol = "#c77ae8"; b.h3 = 58; fill(ix, iy + 2, 4, 2, LOT);
     places.electro = { x: cx, y: (y0 + 4) * T };
@@ -825,6 +846,16 @@ const SHOPS = [
       { id: "radio", name: "Автомагнитола", info: "В машине играет радио «V3 FM»", price: 300 },
       { id: "laptop", name: "Ноутбук", info: "Удалённая работа: +$25 каждую минуту игры", price: 1500 },
     ].map((it) => Object.assign(it, { no: () => (gadget(it.id) ? "Уже есть" : ""), act: () => { (save.gadgets || (save.gadgets = {}))[it.id] = 1; } })) },
+  { id: "crab", who: "Ресторан Crusty Crab", title: "Меню", col: "#ff5a3d", hex: 0xff5a3d, label: "CC", at: () => places.crab, bonus: 0,
+    note: "Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
+    items: [
+      { id: "crabburger", name: "Крабовый бургер", info: "+50 здоровья", price: 30, heal: 50 },
+      { id: "fries", name: "Картошка «Клешня»", info: "+20 здоровья", price: 12, heal: 20 },
+      { id: "chowder", name: "Суп из мидий", info: "+35 здоровья", price: 20, heal: 35 },
+      { id: "shake", name: "Коктейль «Прилив»", info: "Быстрый бег 20 с", price: 15, act: () => { player.boost = Math.max(player.boost || 0, 20); } },
+      { id: "combo", name: "Комбо «Капитан»", info: "Полное здоровье и быстрый бег 30 с", price: 60, act: () => { player.hp = 100; player.boost = 30; } },
+      { id: "cook", name: "Встать к плите", info: "Собирай бургеры по заказам — $40 за каждый", price: 0, priceText: "работа", open: () => openKitchen() },
+    ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
   { id: "factory", col: "#5de0d0", hex: 0x5de0d0, label: "З", at: () => places.factory, open: () => openFactory() },
   { id: "stadium", col: "#e8f0ff", hex: 0xe8f0ff, label: "V3", at: () => places.stadium, open: () => openStadium() },
 ];
@@ -868,6 +899,43 @@ function pickPart(pt) {
   if (pt.id === FJ.target.id) { FJ.score++; tone(880, 1320, 0.07, 0.08); } else { FJ.t -= 1; tone(200, 140, 0.15, 0.1, "sawtooth"); }
   nextPart(); renderFactory();
 }
+/* Crusty Crab kitchen: build the burger in the order on the ticket */
+const INGR = [{ id: "patty", name: "Крабовая котлета", col: "#b5562f" }, { id: "lettuce", name: "Салат", col: "#6fcf5a" }, { id: "cheese", name: "Сыр", col: "#ffd23d" }, { id: "tomato", name: "Томат", col: "#e8433a" }, { id: "sauce", name: "Соус", col: "#f2efe4" }, { id: "onion", name: "Лук", col: "#c9a0dc" }];
+const COOK_SHIFT = 30, COOK_PAY = 40;
+let KJ = null;
+function openKitchen() { KJ = { on: false, done: false }; renderKitchen(); showOv("kitchen"); }
+function newOrder() { KJ.order = Array.from({ length: 4 }, () => pick(INGR)); KJ.step = 0; }
+function renderKitchen() {
+  const box = $("kjBody"); box.innerHTML = "";
+  if (!KJ.on) {
+    if (KJ.done) { box.appendChild(el("p", "st-final", "Бургеров собрано: " + KJ.score)); box.appendChild(el("p", "bonus", KJ.score ? "Зарплата: +" + fmt(KJ.score * COOK_PAY) : "Сегодня без зарплаты. Попробуй ещё раз.")); }
+    else box.appendChild(el("p", "prog", `Смена ${COOK_SHIFT} секунд. На чеке — заказ из четырёх начинок. Клади их по порядку. Ошибка — бургер в мусор и минус секунда. За каждый готовый бургер — ${fmt(COOK_PAY)}.`));
+    const go = el("button", "btn", KJ.done ? "Ещё смена" : "Начать смену"); go.type = "button"; go.id = "kjGo"; go.addEventListener("click", startCook); box.appendChild(go);
+    return;
+  }
+  const top = el("div", "fj-top"); top.append(el("b", "fj-time", Math.ceil(KJ.t) + " с"), el("span", "prog", "Бургеров: " + KJ.score + " · " + fmt(KJ.score * COOK_PAY)));
+  box.appendChild(top);
+  const ticket = el("div", "kj-ticket");
+  KJ.order.forEach((g, i) => { const c2 = el("span", "kj-chip" + (i < KJ.step ? " done" : i === KJ.step ? " now" : ""), g.name); c2.style.setProperty("--pc", g.col); ticket.appendChild(c2); });
+  box.appendChild(ticket);
+  const grid = el("div", "fj-grid kj-grid");
+  for (const g of INGR) { const b = el("button", "fj-part"); b.type = "button"; b.id = "ing-" + g.id; b.style.setProperty("--pc", g.col); b.append(el("i"), el("span", null, g.name)); b.addEventListener("click", () => addIngr(g)); grid.appendChild(b); }
+  box.appendChild(grid);
+}
+function startCook() { KJ = { on: true, done: false, t: COOK_SHIFT, score: 0 }; newOrder(); renderKitchen(); }
+function addIngr(g) {
+  if (!KJ || !KJ.on) return;
+  if (KJ.order[KJ.step].id === g.id) { KJ.step++; tone(660 + KJ.step * 110, 700 + KJ.step * 110, 0.06, 0.07); if (KJ.step >= KJ.order.length) { KJ.score++; tone(990, 1480, 0.15, 0.1); newOrder(); } }
+  else { KJ.t -= 1; tone(180, 120, 0.18, 0.1, "sawtooth"); newOrder(); }
+  renderKitchen();
+}
+function finishCook() { if (!KJ || !KJ.on) return; KJ.on = false; KJ.done = true; money += KJ.score * COOK_PAY; if (KJ.score) sfx.cash(); writeSave(); }
+function updKitchen(dt) {
+  if (!KJ || !KJ.on) return;
+  KJ.t -= dt;
+  if (KJ.t <= 0) { finishCook(); renderKitchen(); return; }
+  const tm = document.querySelector("#kjBody .fj-time"); if (tm) tm.textContent = Math.ceil(KJ.t) + " с";
+}
 function updFactory(dt) {
   if (!FJ || !FJ.on) return;
   FJ.t -= dt;
@@ -902,7 +970,7 @@ function renderShop() {
   for (const it of sh.items) {
     const b = document.createElement("button"); b.type = "button"; b.className = "shop-item"; b.id = "buy-" + it.id;
     const nm = document.createElement("span"); nm.textContent = it.name;
-    const pr = document.createElement("b"); pr.textContent = fmt(it.price);
+    const pr = document.createElement("b"); pr.textContent = it.priceText || fmt(it.price);
     const sm = document.createElement("small");
     const why = it.no ? it.no() : "";
     sm.textContent = why || it.info;
@@ -913,6 +981,7 @@ function renderShop() {
   }
 }
 function buy(sh, it) {
+  if (it.open) { it.open(); return; }
   if (money < it.price || (it.no && it.no())) return;
   it.act();
   money += (sh.bonus || 0) - it.price;
@@ -1629,7 +1698,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone") resume(); }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
@@ -1679,8 +1748,8 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -1711,7 +1780,7 @@ function taxiStops() {
   const c = (places.cemeteries || [])[0];
   return [
     ["Оружейный магазин", places.bar, "guns"], ["Продукты", places.food, "food"], ["Электроника", places.electro, "electro"], ["Автосалон", places.garage, "cars"],
-    ["Стадион V3", places.stadium, "stadium"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
+    ["Стадион V3", places.stadium, "stadium"], ["Ресторан Crusty Crab", places.crab, "crab"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
     c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
   ].filter((x) => x && x[1]);
 }
@@ -1752,7 +1821,7 @@ function renderPhone(app) {
     dot(places.hosp, "#ffffff"); dot(places.police, "#3d8bff");
     const P = player.inCar || player; dot(P, "#ffd23d", 7);
     scr.appendChild(c);
-    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
+    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
     const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
     scr.appendChild(lg); scr.appendChild(el("p", "ph-note", "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП."));
   } else if (app === "bank") {
@@ -1789,6 +1858,7 @@ $("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
 $("bPhone").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); togglePhone(); });
 $("phHome").addEventListener("click", resume);
 $("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
+$("kjOut").addEventListener("click", () => { finishCook(); KJ = null; resume(); });
 $("fjOut").addEventListener("click", () => { if (FJ && FJ.on) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; writeSave(); } FJ = null; resume(); });
 $("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else exitMatch(); });
 let started = false;
@@ -2120,6 +2190,11 @@ function drawHuman(p, isPlayer) {
   ctx.restore();
 }
 function drawTree(t) {
+  if (t.kind === "table") {
+    ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.beginPath(); ctx.arc(t.x + 4, t.y + 4, 13, 0, TAU); ctx.fill();
+    for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#f2f2f2" : "#e8433a"; ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.arc(t.x, t.y, 13, (k * TAU) / 8, ((k + 1) * TAU) / 8); ctx.closePath(); ctx.fill(); }
+    ctx.fillStyle = "#6b4a32"; ctx.beginPath(); ctx.arc(t.x, t.y, 2, 0, TAU); ctx.fill(); return;
+  }
   if (t.kind === "grave") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(t.x - 4, t.y - 1, 10, 6); ctx.fillStyle = "#8d8a86"; rr(t.x - 6, t.y - 4, 12, 7, 2); ctx.fill(); ctx.fillStyle = "#6d6a66"; ctx.fillRect(t.x - 5, t.y + 4, 10, 6); return; }
   if (t.kind === "cross") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(t.x - 1, t.y - 4, 4, 14); ctx.fillStyle = "#3b3632"; ctx.fillRect(t.x - 1.5, t.y - 7, 3, 14); ctx.fillRect(t.x - 5, t.y - 3, 10, 3); return; }
   if (t.kind === "cypress") { ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(t.x + 5, t.y + 5, t.r * 0.7, t.r, 0, 0, TAU); ctx.fill(); ctx.fillStyle = "#24452a"; ctx.beginPath(); ctx.ellipse(t.x, t.y, t.r * 0.7, t.r, 0, 0, TAU); ctx.fill(); return; }
@@ -2167,6 +2242,17 @@ function drawBuilding(b) {
   if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЛИЦИЯ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
   if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "crab") {
+    ctx.fillStyle = "rgba(0,0,0,.15)"; for (let y = 6; y < b.h; y += 9) ctx.fillRect(rx, ry + y, b.w, 2);
+    const cx2 = rx + b.w / 2, cy2 = ry + b.h / 2, snap = Math.sin(now * 3) * 0.25;
+    ctx.strokeStyle = "#7a1e10"; ctx.lineWidth = 4;
+    for (const sd of [-1, 1]) for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.moveTo(cx2 + sd * 20, cy2 + 2 + k * 8); ctx.lineTo(cx2 + sd * 44, cy2 + 10 + k * 10); ctx.stroke(); }
+    ctx.fillStyle = "#e8433a"; ctx.beginPath(); ctx.ellipse(cx2, cy2 + 8, 34, 22, 0, 0, TAU); ctx.fill();
+    for (const sd of [-1, 1]) { ctx.save(); ctx.translate(cx2 + sd * 38, cy2 - 18); ctx.rotate(sd * snap); ctx.beginPath(); ctx.ellipse(0, 0, 14, 10, 0, 0, TAU); ctx.fill(); ctx.fillStyle = "#7a1e10"; ctx.fillRect(-2, -12, 4, 10); ctx.fillStyle = "#e8433a"; ctx.restore(); }
+    ctx.fillStyle = "#fff"; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.arc(cx2 + sd * 9, cy2 - 12, 5, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = "#111"; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.arc(cx2 + sd * 9, cy2 - 12, 2.2, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = "#fff4d6"; ctx.font = "22px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("CRUSTY CRAB", cx2, ry + b.h - 14);
+  }
   if (b.kind === "svc") {
     if (b.factory) for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? "rgba(0,0,0,.18)" : "rgba(160,220,255,.35)"; ctx.fillRect(rx + (b.w * k) / 6, ry, b.w / 12, b.h); }
     if (b.bars) { ctx.fillStyle = "#5f5b54"; ctx.fillRect(rx + 30, ry + 30, b.w - 60, b.h - 60); ctx.fillStyle = "#2a2826"; for (let x = rx + 30; x < rx + b.w - 30; x += 12) ctx.fillRect(x, ry + 30, 3, b.h - 60); for (const [qx, qy] of [[rx + 12, ry + 12], [rx + b.w - 12, ry + 12], [rx + 12, ry + b.h - 12], [rx + b.w - 12, ry + b.h - 12]]) { ctx.fillStyle = "#4a4640"; ctx.fillRect(qx - 10, qy - 10, 20, 20); } }
@@ -2426,6 +2512,38 @@ function init3d() {
   }
   for (const b of blds) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
+    if (b.kind === "crab") {
+      const h = 46;
+      const plank = tex(64, (g) => { g.fillStyle = "#9b6a43"; g.fillRect(0, 0, 64, 64); for (let y = 0; y < 64; y += 8) { g.fillStyle = "rgba(0,0,0,.22)"; g.fillRect(0, y, 64, 1.5); g.fillStyle = `rgba(255,255,255,${0.04 + Math.random() * 0.05})`; g.fillRect(0, y + 2, 64, 3); } g.strokeStyle = "#3a2a1c"; g.lineWidth = 3; g.beginPath(); g.arc(32, 30, 11, 0, TAU); g.stroke(); g.fillStyle = "#7fc6e0"; g.beginPath(); g.arc(32, 30, 9, 0, TAU); g.fill(); });
+      const geo = new THREE.BoxGeometry(b.w, h, b.h), uv = geo.attributes.uv;
+      for (const f of [0, 1, 4, 5]) { const fw = f < 2 ? b.h : b.w; for (let k = 0; k < 4; k++) { const j = f * 4 + k; uv.setXY(j, (uv.getX(j) * fw) / 40, (uv.getY(j) * h) / 46); } }
+      const wallM = lam(0xffffff, { map: plank, emissive: 0x2a1408, emissiveIntensity: 0.4 }), roofM = lam(0xc2452d);
+      const hut = new THREE.Mesh(geo, [wallM, wallM, roofM, roofM, wallM, wallM]); hut.position.set(cx, h / 2, cz); hut.castShadow = hut.receiveShadow = true; scene.add(hut);
+      const red = lam(0xe8433a), dark = lam(0x7a1e10), white = lam(0xffffff), black = lam(0x111111);
+      const crab = new THREE.Group(); crab.position.set(cx, h, cz);
+      const shell = new THREE.Mesh(SPH, red); shell.scale.set(34, 16, 24); shell.position.y = 14; shell.castShadow = true; crab.add(shell);
+      for (const sd of [-1, 1]) {
+        for (let k = 0; k < 3; k++) { const leg = new THREE.Mesh(BOX, dark); leg.scale.set(4, 3, 30); leg.position.set(-8 + k * 9, 6, sd * 30); leg.rotation.x = sd * 0.5; crab.add(leg); }
+        const stalk = new THREE.Mesh(BOX, dark); stalk.scale.set(2, 12, 2); stalk.position.set(20, 32, sd * 7); crab.add(stalk);
+        const eye = new THREE.Mesh(SPH, white); eye.scale.setScalar(4.5); eye.position.set(20, 40, sd * 7); crab.add(eye);
+        const pupil = new THREE.Mesh(SPH, black); pupil.scale.setScalar(2); pupil.position.set(24, 40, sd * 7); crab.add(pupil);
+        const arm = new THREE.Group(); arm.position.set(24, 18, sd * 20);
+        const fore = new THREE.Mesh(BOX, red); fore.scale.set(18, 5, 5); fore.position.set(9, 6, 0); fore.rotation.z = 0.5; arm.add(fore);
+        const claw = new THREE.Group(); claw.position.set(18, 14, 0);
+        const palm = new THREE.Mesh(SPH, red); palm.scale.set(12, 9, 8); claw.add(palm);
+        const pin = new THREE.Mesh(BOX, red); pin.scale.set(12, 3, 4); pin.position.set(10, 5, 0); claw.add(pin);
+        const jaw = new THREE.Group(); jaw.position.set(4, -2, 0); const jm = new THREE.Mesh(BOX, red); jm.scale.set(12, 3, 4); jm.position.set(6, 0, 0); jaw.add(jm); claw.add(jaw);
+        arm.add(claw); crab.add(arm);
+        (G3.crabJaws || (G3.crabJaws = [])).push({ jaw, arm, sd });
+      }
+      crab.rotation.y = -Math.PI / 2;
+      scene.add(crab);
+      const sc = document.createElement("canvas"); sc.width = 512; sc.height = 96;
+      { const g = sc.getContext("2d"); g.fillStyle = "#1b4f72"; g.fillRect(0, 0, 512, 96); g.strokeStyle = "#f4ecd8"; g.lineWidth = 6; g.strokeRect(6, 6, 500, 84); g.fillStyle = "#ff5a3d"; g.font = "54px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("CRUSTY CRAB", 256, 42); g.fillStyle = "#f4ecd8"; g.font = "18px 'Manrope',sans-serif"; g.fillText("морепродукты · с 1999 года", 256, 78); }
+      const sign = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(sc) })); sign.scale.set(160, 30, 2); sign.position.set(cx, 30, b.y + b.h + 1.5); scene.add(sign);
+      const door = new THREE.Mesh(BOX, lam(0x4a2f1c)); door.scale.set(18, 26, 1); door.position.set(cx, 13, b.y + b.h + 0.6); scene.add(door);
+      continue;
+    }
     if (b.kind === "chapel") {
       const body = new THREE.Mesh(BOX, lam(0xe8e2d4)); body.scale.set(b.w * 0.8, 40, b.h * 0.8); body.position.set(cx, 20, cz); body.castShadow = body.receiveShadow = true; scene.add(body);
       const roofG = new THREE.ConeGeometry(b.w * 0.6, 26, 4); roofG.rotateY(Math.PI / 4);
@@ -2587,6 +2705,14 @@ function init3d() {
   const crownM = [new THREE.MeshPhongMaterial({ color: 0x3f7a3a, flatShading: true, shininess: 0 }), new THREE.MeshPhongMaterial({ color: 0x4f8a3c, flatShading: true, shininess: 0 })];
   const stoneM = lam(0x8d8a86), crossM = lam(0x3b3632), cypM = new THREE.MeshPhongMaterial({ color: 0x24452a, flatShading: true, shininess: 0 });
   for (const list of treeGrid.values()) for (const t of list) {
+    if (t.kind === "table") {
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 1.5, 14), lam(0xf2f2f2)); top.position.set(t.x, 9, t.y); top.castShadow = true; scene.add(top);
+      const leg = new THREE.Mesh(BOX, lam(0x6b4a32)); leg.scale.set(1.5, 9, 1.5); leg.position.set(t.x, 4.5, t.y); scene.add(leg);
+      const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1, 26, 1); pole.position.set(t.x, 13, t.y); scene.add(pole);
+      const umb = new THREE.Mesh(new THREE.ConeGeometry(15, 7, 8), lam(t.hue < 0.5 ? 0xe8433a : 0xf2f2f2)); umb.position.set(t.x, 27, t.y); umb.castShadow = true; scene.add(umb);
+      for (const a of [0, Math.PI]) { const ch = new THREE.Mesh(BOX, lam(0x2a7de1)); ch.scale.set(5, 6, 5); ch.position.set(t.x + Math.cos(a) * 10, 3, t.y + Math.sin(a) * 10); scene.add(ch); }
+      continue;
+    }
     if (t.kind === "grave") { const m = new THREE.Mesh(BOX, stoneM); m.scale.set(3, 9, 9); m.position.set(t.x, 4.5, t.y); m.castShadow = true; scene.add(m); const sl = new THREE.Mesh(BOX, mat("#6d6a66")); sl.scale.set(12, 1.2, 8); sl.position.set(t.x + 6, 0.6, t.y); scene.add(sl); continue; }
     if (t.kind === "cross") { const v = new THREE.Mesh(BOX, crossM); v.scale.set(1.6, 13, 1.6); v.position.set(t.x, 6.5, t.y); v.castShadow = true; scene.add(v); const hz = new THREE.Mesh(BOX, crossM); hz.scale.set(1.6, 1.6, 8); hz.position.set(t.x, 9.5, t.y); scene.add(hz); continue; }
     if (t.kind === "cypress") { const cy = new THREE.Mesh(new THREE.ConeGeometry(7, 46, 7), cypM); cy.position.set(t.x, 23, t.y); cy.castShadow = true; scene.add(cy); continue; }
@@ -2714,6 +2840,7 @@ function sync3d() {
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
   G3.mkBar.visible = MISSIONS && started && !M.active;
+  if (G3.crabJaws) for (const c of G3.crabJaws) { c.jaw.rotation.z = -Math.abs(Math.sin(now * 3 + c.sd)) * 0.6; c.arm.rotation.x = Math.sin(now * 1.5 + c.sd) * 0.15; }
   G3.shopMk.forEach((g) => { g.visible = started; g.children[0].scale.setScalar(1 + Math.sin(now * 5) * 0.06); }); G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
   G3.mkT.visible = G3.mkN.visible = false;
   if (tg && (s2.t === "goto" || s2.t === "cps")) {
@@ -2869,6 +2996,7 @@ function frame(t) {
   if (state === "play") update(dt);
   if (state === "match") updMatch(dt);
   if (state === "factory") updFactory(dt);
+  if (state === "kitchen") updKitchen(dt);
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
