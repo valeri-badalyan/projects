@@ -80,6 +80,9 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #bPhone svg,#phoneBtn svg,#bBag svg,#bagBtn svg{width:22px;height:22px}
 #bBag{width:62px;height:62px;grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
 body.touch #bagBtn{display:none}
+#rainBtn{display:flex;align-items:center;justify-content:center;color:#9cc6ff}
+#rainBtn svg{width:20px;height:20px}
+#rainBtn[aria-pressed="true"]{background:#2a6fd6;border-color:#9cc6ff;color:#fff}
 #bagBtn{display:flex;align-items:center;justify-content:center}
 body.touch #phoneBtn{display:none}
 #phoneBtn{display:flex;align-items:center;justify-content:center}
@@ -230,6 +233,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="pauseBtn" aria-label="Пауза">II</button>
     <button type="button" id="muteBtn" aria-label="Звук" aria-pressed="false">♪</button>
     <button type="button" id="viewBtn" aria-label="Вид от третьего лица">3D</button>
+    <button type="button" id="rainBtn" aria-label="Дождь (R)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="currentColor"/><path d="M9.2 14.5a3 3 0 0 0 2.4 3" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
     <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
   </div>
@@ -263,6 +267,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
         <dt>T</dt><dd>телефон: такси, карта, банк, матч дня, скорая</dd>
         <dt>V</dt><dd>вид: 3D от третьего лица или 2D сверху</dd>
@@ -1814,6 +1819,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
+  if (e.code === "KeyR" && state === "play") toggleRain();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
@@ -1968,6 +1974,7 @@ function taxiTo(name, at, lock) {
 }
 $("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
 $("bagBtn").addEventListener("click", () => { initAudio(); toggleInv(); });
+$("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRain(); });
 $("bBag").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); toggleInv(); });
 $("invOut").addEventListener("click", resume);
 $("inv").addEventListener("click", (e) => { if (e.target.id === "inv") resume(); });
@@ -1993,12 +2000,20 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && sta
 // Rain comes and goes: a clear spell, then rain (sometimes a thunderstorm), then clear again.
 const WX = { rain: 0, target: 0, t: 25, storm: false, flash: 0, drops: [] };
 for (let i = 0; i < 320; i++) WX.drops.push({ x: Math.random(), y: Math.random(), sp: 0.9 + Math.random() * 0.8, len: 0.6 + Math.random() * 0.8 });
+WX.manual = false;
+function toggleRain() {
+  if (WX.target > 0) { WX.target = 0; WX.manual = false; WX.t = rand(70, 140); toast("Дождь выключен", 1.6); }
+  else { WX.target = 0.8; WX.storm = false; WX.manual = true; WX.t = 1e9; toast("Пошёл дождь", 1.6); }
+  syncRainBtn();
+}
+function syncRainBtn() { const on = WX.target > 0; $("rainBtn").setAttribute("aria-pressed", String(on)); $("rainBtn").setAttribute("aria-label", on ? "Выключить дождь (R)" : "Включить дождь (R)"); }
 const weatherName = () => (WX.target > 0 ? (WX.storm ? "Гроза" : "Дождь") : WX.rain > 0.05 ? "Дождь стихает" : "Ясно");
 function updWeather(dt) {
   WX.t -= dt;
   if (WX.t <= 0) {
     if (WX.target > 0) { WX.target = 0; WX.t = rand(70, 140); toast("Дождь закончился", 2); }
     else { WX.storm = Math.random() < 0.35; WX.target = WX.storm ? 1 : rand(0.45, 0.8); WX.t = rand(55, 110); toast(WX.storm ? "Начинается гроза" : "Начинается дождь", 2.2); }
+    syncRainBtn();
   }
   WX.rain += clamp(WX.target - WX.rain, -dt * 0.12, dt * 0.12);
   if (WX.storm && WX.rain > 0.6 && Math.random() < dt * 0.07) {
