@@ -77,7 +77,10 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 #bEnter{width:62px;height:62px;grid-column:1;grid-row:3}
 #bWeap{width:52px;height:52px;grid-column:1;grid-row:2}
 #bPhone{width:62px;height:62px;grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(77,147,255,.45);font-size:8.5px;letter-spacing:.02em}
-#bPhone svg,#phoneBtn svg{width:22px;height:22px}
+#bPhone svg,#phoneBtn svg,#bBag svg,#bagBtn svg{width:22px;height:22px}
+#bBag{width:62px;height:62px;grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
+body.touch #bagBtn{display:none}
+#bagBtn{display:flex;align-items:center;justify-content:center}
 body.touch #phoneBtn{display:none}
 #phoneBtn{display:flex;align-items:center;justify-content:center}
 #bFire{background:rgba(232,51,74,.45)}
@@ -121,6 +124,24 @@ body.touch #phoneBtn{display:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
 #stBody .btn{flex:none;min-height:52px}
 #fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
+.inv-card{width:min(100%,540px)}
+#invBody{display:flex;flex-direction:column;gap:14px}
+.inv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.inv-stat{padding:8px 10px;border-radius:12px;background:#2c2937;border:1px solid var(--line);font-size:12px;font-weight:800;color:var(--muted)}
+.inv-stat b{display:block;font-family:var(--display);font-weight:400;font-size:18px;color:var(--ink);font-variant-numeric:tabular-nums}
+.inv-h{margin:0;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sunset)}
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.inv-item{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center;padding:10px;border-radius:14px;background:#2c2937;border:1px solid var(--line)}
+.inv-ic{grid-row:1/3;width:42px;height:42px;border-radius:12px;background:var(--ic);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:14px;color:#1a1520;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.inv-name{font-weight:800;font-size:14px;line-height:1.2;min-width:0}
+.inv-name small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.inv-item button,.inv-row button{grid-column:1/-1;min-height:36px;border-radius:10px;border:1px solid var(--line);background:#3a3546;color:var(--ink);font-weight:800;font-size:13px}
+.inv-item button:hover,.inv-row button:hover{border-color:var(--warn)}
+.inv-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:#2c2937;border:1px solid var(--line);font-weight:800;font-size:14px}
+.inv-row small{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.inv-row button{flex:none;padding:0 12px;min-height:34px}
+.inv-row.on{border-color:var(--warn)}
+.inv-empty{margin:0;font-size:13px;color:var(--muted);font-weight:700}
 #kjBody .btn{flex:none;min-height:52px}
 .kj-ticket{display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-radius:12px;background:#f4ecd8;color:#2a1a10;border:2px dashed #b9a57e}
 .kj-chip{padding:6px 10px;border-radius:999px;background:#e6dcc4;font-weight:800;font-size:13px;border-left:8px solid var(--pc)}
@@ -210,6 +231,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="muteBtn" aria-label="Звук" aria-pressed="false">♪</button>
     <button type="button" id="viewBtn" aria-label="Вид от третьего лица">3D</button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
+    <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
@@ -220,6 +242,7 @@ button.ph-row:disabled{opacity:.45}
   <div class="pad" id="pad" data-mode="foot" hidden>
     <button type="button" id="bWeap">ОРУЖ</button>
     <button type="button" id="bEnter">СЕСТЬ</button>
+    <button type="button" id="bBag" aria-label="Сумка"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg><span>СУМКА</span></button>
     <button type="button" id="bPhone" aria-label="Телефон"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg><span>ТЕЛЕФОН</span></button>
     <button type="button" id="bFire">ОГОНЬ</button>
     <button type="button" id="bHand">РУЧНИК</button>
@@ -240,6 +263,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
         <dt>T</dt><dd>телефон: такси, карта, банк, матч дня, скорая</dd>
         <dt>V</dt><dd>вид: 3D от третьего лица или 2D сверху</dd>
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
@@ -290,6 +314,15 @@ button.ph-row:disabled{opacity:.45}
         <ol id="mFeed"></ol>
         <button type="button" class="btn alt" id="mSkip">Пропустить</button>
       </div>
+    </div>
+  </div>
+
+  <div class="ov dim" id="inv" hidden>
+    <div class="card inv-card">
+      <span class="who">Сумка</span>
+      <h3>Инвентарь</h3>
+      <div id="invBody"></div>
+      <button type="button" class="btn alt" id="invOut" style="flex:none">Закрыть</button>
     </div>
   </div>
 
@@ -860,6 +893,78 @@ const SHOPS = [
   { id: "stadium", col: "#e8f0ff", hex: 0xe8f0ff, label: "V3", at: () => places.stadium, open: () => openStadium() },
 ];
 let shopLock = "guns", shopNow = null;
+/* ===== inventory ===== */
+const ITEMS = {
+  water: { name: "Вода", col: "#7fd8e8", g: "H₂O", heal: 10 }, shawarma: { name: "Шаурма", col: "#e8c95d", g: "Ш", heal: 35 },
+  lunch: { name: "Бизнес-ланч", col: "#e89a5d", g: "БЛ", heal: 100 }, energy: { name: "Энергетик", col: "#8be38a", g: "E", boost: 30 },
+  crabburger: { name: "Крабовый бургер", col: "#ff7a5d", g: "КБ", heal: 50 }, fries: { name: "Картошка «Клешня»", col: "#ffd23d", g: "К", heal: 20 },
+  chowder: { name: "Суп из мидий", col: "#c9a0dc", g: "С", heal: 35 }, shake: { name: "Коктейль «Прилив»", col: "#7fa4ff", g: "П", boost: 20 },
+  combo: { name: "Комбо «Капитан»", col: "#ff9a5a", g: "КК", heal: 100, boost: 30 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
+};
+const inv = () => save.inv || (save.inv = {});
+function invAdd(id, n = 1) { inv()[id] = (inv()[id] || 0) + n; }
+function itemInfo(it) { return [it.heal ? (it.heal >= 100 ? "полное здоровье" : "+" + it.heal + " здоровья") : "", it.boost ? "быстрый бег " + it.boost + " с" : ""].filter(Boolean).join(", "); }
+function useItem(id) {
+  const it = ITEMS[id]; if (!it || !inv()[id]) return;
+  if (--inv()[id] <= 0) delete inv()[id];
+  if (it.heal) player.hp = Math.min(100, player.hp + it.heal);
+  if (it.boost) player.boost = Math.max(player.boost || 0, it.boost);
+  tone(520, 780, 0.12, 0.08, "triangle"); toast(it.name + ": " + itemInfo(it), 1.6);
+  writeSave(); renderInv(); updHud();
+}
+function deliverCar(o) {
+  if (money < 25 || player.inCar) return;
+  const P = player, spot = randFrom(laneTiles, P, 60, 220) || randFrom(walkTiles, P, 40, 200);
+  if (!spot) return toast("Некуда подогнать машину", 1.5);
+  let c = cars.find((q) => q.ownKey === o.k && !q.wreck);
+  if (c) { if (c.driver === "player") return; c.x = spot.x; c.y = spot.y; c.vx = c.vy = 0; c.spd = 0; c.driver = null; }
+  else c = placeOwned(o, spot);
+  c.a = Math.atan2(P.y - c.y, P.x - c.x);
+  money -= 25; sfx.door(); writeSave(); resume(); toast(CT[o.type].name + " ждёт тебя рядом", 2);
+}
+function invEl(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function renderInv() {
+  const box = $("invBody"); box.innerHTML = "";
+  const stats = invEl("div", "inv-stats");
+  for (const [k, v] of [["Деньги", fmt(money)], ["Здоровье", Math.round(Math.max(0, player.hp))], ["Броня", Math.round(player.armor)]]) { const d = invEl("div", "inv-stat", k); d.appendChild(invEl("b", null, String(v))); stats.appendChild(d); }
+  box.appendChild(stats);
+  box.appendChild(invEl("p", "inv-h", "Еда и аптечки"));
+  const ids = Object.keys(inv()).filter((k) => ITEMS[k] && inv()[k] > 0);
+  if (!ids.length) box.appendChild(invEl("p", "inv-empty", "Пусто. Еда из «Продуктов» и Crusty Crab попадает сюда, а аптечка — если подобрать её при полном здоровье."));
+  else {
+    const grid = invEl("div", "inv-grid");
+    for (const id of ids) {
+      const it = ITEMS[id], card = invEl("div", "inv-item");
+      const ic = invEl("span", "inv-ic", it.g); ic.style.setProperty("--ic", it.col);
+      const nm = invEl("span", "inv-name", it.name + " ×" + inv()[id]); nm.appendChild(invEl("small", null, itemInfo(it)));
+      const b = invEl("button", null, id === "medkit" ? "Использовать" : it.boost && !it.heal ? "Выпить" : "Съесть"); b.type = "button"; b.id = "use-" + id; b.addEventListener("click", () => useItem(id));
+      card.append(ic, nm, b); grid.appendChild(card);
+    }
+    box.appendChild(grid);
+  }
+  box.appendChild(invEl("p", "inv-h", "Оружие"));
+  player.weapons.forEach((w, i) => {
+    const r = invEl("div", "inv-row" + (i === player.w ? " on" : "")), l = invEl("span", null, WEAP[w].name);
+    l.appendChild(invEl("small", null, w === "fist" ? "всегда с тобой" : "патронов: " + player.ammo[w]));
+    r.appendChild(l);
+    if (i === player.w) r.appendChild(invEl("span", "inv-empty", "в руках"));
+    else { const b = invEl("button", null, "Взять"); b.type = "button"; b.id = "wield-" + w; b.addEventListener("click", () => { player.w = i; renderInv(); updHud(); }); r.appendChild(b); }
+    box.appendChild(r);
+  });
+  box.appendChild(invEl("p", "inv-h", "Гаджеты"));
+  const gd = { scanner: "Полицейский сканер", gps: "GPS-навигатор", radio: "Автомагнитола", laptop: "Ноутбук" };
+  const own = Object.keys(gd).filter(gadget);
+  if (!own.length) box.appendChild(invEl("p", "inv-empty", "Пока нет — загляни в «Электронику»."));
+  own.forEach((k) => box.appendChild(invEl("div", "inv-row", gd[k])));
+  box.appendChild(invEl("p", "inv-h", "Машины"));
+  if (!ownCars().length) box.appendChild(invEl("p", "inv-empty", "Пока нет — загляни в автосалон."));
+  ownCars().forEach((o) => {
+    const r = invEl("div", "inv-row"), l = invEl("span", null, CT[o.type].name); l.appendChild(invEl("small", null, "подогнать к тебе — $25"));
+    const b = invEl("button", null, "Подогнать"); b.type = "button"; b.id = "call-" + o.k; b.disabled = money < 25 || !!player.inCar; b.addEventListener("click", () => deliverCar(o));
+    r.append(l, b); box.appendChild(r);
+  });
+}
+function toggleInv() { if (state === "inv") resume(); else if (state === "play") { renderInv(); showOv("inv"); } }
 const gadget = (k) => !!(save.gadgets && save.gadgets[k]);
 /* electronics factory: a 20-second shift on the assembly line */
 const PARTS = [{ id: "chip", name: "Чип", col: "#3d6dff" }, { id: "cap", name: "Конденсатор", col: "#ffd23d" }, { id: "res", name: "Резистор", col: "#ff7a3d" }, { id: "led", name: "Светодиод", col: "#8be38a" }];
@@ -986,9 +1091,11 @@ function buy(sh, it) {
   it.act();
   money += (sh.bonus || 0) - it.price;
   sfx.cash();
-  if (!it.quiet) toast(it.name + " куплено" + (sh.bonus ? " · бонус +" + fmt(sh.bonus) : ""), 2);
+  if (it.bag) toast(it.name + " — в сумке", 1.6);
+  else if (!it.quiet) toast(it.name + " куплено" + (sh.bonus ? " · бонус +" + fmt(sh.bonus) : ""), 2);
   writeSave(); renderShop(); updHud();
 }
+for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
 /* ================= V3 stadium: a match every day ================= */
 // The match of the day comes from today's date, so it is the same match all day and a new one tomorrow.
@@ -1698,9 +1805,10 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
+  if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
@@ -1748,8 +1856,8 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -1854,6 +1962,10 @@ function taxiTo(name, at, lock) {
   writeSave(); resume(); sfx.door(); big("ТАКСИ", "Приехали: " + name, "#f5c518", 1.8);
 }
 $("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
+$("bagBtn").addEventListener("click", () => { initAudio(); toggleInv(); });
+$("bBag").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); toggleInv(); });
+$("invOut").addEventListener("click", resume);
+$("inv").addEventListener("click", (e) => { if (e.target.id === "inv") resume(); });
 $("bPhone").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); togglePhone(); });
 $("phHome").addEventListener("click", resume);
 $("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
@@ -2033,7 +2145,7 @@ function update(dt) {
     if (!player.dead && dist(k, P) < (player.inCar ? 30 : 22)) {
       if (player.inCar && k.kind !== "cash") continue;
       if (k.kind === "cash") { money += k.val; sfx.cash(); toast("+" + fmt(k.val), 1); }
-      else if (k.kind === "hp") { if (player.hp >= 100) continue; player.hp = 100; sfx.cash(); toast("Здоровье восстановлено", 1.4); }
+      else if (k.kind === "hp") { if (player.hp >= 100) { invAdd("medkit"); sfx.cash(); toast("Аптечка — в сумке", 1.4); if (k.spot) k.spot.t = 45; pickups.splice(i, 1); writeSave(); continue; } player.hp = 100; sfx.cash(); toast("Здоровье восстановлено", 1.4); }
       else if (k.kind === "armor") { if (player.armor >= 100) continue; player.armor = 100; sfx.cash(); toast("Бронежилет", 1.4); }
       else if (k.kind === "smg") { giveWeapon("smg", 120); sfx.cash(); }
       else if (k.kind === "pistol") { giveWeapon("pistol", 24); sfx.cash(); }
