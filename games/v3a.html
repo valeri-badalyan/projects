@@ -61,6 +61,10 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
   max-width:86vw;text-align:center;opacity:0;transition:opacity .25s;pointer-events:none}
 #toast.on{opacity:1}
 #roomHint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(24% + env(safe-area-inset-bottom,0px));padding:8px 14px;border-radius:999px;background:rgba(47,208,160,.9);color:#08251c;font-weight:800;font-size:14px;max-width:86vw;text-align:center;pointer-events:none}
+#bHome{width:62px;height:62px;grid-column:1/3;grid-row:1;justify-self:end;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(47,208,160,.55);font-size:8.5px;letter-spacing:.02em}
+#bHome svg,#homeBtn svg{width:22px;height:22px}
+#homeBtn{display:flex;align-items:center;justify-content:center;color:#2fd0a0}
+body.touch #homeBtn{display:none}
 #game.indoor .mini-wrap,#game.indoor #bFire,#game.indoor #bWeap,#game.indoor #rainBtn{display:none!important}
 #big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;pointer-events:none;text-align:center;padding:0 16px}
 #big h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(34px,9vw,84px);letter-spacing:.04em;line-height:1;
@@ -75,12 +79,12 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .pad button{border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(20,18,28,.55);color:var(--ink);
   font-family:var(--display);font-size:12px;letter-spacing:.05em;touch-action:none;-webkit-user-select:none;user-select:none}
 .pad button.on{background:rgba(255,122,61,.55);border-color:var(--sunset)}
-#bFire,#bHand{width:84px;height:84px;font-size:14px;grid-column:2;grid-row:2/4}
-#bEnter{width:62px;height:62px;grid-column:1;grid-row:3}
-#bWeap{width:52px;height:52px;grid-column:1;grid-row:2}
-#bPhone{width:62px;height:62px;grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(77,147,255,.45);font-size:8.5px;letter-spacing:.02em}
+#bFire,#bHand{width:84px;height:84px;font-size:14px;grid-column:2;grid-row:3/5}
+#bEnter{width:62px;height:62px;grid-column:1;grid-row:4}
+#bWeap{width:52px;height:52px;grid-column:1;grid-row:3}
+#bPhone{width:62px;height:62px;grid-column:2;grid-row:2;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(77,147,255,.45);font-size:8.5px;letter-spacing:.02em}
 #bPhone svg,#phoneBtn svg,#bBag svg,#bagBtn svg{width:22px;height:22px}
-#bBag{width:62px;height:62px;grid-column:1;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
+#bBag{width:62px;height:62px;grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
 body.touch #bagBtn{display:none}
 #rainBtn{display:flex;align-items:center;justify-content:center;color:#9cc6ff}
 #rainBtn svg{width:20px;height:20px}
@@ -250,6 +254,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="rainBtn" aria-label="Дождь (R)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="currentColor"/><path d="M9.2 14.5a3 3 0 0 0 2.4 3" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
     <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
+    <button type="button" id="homeBtn" aria-label="Домой (H)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="6" fill="currentColor"/></svg></button>
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
@@ -261,6 +266,7 @@ button.ph-row:disabled{opacity:.45}
   <div class="pad" id="pad" data-mode="foot" hidden>
     <button type="button" id="bWeap">ОРУЖ</button>
     <button type="button" id="bEnter">СЕСТЬ</button>
+    <button type="button" id="bHome" aria-label="Домой" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="6" fill="currentColor"/></svg><span>ДОМОЙ</span></button>
     <button type="button" id="bBag" aria-label="Сумка"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg><span>СУМКА</span></button>
     <button type="button" id="bPhone" aria-label="Телефон"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg><span>ТЕЛЕФОН</span></button>
     <button type="button" id="bFire">ОГОНЬ</button>
@@ -282,6 +288,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
         <dt>T</dt><dd>телефон: такси, карта, банк, матч дня, скорая</dd>
@@ -757,6 +764,8 @@ function updHud() {
   if (player.inCar) w = player.inCar.t.name + " · " + Math.max(0, player.inCar.hp | 0) + "%";
   else { const k = player.weapons[player.w]; w = WEAP[k].name + (k === "fist" ? "" : " · " + player.ammo[k]) + (player.boost > 0 ? " · энергия " + Math.ceil(player.boost) + " с" : ""); }
   if (hudCache.weap !== w) { hudCache.weap = w; $("weap").textContent = w; }
+  const homeKey = !!save.home && !indoor;
+  if (hudCache.homeBtn !== homeKey) { hudCache.homeBtn = homeKey; $("bHome").hidden = !homeKey; $("homeBtn").hidden = !homeKey; }
   const mode = player.inCar ? "car" : "foot";
   if (hudCache.mode !== mode) { hudCache.mode = mode; $("pad").dataset.mode = mode; $("bEnter").textContent = player.inCar ? "ВЫЙТИ" : "СЕСТЬ"; }
 }
@@ -1183,6 +1192,14 @@ function drawIndoor2D(dpr, W, H) {
   const spot = nearSpot();
   if (spot) { ctx.strokeStyle = "#2fd0a0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
   const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
+}
+function goHome() {
+  if (!save.home || indoor || state !== "play" || player.dead) return;
+  if (player.inCar) exitCar(true);
+  if (player.anim) endAnim();
+  for (let i = 0; i < 20; i++) { const a = rand(0, TAU), sp = rand(40, 160); addPart({ x: player.x, y: player.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.5, max: 0.5, size: rand(4, 8), col: pick(["#2fd0a0", "#c77ae8", "#ffffff"]), type: "fire" }); }
+  tone(300, 1600, 0.35, 0.1, "sine"); setTimeout(() => tone(1600, 600, 0.25, 0.06, "triangle"), 120);
+  enterHome(); big("ДОМОЙ", "ЖК «Нова», 12-й этаж", "#2fd0a0", 1.6);
 }
 function toggleInv() { if (state === "inv") resume(); else if (state === "play") { renderInv(); showOv("inv"); } }
 const gadget = (k) => !!(save.gadgets && save.gadgets[k]);
@@ -2031,6 +2048,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
   if (e.code === "KeyR" && state === "play") toggleRain();
+  if (e.code === "KeyH") goHome();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
@@ -2176,7 +2194,7 @@ function renderPhone(app) {
     scr.appendChild(el("p", "ph-note", "Покупай из любого магазина города, не выходя из дома. Еда — в сумку, оружие — в руки, машина — на стоянку автосалона."));
     const re = el("p", "ph-note", "ЖК «Нова» · недвижимость"); re.style.color = "#2fd0a0"; re.style.marginTop = "6px"; list.appendChild(re);
     list.appendChild(phRow("Квартира в ЖК «Нова»", save.home ? "Уже твоя" : "Однушка на 12-м этаже: кровать, шкаф, ТВ, диван", fmt(HOME_PRICE), () => {
-      if (!buyHome()) return; resume(); setTimeout(() => toast("Квартира твоя! «Домой» — в Телепорте и Такси", 3), 400);
+      if (!buyHome()) return; resume(); setTimeout(() => toast("Квартира твоя! Кнопка «ДОМОЙ» переносит прямо в неё", 3), 400);
     }, !!save.home || money < HOME_PRICE));
     for (const sh of SHOPS) {
       if (!sh.items) continue;
@@ -2235,6 +2253,8 @@ function taxiTo(name, at, lock) {
 }
 $("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
 $("bagBtn").addEventListener("click", () => { initAudio(); toggleInv(); });
+$("homeBtn").addEventListener("click", () => { initAudio(); goHome(); });
+$("bHome").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); goHome(); });
 $("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRain(); });
 $("bBag").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); toggleInv(); });
 $("invOut").addEventListener("click", resume);
