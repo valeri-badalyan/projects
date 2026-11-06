@@ -114,6 +114,30 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .shop-item:not(:disabled):hover{border-color:var(--warn)}
 .bonus{font-weight:800;color:var(--cash);font-size:14px}
 #shopOut{flex:none}
+#stBody{display:flex;flex-direction:column;gap:10px}
+#stBody .btn{flex:none;min-height:52px}
+.ov{align-items:flex-start}
+.ov>.card{margin:auto}
+.bet-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bet{display:flex;flex-direction:column;gap:2px;align-items:center;padding:10px 6px;border-radius:12px;background:#2c2937;border:1px solid var(--line);color:var(--ink);font-weight:800;font-size:13px;text-align:center}
+.bet b{font-family:var(--display);font-weight:400;font-size:18px;color:var(--warn)}
+.bet.on,.amt.on{border-color:var(--warn);background:#3a3322}
+.amt-row{display:flex;gap:8px;flex-wrap:wrap}
+.amt{flex:1 1 70px;min-height:40px;border-radius:10px;background:#2c2937;border:1px solid var(--line);color:var(--ink);font-family:var(--display);font-size:15px}
+.amt:disabled,.btn:disabled{opacity:.45;cursor:not-allowed}
+.st-final{margin:0;font-family:var(--display);font-size:20px;color:var(--warn)}
+.hist ul{margin:6px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.match-card{width:min(100%,640px);gap:10px}
+.board{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;font-family:var(--display)}
+.board span{font-size:15px;min-width:0;overflow-wrap:anywhere}
+#mAway{text-align:right}
+#mScore{font-size:34px;color:var(--warn);font-variant-numeric:tabular-nums;text-align:center;line-height:1}
+#mMin{grid-column:1/-1;text-align:center;font-size:13px;color:var(--muted)}
+#pitch{display:block;width:100%;max-width:100%;height:auto;border-radius:10px}
+#mFeed{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;max-height:120px;overflow:auto;font-size:14px;font-weight:700}
+#mFeed li:first-child{color:var(--ink)}
+#mFeed li{color:var(--muted)}
+#mSkip{flex:none}
 </style>
 
 <div id="game">
@@ -163,7 +187,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -188,6 +212,24 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
       <p class="bonus" id="shopBonus">С каждой покупкой ты получаешь +$6&nbsp;678</p>
       <div class="shop-list" id="shopList"></div>
       <button type="button" class="btn alt" id="shopOut">Выйти</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="stadium" hidden>
+    <div class="card">
+      <span class="who" id="stWho">Стадион V3</span>
+      <h3 id="stTeams"></h3>
+      <div id="stBody"></div>
+      <button type="button" class="btn alt" id="stOut" style="flex:none">Уйти</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="match" hidden>
+    <div class="card match-card">
+      <div class="board"><span id="mHome">V3</span><b id="mScore">0:0</b><span id="mAway"></span><span id="mMin">0'</span></div>
+      <canvas id="pitch" width="600" height="380" aria-label="Матч на стадионе V3"></canvas>
+      <ol id="mFeed"></ol>
+      <button type="button" class="btn alt" id="mSkip">Пропустить</button>
     </div>
   </div>
 
@@ -255,7 +297,7 @@ function addB(tx, ty, w, h, kind = "bld", col) {
   for (let y = ty; y < ty + h; y++) for (let x = tx; x < tx + w; x++) tiles[y * N + x] = BLD;
   const c = col || ROOFS[(srnd() * ROOFS.length) | 0];
   const inset = kind === "cont" ? 5 : kind === "fount" ? 10 : 3;
-  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : 0.05 + srnd() * 0.13;
+  const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : 0.05 + srnd() * 0.13;
   const b = { x: tx * T + inset, y: ty * T + inset, w: w * T - inset * 2, h: h * T - inset * 2, kind, roof: c, wall: shade(c, 0.62), side: shade(c, 0.45), hgt, ac: [] };
   const n = kind === "bld" ? 1 + ((srnd() * 3) | 0) : 0;
   for (let i = 0; i < n; i++) b.ac.push([0.15 + srnd() * 0.6, 0.15 + srnd() * 0.6, 8 + srnd() * 10]);
@@ -275,13 +317,14 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
+const SPECIAL = { "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "park", "4,1": "park", "5,5": "park", "3,0": "plaza", "0,5": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
   const cx = (x0 + 3) * T, cy = (y0 + 3) * T;
   if (kind === "city") cityBlock(ix, iy);
   else if (kind === "bar") { addB(ix, iy, 4, 2, "bar", "#4a2a4f"); fill(ix, iy + 2, 4, 2, LOT); places.bar = { x: cx, y: (y0 + 4) * T }; places.barLot = { x: x0, y: y0 }; }
+  else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
   else if (kind === "food") { addB(ix, iy, 4, 2, "food", "#3f7d4f"); fill(ix, iy + 2, 4, 2, LOT); places.food = { x: cx, y: (y0 + 4) * T }; }
   else if (kind === "garage") { addB(ix, iy, 4, 2, "garage", "#6f7480"); fill(ix, iy + 2, 4, 2, LOT); places.garage = { x: cx, y: (y0 + 4) * T }; places.garageLot = { x: x0, y: y0 }; }
   else if (kind === "hosp") { addB(ix, iy, 4, 4, "hosp", "#e9ecef"); places.hosp = { x: cx, y: (y0 + 5.5) * T }; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 5.5) * T, kind: "hp" }); }
@@ -321,7 +364,7 @@ const mm = document.createElement("canvas"); mm.width = mm.height = N * MMS;
   const g = mm.getContext("2d");
   const col = { [ROAD]: "#4a4955", [WALK]: "#8f8577", [GRASS]: "#5c8a49", [PLAZA]: "#a99b84", [LOT]: "#5c5b64" };
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const t = tile(x, y); if (t !== BLD) { g.fillStyle = col[t]; g.fillRect(x * MMS, y * MMS, MMS, MMS); } }
-  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
+  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
 }
 
 /* ================= world helpers ================= */
@@ -646,6 +689,7 @@ const SHOPS = [
       { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
       { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
     ].map((it) => (it.heal ? Object.assign(it, { no: () => (player.hp >= 100 ? "Здоровье и так полное" : ""), act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
+  { id: "stadium", col: "#e8f0ff", hex: 0xe8f0ff, label: "V3", at: () => places.stadium, open: () => openStadium() },
 ];
 let shopLock = "guns", shopNow = null;
 function renderShop() {
@@ -678,11 +722,171 @@ function buy(sh, it) {
   writeSave(); renderShop(); updHud();
 }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
+/* ================= V3 stadium: a match every day ================= */
+// The match of the day comes from today's date, so it is the same match all day and a new one tomorrow.
+const OPP = ["Портовые Акулы", "Северный Ветер", "Красные Кометы", "Железный Мост", "Динамо Закат", "Сити Неон", "Атлетик Пирс", "Звезда Залива", "Маяк", "Горный Орёл"];
+const V3_SQUAD = ["Арсенян", "Котов", "Лима", "Беридзе", "Новак", "Сато", "Гарсия", "Орлов"];
+const AWAY_SQUAD = ["Петров", "Мендес", "Ковач", "Ильин", "Росси", "Ким", "Фаррелл", "Демир"];
+const TICKET = 20, BETS = [0, 100, 500, 1000];
+const dayKey = (d = new Date()) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const ruDate = (d) => d.toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+function rngFrom(str) {
+  let a = 0x9e3779b9;
+  for (const ch of str) a = Math.imul(a ^ ch.charCodeAt(0), 2654435761) >>> 0;
+  return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+const matchCache = new Map();
+function genMatch(key) {
+  if (matchCache.has(key)) return matchCache.get(key);
+  const r = rngFrom("v3-stadium-" + key);
+  const opp = OPP[Math.floor(r() * OPP.length)];
+  const lH = 0.9 + r() * 1.5, lA = 0.6 + r() * 1.4;
+  const goals = [];
+  for (let m = 1; m <= 90; m++) { if (r() < lH / 90) goals.push({ min: m, home: true }); if (r() < lA / 90) goals.push({ min: m, home: false }); }
+  goals.forEach((g) => (g.who = (g.home ? V3_SQUAD : AWAY_SQUAD)[Math.floor(r() * 8)]));
+  const a = goals.filter((g) => g.home).length, b = goals.length - a;
+  // odds from a quick simulation of the same scoring rates
+  const r2 = rngFrom("odds-" + key); let w = 0, d = 0, l = 0;
+  for (let i = 0; i < 1500; i++) { let x = 0, y = 0; for (let m = 0; m < 90; m++) { if (r2() < lH / 90) x++; if (r2() < lA / 90) y++; } x > y ? w++ : x === y ? d++ : l++; }
+  const odd = (n) => Math.max(1.05, Math.round(((0.93 * 1500) / Math.max(1, n)) * 100) / 100);
+  const m = { key, opp, goals, a, b, odds: { home: odd(w), draw: odd(d), away: odd(l) } };
+  matchCache.set(key, m); return m;
+}
+const outcome = (m) => (m.a > m.b ? "home" : m.a === m.b ? "draw" : "away");
+const PICK_NAME = { home: "Победа V3", draw: "Ничья", away: "Победа гостей" };
+let stPick = null, stAmt = 0;
+function openStadium() { stPick = null; stAmt = 0; renderStadium(); showOv("stadium"); }
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function renderStadium() {
+  const now0 = new Date(), key = dayKey(now0), m = genMatch(key);
+  const st = save.stadium && save.stadium.day === key ? save.stadium : null;
+  $("stWho").textContent = "Стадион V3 · матч дня, " + ruDate(now0);
+  $("stTeams").textContent = "V3 Нова-Вэ — " + m.opp;
+  const box = $("stBody"); box.innerHTML = "";
+  box.appendChild(el("p", "prog", "У тебя: " + fmt(money)));
+  if (st) {
+    box.appendChild(el("p", "st-final", `Матч сыгран: V3 ${m.a}:${m.b} ${m.opp}`));
+    if (st.pick) box.appendChild(el("p", st.paid ? "bonus" : "prog", st.paid ? `Ставка «${PICK_NAME[st.pick]}» сыграла: +${fmt(st.paid)}` : `Ставка «${PICK_NAME[st.pick]}» не сыграла (−${fmt(st.amt)})`));
+    box.appendChild(el("p", "prog", "Следующий матч — завтра. Стадион V3 играет каждый день."));
+  } else {
+    box.appendChild(el("p", "prog", `Билет — ${fmt(TICKET)}. Можно поставить на исход матча: выигрыш = ставка × коэффициент.`));
+    const picks = el("div", "bet-row");
+    for (const k of ["home", "draw", "away"]) {
+      const b = el("button", "bet" + (stPick === k ? " on" : "")); b.type = "button"; b.id = "pick-" + k;
+      b.append(el("span", null, PICK_NAME[k]), el("b", null, "×" + m.odds[k].toFixed(2)));
+      b.addEventListener("click", () => { stPick = stPick === k ? null : k; if (stPick && !stAmt) stAmt = 100; if (!stPick) stAmt = 0; renderStadium(); });
+      picks.appendChild(b);
+    }
+    box.appendChild(picks);
+    if (stPick) {
+      const amts = el("div", "amt-row");
+      for (const v of BETS.slice(1)) { const b = el("button", "amt" + (stAmt === v ? " on" : ""), fmt(v)); b.type = "button"; b.id = "amt-" + v; b.disabled = money < TICKET + v; b.addEventListener("click", () => { stAmt = v; renderStadium(); }); amts.appendChild(b); }
+      box.appendChild(amts);
+    }
+    const cost = TICKET + (stPick ? stAmt : 0);
+    const go = el("button", "btn", stPick ? `Билет и ставка — ${fmt(cost)}` : `Купить билет — ${fmt(TICKET)}`); go.type = "button"; go.id = "stGo";
+    go.disabled = money < cost; go.addEventListener("click", startMatch);
+    box.appendChild(go);
+  }
+  const hist = el("div", "hist"); hist.appendChild(el("span", "who", "Прошлые матчи"));
+  const ul = el("ul");
+  for (let i = 1; i <= 5; i++) { const d = new Date(now0); d.setDate(d.getDate() - i); const pm = genMatch(dayKey(d)); ul.appendChild(el("li", null, `${ruDate(d)}: V3 ${pm.a}:${pm.b} ${pm.opp}`)); }
+  hist.appendChild(ul); box.appendChild(hist);
+}
+/* the match itself: a sped-up top-down replay on a small pitch */
+const PW = 600, PH = 380, MATCH_SECS = 40;
+const FORM = [[40, 190], [150, 110], [150, 270], [280, 190], [410, 120], [410, 260]];
+let MT = null;
+function startMatch() {
+  const key = dayKey(), m = genMatch(key), amt = stPick ? stAmt : 0, cost = TICKET + amt;
+  if (money < cost) return;
+  money -= cost;
+  save.stadium = { day: key, pick: stPick, amt, paid: 0 }; writeSave();
+  const pl = [];
+  for (const home of [true, false]) FORM.forEach(([x, y], i) => { const hx = home ? x : PW - x; pl.push({ home, gk: i === 0, hx, hy: y, x: hx, y }); });
+  MT = { m, t: 0, score: [0, 0], next: 0, pl, ball: { x: PW / 2, y: PH / 2, tx: PW / 2, ty: PH / 2, sp: 260 }, mode: "play", flash: 0, done: false, feed: [] };
+  $("mHome").textContent = "V3"; $("mAway").textContent = m.opp; $("mFeed").innerHTML = ""; $("mSkip").textContent = "Пропустить";
+  showOv("match"); noise(1.5, 0.18, 900);
+}
+function addFeed(text) { const li = el("li", null, text); $("mFeed").prepend(li); }
+function goal(g) {
+  MT.score[g.home ? 0 : 1]++; MT.flash = 1.4;
+  addFeed(`${g.min}' Гол! ${g.who} (${g.home ? "V3" : MT.m.opp})`);
+  noise(1.4, 0.35, 1400);
+}
+function finishMatch() {
+  if (MT.done) return;
+  while (MT.next < MT.m.goals.length) goal(MT.m.goals[MT.next++]);
+  MT.done = true; MT.t = MATCH_SECS; MT.mode = "end";
+  const res = outcome(MT.m), st = save.stadium;
+  let msg = `Финальный свисток: V3 ${MT.m.a}:${MT.m.b} ${MT.m.opp}.`;
+  if (st && st.pick) {
+    if (st.pick === res) { st.paid = Math.round(st.amt * MT.m.odds[res]); money += st.paid; sfx.win(); msg += ` Ставка сыграла: +${fmt(st.paid)}!`; }
+    else { sfx.fail(); msg += ` Ставка «${PICK_NAME[st.pick]}» не сыграла.`; }
+  }
+  addFeed(msg); writeSave();
+  $("mSkip").textContent = "Выйти со стадиона";
+}
+function updMatch(dt) {
+  if (!MT) return;
+  if (!MT.done) {
+    MT.t += dt;
+    const min = Math.min(90, Math.floor((MT.t / MATCH_SECS) * 90));
+    const g = MT.m.goals[MT.next];
+    if (g && MT.mode === "play" && min >= g.min) { MT.mode = "attack"; MT.atk = g; MT.ball.tx = g.home ? PW - 90 : 90; MT.ball.ty = PH / 2 + rand(-60, 60); MT.ball.sp = 420; }
+    if (MT.t >= MATCH_SECS && MT.mode === "play" && MT.next >= MT.m.goals.length) finishMatch();
+    if (MT.t >= MATCH_SECS * 0.5 && !MT.half) { MT.half = true; addFeed("45' Перерыв"); }
+  }
+  const b = MT.ball, dx = b.tx - b.x, dy = b.ty - b.y, d = Math.hypot(dx, dy);
+  if (d > 4) { const s = Math.min(d, b.sp * dt); b.x += (dx / d) * s; b.y += (dy / d) * s; }
+  else if (MT.mode === "attack") {
+    const gx = MT.atk.home ? PW - 6 : 6;
+    if (Math.abs(b.x - gx) > 10) { b.tx = gx; b.ty = PH / 2 + rand(-18, 18); b.sp = 520; }
+    else { goal(MT.atk); MT.next++; MT.mode = "play"; b.x = b.tx = PW / 2; b.y = b.ty = PH / 2; b.sp = 260; }
+  } else if (MT.mode === "play") {
+    const p = pick(MT.pl.filter((q) => !q.gk || Math.random() < 0.1)); b.tx = clamp(p.x + rand(-20, 20), 20, PW - 20); b.ty = clamp(p.y + rand(-20, 20), 20, PH - 20); b.sp = rand(200, 320);
+  }
+  for (const p of MT.pl) {
+    const pull = p.gk ? 0.12 : 0.4;
+    const wx = p.hx + (b.x - p.hx) * pull, wy = p.hy + (b.y - p.hy) * pull * (p.gk ? 0.6 : 1);
+    p.x += (wx - p.x) * Math.min(1, dt * 2.5); p.y += (wy - p.y) * Math.min(1, dt * 2.5);
+  }
+  if (MT.flash > 0) MT.flash -= dt;
+  const min = MT.done ? 90 : Math.min(90, Math.floor((MT.t / MATCH_SECS) * 90));
+  setText("mScore", MT.score[0] + ":" + MT.score[1]); setText("mMin", MT.done ? "Конец" : min + "'");
+  drawMatch();
+}
+function drawPitch(g, x, y, w, h) {
+  for (let i = 0; i < 10; i++) { g.fillStyle = i % 2 ? "#2f8a3a" : "#34973f"; g.fillRect(x + (w * i) / 10, y, w / 10 + 0.5, h); }
+  g.strokeStyle = "rgba(255,255,255,.9)"; g.lineWidth = Math.max(1.5, w / 260);
+  g.strokeRect(x + w * 0.02, y + h * 0.03, w * 0.96, h * 0.94);
+  g.beginPath(); g.moveTo(x + w / 2, y + h * 0.03); g.lineTo(x + w / 2, y + h * 0.97); g.stroke();
+  g.beginPath(); g.arc(x + w / 2, y + h / 2, h * 0.15, 0, TAU); g.stroke();
+  for (const s of [0, 1]) {
+    const bx = s ? x + w * 0.98 - w * 0.14 : x + w * 0.02;
+    g.strokeRect(bx, y + h * 0.25, w * 0.14, h * 0.5);
+    g.fillStyle = "rgba(255,255,255,.85)"; g.fillRect(s ? x + w * 0.98 : x + w * 0.02 - w * 0.012, y + h * 0.42, w * 0.012, h * 0.16);
+  }
+}
+function drawMatch() {
+  const c = $("pitch"), g = c.getContext("2d");
+  drawPitch(g, 0, 0, PW, PH);
+  for (const p of MT.pl) {
+    g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(p.x + 2, p.y + 3, 9, 0, TAU); g.fill();
+    g.fillStyle = p.home ? (p.gk ? "#ffd23d" : "#ff7a3d") : p.gk ? "#9cff9c" : "#3d6dff";
+    g.beginPath(); g.arc(p.x, p.y, 9, 0, TAU); g.fill(); g.strokeStyle = "#fff"; g.lineWidth = 2; g.stroke();
+  }
+  g.fillStyle = "#fff"; g.beginPath(); g.arc(MT.ball.x, MT.ball.y, 5, 0, TAU); g.fill(); g.strokeStyle = "#111"; g.lineWidth = 1.5; g.stroke();
+  if (MT.flash > 0) {
+    g.fillStyle = `rgba(0,0,0,${Math.min(0.45, MT.flash)})`; g.fillRect(0, 0, PW, PH);
+    g.fillStyle = "#ffd23d"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("ГОЛ!", PW / 2, PH / 2);
+  }
+}
 function updMission(dt) {
   if (!MISSIONS) {
     let near = null, close = false;
     for (const sh of SHOPS) { const d = dist(player, sh.at()); if (d < 34) near = sh; if (d < 70) close = true; }
-    if (near && !player.inCar && !player.dead && state === "play" && shopLock !== near.id) { shopLock = near.id; openShop(near); }
+    if (near && !player.inCar && !player.dead && state === "play" && shopLock !== near.id) { shopLock = near.id; near.open ? near.open() : openShop(near); }
     if (!close) shopLock = null;
     return;
   }
@@ -1101,7 +1305,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "pause" || state === "shop") resume(); }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else resume(); } else if (state === "pause" || state === "shop" || state === "stadium") resume(); }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
 });
@@ -1150,8 +1354,8 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -1166,6 +1370,8 @@ $("hospBtn").addEventListener("click", () => { if (M.active) missionFail("Ты �
 $("cGo").addEventListener("click", () => { resume(); startMission(offer); toast(offer.title + ": " + M.steps[0].text, 3); });
 $("cNo").addEventListener("click", resume);
 $("shopOut").addEventListener("click", resume);
+$("stOut").addEventListener("click", resume);
+$("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else { MT = null; resume(); } });
 let started = false;
 function bootStart() {
   const has = save.mission > 0 || save.money > 0;
@@ -1490,6 +1696,14 @@ function drawBuilding(b) {
     ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2, 8 + Math.sin(now * 3) * 2, 0, TAU); ctx.fill();
     return;
   }
+  if (b.kind === "stadium") {
+    ctx.fillStyle = b.roof; ctx.fillRect(rx, ry, b.w, b.h);
+    const sc = ["#ff7a3d", "#f2f2f2", "#ff3d7f"];
+    for (let k = 0; k < 3; k++) { ctx.strokeStyle = sc[k]; ctx.lineWidth = 6; ctx.strokeRect(rx + 6 + k * 8, ry + 6 + k * 8, b.w - 12 - k * 16, b.h - 12 - k * 16); }
+    drawPitch(ctx, rx + 34, ry + 34, b.w - 68, b.h - 68);
+    ctx.fillStyle = "#fff"; ctx.font = "22px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("V3", rx + b.w / 2, ry + 16);
+    return;
+  }
   ctx.fillStyle = b.roof; ctx.fillRect(rx, ry, b.w, b.h);
   ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = 3; ctx.strokeRect(rx + 1.5, ry + 1.5, b.w - 3, b.h - 3);
   if (b.kind === "cont") { ctx.fillStyle = "rgba(0,0,0,.15)"; const v = b.h > b.w; for (let k = 1; k < 6; k++) v ? ctx.fillRect(rx, ry + (b.h * k) / 6, b.w, 2) : ctx.fillRect(rx + (b.w * k) / 6, ry, 2, b.h); return; }
@@ -1735,6 +1949,28 @@ function init3d() {
   }
   for (const b of blds) {
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
+    if (b.kind === "stadium") {
+      const ins = 34, fw = b.w - ins * 2, fh = b.h - ins * 2;
+      const fc = document.createElement("canvas"); fc.width = 512; fc.height = Math.round((512 * fh) / fw); drawPitch(fc.getContext("2d"), 0, 0, fc.width, fc.height);
+      const field = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), lam(0xffffff, { map: new THREE.CanvasTexture(fc) }));
+      field.rotation.x = -Math.PI / 2; field.position.set(cx, 0.6, cz); field.receiveShadow = true; scene.add(field);
+      const seats = tex(64, (g) => { const cols = ["#ff7a3d", "#f2f2f2", "#ff3d7f", "#3a3550"]; for (let k = 0; k < 8; k++) { g.fillStyle = cols[k % 4]; g.fillRect(0, k * 8, 64, 6); g.fillStyle = "#2a2733"; g.fillRect(0, k * 8 + 6, 64, 2); } });
+      const standM = lam(0xffffff, { map: seats }), sh = 38;
+      const stand = (w, d, x, z) => { const m = new THREE.Mesh(BOX, [lam(0x8f8b9a), lam(0x8f8b9a), standM, lam(0x8f8b9a), lam(0x8f8b9a), lam(0x8f8b9a)]); m.scale.set(w, sh, d); m.position.set(x, sh / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m); };
+      stand(b.w, ins, cx, b.y + ins / 2); stand(b.w, ins, cx, b.y + b.h - ins / 2);
+      stand(ins, fh, b.x + ins / 2, cz); stand(ins, fh, b.x + b.w - ins / 2, cz);
+      for (const [px, pz] of [[b.x + 6, b.y + 6], [b.x + b.w - 6, b.y + 6], [b.x + 6, b.y + b.h - 6], [b.x + b.w - 6, b.y + b.h - 6]]) {
+        const pole = new THREE.Mesh(BOX, lam(0x5d5a66)); pole.scale.set(4, 120, 4); pole.position.set(px, 60, pz); pole.castShadow = true; scene.add(pole);
+        const lamp = new THREE.Mesh(BOX, basic(0xfff6d8)); lamp.scale.set(16, 9, 4); lamp.position.set(px, 122, pz); lamp.lookAt(cx, 122, cz); scene.add(lamp);
+      }
+      const sb = document.createElement("canvas"); sb.width = 256; sb.height = 96;
+      { const g = sb.getContext("2d"); g.fillStyle = "#14121a"; g.fillRect(0, 0, 256, 96); g.fillStyle = "#ff7a3d"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("V3", 128, 50); }
+      const bn = document.createElement("canvas"); bn.width = 512; bn.height = 80;
+      { const g = bn.getContext("2d"); g.fillStyle = "#ff7a3d"; g.fillRect(0, 0, 512, 80); g.fillStyle = "#14121a"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("СТАДИОН V3", 256, 42); }
+      const banner = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(bn) })); banner.scale.set(b.w * 0.75, 12, 1.5); banner.position.set(cx, 25, b.y + b.h + 1); scene.add(banner);
+      const board = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(sb) })); board.scale.set(70, 26, 3); board.position.set(cx, sh + 16, b.y + 6); scene.add(board);
+      continue;
+    }
     if (b.kind === "fount") {
       const base = new THREE.Mesh(new THREE.CylinderGeometry(b.w / 2, b.w / 2 + 2, 9, 28), lam(0xcfc6b5)); base.position.set(cx, 4.5, cz); base.castShadow = base.receiveShadow = true; scene.add(base);
       const wat = new THREE.Mesh(new THREE.CylinderGeometry(b.w / 2 - 6, b.w / 2 - 6, 1, 28), lam(0x4aa3c8, { emissive: 0x0a2a3a })); wat.position.set(cx, 8.8, cz); scene.add(wat);
@@ -1992,6 +2228,7 @@ let last = performance.now();
 function frame(t) {
   const dt = Math.min(0.05, (t - last) / 1000); last = t;
   if (state === "play") update(dt);
+  if (state === "match") updMatch(dt);
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
