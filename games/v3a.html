@@ -137,6 +137,7 @@ body.touch #phoneBtn{display:none}
 #stBody{display:flex;flex-direction:column;gap:10px}
 #stBody .btn{flex:none;min-height:52px}
 #fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
+#fmCam{display:block;width:100%;max-width:384px;height:auto;margin:0 auto;border-radius:14px;touch-action:none}
 #dtBoard{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:16px;touch-action:manipulation}
 .inv-card{width:min(100%,540px)}
 .home-card{width:min(100%,600px)}
@@ -310,7 +311,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Хочешь снимать новости — зайди в офис WorldNews, метка <b style="color:#ff4a5a">WN</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции.</p>
     </div>
   </div>
 
@@ -384,6 +385,17 @@ button.ph-row:disabled{opacity:.45}
       <p class="prog" id="dtInfo"></p>
       <button type="button" class="btn" id="dtGo" style="flex:none;min-height:52px">Играть</button>
       <button type="button" class="btn alt" id="dtOut" style="flex:none">Вернуться к стойке</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="film" hidden>
+    <div class="card">
+      <span class="who">WorldNews</span>
+      <h3 id="fmTitle">Съёмка сюжета</h3>
+      <canvas id="fmCam" width="384" height="240" aria-label="Видоискатель камеры"></canvas>
+      <p class="prog" id="fmInfo"></p>
+      <button type="button" class="btn" id="fmGo" style="flex:none;min-height:52px">Начать запись</button>
+      <button type="button" class="btn alt" id="fmOut" style="flex:none">Отложить</button>
     </div>
   </div>
 
@@ -499,7 +511,7 @@ function cityBlock(ix, iy) {
   else if (r < 0.76) { for (const hx of [ix, ix + 2]) srnd() < 0.5 ? addB(hx, iy, 2, 4) : (addB(hx, iy, 2, 2), addB(hx, iy + 2, 2, 2)); }
   else { addB(ix, iy, 2, 2); addB(ix + 2, iy, 2, 2); addB(ix, iy + 2, 2, 2); if (srnd() < 0.5) addB(ix + 2, iy + 2, 2, 2); else { fill(ix + 2, iy + 2, 2, 2, LOT); } }
 }
-const SPECIAL = { "1,2": "home", "0,1": "crab", "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "vbar", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
+const SPECIAL = { "1,2": "home", "0,1": "crab", "2,2": "electro", "0,5": "factory", "2,4": "ems", "1,3": "court", "3,3": "prison", "4,3": "depot", "0,4": "cityhall", "5,4": "power", "1,5": "stores", "3,5": "police2", "4,5": "fire2", "3,4": "fire", "0,3": "cemetery", "5,3": "cemetery", "3,1": "stadium", "2,1": "food", "1,1": "bar", "3,2": "garage", "4,4": "hosp", "1,4": "police", "5,0": "docks", "2,3": "park", "0,2": "vbar", "4,2": "news", "4,1": "park", "5,5": "park", "3,0": "plaza", "2,5": "docks2" };
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
@@ -513,6 +525,11 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
     const b = addB(ix, iy, 4, 2, "svc", "#241a2e"); b.label = "V BAR"; b.labelCol = "#ff3d7f"; b.h3 = 50; b.neon = true; fill(ix, iy + 2, 4, 2, PLAZA);
     places.vbar = { x: cx, y: (y0 + 4) * T };
     for (const [tx2, ty2] of [[1.55, 3.45], [1.55, 4.35], [4.45, 3.45], [4.45, 4.35]]) addTree((x0 + tx2) * T, (y0 + ty2) * T, 12, "table");
+  }
+  else if (kind === "news") {
+    const b = addB(ix, iy, 4, 2, "svc", "#1d2a44"); b.label = "WORLDNEWS"; b.labelCol = "#ff4a5a"; b.h3 = 96; b.dish = true; fill(ix, iy + 2, 4, 2, LOT);
+    places.news = { x: cx, y: (y0 + 4) * T };
+    parkSpots.push({ type: "van", x: (x0 + 1.6) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
   }
   else if (kind === "home") {
     const b = addB(ix, iy, 4, 3, "svc", "#7e8fa6"); b.label = "ЖК «НОВА»"; b.labelCol = "#2fd0a0"; b.h3 = 170; fill(ix, iy + 3, 4, 1, LOT);
@@ -968,6 +985,15 @@ const SHOPS = [
       { id: "neon", name: "Коктейль «Неон»", info: "+50 здоровья и быстрый бег 20 с", price: 25 },
       { id: "darts", name: "Дартс", info: "Вход $15 · 60+ очков = $50, 100+ = $150", price: 0, priceText: "играть", open: () => openDarts() },
     ] },
+  { id: "news", who: "Офис WorldNews", title: "Редакция новостей", col: "#ff4a5a", hex: 0xff4a5a, label: "WN", at: () => places.news, bonus: 0,
+    note: "Зарегистрируйся репортёром, бери задания и снимай сюжеты по городу. Лучшие кадры выходят в эфир на канале WorldNews.",
+    items: [
+      { id: "press", name: "Регистрация репортёра", info: "Пресс-карта WorldNews — бесплатно", price: 0, priceText: "бесплатно", quiet: true,
+        no: () => (save.press ? "Ты уже репортёр WorldNews · снято сюжетов: " + (save.reportsDone || 0) : ""),
+        act: () => { save.press = 1; toast("Пресс-карта твоя! Теперь бери задание в редакции", 3); } },
+      { id: "newsjob", name: "Взять задание", info: "Съезди на место, сними сюжет — от $60 до $250", price: 0, priceText: "задание",
+        no: () => (!save.press ? "Сначала зарегистрируйся репортёром" : NJ ? "Уже есть: " + NJ.title : ""), open: () => takeNewsJob() },
+    ] },
   { id: "home", col: "#2fd0a0", hex: 0x2fd0a0, label: "Д", at: () => places.home, open: () => openHome() },
   { id: "crab", who: "Ресторан Crusty Crab", title: "Меню", col: "#ff5a3d", hex: 0xff5a3d, label: "CC", at: () => places.crab, bonus: 0,
     note: "Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
@@ -1195,6 +1221,8 @@ function newsStories() {
     lines: WX.target > 0 ? ["Над городом идёт дождь, дороги скользкие.", WX.storm ? "Синоптики предупреждают о грозе — держитесь подальше от высоких мачт стадиона." : "Водителей просят сбавить скорость на поворотах.", "Прохожие уже достали зонты."] : ["В Нова-Вэ ясно и тепло.", "Синоптики говорят: дождь может начаться в любой момент.", "Зонт лучше держать под рукой."] });
   if (STATS.jacks > 0 && !out[0].breaking) out.push({ tag: "ПРОИСШЕСТВИЯ", pic: "police", title: `Угоны: за день угнано машин — ${STATS.jacks}`,
     lines: ["Неизвестный вытаскивает водителей прямо из машин.", "Полиция просматривает записи камер у КПП.", "Свидетели описывают его как человека в яркой куртке."] });
+  for (const r of (save.reports || []).slice(0, 2)) out.push({ tag: "НАШ РЕПОРТАЖ", pic: r.pic, title: r.title, lines: r.lines, breaking: false });
+  if (save.press) out.push({ tag: "WORLDNEWS", pic: "tower", title: "У WorldNews новый корреспондент", lines: ["В редакцию пришёл новый репортёр.", `Он уже снял сюжетов: ${save.reportsDone || 0}.`, "Ищите его с камерой на улицах Нова-Вэ!"] });
   if (save.home) out.push({ tag: "ГОРОД", pic: "tower", title: "В ЖК «Нова» въехал новый жилец",
     lines: ["Однушку на 12-м этаже купили за 20 тысяч долларов.", "Соседи говорят, новый жилец часто смотрит наш канал.", "Привет, сосед!"] });
   out.push(
@@ -1666,6 +1694,109 @@ function addIngr(g) {
   renderKitchen();
 }
 function finishCook() { if (!KJ || !KJ.on) return; KJ.on = false; KJ.done = true; money += KJ.score * COOK_PAY; if (KJ.score) sfx.cash(); writeSave(); }
+/* WorldNews reporter: take a job at the office, drive to the place, keep the hero of the story in frame while recording */
+const NEWS_JOBS = [
+  { id: "stad", at: () => places.stadium, place: "стадион V3", pic: "stadium", tag: "СПОРТ", title: "Фанаты V3 разогревают трибуны", lines: ["Наш корреспондент побывал у стадиона V3.", "Фанаты с утра поют гимн и красят флаги.", "Билеты на сегодняшний матч почти раскуплены."] },
+  { id: "crab", at: () => places.crab, place: "Crusty Crab", pic: "crab", tag: "ГОРОД", title: "Как готовят крабовый бургер", lines: ["Мы заглянули на кухню Crusty Crab.", "Повар показал, как собрать бургер за десять секунд.", "Секретный соус так и остался секретом."] },
+  { id: "fact", at: () => places.factory, place: "завод электроники", pic: "factory", tag: "ЭКОНОМИКА", title: "Один день на конвейере", lines: ["Наша камера провела смену на заводе «V3 Электроникс».", "Сборщики ставят чипы быстрее, чем мы успеваем моргнуть.", "Завод обещает новый цех к зиме."] },
+  { id: "fire", at: () => places.fire, place: "пожарная часть", pic: "fire", tag: "ПРОИСШЕСТВИЯ", title: "Учения пожарных на юге", lines: ["Пожарная часть провела показательные учения.", "Расчёт потушил горящий макет за полторы минуты.", "Командир напоминает: не оставляйте мангалы без присмотра."] },
+  { id: "port", at: () => places.docks, place: "порт", pic: "port", tag: "ЭКОНОМИКА", title: "В порт зашёл гигантский контейнеровоз", lines: ["Мы сняли, как в порт заходит огромное судно.", "Кранам придётся работать всю ночь.", "Что внутри контейнеров — пока секрет."] },
+  { id: "wall", at: () => places.gates && places.gates[0], place: "западный КПП", off: [0, -1.5 * T], pic: "wall", tag: "ГОРОД", title: "Пробка на КПП: репортаж с места", lines: ["Мы простояли на КПП вместе с водителями.", "Очередь двигается медленно, но люди не унывают.", "Кто-то даже продаёт кофе прямо у шлагбаума."] },
+  { id: "tower", at: () => places.home, place: "ЖК «Нова»", pic: "tower", tag: "ГОРОД", title: "Жители ЖК «Нова» рассказали о жизни", lines: ["Наш корреспондент поговорил с жителями ЖК «Нова».", "Говорят, лучший вид на город — с последних этажей.", "Лифты работают, соседи дружные."] },
+  { id: "cop", at: () => places.police, place: "полицейский участок", pic: "police", tag: "ПРОИСШЕСТВИЯ", title: "Ночной патруль: репортаж из машины полиции", lines: ["Мы провели ночь с патрульным экипажем.", "Сирены, мигалки и ни минуты покоя.", "Полиция просит водителей не превышать скорость."] },
+  { id: "chap", at: () => (places.cemeteries || [])[0] && { x: places.cemeteries[0].x, y: places.cemeteries[0].y + 2.5 * T }, place: "часовня на кладбище", off: [0, 0], pic: "chapel", tag: "КУЛЬТУРА", title: "Тихое место на юге города", lines: ["Мы сняли отреставрированную часовню.", "Свежую позолоту купола видно издалека.", "Смотритель рассказал историю старого кладбища."] },
+];
+let NJ = null, FM = null, njCarHint = 0;
+function takeNewsJob() {
+  if (!save.press || NJ) return;
+  const pool = NEWS_JOBS.filter((j) => j.at() && j.id !== save.lastJob);
+  const j = pick(pool), q = j.at(), off = j.off || [1.6 * T, 0]; NJ = { ...j, to: { x: q.x + off[0], y: q.y + off[1] } }; save.lastJob = j.id; writeSave();
+  resume(); sfx.cash(); toast(`Задание WorldNews: сними сюжет — ${j.place}. Красная метка на карте`, 4);
+}
+function updNewsJob() {
+  if (!NJ || state !== "play" || player.dead) return;
+  const d = dist(player, NJ.to);
+  if (d > 80) NJ.armed = true;
+  if (d > 46 || NJ.armed === false) return;
+  if (player.inCar) { if (now - njCarHint > 4) { njCarHint = now; toast("Выйди из машины — камера у тебя в руках", 2.2); } return; }
+  openFilm();
+}
+function openFilm() { NJ.armed = false; FM = { on: false, done: false, t: 0, rec: 0, good: 0, fx: 0.5, fy: 0.5, tx: 0.5, ty: 0.5, drag: false }; $("fmTitle").textContent = NJ.title; showOv("film"); renderFilm(); }
+const FILM_LEN = 12;
+function filmPay(q) { return Math.round(60 + q * 190); }
+function filmSubject(t) { return { x: 0.5 + Math.sin(t * 0.9) * 0.34 + Math.sin(t * 2.3) * 0.06, y: 0.55 + Math.cos(t * 0.7) * 0.22 + Math.sin(t * 1.9) * 0.05 }; }
+function renderFilm() {
+  const info = $("fmInfo"), btn = $("fmGo"), out = $("fmOut");
+  if (!FM.on && !FM.done) { info.textContent = `Место: ${NJ.place}. Води рамку пальцем (или стрелками) и держи героя сюжета в кадре ${FILM_LEN} секунд.`; btn.textContent = "Начать запись"; btn.hidden = false; out.textContent = "Отложить"; }
+  else if (FM.on) { btn.hidden = true; out.textContent = "Прервать"; }
+  else { const q = FM.good / FILM_LEN; info.textContent = `Сюжет снят! Качество кадра ${Math.round(q * 100)}%. Гонорар ${fmt(filmPay(q))}. Смотри его в эфире WorldNews.`; btn.textContent = "Отлично"; btn.hidden = false; out.textContent = "Закрыть"; }
+  drawFilm();
+}
+function filmButton() {
+  if (!FM) return;
+  if (FM.done) { FM = null; resume(); return; }
+  if (!FM.on) { FM.on = true; FM.t = 0; FM.rec = 0; FM.good = 0; tone(880, 880, 0.12, 0.06); renderFilm(); }
+}
+function finishFilm() {
+  FM.on = false; FM.done = true;
+  const q = clamp(FM.good / FILM_LEN, 0, 1), pay = filmPay(q);
+  money += pay; sfx.win(); save.reportsDone = (save.reportsDone || 0) + 1;
+  const rep = { tag: NJ.tag, pic: NJ.pic, title: NJ.title, lines: NJ.lines.concat([`Репортаж снял наш корреспондент. Качество кадра — ${Math.round(q * 100)}%.`]), day: dayKey() };
+  save.reports = [rep].concat((save.reports || []).filter((r) => r.title !== rep.title)).slice(0, 3);
+  NJ = null; TV.news = null; updHud(); writeSave(); renderFilm();
+}
+function updFilm(dt) {
+  if (!FM) return;
+  FM.t += dt;
+  const kx = (keys.ArrowRight || keys.KeyD ? 1 : 0) - (keys.ArrowLeft || keys.KeyA ? 1 : 0), ky = (keys.ArrowDown || keys.KeyS ? 1 : 0) - (keys.ArrowUp || keys.KeyW ? 1 : 0);
+  if (kx || ky) { FM.tx = clamp(FM.tx + kx * dt * 0.7, 0.15, 0.85); FM.ty = clamp(FM.ty + ky * dt * 0.7, 0.2, 0.8); }
+  const k = Math.min(1, dt * 9); FM.fx += (FM.tx - FM.fx) * k; FM.fy += (FM.ty - FM.fy) * k;
+  if (FM.on) {
+    FM.rec += dt;
+    const sb = filmSubject(FM.rec), sh = filmShake(FM.rec);
+    if (Math.abs(sb.x - (FM.fx + sh.x)) < 0.15 && Math.abs(sb.y - (FM.fy + sh.y)) < 0.2) FM.good += dt;
+    if (FM.rec >= FILM_LEN) { finishFilm(); return; }
+  }
+  drawFilm();
+}
+function filmShake(t) { return { x: Math.sin(t * 5.3) * 0.012 + Math.sin(t * 11.7) * 0.006, y: Math.cos(t * 4.1) * 0.012 }; }
+const filmBg = document.createElement("canvas"); filmBg.width = 192; filmBg.height = 120;
+function drawFilm() {
+  const c = $("fmCam"); if (!c || !FM || !NJ && !FM.done) return; const g = c.getContext("2d"), W = c.width, H = c.height;
+  const bg = filmBg.getContext("2d"); newsPic(bg, FM.done ? (save.reports && save.reports[0] ? save.reports[0].pic : "sun") : NJ.pic, 0, 0, 192, 120, FM.t);
+  g.imageSmoothingEnabled = false; g.drawImage(filmBg, 0, 0, W, H);
+  const t = FM.on ? FM.rec : FM.t * 0.4, sb = filmSubject(t), sx = sb.x * W, sy = sb.y * H;
+  // the hero of the story: a person waving at the camera
+  const wave = Math.sin(FM.t * 8) * 0.6;
+  g.fillStyle = "rgba(0,0,0,.3)"; g.beginPath(); g.ellipse(sx, sy + 22, 12, 4, 0, 0, TAU); g.fill();
+  g.fillStyle = "#ffd23d"; g.fillRect(sx - 7, sy - 6, 14, 22); g.fillStyle = "#2b2f45"; g.fillRect(sx - 6, sy + 14, 5, 9); g.fillRect(sx + 1, sy + 14, 5, 9);
+  g.fillStyle = "#f2c79a"; g.beginPath(); g.arc(sx, sy - 13, 7, 0, TAU); g.fill();
+  g.strokeStyle = "#ffd23d"; g.lineWidth = 4; g.lineCap = "round"; g.beginPath(); g.moveTo(sx + 6, sy - 3); g.lineTo(sx + 6 + Math.cos(-1.2 + wave) * 13, sy - 3 + Math.sin(-1.2 + wave) * 13); g.stroke(); g.lineCap = "butt";
+  if (FM.done) { g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(0, 0, W, H); g.fillStyle = "#fff"; g.font = "28px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("В ЭФИР!", W / 2, H / 2); return; }
+  // viewfinder frame: everything outside is dimmed
+  const sh = FM.on ? filmShake(FM.rec) : { x: 0, y: 0 }, fx = (FM.fx + sh.x) * W, fy = (FM.fy + sh.y) * H, fw = W * 0.3, fh = H * 0.4;
+  const inFrame = Math.abs(sx - fx) < W * 0.15 && Math.abs(sy - fy) < H * 0.2;
+  g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(0, 0, W, fy - fh / 2); g.fillRect(0, fy + fh / 2, W, H); g.fillRect(0, fy - fh / 2, fx - fw / 2, fh); g.fillRect(fx + fw / 2, fy - fh / 2, W, fh);
+  g.strokeStyle = inFrame ? "#5fd35f" : "#ff4a5a"; g.lineWidth = 3; const L = 14;
+  for (const [cx2, cy2, dx, dy] of [[fx - fw / 2, fy - fh / 2, 1, 1], [fx + fw / 2, fy - fh / 2, -1, 1], [fx - fw / 2, fy + fh / 2, 1, -1], [fx + fw / 2, fy + fh / 2, -1, -1]]) { g.beginPath(); g.moveTo(cx2 + dx * L, cy2); g.lineTo(cx2, cy2); g.lineTo(cx2, cy2 + dy * L); g.stroke(); }
+  g.lineWidth = 1.5; g.beginPath(); g.moveTo(fx - 6, fy); g.lineTo(fx + 6, fy); g.moveTo(fx, fy - 6); g.lineTo(fx, fy + 6); g.stroke();
+  g.font = "bold 15px Manrope,sans-serif"; g.textBaseline = "top"; g.textAlign = "left";
+  if (FM.on) {
+    if (Math.floor(FM.rec * 2) % 2 === 0) { g.fillStyle = "#ff2d3d"; g.beginPath(); g.arc(18, 18, 7, 0, TAU); g.fill(); }
+    g.fillStyle = "#fff"; g.fillText("REC  0:" + String(Math.floor(FM.rec)).padStart(2, "0") + " / 0:" + FILM_LEN, 30, 10);
+    const q = FM.good / FILM_LEN; g.fillStyle = "rgba(0,0,0,.5)"; g.fillRect(10, H - 22, W - 20, 12); g.fillStyle = "#5fd35f"; g.fillRect(10, H - 22, (W - 20) * clamp(q, 0, 1), 12);
+    g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.fillText("КАЧЕСТВО " + Math.round(q * 100) + "%", 14, H - 22);
+    $("fmInfo").textContent = inFrame ? "Герой в кадре — отлично, держи!" : "Герой ушёл из кадра — догони его рамкой!";
+  } else { g.fillStyle = "#fff"; g.fillText("● STBY", 12, 10); }
+  g.textAlign = "right"; g.fillStyle = "#ff4a5a"; g.fillText("WN", W - 12, 10);
+}
+{
+  const c = document.getElementById("fmCam");
+  const aim = (e) => { if (!FM || FM.done) return; const r = c.getBoundingClientRect(); FM.tx = clamp((e.clientX - r.left) / r.width, 0.15, 0.85); FM.ty = clamp((e.clientY - r.top) / r.height, 0.2, 0.8); };
+  c.addEventListener("pointerdown", (e) => { if (FM) FM.drag = true; aim(e); try { c.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+  c.addEventListener("pointermove", (e) => { if (FM && (FM.drag || e.pointerType === "mouse")) aim(e); });
+  c.addEventListener("pointerup", () => { if (FM) FM.drag = false; });
+}
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -2000,6 +2131,7 @@ function updMission(dt) {
     for (const sh of SHOPS) { const d = dist(player, sh.at()); if (d < 34) near = sh; if (d < 70) close = true; }
     if (near && !player.inCar && !player.dead && state === "play" && shopLock !== near.id) { shopLock = near.id; near.open ? near.open() : openShop(near); }
     if (!close) shopLock = null;
+    updNewsJob();
     return;
   }
   if (!M.active) {
@@ -2517,7 +2649,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts") resume(); else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
@@ -2574,8 +2706,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -2608,7 +2740,7 @@ function taxiStops() {
   const c = (places.cemeteries || [])[0];
   return [
     ["Оружейный магазин", places.bar, "guns"], ["Продукты", places.food, "food"], ["Электроника", places.electro, "electro"], ["Автосалон", places.garage, "cars"],
-    ["Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
+    ["Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Офис WorldNews", places.news, "news"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
     c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
   ].filter((x) => x && x[1]);
 }
@@ -2649,7 +2781,7 @@ function renderPhone(app) {
     dot(places.hosp, "#ffffff"); dot(places.police, "#3d8bff");
     const P = player.inCar || player; dot(P, "#ffd23d", 7);
     scr.appendChild(c);
-    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["V BAR VB", "#ff3d7f"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
+    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["V BAR VB", "#ff3d7f"], ["WorldNews WN", "#ff4a5a"], ["Задание ●", "#ff2d3d"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
     const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
     scr.appendChild(lg); scr.appendChild(el("p", "ph-note", "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП."));
   } else if (app === "bank") {
@@ -2744,6 +2876,8 @@ $("phHome").addEventListener("click", resume);
 $("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
 $("kjOut").addEventListener("click", () => { finishCook(); KJ = null; resume(); });
 $("dtGo").addEventListener("click", dartsButton);
+$("fmGo").addEventListener("click", filmButton);
+$("fmOut").addEventListener("click", () => { const done = FM && FM.done; if (FM && FM.on) toast("Запись прервана — вернись, когда будешь готов", 2.4); FM = null; resume(); });
 $("dtBoard").addEventListener("click", () => { if (DJ && DJ.on) dartsButton(); });
 $("dtOut").addEventListener("click", () => { DJ = null; shopLock = "vbar"; openShop(SHOPS.find((q) => q.id === "vbar")); });
 $("fjOut").addEventListener("click", () => { if (FJ && FJ.on) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; writeSave(); } FJ = null; resume(); });
@@ -3249,6 +3383,7 @@ function render() {
   // markers
   if (MISSIONS && !M.active) drawMarker(places.bar.x, places.bar.y, "#ff3d7f", "V");
   if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); drawMarker(q.x, q.y, sh.col, sh.label); }
+  if (NJ) drawMarker(NJ.to.x, NJ.to.y, "#ff2d3d", "●", 40);
   const tg = stepTarget();
   if (tg) {
     const s2 = M.steps[M.i];
@@ -3307,7 +3442,7 @@ function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   drawRain2D(W, H);
-  if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (MISSIONS && !M.active) drawEdgeArrow(places.bar, "#ff3d7f");
+  if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (NJ) drawEdgeArrow(NJ.to, "#ff2d3d"); else if (MISSIONS && !M.active) drawEdgeArrow(places.bar, "#ff3d7f");
   if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
   drawMini();
 }
@@ -3337,6 +3472,7 @@ function drawMini() {
   for (const p of people) if (p.kind === "cop" && !p.dead && (wanted > 0 || gadget("scanner"))) dot(p.x, p.y, 2, "#3d8bff");
   if (MISSIONS && !M.active) { dot(places.bar.x, places.bar.y, 5, "#ff3d7f"); }
   if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); dot(q.x, q.y, 5, sh.col); }
+  if (NJ) dot(NJ.to.x, NJ.to.y, 6, Math.floor(now * 3) % 2 ? "#ff2d3d" : "#ffffff");
   const tg = stepTarget();
   if (tg) { const s = M.steps[M.i]; if (s.t === "kill") s.units.forEach((u) => !u.dead && dot(u.x, u.y, 3, "#ff3d3d")); else dot(tg.x, tg.y, 5, "#ffd23d"); }
   dot(places.hosp.x, places.hosp.y, 3, "#ffffff");
@@ -3619,6 +3755,15 @@ function init3d() {
       (G3.neons || (G3.neons = [])).push(sign);
       const glow = new THREE.PointLight(0xff3d7f, 0.9, 220, 1.6); glow.position.set(cx, h + 10, b.y + b.h + 20); scene.add(glow);
     }
+    if (b.dish) {
+      const nc = document.createElement("canvas"); nc.width = 512; nc.height = 128;
+      { const g = nc.getContext("2d"); g.fillStyle = "#e0213b"; g.fillRect(0, 0, 512, 128); g.fillStyle = "#fff"; g.font = "86px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("WorldNews", 256, 68); }
+      const sign = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(nc) })); sign.scale.set(120, 30, 2); sign.position.set(cx, h - 18, b.y + b.h + 1.5); scene.add(sign);
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 3, 90, 6), lam(0xd0d4dc)); mast.position.set(b.x + b.w - 24, h + 45, b.y + 24); mast.castShadow = true; scene.add(mast);
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(3.5, 8, 6), basic(0xff2d3d)); tip.position.set(b.x + b.w - 24, h + 92, b.y + 24); scene.add(tip); (G3.blinks || (G3.blinks = [])).push(tip);
+      const dish = new THREE.Mesh(new THREE.SphereGeometry(20, 18, 10, 0, TAU, 0, 1.0), lam(0xf2f2f2, { side: THREE.DoubleSide })); dish.position.set(b.x + 34, h + 18, b.y + 30); dish.rotation.set(-0.9, 0.5, 0); dish.castShadow = true; scene.add(dish);
+      const leg = new THREE.Mesh(BOX, lam(0x8b8f94)); leg.scale.set(4, 18, 4); leg.position.set(b.x + 34, h + 8, b.y + 30); scene.add(leg);
+    }
     if (b.flag) { const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1.5, 40, 1.5); pole.position.set(cx, h + 20, cz); scene.add(pole); const fl = new THREE.Mesh(BOX, lam(0xff7a3d)); fl.scale.set(22, 13, 0.8); fl.position.set(cx + 11, h + 33, cz); scene.add(fl); }
     if (b.bars) for (const [qx, qz] of [[b.x + 12, b.y + 12], [b.x + b.w - 12, b.y + 12], [b.x + 12, b.y + b.h - 12], [b.x + b.w - 12, b.y + b.h - 12]]) { const tw = new THREE.Mesh(BOX, lam(0x5a5650)); tw.scale.set(20, 30, 20); tw.position.set(qx, h + 15, qz); tw.castShadow = true; scene.add(tw); const lp = new THREE.Mesh(BOX, basic(0xfff1c0)); lp.scale.set(5, 4, 5); lp.position.set(qx, h + 32, qz); scene.add(lp); }
     if (b.kind === "food" || (b.kind === "garage" && !MISSIONS)) { const sign = new THREE.Mesh(BOX, basic(b.kind === "food" ? 0x8be38a : 0x4d93ff)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 34, b.y + b.h + 1); scene.add(sign); }
@@ -3818,6 +3963,7 @@ function init3d() {
     dec: pool(60, () => new THREE.Mesh(decalG, basic(0x6e0e12, { transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }))),
   });
   G3.mkN.children.forEach((m) => (m.material = m.material.clone(), m.material.opacity *= 0.45));
+  G3.mkNews = markerObj(0xff2d3d);
   G3.shopMk = MISSIONS ? [] : SHOPS.map((sh) => { const g = markerObj(sh.hex); const q = sh.at(); g.position.set(q.x, 0, q.y); return g; });
 }
 function sync3d() {
@@ -3865,10 +4011,12 @@ function sync3d() {
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
   G3.mkBar.visible = MISSIONS && started && !M.active;
+  if (G3.blinks) { const on = Math.sin(now * 4) > 0; for (const n of G3.blinks) n.visible = on; }
   if (G3.neons) { const on = Math.sin(now * 7) > -0.92 || Math.random() < 0.5; for (const n of G3.neons) n.visible = on; }
   if (G3.crabJaws) for (const c of G3.crabJaws) { c.jaw.rotation.z = -Math.abs(Math.sin(now * 3 + c.sd)) * 0.6; c.arm.rotation.x = Math.sin(now * 1.5 + c.sd) * 0.15; }
   G3.shopMk.forEach((g) => { g.visible = started; g.children[0].scale.setScalar(1 + Math.sin(now * 5) * 0.06); }); G3.mkBar.position.set(places.bar.x, 0, places.bar.y);
   G3.mkT.visible = G3.mkN.visible = false;
+  G3.mkNews.visible = !!NJ; if (NJ) { G3.mkNews.position.set(NJ.to.x, 0, NJ.to.y); G3.mkNews.scale.set(1.3, 1, 1.3); G3.mkNews.children[0].scale.setScalar(1 + Math.sin(now * 5) * 0.06); }
   if (tg && (s2.t === "goto" || s2.t === "cps")) {
     const rr = s2.t === "cps" ? 60 : s2.r && s2.r > 100 ? 60 : 32;
     G3.mkT.visible = true; G3.mkT.position.set(tg.x, 0, tg.y); G3.mkT.scale.set(rr / 32, 1, rr / 32);
@@ -4046,8 +4194,8 @@ function render3d(t) {
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
   if (started) {
-    const tg = stepTarget(), t2 = tg || (MISSIONS && !M.active ? places.bar : null);
-    if (t2) { const [sx, sy] = proj3d(t2.x, t2.y, 20); edgeArrowAt(sx, sy, tg ? "#ffd23d" : "#ff3d7f", t2); }
+    const tg = stepTarget(), t2 = tg || (NJ ? NJ.to : null) || (MISSIONS && !M.active ? places.bar : null);
+    if (t2) { const [sx, sy] = proj3d(t2.x, t2.y, 20); edgeArrowAt(sx, sy, tg ? "#ffd23d" : NJ ? "#ff2d3d" : "#ff3d7f", t2); }
     if (player.hp < 30 && !player.dead) { ctx.fillStyle = `rgba(200,0,30,${0.12 + 0.1 * Math.sin(now * 6)})`; ctx.fillRect(0, 0, W, H); }
   }
   drawMini();
@@ -4062,6 +4210,7 @@ function frame(t) {
   if (state === "factory") updFactory(dt);
   if (state === "kitchen") updKitchen(dt);
   if (state === "darts") updDarts(dt);
+  if (state === "film") updFilm(dt);
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
@@ -4071,7 +4220,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; } };
+if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, get FM() { return FM; }, filmSubject };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
