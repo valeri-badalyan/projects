@@ -73,9 +73,13 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .pad button{border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(20,18,28,.55);color:var(--ink);
   font-family:var(--display);font-size:12px;letter-spacing:.05em;touch-action:none;-webkit-user-select:none;user-select:none}
 .pad button.on{background:rgba(255,122,61,.55);border-color:var(--sunset)}
-#bFire,#bHand{width:84px;height:84px;font-size:14px;grid-column:2;grid-row:1/3}
-#bEnter{width:62px;height:62px;grid-column:1;grid-row:2}
-#bWeap{width:52px;height:52px;grid-column:1;grid-row:1}
+#bFire,#bHand{width:84px;height:84px;font-size:14px;grid-column:2;grid-row:2/4}
+#bEnter{width:62px;height:62px;grid-column:1;grid-row:3}
+#bWeap{width:52px;height:52px;grid-column:1;grid-row:2}
+#bPhone{width:62px;height:62px;grid-column:2;grid-row:1;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(77,147,255,.45);font-size:8.5px;letter-spacing:.02em}
+#bPhone svg,#phoneBtn svg{width:22px;height:22px}
+body.touch #phoneBtn{display:none}
+#phoneBtn{display:flex;align-items:center;justify-content:center}
 #bFire{background:rgba(232,51,74,.45)}
 .pad[data-mode="car"] #bFire,.pad[data-mode="car"] #bWeap{display:none}
 .pad[data-mode="foot"] #bHand{display:none}
@@ -125,6 +129,32 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 .fj-part{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border-radius:14px;background:#2c2937;border:2px solid var(--line);color:var(--ink);font-weight:800;font-size:15px;touch-action:manipulation}
 .fj-part i{display:block;width:34px;height:34px;border-radius:8px;background:var(--pc);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25)}
 .fj-part:active{border-color:var(--pc)}
+.phone{position:relative;margin:auto;width:min(340px,88vw);height:min(680px,82vh);border-radius:42px;background:#0d0c12;border:10px solid #26242e;box-shadow:0 30px 80px -20px rgba(0,0,0,.8),inset 0 0 0 2px #3a3744;display:flex;flex-direction:column;overflow:hidden}
+.ph-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:90px;height:22px;border-radius:12px;background:#0d0c12;z-index:2}
+.ph-status{display:flex;justify-content:space-between;align-items:center;padding:10px 22px 4px;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(180deg,#2a1840,#3b1d4a);font-variant-numeric:tabular-nums}
+.ph-status span:nth-child(2){color:var(--cash);margin-left:auto;margin-right:10px}
+.ph-bat{width:22px;height:11px;border:1.5px solid #fff;border-radius:3px;padding:1px;display:block}
+.ph-bat i{display:block;height:100%;width:80%;background:#8be38a;border-radius:1px}
+.ph-screen{flex:1;min-height:0;overflow:auto;background:linear-gradient(180deg,#3b1d4a 0%,#b23a5e 55%,#ff8b4f 100%);color:#fff;padding:14px 16px 18px;display:flex;flex-direction:column;gap:14px}
+.ph-screen.app{background:#16151d}
+.ph-time{font-family:var(--display);font-size:56px;text-align:center;line-height:1;margin-top:8px;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.ph-date{text-align:center;font-weight:700;opacity:.85;margin-top:-6px}
+.ph-apps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 10px;margin-top:6px}
+.ph-app{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#fff;font-size:12px;font-weight:800;padding:0}
+.ph-app i{display:flex;align-items:center;justify-content:center;width:60px;height:60px;border-radius:17px;background:var(--ac);font-style:normal;font-family:var(--display);font-size:22px;color:#fff;box-shadow:0 6px 14px rgba(0,0,0,.3),inset 0 -4px 0 rgba(0,0,0,.18)}
+.ph-bar{display:flex;align-items:center;gap:8px;margin:-4px 0 2px}
+.ph-bar button{background:none;border:0;color:var(--cop);font-weight:800;font-size:15px;padding:4px 0}
+.ph-bar h4{margin:0;font-family:var(--display);font-weight:400;font-size:19px;flex:1;text-align:center;margin-right:46px}
+.ph-list{display:flex;flex-direction:column;gap:8px}
+.ph-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:#24222e;border:1px solid var(--line);color:#fff;font-weight:800;font-size:14px;text-align:left}
+.ph-row small{display:block;font-weight:600;color:var(--muted);font-size:12px;margin-top:2px}
+.ph-row b{font-family:var(--display);font-weight:400;color:var(--warn);white-space:nowrap}
+button.ph-row:disabled{opacity:.45}
+.ph-note{margin:0;font-size:13px;color:var(--muted);font-weight:700;line-height:1.4}
+.ph-big{margin:0;font-family:var(--display);font-size:34px;color:var(--cash);text-align:center}
+#phMap{display:block;width:100%;height:auto;border-radius:14px;background:#24597a}
+.ph-home{flex:none;height:26px;background:#0d0c12;border:0;position:relative}
+.ph-home::after{content:"";position:absolute;left:50%;top:9px;transform:translateX(-50%);width:110px;height:5px;border-radius:3px;background:#fff;opacity:.7}
 .ov{align-items:flex-start}
 .ov>.card{margin:auto}
 .bet-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -172,6 +202,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
     <button type="button" id="pauseBtn" aria-label="Пауза">II</button>
     <button type="button" id="muteBtn" aria-label="Звук" aria-pressed="false">♪</button>
     <button type="button" id="viewBtn" aria-label="Вид от третьего лица">3D</button>
+    <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
   <div id="toast" role="status"></div>
@@ -182,6 +213,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
   <div class="pad" id="pad" data-mode="foot" hidden>
     <button type="button" id="bWeap">ОРУЖ</button>
     <button type="button" id="bEnter">СЕСТЬ</button>
+    <button type="button" id="bPhone" aria-label="Телефон"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg><span>ТЕЛЕФОН</span></button>
     <button type="button" id="bFire">ОГОНЬ</button>
     <button type="button" id="bHand">РУЧНИК</button>
   </div>
@@ -201,6 +233,7 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
         <dt>Пробел / мышь</dt><dd>стрелять; в машине — ручник</dd>
         <dt>F или E</dt><dd>сесть в машину или выйти</dd>
         <dt>Q</dt><dd>сменить оружие</dd>
+        <dt>T</dt><dd>телефон: такси, карта, банк, матч дня, скорая</dd>
         <dt>V</dt><dd>вид: 3D от третьего лица или 2D сверху</dd>
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
@@ -259,6 +292,15 @@ button:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
       <h3>Смена на конвейере</h3>
       <div id="fjBody"></div>
       <button type="button" class="btn alt" id="fjOut" style="flex:none">Уйти</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="phone" hidden>
+    <div class="phone" role="dialog" aria-label="Телефон">
+      <div class="ph-notch"></div>
+      <div class="ph-status"><b id="phClock">12:00</b><span id="phMoney">$0</span><span class="ph-bat"><i></i></span></div>
+      <div class="ph-screen" id="phScreen"></div>
+      <button type="button" class="ph-home" id="phHome" aria-label="Закрыть телефон"></button>
     </div>
   </div>
 
@@ -1506,9 +1548,10 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory") resume(); }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone") resume(); }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
+  if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
 addEventListener("blur", () => { for (const k in keys) keys[k] = false; stick.on = false; $("stick").hidden = true; });
@@ -1516,7 +1559,7 @@ const stick = { on: false, id: -1, ox: 0, oy: 0, x: 0, y: 0 };
 const mouse = { down: false, rdown: false, aim: false, x: 0, y: 0 };
 const camDrag = { id: -1, x: 0 };
 let touchMode = matchMedia("(pointer:coarse)").matches;
-function setTouch(on) { touchMode = on; $("pad").hidden = !on; $("stickHint").hidden = !on || stickUsed; }
+function setTouch(on) { touchMode = on; document.body.classList.toggle("touch", on); $("pad").hidden = !on; $("stickHint").hidden = !on || stickUsed; }
 let stickUsed = false;
 cv.addEventListener("pointerdown", (e) => {
   initAudio();
@@ -1555,8 +1598,8 @@ $("bWeap").addEventListener("pointerdown", (e) => { e.preventDefault(); hit.KeyQ
 setTouch(touchMode);
 
 /* ================= overlays ================= */
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone"].forEach((k) => ($(k).hidden = k !== id)); state = id; if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -1572,6 +1615,98 @@ $("cGo").addEventListener("click", () => { resume(); startMission(offer); toast(
 $("cNo").addEventListener("click", resume);
 $("shopOut").addEventListener("click", resume);
 $("stOut").addEventListener("click", resume);
+/* ===== phone ===== */
+const APPS = [
+  { id: "taxi", name: "Такси", col: "#e8b923", g: "TX" },
+  { id: "map", name: "Карта", col: "#2a7de1", g: "▲" },
+  { id: "bank", name: "Банк", col: "#2f9e5a", g: "$" },
+  { id: "match", name: "Матч дня", col: "#ff7a3d", g: "V3" },
+  { id: "ems", name: "Скорая 03", col: "#e0303e", g: "+" },
+  { id: "settings", name: "Настройки", col: "#6d6a86", g: "≡" },
+];
+const TAXI = 50;
+function gameClock() { const m = Math.floor((((dayT * 24 + 6) % 24) * 60)); return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+function taxiStops() {
+  const c = (places.cemeteries || [])[0];
+  return [
+    ["Оружейный магазин", places.bar, "guns"], ["Продукты", places.food, "food"], ["Электроника", places.electro, "electro"], ["Автосалон", places.garage, "cars"],
+    ["Стадион V3", places.stadium, "stadium"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
+    c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
+  ].filter((x) => x && x[1]);
+}
+function openPhone() { if (state !== "play") return; renderPhone("home"); showOv("phone"); }
+function togglePhone() { if (state === "phone") resume(); else openPhone(); }
+function phBar(scr, title) {
+  const bar = el("div", "ph-bar"); const back = el("button", null, "‹ Назад"); back.type = "button"; back.id = "phBack";
+  back.addEventListener("click", () => renderPhone("home")); bar.append(back, el("h4", null, title)); scr.appendChild(bar);
+}
+function phRow(title, sub, right, onClick, disabled) {
+  const r = el(onClick ? "button" : "div", "ph-row"); if (onClick) { r.type = "button"; r.addEventListener("click", onClick); r.disabled = !!disabled; }
+  const left = el("span", null, title); if (sub) left.appendChild(el("small", null, sub));
+  r.append(left); if (right != null) r.append(el("b", null, right)); return r;
+}
+function renderPhone(app) {
+  $("phClock").textContent = gameClock(); $("phMoney").textContent = fmt(money);
+  const scr = $("phScreen"); scr.innerHTML = ""; scr.classList.toggle("app", app !== "home");
+  if (app === "home") {
+    scr.append(el("div", "ph-time", gameClock()), el("div", "ph-date", "Нова-Вэ · " + ruDate(new Date())));
+    const grid = el("div", "ph-apps");
+    for (const a of APPS) { const b = el("button", "ph-app"); b.type = "button"; b.id = "app-" + a.id; const ic = el("i", null, a.g); ic.style.setProperty("--ac", a.col); b.append(ic, el("span", null, a.name)); b.addEventListener("click", () => renderPhone(a.id)); grid.appendChild(b); }
+    scr.appendChild(grid);
+    return;
+  }
+  const A = APPS.find((a) => a.id === app); phBar(scr, A.name);
+  const list = el("div", "ph-list");
+  if (app === "taxi") {
+    scr.appendChild(el("p", "ph-note", wanted > 0 ? "Таксисты не возят тех, кого ищет полиция. Сначала оторвись от копов." : `Поездка в любую точку города — ${fmt(TAXI)}. Таксист знает, как проехать через КПП.`));
+    for (const [name, at, lock] of taxiStops()) {
+      const d = Math.round((dist(at, player.inCar || player) / T) * 4);
+      list.appendChild(phRow(name, d + " м", fmt(TAXI), () => taxiTo(name, at, lock), money < TAXI || wanted > 0));
+    }
+  } else if (app === "map") {
+    const c = document.createElement("canvas"); c.id = "phMap"; c.width = c.height = N * MMS; const g = c.getContext("2d");
+    g.drawImage(mm, 0, 0);
+    const dot = (q, col, r = 5) => { if (!q) return; g.fillStyle = col; g.beginPath(); g.arc((q.x / T) * MMS, (q.y / T) * MMS, r, 0, TAU); g.fill(); g.strokeStyle = "#000"; g.lineWidth = 1.5; g.stroke(); };
+    for (const sh of SHOPS) dot(sh.at(), sh.col);
+    dot(places.hosp, "#ffffff"); dot(places.police, "#3d8bff");
+    const P = player.inCar || player; dot(P, "#ffd23d", 7);
+    scr.appendChild(c);
+    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Завод З", "#5de0d0"], ["Больница", "#ffffff"]];
+    const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
+    scr.appendChild(lg); scr.appendChild(el("p", "ph-note", "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП."));
+  } else if (app === "bank") {
+    scr.append(el("p", "ph-note", "Баланс"), el("p", "ph-big", fmt(money)));
+    const gd = { scanner: "Полицейский сканер", gps: "GPS-навигатор", radio: "Автомагнитола", laptop: "Ноутбук" };
+    const own = Object.keys(gd).filter(gadget).map((k) => gd[k]);
+    list.appendChild(phRow("Машины", ownCars().map((o) => CT[o.type].name).join(", ") || "пока нет", String(ownCars().length)));
+    list.appendChild(phRow("Гаджеты", own.join(", ") || "пока нет", String(own.length)));
+    list.appendChild(phRow("Оружие", player.weapons.filter((w) => w !== "fist").map((w) => WEAP[w].name + " · " + player.ammo[w]).join(", ") || "только кулаки", null));
+  } else if (app === "match") {
+    const key = dayKey(), m = genMatch(key), st = save.stadium && save.stadium.day === key ? save.stadium : null;
+    scr.appendChild(el("p", "ph-note", "Стадион V3 · " + ruDate(new Date())));
+    scr.appendChild(el("p", "ph-big", "V3 — " + m.opp)).style.fontSize = "22px";
+    if (st) list.appendChild(phRow("Матч сыгран", st.pick ? (st.paid ? "Ставка сыграла: +" + fmt(st.paid) : "Ставка не сыграла") : "Ты был на трибуне", `${m.a}:${m.b}`));
+    else { list.appendChild(phRow("Победа V3", null, "×" + m.odds.home.toFixed(2))); list.appendChild(phRow("Ничья", null, "×" + m.odds.draw.toFixed(2))); list.appendChild(phRow("Победа гостей", null, "×" + m.odds.away.toFixed(2))); scr.appendChild(el("p", "ph-note", "Билет $20 — у белой метки V3 возле стадиона.")); }
+  } else if (app === "ems") {
+    const full = player.hp >= 100;
+    scr.appendChild(el("p", "ph-note", "Скорая приедет туда, где ты стоишь, и поставит на ноги."));
+    list.appendChild(phRow("Вызвать скорую", full ? "Ты и так здоров" : "Здоровье " + Math.round(player.hp) + " → 100", "$100", () => { money -= 100; player.hp = 100; sfx.cash(); writeSave(); resume(); toast("Скорая подлатала тебя. Здоровье 100", 2.4); }, full || money < 100));
+  } else if (app === "settings") {
+    list.appendChild(phRow("Вид", mode3d ? "3D от третьего лица" : "2D сверху", "сменить", () => { setView(!mode3d); setTimeout(() => state === "phone" && renderPhone("settings"), 300); }));
+    list.appendChild(phRow("Звук", muted ? "выключен" : "включён", "сменить", () => { initAudio(); toggleMute(); renderPhone("settings"); }));
+  }
+  scr.appendChild(list);
+}
+function taxiTo(name, at, lock) {
+  if (money < TAXI || wanted > 0) return;
+  if (player.inCar) exitCar(true);
+  money -= TAXI; player.x = at.x; player.y = at.y; shopLock = lock; cam.x = at.x; cam.y = at.y; cam3.init = false; cam3.yaw = -Math.PI / 2;
+  writeSave(); resume(); sfx.door(); big("ТАКСИ", "Приехали: " + name, "#f5c518", 1.8);
+}
+$("phoneBtn").addEventListener("click", () => { initAudio(); togglePhone(); });
+$("bPhone").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); togglePhone(); });
+$("phHome").addEventListener("click", resume);
+$("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
 $("fjOut").addEventListener("click", () => { if (FJ && FJ.on) { FJ.on = false; FJ.done = true; money += FJ.score * PAY; writeSave(); } FJ = null; resume(); });
 $("mSkip").addEventListener("click", () => { if (MT && !MT.done) finishMatch(); else exitMatch(); });
 let started = false;
