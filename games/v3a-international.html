@@ -654,13 +654,15 @@ const CITIES = [
   { id: "tyo", name: "Токио", country: "Япония", flag: "🇯🇵", lat: 35.68, lon: 139.69, seed: 12501, roofs: PAL.asia, tall: 1.55, rain: 0.6, walk: "#a3a3a8", water: "#2f5a78", taxi: "#2b6b3f", slogan: "Неоновые улицы, дрифт и самые вежливые таксисты." },
   { id: "osa", name: "Осака", country: "Япония", flag: "🇯🇵", lat: 34.69, lon: 135.5, seed: 12502, roofs: PAL.asia, tall: 1.25, rain: 0.55, walk: "#a8a6a8", water: "#2f5f7a", taxi: "#2b6b3f", slogan: "Кухня Японии, огни Дотонбори и каналы." },
   { id: "sha", name: "Шанхай", country: "Китай", flag: "🇨🇳", lat: 31.23, lon: 121.47, seed: 12601, roofs: PAL.asia, tall: 1.7, rain: 0.55, walk: "#a8a59f", water: "#3a5a5a", taxi: "#3d8bff", slogan: "Набережная Вайтань и лес небоскрёбов над рекой." },
+  { id: "nve", name: "Нова-Э", country: "Республика V3", flag: "🌾", lat: 43.9, lon: 35.6, seed: 12901, roofs: ["#7a3a2a", "#3f6a4a", "#4a5a7a", "#8a5a3a", "#6a2a2a", "#5a6a3a"], tall: 0.25, rain: 0.8, walk: "#a89a78", grass: "#6f9a4a", water: "#3f6a8a", taxi: "#e8e3d6", slogan: "Деревня с 1890 года: тишина, поля, маленький храм и магазинчик у дороги.",
+    village: true, style: "village", sea: [], land: "#7a9a4a", bus: "#e8b923", lms: [], food: ["Парное молоко с пирожком", "МП"], traffic: ["compact", "van", "compact", "sedan"] },
   { id: "hero", name: "Хиротаун", country: "Вселенная героев", flag: "🦸", lat: 37, lon: -55, seed: 12801, roofs: ["#e8433a", "#2a6fd6", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#3dd8ff", "#f2f2f2"], tall: 1.5, rain: 0.4, walk: "#c8c0d0", water: "#2a5aa8", taxi: "#ffd23d", slogan: "Город супергероев: над крышами летают герои, а на стенах — взрывы из комиксов.",
     lang: "en", style: "comic", river: "Река Героев", sea: ["s", "e"], land: "#6a8a5a", bus: "#e8433a", stadium: "Арена Героев", ring: { col: "#2a6fd6", glow: "#ffd23d" }, food: ["Супер-бургер героя", "SB"], lms: ["herotower", "heroplaza", "comicstreet", "meteor"], back: ["heroflyers"], tz: -4 },
   { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
     dream: true, style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["kingpine", "dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
 const CITY = CITIES.find((c) => c.id === save.city) || CITIES[0];
-CITY.shuffle = CITY.id !== "nova";
+CITY.shuffle = CITY.id !== "nova" && !CITY.village;
 CITY.water = CITY.water || "#24597a"; CITY.walk = CITY.walk || "#a69c8e"; CITY.grass = CITY.grass || "#5f8f4b";
 function flightKm(c) {
   const r = Math.PI / 180, a = Math.sin(((c.lat - CITY.lat) * r) / 2) ** 2 + Math.cos(CITY.lat * r) * Math.cos(c.lat * r) * Math.sin(((c.lon - CITY.lon) * r) / 2) ** 2;
@@ -1224,6 +1226,21 @@ const LMS = {
       for (const dz of [-14, 14]) B.sph(B.M("#fff1c0", { neon: true }), 128 + 31, 128 + dz, 5, y0 + 458);
       B.cyl(B.M("#2a3a4a", { glow: "#ffe9a8" }), 128, 128, 37, 37, 8, y0 + 440, 24);
     } },
+  vtemple: { name: "Храм Нова-Э", info: "маленький храм, построен в 1890 году вместе с деревней", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#f2efe6", base: "#7a8a5a", h: 150,
+    ground(g, b) { g.fillStyle = "#b8a888"; g.fillRect(b.x + 116, b.y + 192, 24, 64); g.strokeStyle = "#5a4a3a"; g.lineWidth = 3; g.strokeRect(b.x + 16, b.y + 16, 224, 224); },
+    d2(Q) { Q.box(128, 140, 64, 90, 46, "#3f7a5a", "#f2efe6"); Q.box(128, 92, 34, 34, 70, "#3f7a5a", "#f2efe6"); Q.cyl(128, 140, 10, 76, GOLD, "#f2efe6", 46); Q.cyl(128, 92, 6, 108, GOLD, "#f2efe6", 70); },
+    d3(B) {
+      const W = B.M("#f2efe6"), G = "#3f7a5a", gold = B.M(GOLD, { glow: "#ffcc55" }), win = B.M("#3a4a5a", { glow: "#ffd89a" });
+      B.box(W, 128, 140, 60, 86, 44);
+      for (const z of [116, 140, 164]) for (const x of [97.6, 158.4]) { B.box(win, x, z, 1.2, 8, 16, 16); B.sph(win, x, z, 4, 32, 0.15, 1, 1); }
+      B.box(win, 128, 77.4, 6, 1, 10, 50); B.gable(G, 128, 140, 64, 90, 22, 44, false);
+      B.cyl("#f2efe6", 128, 150, 11, 11, 14, 54, 12); B.onion(gold, 128, 150, 9, 68, gold);
+      B.box(W, 128, 92, 30, 30, 70); B.box(B.M("#2a2620"), 128, 92, 31, 18, 12, 52); B.sph(B.M("#c8a040"), 128, 92, 4, 56, 1, 1.2, 1);
+      B.pyr(G, 128, 92, 32, 32, 30, 70); B.onion(gold, 128, 92, 5, 98, gold);
+      B.box(B.M("#5a3a24"), 128, 76.8, 12, 1, 22, 0);
+      B.plane(B.M("#ffffff", { map: B.X.txt("1890", "#3a3020", "#e8dcc0", 256, 96, 70) }), 128, 76.6, 16, 6, 26, 0);
+      for (let i = 0; i < 6; i++) B.cone("#2f5a2f", 40 + (i % 3) * 88, 40 + Math.floor(i / 3) * 176, 12, 40, 0, 8);
+    } },
   kingpine: { name: "Король Сосна", info: "сосна высотой 30 метров, самое высокое дерево Страны снов, на макушке — корона", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#2f6a3a", base: "#3a5a2a", h: 380, nofog: true,
     ground(g, b) { g.fillStyle = "rgba(60,30,20,.25)"; g.beginPath(); g.arc(b.x + 128, b.y + 128, 110, 0, TAU); g.fill(); g.fillStyle = "#6a3a20"; for (let i = 0; i < 14; i++) { const a = (i * TAU) / 14; g.beginPath(); g.ellipse(b.x + 128 + Math.cos(a) * 96, b.y + 128 + Math.sin(a) * 96, 5, 7, a, 0, TAU); g.fill(); } },
     d2(Q) { Q.cyl(128, 128, 14, 60, "#6a4428", "#4a2e1a"); for (let i = 0; i < 7; i++) Q.circ(128, 128, 96 - i * 12, 70 + i * 40, i % 2 ? "#2f6a3a" : "#3a7a44"); Q.circ(128, 128, 12, 345, GOLD); for (let k = 0; k < 6; k++) { const a = (k * TAU) / 6; Q.circ(128 + Math.cos(a) * 12, 128 + Math.sin(a) * 12, 4, 352, "#fff07a"); } },
@@ -1473,6 +1490,7 @@ const BACK2D = {
 const BACKPOS = { liberty: [WORLD * 0.22, WORLD + 560], burjalarab: [WORLD * 0.72, WORLD + 420], pier: [WORLD * 0.6, WORLD + 200], sugarloaf: [WORLD + 640, WORLD + 700] };
 function drawBack2D() { for (const k of CITY.back || []) if (BACK2D[k]) { const [x, y] = BACKPOS[k]; if (!offscreen(x, y, 500)) BACK2D[k](x, y); } }
 function groundHooks() {
+  if (CITY.village) villageGround();
   for (const b of blds) if (b.kind === "lm" && LMS[b.lm].ground && !(b.x > view.x + view.w + 300 || b.x + b.w < view.x - 300 || b.y > view.y + view.h + 300 || b.y + b.h < view.y - 300)) { ctx.save(); LMS[b.lm].ground(ctx, b); ctx.restore(); }
 }
 function extraTile(x, y, t, px, py) {
@@ -1489,6 +1507,7 @@ function tree2d(t) {
   const g = ctx;
   if (t.kind === "palm") { g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.arc(t.x + 8, t.y + 8, 15, 0, TAU); g.fill(); g.strokeStyle = "#3f8a3a"; g.lineWidth = 4; g.lineCap = "round"; for (let k = 0; k < 7; k++) { const a = (k * TAU) / 7 + t.hue * 3; g.beginPath(); g.moveTo(t.x, t.y); g.quadraticCurveTo(t.x + Math.cos(a) * 12, t.y + Math.sin(a) * 12 - 4, t.x + Math.cos(a) * 19, t.y + Math.sin(a) * 19); g.stroke(); } g.lineCap = "butt"; g.fillStyle = "#6b4a32"; g.beginPath(); g.arc(t.x, t.y, 3, 0, TAU); g.fill(); return true; }
   if (t.kind === "pine") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 9, t.y + 9, t.r * 1.3, 0, TAU); g.fill(); g.fillStyle = "#2f5a2f"; g.beginPath(); g.ellipse(t.x, t.y, t.r * 1.35, t.r * 1.2, t.hue * 3, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,.08)"; g.beginPath(); g.arc(t.x - 4, t.y - 4, t.r * 0.6, 0, TAU); g.fill(); return true; }
+  if (t.kind === "hay") { g.fillStyle = "rgba(0,0,0,.2)"; g.beginPath(); g.arc(t.x + 5, t.y + 5, 13, 0, TAU); g.fill(); g.fillStyle = "#e0c060"; g.beginPath(); g.arc(t.x, t.y, 13, 0, TAU); g.fill(); g.strokeStyle = "rgba(120,90,30,.5)"; g.lineWidth = 1.5; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(t.x, t.y, 3 + k * 2, 0, TAU); g.stroke(); } return true; }
   if (t.kind === "candy") { const c = ["#ff7ad8", "#c88aff", "#7af0e0", "#ffb0e8"][(t.hue * 4) | 0]; g.fillStyle = "rgba(80,0,80,.25)"; g.beginPath(); g.arc(t.x + 6, t.y + 6, t.r, 0, TAU); g.fill(); g.fillStyle = c; g.beginPath(); g.arc(t.x, t.y, t.r, 0, TAU); g.fill(); g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 2; g.beginPath(); g.arc(t.x, t.y, t.r * 0.55, 0, TAU * 0.8); g.stroke(); return true; }
   if (t.kind === "sakura" || t.kind === "apple") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 6, t.y + 6, t.r, 0, TAU); g.fill(); g.fillStyle = t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"; g.beginPath(); g.arc(t.x, t.y, t.r, 0, TAU); g.fill(); if (t.kind === "apple") { g.fillStyle = "#d8302a"; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(t.x + Math.cos(k * 1.7) * t.r * 0.6, t.y + Math.sin(k * 1.7) * t.r * 0.6, 2, 0, TAU); g.fill(); } } else { g.fillStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.arc(t.x - t.r * 0.3, t.y - t.r * 0.3, t.r * 0.45, 0, TAU); g.fill(); } return true; }
   if (t.kind === "parasol") { const c = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d"][(t.hue * 5) | 0]; for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : c; g.beginPath(); g.moveTo(t.x, t.y); g.arc(t.x, t.y, 13, (k * TAU) / 8, ((k + 1) * TAU) / 8); g.closePath(); g.fill(); } g.fillStyle = "#f2f2f2"; g.fillRect(t.x + 8, t.y + 6, 7, 14); return true; }
@@ -1508,6 +1527,7 @@ function tree3d(K, t) {
     return true;
   }
   if (t.kind === "pine") { add(K.TRUNK, mat("#6b4a32"), t.x, 20, t.y).scale.set(0.8, 2, 0.8); const c = add(K.SPH, mat("#2f5a2f"), t.x, 44, t.y); c.scale.set(t.r * 1.5, t.r * 0.45, t.r * 1.4); return true; }
+  if (t.kind === "hay") { const m = mat("#e0c060"); add(K.HAYG || (K.HAYG = new THREE.CylinderGeometry(13, 15, 14, 14)), m, t.x, 7, t.y); add(K.HEMI, m, t.x, 14, t.y).scale.set(13, 10, 13); return true; }
   if (t.kind === "candy") { add(K.TRUNK, mat("#f2f2ff"), t.x, 10, t.y).scale.set(0.6, 1, 0.6); const c = add(K.SPH, K.candyMat[(t.hue * 4) | 0] || mat("#ff7ad8"), t.x, 24 + t.r * 0.6, t.y); c.scale.set(t.r * 1.15, t.r, t.r * 1.15); return true; }
   if (t.kind === "sakura" || t.kind === "apple") { add(K.TRUNK, mat("#5a3a2a"), t.x, 10, t.y); const c = add(K.CROWN, mat(t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"), t.x, 20 + t.r * 0.7, t.y); c.scale.setScalar(t.r * 1.15); if (t.kind === "apple") for (let k = 0; k < 5; k++) add(K.SPH, mat("#d8302a"), t.x + Math.cos(k * 1.3) * t.r * 0.9, 20 + t.r * 0.5, t.y + Math.sin(k * 1.3) * t.r * 0.9).scale.setScalar(1.8); return true; }
   if (t.kind === "parasol") { add(K.BOX, mat("#dddddd"), t.x, 12, t.y).scale.set(0.8, 24, 0.8); const u = add(K.UMB || (K.UMB = new THREE.ConeGeometry(14, 6, 8)), mat(["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d"][(t.hue * 5) | 0]), t.x, 25, t.y); add(K.BOX, mat("#f2f2f2"), t.x + 11, 2, t.y + 10).scale.set(6, 2, 14); return true; }
@@ -1767,6 +1787,7 @@ const STYLES = {
   soviet: { walls: ["#c8c8c0", "#d8d4c8", "#b8b4aa", "#e0dcd0", "#c8bca8"], win: "panel", roof: "flat" },
   asia: { walls: ["#d8d8d8", "#a8a8a8", "#c8c4bc", "#6a6a72", "#e8e4dc"], win: "plain", roof: "neon" },
   comic: { walls: ["#e8433a", "#2a6fd6", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#3dd8ff", "#f2f2f2"], win: "plain", roof: "comic" },
+  village: { walls: ["#b8885a", "#a87848", "#c89868", "#e8dcc0", "#9a6a40"], win: "shutter", roof: "hip", roofCol: "#7a3a2a" },
   dream: { walls: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0"], win: "arch", roof: "dreamneon" },
   deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
 };
@@ -1956,6 +1977,54 @@ function updLift(dt) {
   if (!mode3d) { const S = places.statue; cam.x = S.x; cam.y = S.y + 60; cam.z = lerp(0.8, 0.22, L.h / 70); }
 }
 $("lfDown").addEventListener("click", () => { if (!LIFT || LIFT.ph !== "top") return; LIFT.ph = "down"; LIFT.t = 0; $("lfDown").hidden = true; $("lfTitle").textContent = "Лифт спускается"; $("lfNote").textContent = "Двери откроются у подножия статуи."; tone(440, 220, 5, 0.03, "sine"); });
+/* ===== the village of Nova-E ===== */
+const crops = new Map(), yards = [];
+function villageBlock(x0, y0, ix, iy) {
+  fill(ix, iy, 4, 4, GRASS);
+  const r0 = srnd();
+  if (r0 < 0.45) { // a field
+    const crop = ["wheat", "potato", "sun", "wheat"][(srnd() * 4) | 0];
+    for (let y = iy; y < iy + 4; y++) for (let x = ix; x < ix + 4; x++) crops.set(y * N + x, crop);
+    if (crop === "wheat") for (let k = 0; k < 3; k++) addTree((ix + 0.6 + srnd() * 2.8) * T, (iy + 0.6 + srnd() * 2.8) * T, 9, "hay");
+  } else { // a yard with a wooden house, a vegetable garden and apple trees
+    const hx = ix + (srnd() < 0.5 ? 0 : 2), hy = iy + (srnd() < 0.5 ? 0 : 2);
+    addB(hx, hy, 2, 2, "bld");
+    const gx = hx === ix ? ix + 2 : ix, gy = hy === iy ? iy + 2 : iy;
+    for (let y = gy; y < gy + 2; y++) for (let x = gx; x < gx + 2; x++) crops.set(y * N + x, "garden");
+    addTree((hx === ix ? ix + 3.4 : ix + 0.6) * T, (hy === iy ? iy + 0.6 : iy + 3.4) * T, 13, "apple");
+    if (srnd() < 0.6) addTree((hx === ix ? ix + 2.6 : ix + 1.4) * T, (hy === iy ? iy + 1.2 : iy + 2.8) * T, 12, "apple");
+    yards.push([ix, iy]);
+  }
+}
+function villageShop(x0, y0, ix, iy) {
+  fill(ix, iy, 4, 4, GRASS); fill(ix, iy + 2, 4, 2, PLAZA);
+  const sd = seed; const b = addB(ix + 1, iy, 2, 2, "svc", "#a87848"); seed = sd; b.label = "МАГАЗИН"; b.labelCol = "#ffd23d"; b.h3 = 34;
+  places.food = { x: (x0 + 3) * T, y: (iy + 2.6) * T };
+  addTree((ix + 0.5) * T, (iy + 0.6) * T, 13, "apple"); addTree((ix + 3.5) * T, (iy + 0.6) * T, 13, "apple");
+  addTree((ix + 0.6) * T, (iy + 3.4) * T, 10, "table");
+}
+function villageFix() {
+  const a = places.air, at = { x: a.x, y: a.y + T * 0.9 };
+  places.bar = places.bar || at; places.hosp = places.hosp || at;
+  const lot = { x: Math.floor(a.x / T) - 3, y: Math.floor(a.y / T) - 4.5 };
+  places.barLot = places.barLot || lot; places.garageLot = places.garageLot || lot; places.garage = places.garage || at;
+}
+function villageGround() {
+  const g = ctx, vx0 = view.x - 64, vy0 = view.y - 64, vx1 = view.x + view.w + 64, vy1 = view.y + view.h + 64;
+  for (const [k, crop] of crops) {
+    const x = (k % N) * T, y = Math.floor(k / N) * T; if (x < vx0 || x > vx1 || y < vy0 || y > vy1) continue;
+    const base = { wheat: "#d8b85a", potato: "#5f8a3a", sun: "#6a8a3a", garden: "#7a5a3a" }[crop];
+    g.fillStyle = base; g.fillRect(x, y, T + 0.5, T + 0.5);
+    for (let r = 4; r < T; r += 10) {
+      if (crop === "wheat") { g.fillStyle = "rgba(255,240,170,.45)"; g.fillRect(x, y + r, T, 3); }
+      else if (crop === "potato") { g.fillStyle = "#3f6a2a"; for (let c = 4; c < T; c += 10) { g.beginPath(); g.arc(x + c, y + r + 2, 3.5, 0, TAU); g.fill(); } }
+      else if (crop === "sun") { for (let c = 5; c < T; c += 12) { g.fillStyle = "#3f6a2a"; g.beginPath(); g.arc(x + c, y + r + 3, 4.5, 0, TAU); g.fill(); g.fillStyle = "#ffd23d"; g.beginPath(); g.arc(x + c, y + r + 3, 3, 0, TAU); g.fill(); g.fillStyle = "#5a3a1a"; g.beginPath(); g.arc(x + c, y + r + 3, 1.2, 0, TAU); g.fill(); } }
+      else { g.fillStyle = "#5a3a22"; g.fillRect(x, y + r, T, 5); g.fillStyle = "#6fb04a"; for (let c = 4; c < T; c += 8) { g.beginPath(); g.arc(x + c, y + r + 2, 2.5, 0, TAU); g.fill(); } }
+    }
+  }
+  g.strokeStyle = "#6a4a2a"; g.lineWidth = 3;
+  for (const [ix, iy] of yards) { const x = ix * T + 4, y = iy * T + 4, w = 4 * T - 8; if (x > vx1 || x + w < vx0 || y > vy1 || y + w < vy0) continue; g.strokeRect(x, y, w, w); g.fillStyle = "#6a4a2a"; for (let k = 0; k <= w; k += 16) { g.fillRect(x + k - 1.5, y - 3, 3, 6); g.fillRect(x + k - 1.5, y + w - 3, 3, 6); g.fillRect(x - 3, y + k - 1.5, 6, 3); g.fillRect(x + w - 3, y + k - 1.5, 6, 3); } }
+}
 /* ===== small life of the city ===== */
 let lmLast = null, steamT = 0;
 function lmNear() {
@@ -2036,10 +2105,14 @@ if (CITY.shuffle) for (const half of [[0, 1, 2], [3, 4, 5]]) {
   keys.forEach((k, i) => { if (kinds[i] === "city") delete SPECIAL[k]; else SPECIAL[k] = kinds[i]; });
 }
 placeLandmarks();
+// the village: a bus station, a little temple, a small shop — everything else is fields and wooden houses
+if (CITY.village) { for (const k in SPECIAL) delete SPECIAL[k]; Object.assign(SPECIAL, { "2,2": "plaza", "3,2": "lm:vtemple", "2,1": "vshop" }); }
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
   const cx = (x0 + 3) * T, cy = (y0 + 3) * T;
+  if (kind === "vshop") { villageShop(x0, y0, ix, iy); continue; }
+  if (kind === "city" && CITY.village) { villageBlock(x0, y0, ix, iy); continue; }
   if (kind.startsWith("lm:")) { buildLM(kind.slice(3), x0, y0, ix, iy, bx, by); continue; }
   if (kind === "city") cityBlock(ix, iy);
   else if (kind === "bar") { addB(ix, iy, 4, 2, "bar", "#4a2a4f"); fill(ix, iy + 2, 4, 2, LOT); places.bar = { x: cx, y: (y0 + 4) * T }; places.barLot = { x: x0, y: y0 }; }
@@ -2127,7 +2200,7 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
     }
     pickupSpots.push({ x: cx, y: cy, kind: "hp" });
   }
-  else if (kind === "plaza") { places.air = { x: cx, y: (y0 + 4.5) * T }; fill(ix, iy, 4, 4, PLAZA); const sd = seed; const b = addB(ix, iy, 4, 3, "svc", "#dfe8ef"); seed = sd; b.label = airportWord(); b.labelCol = "#2a6fd6"; b.h3 = 54; b.airport = true; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 4.5) * T, kind: "cash" }); }
+  else if (kind === "plaza") { places.air = { x: cx, y: (y0 + 4.5) * T }; fill(ix, iy, 4, 4, PLAZA); const sd = seed; const b = addB(ix, iy, 4, 3, "svc", "#dfe8ef"); seed = sd; b.label = CITY.village ? "АВТОСТАНЦИЯ" : airportWord(); b.labelCol = "#2a6fd6"; b.h3 = CITY.village ? 30 : 54; b.airport = !CITY.village; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 4.5) * T, kind: "cash" }); }
 }
 
 /* the wall: splits the city into a north and a south half along the middle road; two checkpoints let you through */
@@ -2149,13 +2222,14 @@ for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
   if (t === WALK || t === PLAZA || t === GRASS || t === CEM || t === SAND) walkTiles.push([x, y]);
 }
 cityDecor();
+if (CITY.village) villageFix();
 
 /* prerendered minimap: 4 px per tile */
 const MMS = 4;
 const mm = document.createElement("canvas"); mm.width = mm.height = N * MMS;
 {
   const g = mm.getContext("2d");
-  const col = { [ROAD]: CITY.dream ? "#6a4a7e" : "#4a4955", [WALK]: shade(CITY.walk, 0.86), [GRASS]: shade(CITY.grass, 0.96), [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#a99b84", [LOT]: "#5c5b64", [CEM]: "#4c6a44" };
+  const col = { [ROAD]: CITY.dream ? "#6a4a7e" : CITY.village ? "#9a8666" : "#4a4955", [WALK]: shade(CITY.walk, 0.86), [GRASS]: shade(CITY.grass, 0.96), [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#a99b84", [LOT]: "#5c5b64", [CEM]: "#4c6a44" };
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const t = tile(x, y); if (t !== BLD) { g.fillStyle = col[t]; g.fillRect(x * MMS, y * MMS, MMS, MMS); } }
   for (const b of blds) { if (b.kind === "lm") { g.fillStyle = b.roof; for (const s of b.sol) if (s[4] !== "w") g.fillRect((b.x / T + s[0]) * MMS, (b.y / T + s[1]) * MMS, s[2] * MMS, s[3] * MMS); continue; } g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : b.kind === "fire" ? "#d7261e" : b.kind === "chapel" ? "#e8e2d4" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
 }
@@ -2517,7 +2591,7 @@ const SHOPS = [
     items: [["compact", 800, "Маленький и юркий"], ["sedan", 1500, "Надёжная городская машина"], ["van", 2000, "Большой и крепкий"], ["taxi", 1800, "Жёлтое такси с шашечками"], ["sport", 5000, "Самый быстрый в городе"], ["ters", 12000, "Элитная модель: 6 передач (автомат или ручная), встроенное радио"]].map(([type, price, info]) => ({
       id: type, name: CT[type].name, info, price, no: () => (ownCars().length >= 4 ? "Стоянка заполнена — 4 машины" : ""),
       act: () => { buyCar(type); toast(CT[type].name + " ждёт тебя на стоянке", 2.6); }, quiet: true })) },
-  { id: "food", who: "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
+  { id: "food", who: CITY.village ? "Магазинчик «У дороги» · с 1890 года" : "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
     note: "Еда лечит, энергетик даёт быстрый бег на 30 секунд.",
     items: [
       { id: "water", name: "Вода", info: "+10 здоровья", price: 5, heal: 10 },
@@ -3889,6 +3963,7 @@ function buy(sh, it) {
   writeSave(); if (state === "shop") renderShop(); updHud();
 }
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
+if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
@@ -4598,9 +4673,9 @@ function manage() {
     if ((d > 1400 || (p.dead && p.deadT > 40)) && offscreen(p.x, p.y, 40)) people.splice(i, 1);
   }
   const traffic = cars.filter((c) => c.driver === "ai").length;
-  if (traffic < 16) spawnTraffic();
+  if (traffic < (CITY.village ? 3 : 16)) spawnTraffic();
   const peds = people.filter((p) => p.kind === "ped" && !p.dead).length;
-  if (peds < 30) spawnPed();
+  if (peds < (CITY.village ? 7 : 30)) spawnPed();
   const copCars = cars.filter((c) => c.type === "cop" && c.driver === "cop" && !c.wreck).length;
   const want = [0, 1, 2, 3, 5, 7][wanted];
   if (POLICE && copCars < want) spawnTraffic("cop");
@@ -4767,7 +4842,7 @@ function taxiStops() {
     ["Аэропорт ✈", places.air, "air"], [CITY.stadium || "Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Офис WorldNews", places.news, "news"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
     c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
     ...(places.lms || []).map((l) => ["📍 " + l.name, l, null]),
-  ].filter((x) => x && x[1]);
+  ].filter((x) => x && x[1] && (!CITY.village || (x[0] !== "Больница" && (!x[2] || SHOPS.some((q) => q.id === x[2])))));
 }
 function openPhone() { if (state !== "play") return; renderPhone("home"); showOv("phone"); }
 function togglePhone() { if (state === "phone") resume(); else openPhone(); }
@@ -5190,7 +5265,7 @@ function update(dt) {
 /* ================= render ================= */
 function toWorld(sx, sy) { return { x: view.x + sx / view.s, y: view.y + sy / view.s }; }
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-const GROUND = { [ROAD]: CITY.dream ? "#5a3a6e" : "#3b3a44", [WALK]: CITY.walk, [GRASS]: CITY.grass, [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#bcae96", [LOT]: "#4f4e57", [CEM]: "#536f48" };
+const GROUND = { [ROAD]: CITY.dream ? "#5a3a6e" : CITY.village ? "#8a7656" : "#3b3a44", [WALK]: CITY.walk, [GRASS]: CITY.grass, [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#bcae96", [LOT]: "#4f4e57", [CEM]: "#536f48" };
 function drawGround() {
   const x0 = Math.max(0, Math.floor(view.x / T)), y0 = Math.max(0, Math.floor(view.y / T));
   const x1 = Math.min(N - 1, Math.floor((view.x + view.w) / T)), y1 = Math.min(N - 1, Math.floor((view.y + view.h) / T));
@@ -5202,6 +5277,8 @@ function drawGround() {
       ctx.fillStyle = "#c9c0b2";
       if (tile(x, y - 1) === ROAD) ctx.fillRect(px, py, T, 4); if (tile(x, y + 1) === ROAD) ctx.fillRect(px, py + T - 4, T, 4);
       if (tile(x - 1, y) === ROAD) ctx.fillRect(px, py, 4, T); if (tile(x + 1, y) === ROAD) ctx.fillRect(px + T - 4, py, 4, T);
+    } else if (t === ROAD && CITY.village) {
+      ctx.fillStyle = "rgba(0,0,0,.08)"; if ((x * 7 + y * 3) % 4 === 0) ctx.fillRect(px + 10, py + 22, 14, 6); ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(px + ((x * 13) % 40), py + ((y * 11) % 40), 8, 3);
     } else if (t === ROAD) {
       const hR = isR(y), vR = isR(x);
       ctx.fillStyle = "rgba(255,255,255,.035)"; if ((x * 7 + y * 13) % 5 === 0) ctx.fillRect(px + 12, py + 20, 18, 9);
@@ -5803,6 +5880,7 @@ function init3d() {
     const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food" || b.kind === "fire" || b.kind === "svc";
     let h = b.h3 ? b.h3 : b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
     if (b.kind === "bld" && CITY.style === "haussmann") h = 72 + Math.round(hsh(b.x, b.y, 4) * 22);
+    if (b.kind === "bld" && CITY.village) h = 30 + Math.round(hsh(b.x, b.y, 4) * 16);
     const geo = new THREE.BoxGeometry(b.w, h, b.h);
     if (b.kind !== "cont") {
       const uv = geo.attributes.uv;
