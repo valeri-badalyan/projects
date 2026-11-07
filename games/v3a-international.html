@@ -379,12 +379,12 @@ button.ph-row:disabled{opacity:.45}
         <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
-        <dt>T</dt><dd>телефон: такси, карта, банк, матч дня, скорая, рейсы ✈</dd>
+        <dt>T</dt><dd>телефон: такси, карта, банк, матч каждую минуту, скорая, рейсы ✈</dd>
         <dt>V</dt><dd>вид: 3D от третьего лица или 2D сверху</dd>
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Хочешь снимать новости — зайди в офис WorldNews, метка <b style="color:#ff4a5a">WN</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции. <b style="color:#5ad0ff">✈ Аэропорт</b> на площади с фонтаном (или приложение «Рейсы» в телефоне) летает в 24 города 18 стран, включая неоновый Сновстол в Стране снов. Деньги, машины и вещи летят с тобой, а квартиру можно купить в каждом городе. В каждом городе — настоящие достопримечательности (жёлтые точки на карте), реки и мосты, пляжи, горы на горизонте, местные вывески, местное время, местная еда в «Продуктах», а в Лондоне и Японии — левостороннее движение.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с новым матчем каждую минуту — белая метка <b>V3</b>. Хочешь снимать новости — зайди в офис WorldNews, метка <b style="color:#ff4a5a">WN</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции. <b style="color:#5ad0ff">✈ Аэропорт</b> на площади с фонтаном (или приложение «Рейсы» в телефоне) летает в 24 города 18 стран, включая неоновый Сновстол в Стране снов. Деньги, машины и вещи летят с тобой, а квартиру можно купить в каждом городе. В каждом городе — настоящие достопримечательности (жёлтые точки на карте), реки и мосты, пляжи, горы на горизонте, местные вывески, местное время, местная еда в «Продуктах», а в Лондоне и Японии — левостороннее движение.</p>
     </div>
   </div>
 
@@ -2553,11 +2553,11 @@ function tvSet(ch) {
 function tvNext() { tvSet(!TV.on ? 0 : TV.ch >= 2 ? -1 : TV.ch + 1); toast(TV.on ? `Канал ${TV.ch + 1}: ${TV_CH[TV.ch]}` : "Телевизор выключен", 1.2); }
 // The bulletin: stories about the city. Some come from what really happened in the game today, the rest are invented local news.
 function newsStories() {
-  const m = genMatch(dayKey()), st = save.stadium && save.stadium.day === m.key, out = [];
+  const m = genMatch(matchKey()), st = save.stadium && save.stadium.day === m.key, out = [];
   if (STATS.maxWanted >= 3 || STATS.booms >= 2) out.push({ tag: "СРОЧНО", pic: "police", breaking: true, title: STATS.booms >= 2 ? `Взрывы на улицах: сгорело машин — ${STATS.booms}` : `Погоня века: полиция объявила розыск ${STATS.maxWanted} ★`,
     lines: [STATS.booms >= 2 ? "Сегодня в " + CITY.name + " одна за другой взрывались машины." : "Полиция всю смену гонялась за неизвестным водителем.", `Всего за день — ${STATS.chases} погонь и ${STATS.jacks} угонов.`, "Шеф полиции призывает горожан запирать машины и не выходить на проезжую часть."] });
-  out.push({ tag: "СПОРТ", pic: "stadium", title: st ? `V3 сыграл с «${m.opp}» — ${m.a}:${m.b}` : `Матч дня: V3 принимает «${m.opp}»`,
-    lines: st ? [`Стадион V3 гудел весь вечер: финальный счёт ${m.a}:${m.b}.`, m.a > m.b ? "Болельщики празднуют победу прямо на трибунах." : m.a === m.b ? "Ничья — и споры о судействе уже идут в соцсетях." : "Фанаты расстроены, но тренер обещает реванш.", "Следующий матч — завтра, билеты по 20 долларов."]
+  out.push({ tag: "СПОРТ", pic: "stadium", title: st ? `V3 сыграл с «${m.opp}» — ${m.a}:${m.b}` : `Матч в ${matchTime()}: V3 принимает «${m.opp}»`,
+    lines: st ? [`Стадион V3 гудел весь вечер: финальный счёт ${m.a}:${m.b}.`, m.a > m.b ? "Болельщики празднуют победу прямо на трибунах." : m.a === m.b ? "Ничья — и споры о судействе уже идут в соцсетях." : "Фанаты расстроены, но тренер обещает реванш.", "Следующий матч — уже через минуту, билеты по 20 долларов."]
       : [`Сегодня на стадионе V3 гости — «${m.opp}».`, `Букмекеры дают ×${m.odds.home.toFixed(2)} на победу хозяев и ×${m.odds.away.toFixed(2)} на гостей.`, "Трансляция — на нашем канале Sport, билеты — у белой метки V3."] });
   out.push({ tag: "ПОГОДА", pic: WX.storm && WX.target > 0 ? "storm" : WX.target > 0 ? "rain" : "sun", title: `Погода: ${weatherName().toLowerCase()}, ${gameClock()}`,
     lines: WX.target > 0 ? ["Над городом идёт дождь, дороги скользкие.", WX.storm ? "Синоптики предупреждают о грозе — держитесь подальше от высоких мачт стадиона." : "Водителей просят сбавить скорость на поворотах.", "Прохожие уже достали зонты."] : ["В " + CITY.name + " ясно и тепло.", "Синоптики говорят: дождь может начаться в любой момент.", "Зонт лучше держать под рукой."] });
@@ -2683,7 +2683,7 @@ function tvNews(g, W, H, t) {
   g.fillStyle = "rgba(255,255,255,.7)"; g.font = "bold 9px Manrope,sans-serif"; g.textAlign = "right"; g.fillText(`сюжет ${si + 1}/${stories.length}`, W - 10, 34);
 }
 function tvSport(g, W, H, dt) {
-  const m = genMatch(dayKey()), LOOP = 60;
+  const m = genMatch(matchKey()), LOOP = 60;
   if (!TV.sim) {
     const pl = []; for (const home of [true, false]) FORM.forEach(([x, y], i) => { const hx = home ? x : PW - x; pl.push({ home, gk: i === 0, hx, hy: y, x: hx, y }); });
     commSay(COMM.kickoff(m.opp), { priority: true, vol: 0.85 });
@@ -3270,8 +3270,8 @@ function tubeVideos() {
   const tour = ["tower", "stadium", "crab", "port", "factory", "chapel", "wall", "sun"].filter((k) => CITY.wall || k !== "wall");
   v.push({ id: "vlog-" + CITY.id, title: `Влог: один день в городе ${CITY.name} ${CITY.flag}`, ch: "V3A Travel", views: "1,4 млн", len: 24, wide: true,
     draw: (g, w, h, t) => { const k = Math.floor(t / 4) % tour.length; newsPic(g, tour[k], 0, 0, w, h, t); g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(0, h - 26, w, 26); g.fillStyle = "#fff"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(((places.lms && places.lms[Math.floor(t / 4) % Math.max(1, places.lms.length)]) || { name: CITY.name }).name, 10, h - 13); } });
-  v.push({ id: "match", title: "Матч дня: все голы за 30 секунд", ch: "V3 Sport", views: "860 тыс.", len: 30, wide: true,
-    draw: (g, w, h, t) => { drawPitch(g, 0, 0, w, h); const m = genMatch(dayKey()), bx = w / 2 + Math.sin(t * 1.3) * w * 0.38, by = h / 2 + Math.sin(t * 2.1) * h * 0.3; for (let i = 0; i < 12; i++) { const home = i < 6; g.fillStyle = home ? "#ff7a3d" : "#3d6dff"; g.beginPath(); g.arc(bx + Math.cos(i * 1.7 + t) * (30 + i * 6) * (home ? -1 : 1) * 0.6, by + Math.sin(i * 2.3 + t * 0.8) * h * 0.25, 5, 0, TAU); g.fill(); } g.fillStyle = "#fff"; g.beginPath(); g.arc(bx, by, 3.5, 0, TAU); g.fill(); g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(6, 6, 150, 20); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; const goals = m.goals.filter((q) => q.min <= (t / 30) * 90); g.fillText(`V3 ${goals.filter((q) => q.home).length}:${goals.filter((q) => !q.home).length} ${m.opp}`, 12, 16, 140); if (goals.length && (t / 30) * 90 - goals[goals.length - 1].min < 6) { g.fillStyle = "#ffd23d"; g.font = "32px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("ГОЛ!", w / 2, h / 2); } } });
+  v.push({ id: "match", title: "Прошлый матч: все голы за 30 секунд", ch: "V3 Sport", views: "860 тыс.", len: 30, wide: true,
+    draw: (g, w, h, t) => { drawPitch(g, 0, 0, w, h); const m = genMatch(matchKey(new Date(Date.now() - 60000))), bx = w / 2 + Math.sin(t * 1.3) * w * 0.38, by = h / 2 + Math.sin(t * 2.1) * h * 0.3; for (let i = 0; i < 12; i++) { const home = i < 6; g.fillStyle = home ? "#ff7a3d" : "#3d6dff"; g.beginPath(); g.arc(bx + Math.cos(i * 1.7 + t) * (30 + i * 6) * (home ? -1 : 1) * 0.6, by + Math.sin(i * 2.3 + t * 0.8) * h * 0.25, 5, 0, TAU); g.fill(); } g.fillStyle = "#fff"; g.beginPath(); g.arc(bx, by, 3.5, 0, TAU); g.fill(); g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(6, 6, 150, 20); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; const goals = m.goals.filter((q) => q.min <= (t / 30) * 90); g.fillText(`V3 ${goals.filter((q) => q.home).length}:${goals.filter((q) => !q.home).length} ${m.opp}`, 12, 16, 140); if (goals.length && (t / 30) * 90 - goals[goals.length - 1].min < 6) { g.fillStyle = "#ffd23d"; g.font = "32px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("ГОЛ!", w / 2, h / 2); } } });
   v.push({ id: "wn", title: "WorldNews: главное за неделю", ch: "WorldNews", views: "2,1 млн", len: 36, wide: true, draw: (g, w, h, t) => { const pics = ["police", "fire", "factory", "crab", "port", "chapel"]; newsPic(g, pics[Math.floor(t / 6) % pics.length], 0, 0, w, h, t); g.fillStyle = "#c8102e"; g.fillRect(0, h - 22, w, 22); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("WORLD NEWS · " + CITY.name.toUpperCase(), 8, h - 11); } });
   for (const rp of save.reports || []) v.push({ id: "my-" + rp.title, title: rp.title, ch: "Мой канал", views: (120 + rp.title.length * 37) + " просмотров", len: 12, wide: true, mine: true, draw: (g, w, h, t) => { newsPic(g, rp.pic, 0, 0, w, h, t); g.fillStyle = "#ff2d3d"; g.beginPath(); g.arc(14, 14, 5, 0, TAU); g.fill(); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("REC · мой репортаж", 24, 14); } });
   SHORTS.forEach((sh, i) => v.push({ id: "sh" + i, title: sh.title, ch: sh.by, views: sh.likes + " лайков", len: 6, short: true, draw: (g, w, h, t) => { g.fillStyle = "#0f0f12"; g.fillRect(0, 0, w, h); const fw = Math.round((h * 9) / 16), fx = (w - fw) / 2; g.save(); g.translate(fx, 0); g.beginPath(); g.rect(0, 0, fw, h); g.clip(); sh.draw(g, fw, h, t % 6); g.restore(); g.fillStyle = "#e0213b"; g.fillRect(6, 6, 46, 16); g.fillStyle = "#fff"; g.font = "bold 10px Manrope,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("Shorts", 29, 14); } }));
@@ -3658,6 +3658,9 @@ function rngFrom(str) {
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const matchCache = new Map();
+// a new match every minute: the key is the date plus the hour and minute
+const matchKey = (d = new Date()) => dayKey(d) + "T" + String(d.getHours()).padStart(2, "0") + String(d.getMinutes()).padStart(2, "0");
+const matchTime = (d = new Date()) => String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
 function genMatch(key) {
   if (matchCache.has(key)) return matchCache.get(key);
   const r = rngFrom("v3-stadium-" + key);
@@ -3680,16 +3683,16 @@ let stPick = null, stAmt = 0;
 function openStadium() { stPick = null; stAmt = 0; renderStadium(); showOv("stadium"); }
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 function renderStadium() {
-  const now0 = new Date(), key = dayKey(now0), m = genMatch(key);
+  const now0 = new Date(), key = matchKey(now0), m = genMatch(key);
   const st = save.stadium && save.stadium.day === key ? save.stadium : null;
-  $("stWho").textContent = (CITY.stadium || "Стадион V3") + " · матч дня, " + ruDate(now0);
+  $("stWho").textContent = (CITY.stadium || "Стадион V3") + " · матч в " + matchTime(now0) + " · каждую минуту новый";
   $("stTeams").textContent = "V3 " + CITY.name + " — " + m.opp;
   const box = $("stBody"); box.innerHTML = "";
   box.appendChild(el("p", "prog", "У тебя: " + fmt(money)));
   if (st) {
     box.appendChild(el("p", "st-final", `Матч сыгран: V3 ${m.a}:${m.b} ${m.opp}`));
     if (st.pick) box.appendChild(el("p", st.paid ? "bonus" : "prog", st.paid ? `Ставка «${PICK_NAME[st.pick]}» сыграла: +${fmt(st.paid)}` : `Ставка «${PICK_NAME[st.pick]}» не сыграла (−${fmt(st.amt)})`));
-    box.appendChild(el("p", "prog", "Следующий матч — завтра. Стадион V3 играет каждый день."));
+    box.appendChild(el("p", "prog", `Следующий матч — через ${60 - now0.getSeconds()} с. Стадион V3 играет каждую минуту.`));
   } else {
     box.appendChild(el("p", "prog", `Билет — ${fmt(TICKET)}. Можно поставить на исход матча: выигрыш = ставка × коэффициент.`));
     const picks = el("div", "bet-row");
@@ -3712,7 +3715,7 @@ function renderStadium() {
   }
   const hist = el("div", "hist"); hist.appendChild(el("span", "who", "Прошлые матчи"));
   const ul = el("ul");
-  for (let i = 1; i <= 5; i++) { const d = new Date(now0); d.setDate(d.getDate() - i); const pm = genMatch(dayKey(d)); ul.appendChild(el("li", null, `${ruDate(d)}: V3 ${pm.a}:${pm.b} ${pm.opp}`)); }
+  for (let i = 1; i <= 5; i++) { const d = new Date(now0); d.setMinutes(d.getMinutes() - i); const pm = genMatch(matchKey(d)); ul.appendChild(el("li", null, `${matchTime(d)}: V3 ${pm.a}:${pm.b} ${pm.opp}`)); }
   hist.appendChild(ul); box.appendChild(hist);
 }
 /* the match itself: a sped-up top-down replay on a small pitch */
@@ -3724,7 +3727,7 @@ function ensure3d(cb) {
   loadThree((ok) => { if (ok) { try { init3d(); } catch (e) { ok = false; } } cb(ok); });
 }
 function startMatch() {
-  const key = dayKey(), m = genMatch(key), amt = stPick ? stAmt : 0, cost = TICKET + amt;
+  const key = matchKey(), m = genMatch(key), amt = stPick ? stAmt : 0, cost = TICKET + amt;
   if (money < cost) return;
   $("stGo").disabled = true; $("stGo").textContent = "Проходим на трибуну…";
   ensure3d((ok) => beginMatch(ok, key, m, amt, cost));
@@ -4497,7 +4500,7 @@ const APPS = [
   { id: "taxi", name: "Такси", col: "#e8b923", g: "TX" },
   { id: "map", name: "Карта", col: "#2a7de1", g: "▲" },
   { id: "bank", name: "Банк", col: "#2f9e5a", g: "$" },
-  { id: "match", name: "Матч дня", col: "#ff7a3d", g: "V3" },
+  { id: "match", name: "Матчи", col: "#ff7a3d", g: "V3" },
   { id: "ems", name: "Скорая 03", col: "#e0303e", g: "+" },
   { id: "shop", name: "Магазин", col: "#ff3d7f", g: "М" },
   { id: "tele", name: "Телепорт", col: "#8d3fd1", g: "TP" },
@@ -4569,8 +4572,8 @@ function renderPhone(app) {
     list.appendChild(phRow("Гаджеты", own.join(", ") || "пока нет", String(own.length)));
     list.appendChild(phRow("Оружие", player.weapons.filter((w) => w !== "fist").map((w) => WEAP[w].name + " · " + player.ammo[w]).join(", ") || "только кулаки", null));
   } else if (app === "match") {
-    const key = dayKey(), m = genMatch(key), st = save.stadium && save.stadium.day === key ? save.stadium : null;
-    scr.appendChild(el("p", "ph-note", "Стадион V3 · " + ruDate(new Date())));
+    const key = matchKey(), m = genMatch(key), st = save.stadium && save.stadium.day === key ? save.stadium : null;
+    scr.appendChild(el("p", "ph-note", (CITY.stadium || "Стадион V3") + " · матч в " + matchTime() + " · следующий через " + (60 - new Date().getSeconds()) + " с"));
     scr.appendChild(el("p", "ph-big", "V3 — " + m.opp)).style.fontSize = "22px";
     if (st) list.appendChild(phRow("Матч сыгран", st.pick ? (st.paid ? "Ставка сыграла: +" + fmt(st.paid) : "Ставка не сыграла") : "Ты был на трибуне", `${m.a}:${m.b}`));
     else { list.appendChild(phRow("Победа V3", null, "×" + m.odds.home.toFixed(2))); list.appendChild(phRow("Ничья", null, "×" + m.odds.draw.toFixed(2))); list.appendChild(phRow("Победа гостей", null, "×" + m.odds.away.toFixed(2))); scr.appendChild(el("p", "ph-note", "Билет $20 — у белой метки V3 возле стадиона.")); }
