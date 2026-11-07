@@ -129,7 +129,7 @@ body.touch #bagBtn{display:none}
 .pp-f input:focus{outline:none;border-bottom-color:#5a1424}
 .pp-sig{font-family:"Brush Script MT","Segoe Script",cursive;font-size:22px;color:#2a3a7a}
 .pp-mrz{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.08em;line-height:1.4;color:#1e1a26;word-break:break-all;background:rgba(255,255,255,.4);padding:6px;border-radius:6px}
-.pp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .pp-stats div{background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center;font-size:11px;font-weight:800;color:#e8c8cc}
 .pp-stats b{display:block;font-family:var(--display);font-size:22px;color:#fff;font-weight:400}
 .pp-stamps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;border-radius:12px;background:#efe6d6}
@@ -192,6 +192,9 @@ body.touch #phoneBtn{display:none}
 #fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
 #fmCam{display:block;width:100%;max-width:384px;height:auto;margin:0 auto;border-radius:14px;touch-action:none}
 #mlCam{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:14px}
+#tmBoard{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:12px}
+#tmTabs button{flex:1 1 90px;min-height:40px;border-radius:10px;border:1px solid var(--line);background:#2c2937;color:var(--ink);font-weight:800;font-size:13px}
+#tmTabs button.on{background:#2a6fd6;border-color:#9cc6ff}
 #dtBoard{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:16px;touch-action:manipulation}
 .inv-card{width:min(100%,540px)}
 .home-card{width:min(100%,600px)}
@@ -506,6 +509,17 @@ button.ph-row:disabled{opacity:.45}
     </div>
   </div>
 
+  <div class="ov dim" id="terminal" hidden>
+    <div class="card">
+      <span class="who" id="tmWho">Аэропорт</span>
+      <h3>Терминал V3A International</h3>
+      <canvas id="tmBoard" width="360" height="230" aria-label="Табло вылетов"></canvas>
+      <div class="row" id="tmTabs"></div>
+      <div id="tmBody" class="shop-list"></div>
+      <button type="button" class="btn alt" id="tmOut" style="flex:none">Выйти из терминала</button>
+    </div>
+  </div>
+
   <div class="ov dim" id="kitchen" hidden>
     <div class="card">
       <span class="who">Кухня Crusty Crab</span>
@@ -677,6 +691,8 @@ const LANGS = {
   ka: ["იარაღის მაღაზია", "ავტოსალონი", "მარკეტი", "პოლიცია", "სახანძრო", "საავადმყოფო", "სასამართლო", "მერია", "ციხე", "ავტობუსების პარკი", "ელექტროსადგური", "საწყობი", "სასწრაფო", "ელექტრონიკა", "ელექტრონიკის ქარხანა"],
   kk: ["ҚАРУ ДҮКЕНІ", "АВТОСАЛОН", "АЗЫҚ-ТҮЛІК", "ПОЛИЦИЯ", "ӨРТ СӨНДІРУ", "АУРУХАНА", "СОТ", "ӘКІМДІК", "ТҮРМЕ", "АВТОБУС ПАРКІ", "ЭЛЕКТР СТАНСЫ", "ҚОЙМА", "ЖЕДЕЛ ЖӘРДЕМ", "ЭЛЕКТРОНИКА", "ЭЛЕКТРОНИКА ЗАУЫТЫ"],
 };
+const AIRPORT_W = { en: "AIRPORT", fr: "AÉROPORT", de: "FLUGHAFEN", it: "AEROPORTO", ca: "AEROPORT", pt: "AEROPORTO", ja: "空港", zh: "机场", tr: "HAVALİMANI", hy: "ՕԴԱՆԱՎԱԿԱՅԱՆ", ka: "აეროპორტი", kk: "ӘУЕЖАЙ" };
+function airportWord() { return AIRPORT_W[CITY.lang] || "АЭРОПОРТ"; }
 function LOC(s) { const t = LANGS[CITY.lang]; const i = LBL.indexOf(s); return t && i >= 0 ? t[i] : s; }
 function localDayT() {
   if (CITY.tz == null) return null;
@@ -1788,7 +1804,7 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
     }
     pickupSpots.push({ x: cx, y: cy, kind: "hp" });
   }
-  else if (kind === "plaza") { places.air = { x: cx, y: (y0 + 4.5) * T }; fill(ix, iy, 4, 4, PLAZA); addB(ix + 1, iy + 1, 2, 2, "fount", "#9fb8c4"); pickupSpots.push({ x: cx - T * 1.5, y: cy - T * 1.5, kind: "cash" }); }
+  else if (kind === "plaza") { places.air = { x: cx, y: (y0 + 4.5) * T }; fill(ix, iy, 4, 4, PLAZA); const sd = seed; const b = addB(ix, iy, 4, 3, "svc", "#dfe8ef"); seed = sd; b.label = airportWord(); b.labelCol = "#2a6fd6"; b.h3 = 54; b.airport = true; pickupSpots.push({ x: cx - T * 1.5, y: (y0 + 4.5) * T, kind: "cash" }); }
 }
 
 /* the wall: splits the city into a north and a south half along the middle road; two checkpoints let you through */
@@ -2211,7 +2227,7 @@ const SHOPS = [
       { id: "newsjob", name: "Взять задание", info: "Съезди на место, сними сюжет — от $60 до $250", price: 0, priceText: "задание",
         no: () => (!save.press ? "Сначала зарегистрируйся репортёром" : NJ ? "Уже есть: " + NJ.title : ""), open: () => takeNewsJob() },
     ] },
-  { id: "air", who: "Аэропорт V3A International", title: "Рейсы по всему миру", col: "#5ad0ff", hex: 0x5ad0ff, label: "✈", at: () => places.air, bonus: 0,
+  { id: "air", who: "Аэропорт V3A International", title: "Рейсы по всему миру", col: "#5ad0ff", hex: 0x5ad0ff, label: "✈", at: () => places.air, bonus: 0, open: () => openTerminal(),
     note: "Деньги, машины, оружие и сумка летят с тобой. В каждом городе — свои улицы, своя погода и свои такси.",
     items: CITIES.map((c) => ({ id: "fly-" + c.id, name: c.flag + " " + c.name, info: c.country + " · " + flightInfo(c), price: flightPrice(c), quiet: true,
       no: () => (c.id === CITY.id ? "Ты сейчас здесь" : flying ? "Посадка уже идёт" : ""), act: () => flyTo(c) })) },
@@ -2241,6 +2257,7 @@ const ITEMS = {
   milkshake: { name: "Молочный коктейль", col: "#f7d6e6", g: "МК", heal: 30 }, neon: { name: "Коктейль «Неон»", col: "#ff3d7f", g: "Н", heal: 50, boost: 20 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
 };
 for (const c of CITIES) if (c.food) ITEMS["sp_" + c.id] = { name: c.food[0], col: "#ffb347", g: c.food[1], heal: 60 };
+Object.assign(ITEMS, { df_choc: { name: "Шоколад Duty Free", col: "#8a5a3a", g: "DF", heal: 25 }, df_coffee: { name: "Кофе в дорогу", col: "#6a4a2a", g: "☕", boost: 25 }, df_sand: { name: "Сэндвич из терминала", col: "#e8c95d", g: "СВ", heal: 40 } });
 const inv = () => save.inv || (save.inv = {});
 function invAdd(id, n = 1) { inv()[id] = (inv()[id] || 0) + n; }
 function itemInfo(it) { return [it.heal ? (it.heal >= 100 ? "полное здоровье" : "+" + it.heal + " здоровья") : "", it.boost ? "быстрый бег " + it.boost + " с" : ""].filter(Boolean).join(", "); }
@@ -3241,7 +3258,7 @@ function renderPassport() {
   drawPassPhoto();
   const vis = save.visited || {}, been = CITIES.filter((c) => vis[c.id]), countries = new Set(been.map((c) => c.country));
   const st = $("ppStats"); st.innerHTML = "";
-  for (const [k, v] of [["Стран", countries.size], ["Городов", been.length + " / " + CITIES.length], ["Перелётов", save.flights || 0]]) { const dv = el("div", null, k); dv.prepend(el("b", null, String(v))); st.appendChild(dv); }
+  for (const [k, v] of [["Стран", countries.size], ["Городов", been.length + " / " + CITIES.length], ["Перелётов", save.flights || 0], ["Сувениров", Object.keys(save.souvenirs || {}).length]]) { const dv = el("div", null, k); dv.prepend(el("b", null, String(v))); st.appendChild(dv); }
   const box = $("ppStamps"); box.innerHTML = "";
   const cols = ["#2a5ab0", "#a8203a", "#2f7a4a", "#6a3aa0", "#b8601a", "#1a7a8a"];
   CITIES.forEach((c, i) => {
@@ -3282,6 +3299,89 @@ function renderBankCard(scr) {
   const dp = el("button", "btn alt", "Положить " + fmt(bankAmt)); dp.type = "button"; dp.id = "bankDeposit"; dp.disabled = money < bankAmt;
   dp.addEventListener("click", () => { if (money < bankAmt) return; money -= bankAmt; save.card = cardBal() + bankAmt; tone(660, 990, 0.08, 0.06); writeSave(); updHud(); toast("На карту зачислено " + fmt(bankAmt), 1.8); renderPhone("bank"); });
   row.append(wd, dp); scr.appendChild(row);
+}
+/* the airport terminal: departures board, check-in with take-off, duty free, souvenirs */
+let TM = null;
+const flightNo = (c) => "V3 " + (100 + ((CITIES.indexOf(c) * 37 + CITIES.indexOf(CITY) * 11) % 900));
+function openTerminal() { TM = { tab: "fly", t: 0, last: performance.now(), go: null }; $("tmWho").textContent = "Аэропорт · " + CITY.flag + " " + CITY.name; renderTerminal(); showOv("terminal"); requestAnimationFrame(tickTerminal); sfx.doorOpen(); }
+function renderTerminal() {
+  const tabs = $("tmTabs"); tabs.innerHTML = "";
+  for (const [k, n] of [["fly", "✈ Вылеты"], ["duty", "🛍 Duty Free"], ["souv", "🧲 Сувениры"]]) { const b = el("button", TM.tab === k ? "on" : "", n); b.type = "button"; b.id = "tm-" + k; b.addEventListener("click", () => { TM.tab = k; renderTerminal(); }); tabs.appendChild(b); }
+  const box = $("tmBody"); box.innerHTML = "";
+  const item = (id, name, info, price, onClick, dis) => { const b = el("button", "shop-item"); b.type = "button"; b.id = id; b.append(el("span", null, name), el("b", null, price), el("small", null, info)); b.disabled = !!dis; b.addEventListener("click", onClick); box.appendChild(b); };
+  box.appendChild(el("p", "prog", "Наличные: " + fmt(money) + (TM.go ? " · идёт посадка…" : "")));
+  if (TM.tab === "fly") {
+    for (const c of CITIES) { if (c.id === CITY.id) continue; const pr = flightPrice(c); item("tmf-" + c.id, c.flag + " " + c.name + " · " + flightNo(c), c.country + " · " + flightInfo(c) + " · бонус +" + fmt(SHOP_BONUS), fmt(pr), () => checkIn(c), money < pr || !!TM.go); }
+  } else if (TM.tab === "duty") {
+    for (const [id, pr] of [["df_choc", 12], ["df_coffee", 8], ["df_sand", 15]]) { const it = ITEMS[id]; item("tmd-" + id, it.name, itemInfo(it) + " · в сумку", fmt(pr), () => { if (money < pr) return; money += SHOP_BONUS - pr; invAdd(id); sfx.cash(); writeSave(); updHud(); toast(it.name + " — в сумке · бонус +" + fmt(SHOP_BONUS), 1.8); renderTerminal(); }, money < pr); }
+  } else {
+    const have = save.souvenirs || {}, got = !!have[CITY.id];
+    item("tms-buy", "Магнитик «" + CITY.name + "» " + CITY.flag, got ? "Уже есть в коллекции" : "Сувенир в коллекцию · виден в паспорте", fmt(10), () => { if (money < 10) return; money += SHOP_BONUS - 10; (save.souvenirs || (save.souvenirs = {}))[CITY.id] = 1; sfx.cash(); writeSave(); updHud(); toast("Магнитик из города " + CITY.name + " в коллекции!", 2); renderTerminal(); }, got || money < 10);
+    box.appendChild(el("p", "prog", "Коллекция: " + (CITIES.filter((c) => have[c.id] || (c.id === CITY.id && got)).map((c) => c.flag + " " + c.name).join(", ") || "пока пусто") + "."));
+  }
+}
+function checkIn(c) {
+  const pr = flightPrice(c); if (money < pr || TM.go) return;
+  money += SHOP_BONUS - pr; writeSave(); updHud(); sfx.cash();
+  TM.go = { c, t: 0 }; toast("Посадка на рейс " + flightNo(c) + " · " + c.name, 2.4); renderTerminal(); $("terminal").scrollTo({ top: 0, behavior: "smooth" });
+}
+function tickTerminal(tm) {
+  if (state !== "terminal" || !TM) return;
+  const dt = Math.min(0.05, (tm - TM.last) / 1000); TM.last = tm; TM.t += dt;
+  drawBoard();
+  if (TM.go) { TM.go.t += dt; if (TM.go.t > 4.2) { const c = TM.go.c; TM = null; flyTo(c); return; } }
+  requestAnimationFrame(tickTerminal);
+}
+function drawBoard() {
+  const cv = $("tmBoard"), g = cv.getContext("2d"), W = cv.width, H = cv.height, t = TM.t;
+  if (TM.go) { // take-off seen through the terminal window
+    const k = TM.go.t / 4.2, sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#7fb6e8"); sky.addColorStop(1, "#cfe6f6"); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+    g.fillStyle = "#5a5a64"; g.fillRect(0, H * 0.72, W, H); g.fillStyle = "#f2f2f2"; for (let x = -40 + ((t * 300) % 60); x < W; x += 60) g.fillRect(x, H * 0.84, 30, 4);
+    const px = -60 + k * (W + 140), py = H * 0.7 - Math.max(0, k - 0.45) * H * 1.3;
+    g.save(); g.translate(px, py); g.rotate(-Math.max(0, Math.min(0.28, (k - 0.45) * 1.2)));
+    g.fillStyle = "#f4f6f8"; g.beginPath(); g.ellipse(0, 0, 58, 10, 0, 0, TAU); g.fill(); g.fillStyle = "#2a6fd6"; g.fillRect(-58, -1, 116, 3);
+    g.fillStyle = "#d8dde2"; g.beginPath(); g.moveTo(-6, 2); g.lineTo(16, 2); g.lineTo(-14, 26); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-40, -4); g.lineTo(-30, -4); g.lineTo(-52, -26); g.lineTo(-58, -26); g.closePath(); g.fillStyle = "#ff7a3d"; g.fill();
+    g.fillStyle = "#3a4760"; for (let i = 0; i < 9; i++) g.fillRect(-30 + i * 8, -5, 4, 3); g.fillStyle = "#1a2a3a"; g.beginPath(); g.ellipse(48, -3, 8, 4, 0, 0, TAU); g.fill();
+    g.restore();
+    g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(0, 0, W, 26); g.fillStyle = "#ffd23d"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(flightNo(TM.go.c) + " → " + TM.go.c.name + (k < 0.45 ? " · разбег" : " · взлёт!"), 10, 13);
+    return;
+  }
+  g.fillStyle = "#0d1018"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#ffd23d"; g.font = "bold 13px 'Russo One',sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("✈ ВЫЛЕТ · DEPARTURES", 10, 14);
+  g.textAlign = "right"; g.fillStyle = "#fff"; g.fillText(CITY.tz != null ? localClock() : gameClock(), W - 10, 14);
+  const list = CITIES.filter((c) => c.id !== CITY.id), off = Math.floor(t / 3) % list.length, base = new Date();
+  g.font = "bold 11px ui-monospace,Menlo,Consolas,monospace";
+  g.fillStyle = "#8a90a0"; g.textAlign = "left"; g.fillText("ВРЕМЯ  РЕЙС    НАПРАВЛЕНИЕ        ГЕЙТ СТАТУС", 8, 34);
+  for (let i = 0; i < 8; i++) {
+    const c = list[(off + i) % list.length], y = 52 + i * 22, mins = 20 + ((off + i) % list.length) * 15, d = new Date(base.getTime() + mins * 60000 + (CITY.tz != null ? (CITY.tz * 60 + base.getTimezoneOffset()) * 60000 : 0));
+    g.fillStyle = i % 2 ? "#151a26" : "#11151f"; g.fillRect(4, y - 10, W - 8, 20);
+    const flip = (t % 3) < 0.25 && i === 7;
+    g.fillStyle = "#ffd23d"; g.fillText(String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"), 8, y);
+    g.fillStyle = "#fff"; g.fillText(flightNo(c).replace(" ", ""), 56, y); g.fillText(flip ? "▒▒▒▒▒▒▒▒" : (c.name.length > 16 ? c.name.slice(0, 15) + "." : c.name), 112, y);
+    g.fillStyle = "#9cc6ff"; g.fillText(["A", "B", "C"][i % 3] + (2 + ((i * 7 + off) % 18)), 248, y);
+    const st = i === 0 ? ["ПОСАДКА", "#5fd35f"] : i === 1 ? ["РЕГИСТР.", "#ffd23d"] : (off + i) % 7 === 3 ? ["ЗАДЕРЖАН", "#ff4a5a"] : ["ВОВРЕМЯ", "#cfd6e4"];
+    g.fillStyle = st[1]; if (!(i === 0 && Math.floor(t * 2) % 2)) g.fillText(st[0], 284, y);
+  }
+}
+$("tmOut").addEventListener("click", () => { TM = null; resume(); });
+function airport3d(K, b, h) {
+  const THREE = K.THREE, add = (geo, m, x, y, z) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.castShadow = true; K.scene.add(me); return me; };
+  const glass = new THREE.MeshLambertMaterial({ color: 0x8fc4e8, emissive: 0x7fc8ff, emissiveIntensity: 0, transparent: true, opacity: 0.85 }); K.winMats.push(glass);
+  add(K.BOX, glass, b.x + b.w / 2, h * 0.42, b.y + b.h + 1.6).scale.set(b.w - 10, h * 0.7, 2);
+  add(K.BOX, K.mat("#c8d0d8"), b.x + b.w / 2, h + 3, b.y + b.h / 2).scale.set(b.w + 16, 4, b.h + 10);
+  const tx = b.x + b.w - 26, tz = b.y + 26;
+  add(new THREE.CylinderGeometry(7, 9, 90, 12), K.mat("#f2f4f6"), tx, h + 45, tz);
+  const cab = new THREE.MeshLambertMaterial({ color: 0x3a6a9a, emissive: 0x9fd8ff, emissiveIntensity: 0 }); K.winMats.push(cab);
+  add(new THREE.CylinderGeometry(17, 13, 16, 12), cab, tx, h + 98, tz); add(new THREE.CylinderGeometry(18, 18, 3, 12), K.mat("#d8dde2"), tx, h + 108, tz);
+  const l = add(K.SPH, new THREE.MeshBasicMaterial({ color: 0xff2020 }), tx, h + 116, tz); l.scale.setScalar(2.5); (G3.blinks || (G3.blinks = [])).push(l);
+  // a plane passing over the city every now and then
+  const pl = new THREE.Group(), white = new THREE.MeshLambertMaterial({ color: 0xf4f6f8, fog: false }), blue = new THREE.MeshLambertMaterial({ color: 0x2a6fd6, fog: false }), orange = new THREE.MeshLambertMaterial({ color: 0xff7a3d, fog: false });
+  const part = (geo, m, x, y, z, sx, sy, sz) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.scale.set(sx, sy, sz); pl.add(me); return me; };
+  part(K.SPH, white, 0, 0, 0, 60, 8, 8); part(K.BOX, blue, 0, -1, 0, 100, 2, 8.4); part(K.BOX, white, -4, -1, 0, 18, 1.5, 120); part(K.BOX, white, -50, 2, 0, 10, 1.2, 36); part(K.BOX, orange, -52, 12, 0, 12, 20, 1.5);
+  for (const z of [-24, 24]) part(new THREE.CylinderGeometry(1, 1, 1, 10), K.mat("#b8c0c8"), 2, -6, z, 4, 12, 4).rotation.z = Math.PI / 2;
+  const blinkL = part(K.SPH, new THREE.MeshBasicMaterial({ color: 0xff2020, fog: false }), -4, 0, -60, 2, 2, 2), blinkR = part(K.SPH, new THREE.MeshBasicMaterial({ color: 0x20ff40, fog: false }), -4, 0, 60, 2, 2, 2);
+  K.scene.add(pl);
+  K.anims.push((t) => { const per = 46, k = (t % per) / per, a = 0.35; pl.visible = k < 0.6; const d = -2600 + (k / 0.6) * (WORLD + 5200); pl.position.set(WORLD / 2 + Math.cos(a) * d, 420 + Math.sin(t * 0.3) * 20, WORLD / 2 + Math.sin(a) * d); pl.rotation.set(0, -a, 0); const on = Math.floor(t * 2) % 2; blinkL.visible = blinkR.visible = !!on; });
 }
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
@@ -4212,7 +4312,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum" || state === "passport") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum" || state === "passport" || state === "terminal") { TM = null; resume(); } else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
@@ -4270,8 +4370,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -4940,6 +5040,7 @@ function drawBuilding(b) {
     if (b.bars) { ctx.fillStyle = "#5f5b54"; ctx.fillRect(rx + 30, ry + 30, b.w - 60, b.h - 60); ctx.fillStyle = "#2a2826"; for (let x = rx + 30; x < rx + b.w - 30; x += 12) ctx.fillRect(x, ry + 30, 3, b.h - 60); for (const [qx, qy] of [[rx + 12, ry + 12], [rx + b.w - 12, ry + 12], [rx + 12, ry + b.h - 12], [rx + b.w - 12, ry + b.h - 12]]) { ctx.fillStyle = "#4a4640"; ctx.fillRect(qx - 10, qy - 10, 20, 20); } }
     if (b.columns) { ctx.fillStyle = "rgba(255,255,255,.55)"; for (let x = rx + 12; x < rx + b.w - 8; x += 22) ctx.fillRect(x, ry + b.h - 14, 8, 10); }
     if (b.chimneys) for (const qx of [rx + b.w * 0.2, rx + b.w * 0.8]) { ctx.fillStyle = "#c9c9c9"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 14, 0, TAU); ctx.fill(); ctx.fillStyle = "#2a2a2a"; ctx.beginPath(); ctx.arc(qx, ry + b.h * 0.3, 8, 0, TAU); ctx.fill(); }
+    if (b.airport) { ctx.fillStyle = "#9fd0ff"; ctx.fillRect(rx + 6, ry + b.h - 16, b.w - 12, 10); ctx.fillStyle = "#f4f6f8"; ctx.beginPath(); ctx.arc(rx + b.w - 22, ry + 22, 14, 0, TAU); ctx.fill(); ctx.fillStyle = "#3a6a9a"; ctx.beginPath(); ctx.arc(rx + b.w - 22, ry + 22, 8, 0, TAU); ctx.fill(); }
     if (b.flag) { ctx.fillStyle = "#ff7a3d"; ctx.fillRect(rx + b.w / 2 - 14, ry + 10, 28, 16); }
     ctx.save(); ctx.translate(rx + b.w / 2, ry + b.h / 2); if (b.labelVert) ctx.rotate(-Math.PI / 2);
     const lw = b.labelVert ? b.h : b.w;
@@ -5395,6 +5496,7 @@ function init3d() {
       const dish = new THREE.Mesh(new THREE.SphereGeometry(20, 18, 10, 0, TAU, 0, 1.0), lam(0xf2f2f2, { side: THREE.DoubleSide })); dish.position.set(b.x + 34, h + 18, b.y + 30); dish.rotation.set(-0.9, 0.5, 0); dish.castShadow = true; scene.add(dish);
       const leg = new THREE.Mesh(BOX, lam(0x8b8f94)); leg.scale.set(4, 18, 4); leg.position.set(b.x + 34, h + 8, b.y + 30); scene.add(leg);
     }
+    if (b.airport) airport3d(K, b, h);
     if (b.flag) { const pole = new THREE.Mesh(BOX, lam(0xdddddd)); pole.scale.set(1.5, 40, 1.5); pole.position.set(cx, h + 20, cz); scene.add(pole); const fl = new THREE.Mesh(BOX, lam(0xff7a3d)); fl.scale.set(22, 13, 0.8); fl.position.set(cx + 11, h + 33, cz); scene.add(fl); }
     if (b.bars) for (const [qx, qz] of [[b.x + 12, b.y + 12], [b.x + b.w - 12, b.y + 12], [b.x + 12, b.y + b.h - 12], [b.x + b.w - 12, b.y + b.h - 12]]) { const tw = new THREE.Mesh(BOX, lam(0x5a5650)); tw.scale.set(20, 30, 20); tw.position.set(qx, h + 15, qz); tw.castShadow = true; scene.add(tw); const lp = new THREE.Mesh(BOX, basic(0xfff1c0)); lp.scale.set(5, 4, 5); lp.position.set(qx, h + 32, qz); scene.add(lp); }
     if (b.kind === "food" || (b.kind === "garage" && !MISSIONS)) { const sign = new THREE.Mesh(BOX, basic(b.kind === "food" ? 0x8be38a : 0x4d93ff)); sign.scale.set(b.w * 0.7, 6, 1.5); sign.position.set(cx, 34, b.y + b.h + 1); scene.add(sign); }
