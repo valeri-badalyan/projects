@@ -101,6 +101,13 @@ body.touch #homeBtn{display:none}
 #bPhone svg,#phoneBtn svg,#bBag svg,#bagBtn svg{width:22px;height:22px}
 #bBag{width:62px;height:62px;grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
 body.touch #bagBtn{display:none}
+#whistleBtn{display:flex;align-items:center;justify-content:center;color:#ffd23d;background:#2a6fd6!important;border-color:#ffd23d!important}
+#whistleBtn[hidden]{display:none}
+#whistleBtn svg{width:22px;height:22px}
+.hero-pick{display:grid;grid-template-columns:46px 1fr;gap:4px 12px;align-items:center;padding:12px;border-radius:14px;border:2px solid #111;background:#f4ecd8;color:#111;text-align:left;font-weight:800;font-size:15px;box-shadow:4px 4px 0 #111}
+.hero-pick i{grid-row:1/3;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:22px;color:#fff;border:3px solid #111;background:var(--hc)}
+.hero-pick small{font-weight:700;color:#4a4050;font-size:12px}
+.hero-pick:disabled{opacity:.45}
 #passBtn{display:flex;align-items:center;justify-content:center;color:#ffd77a}
 #passBtn svg{width:21px;height:21px}
 .v3card{position:relative;aspect-ratio:1.586;border-radius:16px;padding:14px 16px;color:#fff;overflow:hidden;background:radial-gradient(120% 90% at 100% 0%,#ff7a3d 0%,rgba(255,122,61,0) 55%),radial-gradient(90% 80% at 0% 100%,#ff3d7f 0%,rgba(255,61,127,0) 60%),linear-gradient(135deg,#2a1840,#14121a);box-shadow:0 10px 24px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12);display:flex;flex-direction:column;justify-content:space-between;flex:none}
@@ -325,6 +332,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="rainBtn" aria-label="Дождь (R)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="currentColor"/><path d="M9.2 14.5a3 3 0 0 0 2.4 3" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
     <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
+    <button type="button" id="whistleBtn" aria-label="Свист — позвать героя" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h10l7-3v8l-7-3H9a3 3 0 0 1-6 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="13" r="1.4" fill="currentColor"/><path d="M15 4l1-2M18 5l2-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="passBtn" aria-label="Паспорт V3 (J)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="8.5" y="15.5" width="7" height="1.8" rx=".9" fill="currentColor"/></svg></button>
     <button type="button" id="homeBtn" aria-label="Домой (H)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="6" fill="currentColor"/></svg></button>
   </div>
@@ -517,6 +525,15 @@ button.ph-row:disabled{opacity:.45}
       <div class="row" id="tmTabs"></div>
       <div id="tmBody" class="shop-list"></div>
       <button type="button" class="btn alt" id="tmOut" style="flex:none">Выйти из терминала</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="whistle" hidden>
+    <div class="card" style="background:#ffd23d;border:3px solid #111;color:#111;box-shadow:8px 8px 0 #111">
+      <span class="who" style="color:#e8433a">Хиротаун · свисток героя</span>
+      <h3 style="color:#111">Кого позвать?</h3>
+      <div id="wsBody" class="shop-list"></div>
+      <button type="button" class="btn alt" id="wsOut" style="flex:none">Не звать</button>
     </div>
   </div>
 
@@ -1797,6 +1814,56 @@ function heroFigure(B, hr, x, z, y, s = 1, pose = "fist") {
   else { S.box(suit, 0, -5.4, 2.4, 2.4, 9, 9); S.box(suit, 0, 5.4, 2.4, 2.4, 9, 9); }
   return { S, cape };
 }
+/* the hero whistle: call one of the heroes of Hero Town */
+const POWERS = [
+  { info: "заряжает молнией: супербег на 40 секунд", act: () => { player.boost = 40; return "⚡ Супербег на 40 секунд!"; } },
+  { info: "лечит: здоровье 100", act: () => { player.hp = 100; return "★ Здоровье восстановлено!"; } },
+  { info: "дарит щит: бронежилет 100", act: () => { player.armor = 100; return "◆ Броня 100!"; } },
+  { info: "уносит тебя к Башне Героев", act: () => { const l = (places.lms || []).find((q) => q.id === "herotower"); if (l) teleportTo(l.x, l.y, "Башня Героев", null); return "☾ Ночная Тень перенесла тебя к Башне Героев"; } },
+];
+let SUM = null, sumCool = 0;
+function openWhistle() {
+  if (state !== "play" || !CITY.id || CITY.id !== "hero") return;
+  const box = $("wsBody"); box.innerHTML = "";
+  box.appendChild(Object.assign(el("p", "prog", ""), { style: "color:#3a2a10" })).textContent = (SUM ? "Герой уже летит к тебе!" : sumCool > 0 ? `Герои отдыхают ещё ${Math.ceil(sumCool)} с.` : "Свистни — и герой спустится с неба прямо к тебе.");
+  HEROES.forEach((hr, i) => {
+    const b = el("button", "hero-pick"); b.type = "button"; b.id = "hero-" + i; b.style.setProperty("--hc", hr.suit);
+    const ic = el("i", null, hr.mark); b.append(ic, el("span", null, hr.name), el("small", null, POWERS[i].info));
+    b.disabled = !!SUM || sumCool > 0 || player.dead || indoor; b.addEventListener("click", () => summonHero(i)); box.appendChild(b);
+  });
+  showOv("whistle");
+}
+function summonHero(i) {
+  if (SUM || sumCool > 0) return; resume();
+  if (player.inCar) exitCar(true);
+  const P = player, a = mode3d ? cam3.yaw + 0.35 : rand(0, TAU), d = mode3d ? 46 : 34;
+  SUM = { i, hr: HEROES[i], t: 0, ph: "down", x: P.x + Math.cos(a) * d, y: P.y + Math.sin(a) * d, z: 520 };
+  [1800, 2200, 1800, 2400].forEach((f, k) => setTimeout(() => tone(f, f * 1.05, 0.16, 0.12, "sine"), k * 140));
+  toast("📯 Фьюить! " + HEROES[i].name + " летит к тебе!", 2.4);
+  if (G3.ready && G3.K) { const B = mk3d(G3.K, 0, 0, {}); const h = heroFigure(B, HEROES[i], 0, 0, 0, 0.95, "fist"); SUM.g = h.S.g; SUM.cape = h.cape; }
+}
+function tickSummon(dt) {
+  if (sumCool > 0) sumCool -= dt;
+  if (!SUM) return;
+  const S2 = SUM; S2.t += dt;
+  if (S2.ph === "down") { S2.z = Math.max(0, 520 * (1 - S2.t / 2.2) ** 2); if (S2.t >= 2.2) { S2.ph = "stand"; S2.t = 0; shake = Math.max(shake, 6); noise(0.4, 0.4, 300); for (let k = 0; k < 18; k++) { const a = rand(0, TAU), sp = rand(40, 140); addPart({ x: S2.x, y: S2.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.6, max: 0.6, size: rand(5, 10), col: pick([S2.hr.suit, S2.hr.cape, "#ffffff"]), type: "fire" }); } big(S2.hr.mark + " " + S2.hr.name.toUpperCase(), "«Я здесь! Чем помочь?»", S2.hr.suit, 2.4); } }
+  else if (S2.ph === "stand") { if (!S2.done && S2.t > 1.2) { S2.done = true; const msg = POWERS[S2.i].act(); sfx.win(); toast(msg, 2.6); updHud(); } if (S2.t > 3.4) { S2.ph = "up"; S2.t = 0; S2.x0 = S2.x; S2.y0 = S2.y; tone(400, 1600, 0.6, 0.1, "sine"); } }
+  else { S2.z = 520 * (S2.t / 1.8) ** 2; if (S2.t > 1.8) { if (S2.g) G3.scene.remove(S2.g); SUM = null; sumCool = 20; return; } }
+  if (S2.g) { S2.g.visible = !indoor; S2.g.position.set(S2.x, S2.z, S2.y); S2.g.rotation.y = -Math.atan2(player.y - S2.y, player.x - S2.x); if (S2.cape) S2.cape.rotation.x = 0.12 + (S2.ph === "stand" ? Math.sin(now * 3) * 0.05 : Math.sin(now * 12) * 0.25); }
+}
+function drawSummon2D() {
+  const S2 = SUM, hr = S2.hr, lift = S2.z * 0.35;
+  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(S2.x + 3, S2.y + 3, 9, 6, 0, 0, TAU); ctx.fill();
+  ctx.save(); ctx.translate(S2.x, S2.y - lift);
+  ctx.fillStyle = hr.cape; ctx.beginPath(); ctx.moveTo(-9, -4); ctx.lineTo(9, -4); ctx.lineTo(13, 16 + Math.sin(now * 10) * 2); ctx.lineTo(-13, 16 + Math.cos(now * 10) * 2); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = hr.suit; ctx.beginPath(); ctx.ellipse(0, 0, 8, 10, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = "#111"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = "#e2b08a"; ctx.beginPath(); ctx.arc(0, -11, 5, 0, TAU); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = hr.trim; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(hr.mark, 0, 1);
+  ctx.restore();
+}
+$("whistleBtn").hidden = CITY.id !== "hero";
+$("whistleBtn").addEventListener("click", () => { initAudio(); openWhistle(); });
+$("wsOut").addEventListener("click", resume);
 /* ===== small life of the city ===== */
 let lmLast = null, steamT = 0;
 function lmNear() {
@@ -1806,6 +1873,7 @@ function lmNear() {
   lmLast = best;
 }
 function cityTick(dt) {
+  tickSummon(dt);
   if (CITY.steam) { steamT -= dt; if (steamT <= 0) { steamT = 0.12; const P = player.inCar || player; for (let k = 0; k < 3; k++) { const tx = Math.floor(P.x / T / 8) * 8 + (k - 1) * 8, ty = Math.floor(P.y / T / 8) * 8 + 4 + (k % 2) * 8; const x = (tx + 0.5) * T + 10, y = (ty + 0.5) * T; if (tile(tx, ty) === ROAD) addPart({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-6, 6), vy: rand(-14, -4), life: 1.6, max: 1.6, size: rand(8, 13), col: "#e8eef2", type: "smoke" }); } } }
 }
 
@@ -4507,7 +4575,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum" || state === "passport" || state === "terminal") { TM = null; resume(); } else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum" || state === "passport" || state === "terminal" || state === "whistle") { TM = null; resume(); } else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
@@ -4565,8 +4633,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -5310,6 +5378,7 @@ function render() {
   if (meUnder) drawHuman({ ...player, kind: "player", dead: false }, true);
   for (const c of cars) if (!offscreen(c.x, c.y, 40)) drawCar(c);
   for (const p of people) if (!p.dead && !offscreen(p.x, p.y, 20)) drawHuman(p);
+  if (SUM) drawSummon2D();
   if (!player.inCar && !meUnder) drawHuman({ ...player, kind: "player", dead: player.dead }, true);
   ctx.lineWidth = 2;
   for (const b of bullets) { ctx.strokeStyle = b.owner === "player" ? "rgba(255,230,150,.9)" : "rgba(255,140,120,.9)"; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * 0.018, b.y - b.vy * 0.018); ctx.stroke(); }
