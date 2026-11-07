@@ -627,7 +627,7 @@ const CITIES = [
   { id: "tyo", name: "Токио", country: "Япония", flag: "🇯🇵", lat: 35.68, lon: 139.69, seed: 12501, roofs: PAL.asia, tall: 1.55, rain: 0.6, walk: "#a3a3a8", water: "#2f5a78", taxi: "#2b6b3f", slogan: "Неоновые улицы, дрифт и самые вежливые таксисты." },
   { id: "osa", name: "Осака", country: "Япония", flag: "🇯🇵", lat: 34.69, lon: 135.5, seed: 12502, roofs: PAL.asia, tall: 1.25, rain: 0.55, walk: "#a8a6a8", water: "#2f5f7a", taxi: "#2b6b3f", slogan: "Кухня Японии, огни Дотонбори и каналы." },
   { id: "sha", name: "Шанхай", country: "Китай", flag: "🇨🇳", lat: 31.23, lon: 121.47, seed: 12601, roofs: PAL.asia, tall: 1.7, rain: 0.55, walk: "#a8a59f", water: "#3a5a5a", taxi: "#3d8bff", slogan: "Набережная Вайтань и лес небоскрёбов над рекой." },
-  { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#ff7ad8", "#c87aff", "#ff9ae8", "#b05aff", "#ff5ac8", "#e8a8ff", "#7af0e8", "#ffb8f0", "#d870ff", "#ff8ab8"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
+  { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
     dream: true, style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
 const CITY = CITIES.find((c) => c.id === save.city) || CITIES[0];
@@ -1122,11 +1122,11 @@ const LMS = {
     } },
   dreampalace: { name: "Дворец Снов", info: "здесь живёт Королева Снов, башни светятся всю ночь", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#ff7ad8", h: 300, nofog: true,
     ground(g, b) { for (let i = 0; i < 40; i++) { g.fillStyle = ["#ff7ad8", "#7af0ff", "#fff07a"][i % 3]; g.beginPath(); g.arc(b.x + hsh(i, 1, 6) * 256, b.y + 200 + hsh(i, 2, 6) * 56, 2.5, 0, TAU); g.fill(); } },
-    d2(Q) { Q.box(128, 96, 200, 150, 60, "#ffb0e8", "#ff7ad8"); Q.box(128, 96, 80, 80, 110, "#e8a0ff", "#c87aff"); for (const [x, y, h] of [[40, 30, 200], [216, 30, 200], [40, 170, 170], [216, 170, 170]]) Q.cyl(x, y, 14, h, "#ff4fd8", "#c86aff"); Q.cyl(128, 96, 18, 290, "#7af0ff", "#c86aff", 110); },
+    d2(Q) { Q.box(128, 96, 200, 150, 60, "#9a4ae8", "#7a2ac8"); Q.box(128, 96, 80, 80, 110, "#8a3ad8", "#6a2ab8"); for (const [x, y, h] of [[40, 30, 200], [216, 30, 200], [40, 170, 170], [216, 170, 170]]) Q.cyl(x, y, 14, h, "#ff4fd8", "#c86aff"); Q.cyl(128, 96, 18, 290, "#7af0ff", "#c86aff", 110); },
     d3(B) {
-      const wall = B.M("#ffb0e8", { map: B.X.win("arch"), glow: "#ff6ad8", emap: B.X.lit() }), lil = B.M("#e8a0ff", { glow: "#c86aff" }), roof = B.M("#ff4fd8", { glow: "#ff4fd8" }), neon = B.M("#7af0ff", { neon: true }), gold = B.M("#fff07a", { neon: true });
+      const wall = B.M("#9a4ae8", { map: B.X.win("arch"), glow: "#ff6ad8", emap: B.X.lit() }), lil = B.M("#7a2ac8", { glow: "#c86aff" }), roof = B.M("#ff4fd8", { glow: "#ff4fd8" }), neon = B.M("#7af0ff", { neon: true }), gold = B.M("#fff07a", { neon: true });
       B.box(wall, 128, 96, 200, 150, 60, 0, 0, 64);
-      const mer = []; for (let x = 32; x <= 224; x += 12) mer.push([x, 64, 22, 5, 8, 5], [x, 64, 170, 5, 8, 5]); B.inst("#ffb0e8", mer);
+      const mer = []; for (let x = 32; x <= 224; x += 12) mer.push([x, 64, 22, 5, 8, 5], [x, 64, 170, 5, 8, 5]); B.inst("#9a4ae8", mer);
       B.box(lil, 128, 96, 80, 80, 50, 60); B.cyl(lil, 128, 96, 24, 26, 60, 110, 16); B.cone(roof, 128, 96, 30, 90, 170, 16); B.sph(gold, 128, 96, 7, 266); B.box(gold, 128, 96, 2, 2, 22, 270);
       for (const [x, z, h] of [[40, 30, 200], [216, 30, 200], [40, 170, 170], [216, 170, 170], [128, 22, 150]]) { B.cyl(lil, x, z, 13, 15, h - 50, 0, 14); B.cyl(wall, x, z, 15, 15, 8, h - 58, 14); B.cone(roof, x, z, 18, 54, h - 50, 14); B.sph(neon, x, z, 4, h + 8); }
       B.box(B.M("#3a0a5a"), 128, 172, 30, 4, 34, 0); B.torus(neon, 128, 172.5, 15, 1.4, 34, 0, 0, Math.PI, 16);
@@ -1642,7 +1642,7 @@ const STYLES = {
   euro: { walls: ["#b5ad9c", "#a9a397", "#c8bfa8", "#9c9a96", "#d8cdb6", "#c0b8a8"], win: "tall", roof: "hip", roofCol: "#5a6068" },
   soviet: { walls: ["#c8c8c0", "#d8d4c8", "#b8b4aa", "#e0dcd0", "#c8bca8"], win: "panel", roof: "flat" },
   asia: { walls: ["#d8d8d8", "#a8a8a8", "#c8c4bc", "#6a6a72", "#e8e4dc"], win: "plain", roof: "neon" },
-  dream: { walls: ["#ff9ad8", "#d89aff", "#ffb8e8", "#c87aff", "#ff7ac8", "#f2c8ff", "#9af0ff"], win: "arch", roof: "dreamneon" },
+  dream: { walls: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0"], win: "arch", roof: "dreamneon" },
   deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
 };
 const NEON_WORDS = { ja: ["ラーメン", "カラオケ", "居酒屋", "薬", "寿司", "ホテル", "焼肉", "ゲーム"], zh: ["饭店", "酒店", "银行", "药房", "火锅", "茶", "书店", "电影"] };
@@ -1744,7 +1744,7 @@ function shade(hex, k) {
 function addB(tx, ty, w, h, kind = "bld", col) {
   for (let y = ty; y < ty + h; y++) for (let x = tx; x < tx + w; x++) tiles[y * N + x] = BLD;
   let c = col || ROOFS[(srnd() * ROOFS.length) | 0];
-  if (CITY.dream && col && kind !== "lm") { const a = parseInt(col.slice(1), 16), m = [255, 122, 216], k = 0.55; c = "#" + [16, 8, 0].map((sh, i) => Math.round(((a >> sh) & 255) * (1 - k) + m[i] * k).toString(16).padStart(2, "0")).join(""); }
+  if (CITY.dream && col && kind !== "lm") { const a = parseInt(col.slice(1), 16), m = [138, 58, 216], k = 0.75; c = "#" + [16, 8, 0].map((sh, i) => Math.round(((a >> sh) & 255) * (1 - k) + m[i] * k).toString(16).padStart(2, "0")).join(""); }
   const inset = kind === "cont" ? 5 : kind === "fount" ? 10 : 3;
   const hgt = kind === "cont" ? 0.025 : kind === "fount" ? 0.008 : kind === "stadium" ? 0.035 : kind === "wall" ? 0.03 : kind === "chapel" ? 0.06 : (0.05 + srnd() * 0.13) * (kind === "bld" ? CITY.tall : 1);
   const b = { x: tx * T + inset, y: ty * T + inset, w: w * T - inset * 2, h: h * T - inset * 2, kind, roof: c, wall: shade(c, 0.62), side: shade(c, 0.45), hgt, ac: [] };
