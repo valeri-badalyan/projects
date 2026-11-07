@@ -2132,7 +2132,7 @@ const SHOPS = [
       no: () => (c.id === CITY.id ? "Ты сейчас здесь" : flying ? "Посадка уже идёт" : ""), act: () => flyTo(c) })) },
   { id: "home", col: "#2fd0a0", hex: 0x2fd0a0, label: "Д", at: () => places.home, open: () => openHome() },
   { id: "crab", who: "Ресторан Crusty Crab", title: "Меню", col: "#ff5a3d", hex: 0xff5a3d, label: "CC", at: () => places.crab, bonus: 0,
-    note: "Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
+    note: "Можно заказать доставку в телефоне — приложение Crusty Crab. Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
     items: [
       { id: "crabburger", name: "Крабовый бургер", info: "+50 здоровья", price: 30, heal: 50 },
       { id: "fries", name: "Картошка «Клешня»", info: "+20 здоровья", price: 12, heal: 20 },
@@ -3005,6 +3005,58 @@ function drawMuseum() {
   if (ML.selfie > 0) { ML.selfie -= 1 / 60; g.fillStyle = `rgba(255,255,255,${Math.min(1, ML.selfie * 2)})`; g.fillRect(0, 0, W, H); }
   g.fillStyle = "rgba(255,255,255,.75)"; g.font = "bold 12px Manrope,sans-serif"; g.textAlign = "center"; g.fillText("LÉONARD DE VINCI · LA JOCONDE", 180, 300);
 }
+/* Crusty Crab online: order food in the phone, a courier brings it wherever you are */
+const CART = {}, DELIVERY_FEE = 10, DELIVERY_T = 25;
+let ORDER = null, courier = null;
+const crabMenu = () => SHOPS.find((q) => q.id === "crab").items.filter((it) => ITEMS[it.id]);
+const cartTotal = () => crabMenu().reduce((s2, it) => s2 + (CART[it.id] || 0) * it.price, 0);
+function renderCrabGo(scr) {
+  const top = el("div", "ph-bar"), back = el("button", null, "‹ Назад"); back.type = "button"; back.addEventListener("click", () => renderPhone("home")); top.append(back, el("h4", null, "Crusty Crab")); scr.appendChild(top);
+  const hero = el("div", null); hero.style.cssText = "border-radius:16px;padding:14px;background:linear-gradient(135deg,#c2452d,#ff7a3d);display:flex;align-items:center;gap:12px";
+  const logo = el("b", null, "🦀"); logo.style.fontSize = "34px"; const ht = el("span", null, ""); ht.innerHTML = ""; ht.append(el("b", null, "Доставка за " + DELIVERY_T + " секунд")); ht.appendChild(el("small", null, "Курьер привезёт прямо к тебе. Доставка " + fmt(DELIVERY_FEE) + ".")); ht.style.cssText = "display:flex;flex-direction:column;gap:2px;font-weight:800"; hero.append(logo, ht); scr.appendChild(hero);
+  if (ORDER) {
+    scr.appendChild(el("p", "ph-big", Math.ceil(ORDER.t) + " с")).style.fontSize = "30px";
+    scr.appendChild(el("p", "ph-note", "Твой заказ уже в пути: " + ORDER.list.map(([id, n]) => ITEMS[id].name + " ×" + n).join(", ") + ". Курьер найдёт тебя сам."));
+    return;
+  }
+  const list = el("div", "ph-list");
+  for (const it of crabMenu()) {
+    const row = el("div", "ph-row"), left = el("span", null, it.name); left.appendChild(el("small", null, itemInfo(ITEMS[it.id]) + " · " + fmt(it.price)));
+    const ctl = el("span", null); ctl.style.cssText = "display:flex;align-items:center;gap:8px;flex:none";
+    const mk = (t, d) => { const b = el("button", null, t); b.type = "button"; b.id = "cg-" + (d > 0 ? "add-" : "rem-") + it.id; b.style.cssText = "width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#3a3546;color:#fff;font-weight:800;font-size:18px"; b.disabled = d < 0 && !CART[it.id]; b.addEventListener("click", () => { CART[it.id] = Math.max(0, Math.min(9, (CART[it.id] || 0) + d)); tone(d > 0 ? 880 : 520, d > 0 ? 1100 : 400, 0.05, 0.05); const y = $("phScreen").scrollTop; renderPhone("crabgo"); $("phScreen").scrollTop = y; }); return b; };
+    ctl.append(mk("−", -1), el("b", null, String(CART[it.id] || 0)), mk("+", 1));
+    row.append(left, ctl); list.appendChild(row);
+  }
+  scr.appendChild(list);
+  const sub = cartTotal(), total = sub ? sub + DELIVERY_FEE : 0;
+  scr.appendChild(el("p", "ph-note", sub ? `Еда ${fmt(sub)} + доставка ${fmt(DELIVERY_FEE)} = ${fmt(total)}. Бонус за покупку +${fmt(SHOP_BONUS)}.` : "Выбери блюда кнопкой «+»."));
+  const go = el("button", "btn", sub ? "Заказать — " + fmt(total) : "Корзина пуста"); go.type = "button"; go.id = "cgOrder"; go.style.cssText = "flex:none;min-height:50px"; go.disabled = !sub || money < total;
+  if (sub && money < total) go.textContent = "Не хватает " + fmt(total - money);
+  go.addEventListener("click", placeOrder); scr.appendChild(go);
+}
+function placeOrder() {
+  const sub = cartTotal(); if (!sub || ORDER) return; const total = sub + DELIVERY_FEE; if (money < total) return;
+  money += SHOP_BONUS - total; sfx.cash();
+  ORDER = { t: DELIVERY_T, list: Object.entries(CART).filter(([, n]) => n > 0) };
+  for (const k in CART) delete CART[k];
+  writeSave(); updHud(); resume();
+  $("mission").hidden = false; $("mTitle").textContent = "🦀 Доставка Crusty Crab"; $("mText").textContent = "Курьер уже едет к тебе";
+  toast("Заказ принят! Бонус +" + fmt(SHOP_BONUS), 2.4);
+}
+function tickOrder(dt) {
+  if (courier) { courier.t -= dt; if (courier.t <= 0) { if (courier.car) courier.car.keep = false; if (courier.p) courier.p.keep = false; courier = null; } }
+  if (!ORDER) return;
+  ORDER.t -= dt; setText("mTimer", "0:" + String(Math.max(0, Math.ceil(ORDER.t))).padStart(2, "0"));
+  if (ORDER.t > 0) return;
+  for (const [id, n] of ORDER.list) invAdd(id, n);
+  const what = ORDER.list.map(([id, n]) => ITEMS[id].name + (n > 1 ? " ×" + n : "")).join(", ");
+  ORDER = null; $("mission").hidden = true; writeSave(); sfx.win();
+  if (!indoor && !player.dead) {
+    const P = player.inCar || player, a = (player.inCar ? player.inCar.a : player.a) + Math.PI / 2, spot = freeSpot(P.x + Math.cos(a) * 80, P.y + Math.sin(a) * 80);
+    if (spot) { const car = mkCar("compact", spot.x, spot.y, a + Math.PI / 2, "#c2452d"); car.keep = true; const pp = mkPerson("ped", spot.x + Math.cos(a + Math.PI) * 30, spot.y + Math.sin(a + Math.PI) * 30); pp.col = "#c2452d"; pp.keep = true; pp.a = Math.atan2(P.y - pp.y, P.x - pp.x); courier = { car, p: pp, t: 15 }; sfx.honk(); }
+    big("ЗАКАЗ ПРИВЕЗЛИ!", "🦀 " + what + " — в сумке", "#ff7a3d", 3);
+  } else big("ЗВОНОК В ДВЕРЬ", "🦀 Курьер Crusty Crab: " + what + " — в сумке", "#ff7a3d", 3);
+}
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -3094,6 +3146,7 @@ function radioNext() {
 }
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 function tickGadgets(dt) {
+  tickOrder(dt);
   if (gadget("laptop")) { laptopT += dt; if (laptopT >= 60) { laptopT -= 60; money += 25; sfx.cash(); toast("Ноутбук: удалённая работа +$25", 1.6); } }
   const stn = save.station == null ? 0 : save.station;
   if (!ac || muted || !hasRadio() || stn < 0 || (stn === 0 && !songBad)) { radioT = 0; return; }
@@ -4016,6 +4069,7 @@ const APPS = [
   { id: "shop", name: "Магазин", col: "#ff3d7f", g: "М" },
   { id: "tele", name: "Телепорт", col: "#8d3fd1", g: "TP" },
   { id: "fly", name: "Рейсы", col: "#5ad0ff", g: "✈" },
+  { id: "crabgo", name: "Crusty Crab", col: "#c2452d", g: "CC" },
   { id: "settings", name: "Настройки", col: "#6d6a86", g: "≡" },
 ];
 const TAXI = 50;
@@ -4050,6 +4104,7 @@ function renderPhone(app) {
     scr.appendChild(grid);
     return;
   }
+  if (app === "crabgo") { renderCrabGo(scr); return; }
   if (app === "fly") { openShop(SHOPS.find((q) => q.id === "air")); return; }
   const A = APPS.find((a) => a.id === app); phBar(scr, A.name);
   const list = el("div", "ph-list");
