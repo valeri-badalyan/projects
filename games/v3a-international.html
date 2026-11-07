@@ -102,6 +102,18 @@ body.touch #homeBtn{display:none}
 body.touch #bagBtn{display:none}
 #passBtn{display:flex;align-items:center;justify-content:center;color:#ffd77a}
 #passBtn svg{width:21px;height:21px}
+.v3card{position:relative;aspect-ratio:1.586;border-radius:16px;padding:14px 16px;color:#fff;overflow:hidden;background:radial-gradient(120% 90% at 100% 0%,#ff7a3d 0%,rgba(255,122,61,0) 55%),radial-gradient(90% 80% at 0% 100%,#ff3d7f 0%,rgba(255,61,127,0) 60%),linear-gradient(135deg,#2a1840,#14121a);box-shadow:0 10px 24px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.12);display:flex;flex-direction:column;justify-content:space-between;flex:none}
+.v3card .logo3{font-family:var(--display);font-size:26px;line-height:1;background:linear-gradient(180deg,#ffe08a,#ff7a3d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.v3card .row3{display:flex;justify-content:space-between;align-items:center}
+.v3card .chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#f2d880,#b8962a);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.v3card .num{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:16px;letter-spacing:.12em}
+.v3card .bal{font-family:var(--display);font-size:24px;color:#8be38a}
+.v3card small{display:block;font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.v3card .holder{font-weight:800;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.bank-amts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.bank-amts button{min-height:40px;border-radius:10px;border:1px solid var(--line);background:#2c2937;color:#fff;font-family:var(--display);font-size:13px}
+.bank-amts button.on{border-color:var(--warn);background:#3a3322}
+.bank-amts button:disabled{opacity:.4}
 .pass-card{width:min(100%,480px);background:#5a1424;border-color:#8a2a3a}
 .pass-card .who{color:#ffd77a}
 .pp{border-radius:12px;padding:14px;color:#2a2230;background:repeating-radial-gradient(circle at 30% 20%,#efe6d6 0 6px,#ebe0ce 6px 7px),#efe6d6;box-shadow:inset 0 0 0 1px rgba(90,20,36,.25);display:flex;flex-direction:column;gap:10px}
@@ -3219,6 +3231,36 @@ function renderPassport() {
 }
 $("ppOut").addEventListener("click", resume);
 $("passBtn").addEventListener("click", () => { initAudio(); togglePassport(); });
+/* V3 bank card: a card account next to the cash in your pocket */
+const CARD_START = 60009;
+let bankAmt = 1000;
+function cardBal() { if (save.card == null) { save.card = CARD_START; writeSave(); } return save.card; }
+function renderBankCard(scr) {
+  const bal = cardBal(); ppEnsureName();
+  const no = "4" + String(((parseInt((save.since || dayKey()).replace(/-/g, ""), 10) * 48271) % 9e14) + 1e14).slice(0, 15), [y, m] = (save.since || dayKey()).split("-");
+  const card = el("div", "v3card");
+  card.innerHTML = `<div class="row3"><span class="logo3">V3</span><b style="font-size:12px;letter-spacing:.12em">V3 BANK · GOLD</b></div>
+    <div class="row3"><span class="chip"></span><span style="font-size:20px;opacity:.8">)))</span></div>
+    <div class="num">${no.replace(/(\d{4})/g, "$1 ").trim()}</div>
+    <div class="row3"><span><small>Держатель</small><span class="holder"></span></span><span style="text-align:right"><small>До</small><b>${m}/${String(+y + 5).slice(2)}</b></span></div>`;
+  card.querySelector(".holder").textContent = save.name;
+  scr.appendChild(card);
+  const bx = el("div", "ph-list");
+  bx.appendChild(phRow("💳 На карте", "Карта V3 · счёт в V3 Bank", fmt(bal)));
+  bx.appendChild(phRow("💵 Наличные", "В кармане — ими платишь в магазинах", fmt(money)));
+  bx.appendChild(phRow("Всего", null, fmt(bal + money)));
+  scr.appendChild(bx);
+  scr.appendChild(el("p", "ph-note", "Сумма перевода"));
+  const amts = el("div", "bank-amts");
+  for (const v of [100, 1000, 5000, 10000]) { const b = el("button", v === bankAmt ? "on" : "", "$" + (v >= 1000 ? v / 1000 + "K" : v)); b.type = "button"; b.id = "bank-amt-" + v; b.addEventListener("click", () => { bankAmt = v; renderPhone("bank"); }); amts.appendChild(b); }
+  scr.appendChild(amts);
+  const row = el("div", "row");
+  const wd = el("button", "btn", "Снять " + fmt(bankAmt)); wd.type = "button"; wd.id = "bankWithdraw"; wd.disabled = bal < bankAmt;
+  wd.addEventListener("click", () => { if (cardBal() < bankAmt) return; save.card -= bankAmt; money += bankAmt; sfx.cash(); writeSave(); updHud(); toast("Банкомат V3: снято " + fmt(bankAmt), 1.8); renderPhone("bank"); });
+  const dp = el("button", "btn alt", "Положить " + fmt(bankAmt)); dp.type = "button"; dp.id = "bankDeposit"; dp.disabled = money < bankAmt;
+  dp.addEventListener("click", () => { if (money < bankAmt) return; money -= bankAmt; save.card = cardBal() + bankAmt; tone(660, 990, 0.08, 0.06); writeSave(); updHud(); toast("На карту зачислено " + fmt(bankAmt), 1.8); renderPhone("bank"); });
+  row.append(wd, dp); scr.appendChild(row);
+}
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -4293,7 +4335,7 @@ function renderPhone(app) {
     const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
     scr.appendChild(lg); scr.appendChild(el("p", "ph-note", (CITY.wall ? "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП." : CITY.river ? "Река «" + CITY.river + "» делит город: на севере дома и магазины, на юге городские службы. Через реку ведут мосты." : "На севере — дома и магазины, на юге — городские службы.") + (places.lms && places.lms.length ? " Жёлтые точки — достопримечательности: " + places.lms.map((l) => l.name).join(", ") + "." : "")));
   } else if (app === "bank") {
-    scr.append(el("p", "ph-note", "Баланс"), el("p", "ph-big", fmt(money)));
+    renderBankCard(scr);
     const gd = { scanner: "Полицейский сканер", gps: "GPS-навигатор", radio: "Автомагнитола", laptop: "Ноутбук" };
     const own = Object.keys(gd).filter(gadget).map((k) => gd[k]);
     list.appendChild(phRow("Машины", ownCars().map((o) => CT[o.type].name).join(", ") || "пока нет", String(ownCars().length)));
