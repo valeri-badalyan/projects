@@ -980,7 +980,7 @@ function endMission() {
 // Free roam: the mission code stays in the file but is switched off.
 const MISSIONS = false;
 /* shops (free roam): guns where the bar was, a car dealer in the garage, groceries next door */
-const SHOP_BONUS = 6678;
+const SHOP_BONUS = 6008; // every purchase pays this back on top
 const hasGun = () => player.weapons.some((w) => w !== "fist");
 const CAR_COLS = ["#e2242c", "#2f3e66", "#f2f2f2", "#1f1f24", "#ffb000", "#00b3a4", "#6b4a8a", "#5b7a4c"];
 function carSlots() { const L = places.garageLot, out = []; for (const row of [3.5, 4.5]) for (const col of [1.5, 4.5]) out.push({ x: (L.x + col) * T, y: (L.y + row) * T }); return out; }
@@ -1194,8 +1194,8 @@ function renderHome() {
 }
 function buyHome() {
   if (save.home || money < HOME_PRICE) return false;
-  money -= HOME_PRICE; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win();
-  big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя", "#2fd0a0", 2.6);
+  money -= HOME_PRICE - SHOP_BONUS; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win();
+  big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя · бонус +" + fmt(SHOP_BONUS), "#2fd0a0", 2.6);
   return true;
 }
 function sleepHome() {
@@ -1953,7 +1953,7 @@ function renderShop() {
   $("shopWho").textContent = sh.who; $("shopTitle").textContent = sh.title;
   $("shopMoney").textContent = fmt(money);
   const bn = $("shopBonus"); bn.hidden = !sh.bonus && !sh.note;
-  bn.innerHTML = ""; bn.textContent = sh.bonus ? "С каждой покупкой ты получаешь +" + fmt(sh.bonus) : sh.note || "";
+  bn.innerHTML = ""; bn.textContent = (sh.bonus ? "С каждой покупкой ты получаешь +" + fmt(sh.bonus) + ". " : "") + (sh.note || "");
   bn.style.color = sh.bonus ? "" : "var(--muted)";
   const list = $("shopList"); list.innerHTML = "";
   for (const it of sh.items) {
@@ -1973,12 +1973,14 @@ function buy(sh, it) {
   if (it.open) { it.open(); return; }
   if (money < it.price || (it.no && it.no())) return;
   it.act();
-  money += (sh.bonus || 0) - it.price;
+  const bon = it.price > 0 ? sh.bonus || 0 : 0;
+  money += bon - it.price;
   sfx.cash();
-  if (it.bag) toast(it.name + " — в сумке", 1.6);
-  else if (!it.quiet) toast(it.name + " куплено" + (sh.bonus ? " · бонус +" + fmt(sh.bonus) : ""), 2);
+  if (it.bag) toast(it.name + " — в сумке" + (bon ? " · бонус +" + fmt(bon) : ""), 1.8);
+  else if (!it.quiet || bon) toast(it.name + " куплено" + (bon ? " · бонус +" + fmt(bon) : ""), 2);
   writeSave(); if (state === "shop") renderShop(); updHud();
 }
+for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
 /* ================= V3 stadium: a match every day ================= */
@@ -2068,7 +2070,7 @@ function startMatch() {
 }
 function beginMatch(live, key, m, amt, cost) {
   if (money < cost) return;
-  money -= cost;
+  money -= cost - SHOP_BONUS; toast("Билет куплен · бонус +" + fmt(SHOP_BONUS), 2);
   save.stadium = { day: key, pick: stPick, amt, paid: 0 }; writeSave();
   const pl = [];
   for (const home of [true, false]) FORM.forEach(([x, y], i) => { const hx = home ? x : PW - x; pl.push({ home, gk: i === 0, hx, hy: y, x: hx, y }); });
