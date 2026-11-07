@@ -1823,45 +1823,80 @@ const POWERS = [
 ];
 let SUM = null, sumCool = 0;
 function openWhistle() {
-  if (state !== "play" || !CITY.id || CITY.id !== "hero") return;
+  if (state !== "play") return;
+  if (SUM && (SUM.ph === "follow" || SUM.ph === "stand")) { dismissHero(); return; } // the second whistle sends the hero home
+  if (SUM || CITY.id !== "hero") return;
   const box = $("wsBody"); box.innerHTML = "";
-  box.appendChild(Object.assign(el("p", "prog", ""), { style: "color:#3a2a10" })).textContent = (SUM ? "Герой уже летит к тебе!" : sumCool > 0 ? `Герои отдыхают ещё ${Math.ceil(sumCool)} с.` : "Свистни — и герой спустится с неба прямо к тебе.");
+  box.appendChild(Object.assign(el("p", "prog", ""), { style: "color:#3a2a10" })).textContent = sumCool > 0 ? `Герои отдыхают ещё ${Math.ceil(sumCool)} с.` : "Свистни — и герой спустится с неба и останется с тобой: будет ходить за тобой, ездить, летать в другие города и даже спать рядом. Свистни ещё раз — и он улетит.";
   HEROES.forEach((hr, i) => {
     const b = el("button", "hero-pick"); b.type = "button"; b.id = "hero-" + i; b.style.setProperty("--hc", hr.suit);
     const ic = el("i", null, hr.mark); b.append(ic, el("span", null, hr.name), el("small", null, POWERS[i].info));
-    b.disabled = !!SUM || sumCool > 0 || player.dead || indoor; b.addEventListener("click", () => summonHero(i)); box.appendChild(b);
+    b.disabled = sumCool > 0 || player.dead || indoor; b.addEventListener("click", () => summonHero(i)); box.appendChild(b);
   });
   showOv("whistle");
 }
+function whistleSound() { [1800, 2200, 1800, 2400].forEach((f, k) => setTimeout(() => tone(f, f * 1.05, 0.16, 0.12, "sine"), k * 140)); }
+function heroSpot(d) { const P = player.inCar || player, a = mode3d && !indoor ? cam3.yaw + 0.35 : rand(0, TAU); return { x: P.x + Math.cos(a) * d, y: P.y + Math.sin(a) * d }; }
 function summonHero(i) {
   if (SUM || sumCool > 0) return; resume();
   if (player.inCar) exitCar(true);
-  const P = player, a = mode3d ? cam3.yaw + 0.35 : rand(0, TAU), d = mode3d ? 46 : 34;
-  SUM = { i, hr: HEROES[i], t: 0, ph: "down", x: P.x + Math.cos(a) * d, y: P.y + Math.sin(a) * d, z: 520 };
-  [1800, 2200, 1800, 2400].forEach((f, k) => setTimeout(() => tone(f, f * 1.05, 0.16, 0.12, "sine"), k * 140));
+  const sp = heroSpot(mode3d ? 46 : 34);
+  SUM = { i, hr: HEROES[i], t: 0, ph: "down", x: sp.x, y: sp.y, z: 520 };
+  save.hero = i; writeSave(); whistleSound();
   toast("📯 Фьюить! " + HEROES[i].name + " летит к тебе!", 2.4);
-  if (G3.ready && G3.K) { const B = mk3d(G3.K, 0, 0, {}); const h = heroFigure(B, HEROES[i], 0, 0, 0, 0.95, "fist"); SUM.g = h.S.g; SUM.cape = h.cape; }
+}
+function dismissHero() {
+  if (!SUM) return; whistleSound();
+  SUM.ph = "up"; SUM.t = 0; SUM.sleepT = 0; save.hero = null; writeSave();
+  toast(SUM.hr.mark + " " + SUM.hr.name + ": «Зови, если что!» — и улетает", 2.6); tone(400, 1600, 0.6, 0.1, "sine");
 }
 function tickSummon(dt) {
   if (sumCool > 0) sumCool -= dt;
+  const wantBtn = CITY.id === "hero" || !!SUM; if (hudCache.whBtn !== wantBtn) { hudCache.whBtn = wantBtn; $("whistleBtn").hidden = !wantBtn; }
+  // a hero who stayed with you comes along after a flight or a dream
+  if (!SUM && save.hero != null && started && HEROES[save.hero]) { const sp = heroSpot(36); SUM = { i: save.hero, hr: HEROES[save.hero], t: 0, ph: "follow", x: sp.x, y: sp.y, z: 0, done: true }; }
   if (!SUM) return;
   const S2 = SUM; S2.t += dt;
-  if (S2.ph === "down") { S2.z = Math.max(0, 520 * (1 - S2.t / 2.2) ** 2); if (S2.t >= 2.2) { S2.ph = "stand"; S2.t = 0; shake = Math.max(shake, 6); noise(0.4, 0.4, 300); for (let k = 0; k < 18; k++) { const a = rand(0, TAU), sp = rand(40, 140); addPart({ x: S2.x, y: S2.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.6, max: 0.6, size: rand(5, 10), col: pick([S2.hr.suit, S2.hr.cape, "#ffffff"]), type: "fire" }); } big(S2.hr.mark + " " + S2.hr.name.toUpperCase(), "«Я здесь! Чем помочь?»", S2.hr.suit, 2.4); } }
-  else if (S2.ph === "stand") { if (!S2.done && S2.t > 1.2) { S2.done = true; const msg = POWERS[S2.i].act(); sfx.win(); toast(msg, 2.6); updHud(); } if (S2.t > 3.4) { S2.ph = "up"; S2.t = 0; S2.x0 = S2.x; S2.y0 = S2.y; tone(400, 1600, 0.6, 0.1, "sine"); } }
-  else { S2.z = 520 * (S2.t / 1.8) ** 2; if (S2.t > 1.8) { if (S2.g) G3.scene.remove(S2.g); SUM = null; sumCool = 20; return; } }
-  if (S2.g) { S2.g.visible = !indoor; S2.g.position.set(S2.x, S2.z, S2.y); S2.g.rotation.y = -Math.atan2(player.y - S2.y, player.x - S2.x); if (S2.cape) S2.cape.rotation.x = 0.12 + (S2.ph === "stand" ? Math.sin(now * 3) * 0.05 : Math.sin(now * 12) * 0.25); }
+  if (!S2.g && G3.ready && G3.K) { const B = mk3d(G3.K, 0, 0, {}); const h = heroFigure(B, S2.hr, 0, 0, 0, 0.95, "fist"); S2.g = h.S.g; S2.cape = h.cape; }
+  const P = player.inCar || player;
+  let face = Math.atan2(P.y - S2.y, P.x - S2.x), lying = false;
+  if (S2.ph === "down") {
+    S2.z = Math.max(0, 520 * (1 - S2.t / 2.2) ** 2);
+    if (S2.t >= 2.2) { S2.ph = "stand"; S2.t = 0; shake = Math.max(shake, 6); noise(0.4, 0.4, 300); for (let k = 0; k < 18; k++) { const a = rand(0, TAU), sp = rand(40, 140); addPart({ x: S2.x, y: S2.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0.6, max: 0.6, size: rand(5, 10), col: pick([S2.hr.suit, S2.hr.cape, "#ffffff"]), type: "fire" }); } big(S2.hr.mark + " " + S2.hr.name.toUpperCase(), "«Я здесь! Теперь я с тобой»", S2.hr.suit, 2.4); }
+  } else if (S2.ph === "stand") {
+    if (!S2.done && S2.t > 1.2) { S2.done = true; const msg = POWERS[S2.i].act(); sfx.win(); toast(msg + " · герой теперь всегда рядом. Свистни ещё раз, чтобы отпустить", 3.4); updHud(); }
+    if (S2.t > 2.6) { S2.ph = "follow"; S2.t = 0; }
+  } else if (S2.ph === "follow") {
+    if (S2.sleepT > 0) { // sleeping on the bed next to you
+      S2.sleepT -= dt; S2.x = OX + 40; S2.y = OZ + 62; S2.z = 23; lying = true; face = Math.PI / 2;
+      if (Math.random() < dt * 1.5) addPart({ x: S2.x, y: S2.y, vx: 6, vy: -18, life: 1.4, max: 1.4, size: 6, col: "#ffffff", type: "smoke" });
+    } else {
+      const inCar = !!player.inCar, far = Math.hypot(P.x - S2.x, P.y - S2.y);
+      if (far > 900 || (indoor && (S2.x < OX - 50 || S2.x > OX + RW + 50)) || (!indoor && S2.x > WORLD + 400)) { const sp = heroSpot(30); S2.x = sp.x; S2.y = sp.y; } // caught up in a flash
+      const want = inCar ? 0 : indoor ? 26 : 34, tz = inCar ? 70 : 0;
+      if (far > want + 4) { const spd = Math.max(130, (inCar ? Math.hypot(player.inCar.vx, player.inCar.vy) : player.spd || 0) * 1.15) * (far > 220 ? 2.2 : 1); const st = Math.min(far - want, spd * dt); S2.x += ((P.x - S2.x) / far) * st; S2.y += ((P.y - S2.y) / far) * st; face = Math.atan2(P.y - S2.y, P.x - S2.x); S2.walk = (S2.walk || 0) + st * 0.16; }
+      S2.z += (tz - S2.z) * Math.min(1, dt * 3);
+    }
+  } else { // flying away
+    S2.z = 520 * (S2.t / 1.8) ** 2;
+    if (S2.t > 1.8) { if (S2.g) G3.scene.remove(S2.g); SUM = null; sumCool = 20; return; }
+  }
+  if (S2.g) {
+    S2.g.visible = true; const bob = S2.ph === "follow" && !lying ? Math.abs(Math.sin((S2.walk || 0))) * 1.2 : 0;
+    S2.g.position.set(S2.x, S2.z + bob, S2.y); S2.g.rotation.set(lying ? 0 : 0, -face, lying ? -Math.PI / 2 : 0);
+    if (S2.cape) S2.cape.rotation.x = 0.12 + (S2.z > 20 || S2.ph !== "follow" ? Math.sin(now * 12) * 0.25 : Math.sin(now * 3) * 0.05);
+  }
 }
-function drawSummon2D() {
-  const S2 = SUM, hr = S2.hr, lift = S2.z * 0.35;
-  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(S2.x + 3, S2.y + 3, 9, 6, 0, 0, TAU); ctx.fill();
-  ctx.save(); ctx.translate(S2.x, S2.y - lift);
+function drawSummon2D(ox = 0, oy = 0) {
+  const S2 = SUM, hr = S2.hr, lift = S2.z * 0.35, x = S2.x - ox, y = S2.y - oy;
+  ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(x + 3, y + 3, 9, 6, 0, 0, TAU); ctx.fill();
+  ctx.save(); ctx.translate(x, y - lift); if (S2.sleepT > 0) ctx.rotate(Math.PI / 2);
   ctx.fillStyle = hr.cape; ctx.beginPath(); ctx.moveTo(-9, -4); ctx.lineTo(9, -4); ctx.lineTo(13, 16 + Math.sin(now * 10) * 2); ctx.lineTo(-13, 16 + Math.cos(now * 10) * 2); ctx.closePath(); ctx.fill();
   ctx.fillStyle = hr.suit; ctx.beginPath(); ctx.ellipse(0, 0, 8, 10, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = "#111"; ctx.lineWidth = 2; ctx.stroke();
   ctx.fillStyle = "#e2b08a"; ctx.beginPath(); ctx.arc(0, -11, 5, 0, TAU); ctx.fill(); ctx.stroke();
   ctx.fillStyle = hr.trim; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(hr.mark, 0, 1);
   ctx.restore();
 }
-$("whistleBtn").hidden = CITY.id !== "hero";
 $("whistleBtn").addEventListener("click", () => { initAudio(); openWhistle(); });
 $("wsOut").addEventListener("click", resume);
 /* ===== small life of the city ===== */
@@ -1873,7 +1908,6 @@ function lmNear() {
   lmLast = best;
 }
 function cityTick(dt) {
-  tickSummon(dt);
   if (CITY.steam) { steamT -= dt; if (steamT <= 0) { steamT = 0.12; const P = player.inCar || player; for (let k = 0; k < 3; k++) { const tx = Math.floor(P.x / T / 8) * 8 + (k - 1) * 8, ty = Math.floor(P.y / T / 8) * 8 + 4 + (k % 2) * 8; const x = (tx + 0.5) * T + 10, y = (ty + 0.5) * T; if (tile(tx, ty) === ROAD) addPart({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-6, 6), vy: rand(-14, -4), life: 1.6, max: 1.6, size: rand(8, 13), col: "#e8eef2", type: "smoke" }); } } }
 }
 
@@ -2652,6 +2686,7 @@ function wakeUp() {
 }
 function sleepHome() {
   player.hp = 100; dayT = 2 / 24; // 08:00
+  if (SUM && SUM.ph === "follow") { SUM.sleepT = 7; setTimeout(() => toast("💤 " + SUM.hr.name + " спит рядом с тобой", 2.6), 2500); }
   if (!WX.manual) WX.target = 0;
   writeSave(); tone(440, 220, 0.6, 0.08, "sine");
   big("ДОБРОЕ УТРО", "Ты выспался · здоровье 100", "#ffe08a", 2.4);
@@ -3112,6 +3147,7 @@ function drawIndoor2D(dpr, W, H) {
   const spot = nearSpot();
   if (spot) { ctx.strokeStyle = "#2fd0a0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
   if (CITY.dream) { ctx.globalCompositeOperation = "color"; ctx.fillStyle = "#8a3ad8"; ctx.fillRect(-8, -8, RW + 16, RH + 16); ctx.globalCompositeOperation = "source-over"; }
+  if (SUM) drawSummon2D(OX, OZ);
   const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
 }
 function goHome() {
@@ -3732,7 +3768,7 @@ function radioNext() {
 }
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 function tickGadgets(dt) {
-  tickOrder(dt);
+  tickOrder(dt); tickSummon(dt);
   if (gadget("laptop")) { laptopT += dt; if (laptopT >= 60) { laptopT -= 60; money += 25; sfx.cash(); toast("Ноутбук: удалённая работа +$25", 1.6); } }
   const stn = save.station == null ? 0 : save.station;
   if (!ac || muted || !hasRadio() || stn < 0 || (stn === 0 && !songBad)) { radioT = 0; return; }
@@ -6250,7 +6286,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
