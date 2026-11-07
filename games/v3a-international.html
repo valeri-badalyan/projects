@@ -3057,6 +3057,64 @@ function tickOrder(dt) {
     big("ЗАКАЗ ПРИВЕЗЛИ!", "🦀 " + what + " — в сумке", "#ff7a3d", 3);
   } else big("ЗВОНОК В ДВЕРЬ", "🦀 Курьер Crusty Crab: " + what + " — в сумке", "#ff7a3d", 3);
 }
+/* V3Tube: video app in the phone */
+const TUBE = { open: null, t: 0, play: true, last: 0, likes: {}, subs: {} };
+function tubeVideos() {
+  const v = [];
+  const tour = ["tower", "stadium", "crab", "port", "factory", "chapel", "wall", "sun"].filter((k) => CITY.wall || k !== "wall");
+  v.push({ id: "vlog-" + CITY.id, title: `Влог: один день в городе ${CITY.name} ${CITY.flag}`, ch: "V3A Travel", views: "1,4 млн", len: 24, wide: true,
+    draw: (g, w, h, t) => { const k = Math.floor(t / 4) % tour.length; newsPic(g, tour[k], 0, 0, w, h, t); g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(0, h - 26, w, 26); g.fillStyle = "#fff"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(((places.lms && places.lms[Math.floor(t / 4) % Math.max(1, places.lms.length)]) || { name: CITY.name }).name, 10, h - 13); } });
+  v.push({ id: "match", title: "Матч дня: все голы за 30 секунд", ch: "V3 Sport", views: "860 тыс.", len: 30, wide: true,
+    draw: (g, w, h, t) => { drawPitch(g, 0, 0, w, h); const m = genMatch(dayKey()), bx = w / 2 + Math.sin(t * 1.3) * w * 0.38, by = h / 2 + Math.sin(t * 2.1) * h * 0.3; for (let i = 0; i < 12; i++) { const home = i < 6; g.fillStyle = home ? "#ff7a3d" : "#3d6dff"; g.beginPath(); g.arc(bx + Math.cos(i * 1.7 + t) * (30 + i * 6) * (home ? -1 : 1) * 0.6, by + Math.sin(i * 2.3 + t * 0.8) * h * 0.25, 5, 0, TAU); g.fill(); } g.fillStyle = "#fff"; g.beginPath(); g.arc(bx, by, 3.5, 0, TAU); g.fill(); g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(6, 6, 150, 20); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; const goals = m.goals.filter((q) => q.min <= (t / 30) * 90); g.fillText(`V3 ${goals.filter((q) => q.home).length}:${goals.filter((q) => !q.home).length} ${m.opp}`, 12, 16, 140); if (goals.length && (t / 30) * 90 - goals[goals.length - 1].min < 6) { g.fillStyle = "#ffd23d"; g.font = "32px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("ГОЛ!", w / 2, h / 2); } } });
+  v.push({ id: "wn", title: "WorldNews: главное за неделю", ch: "WorldNews", views: "2,1 млн", len: 36, wide: true, draw: (g, w, h, t) => { const pics = ["police", "fire", "factory", "crab", "port", "chapel"]; newsPic(g, pics[Math.floor(t / 6) % pics.length], 0, 0, w, h, t); g.fillStyle = "#c8102e"; g.fillRect(0, h - 22, w, 22); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("WORLD NEWS · " + CITY.name.toUpperCase(), 8, h - 11); } });
+  for (const rp of save.reports || []) v.push({ id: "my-" + rp.title, title: rp.title, ch: "Мой канал", views: (120 + rp.title.length * 37) + " просмотров", len: 12, wide: true, mine: true, draw: (g, w, h, t) => { newsPic(g, rp.pic, 0, 0, w, h, t); g.fillStyle = "#ff2d3d"; g.beginPath(); g.arc(14, 14, 5, 0, TAU); g.fill(); g.fillStyle = "#fff"; g.font = "bold 11px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText("REC · мой репортаж", 24, 14); } });
+  SHORTS.forEach((sh, i) => v.push({ id: "sh" + i, title: sh.title, ch: sh.by, views: sh.likes + " лайков", len: 6, short: true, draw: (g, w, h, t) => { g.fillStyle = "#0f0f12"; g.fillRect(0, 0, w, h); const fw = Math.round((h * 9) / 16), fx = (w - fw) / 2; g.save(); g.translate(fx, 0); g.beginPath(); g.rect(0, 0, fw, h); g.clip(); sh.draw(g, fw, h, t % 6); g.restore(); g.fillStyle = "#e0213b"; g.fillRect(6, 6, 46, 16); g.fillStyle = "#fff"; g.font = "bold 10px Manrope,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("Shorts", 29, 14); } }));
+  return v;
+}
+function tubeThumb(vd) { const c = document.createElement("canvas"); c.width = 192; c.height = 108; const g = c.getContext("2d"); try { vd.draw(g, 192, 108, 2.5); } catch (e) {} g.fillStyle = "rgba(0,0,0,.75)"; g.fillRect(150, 88, 38, 16); g.fillStyle = "#fff"; g.font = "bold 10px Manrope,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("0:" + String(vd.len).padStart(2, "0"), 169, 96); return c; }
+function renderTube(scr) {
+  const bar = el("div", "ph-bar"), back = el("button", null, "‹ Назад"); back.type = "button"; back.id = "phBack";
+  back.addEventListener("click", () => { if (TUBE.open) { TUBE.open = null; renderPhone("v3tube"); } else renderPhone("home"); });
+  const ttl = el("h4", null, ""); ttl.innerHTML = '<span style="color:#e0213b">▶</span> V3Tube'; bar.append(back, ttl); scr.appendChild(bar);
+  const vids = tubeVideos();
+  if (TUBE.open) {
+    const vd = vids.find((q) => q.id === TUBE.open); if (!vd) { TUBE.open = null; return renderTube(scr); }
+    const c = document.createElement("canvas"); c.id = "tubeCv"; c.width = 320; c.height = 180; c.style.cssText = "display:block;width:100%;height:auto;border-radius:12px;background:#000"; scr.appendChild(c);
+    c.addEventListener("click", () => { TUBE.play = !TUBE.play; });
+    scr.appendChild(el("b", null, vd.title)).style.cssText = "font-size:15px;line-height:1.3";
+    scr.appendChild(el("p", "ph-note", vd.ch + " · " + vd.views));
+    const row = el("div", null); row.style.cssText = "display:flex;gap:8px;flex-wrap:wrap";
+    const liked = !!TUBE.likes[vd.id], subd = !!TUBE.subs[vd.ch];
+    const btn = (t, on, f, id) => { const b = el("button", null, t); b.type = "button"; b.id = id; b.style.cssText = `min-height:38px;padding:0 14px;border-radius:999px;border:0;font-weight:800;font-size:13px;background:${on ? "#f2f2f2" : "#2c2937"};color:${on ? "#14121a" : "#fff"}`; b.addEventListener("click", f); return b; };
+    row.append(btn(liked ? "👍 Нравится" : "👍 Лайк", liked, () => { TUBE.likes[vd.id] = !liked; tone(880, 1320, 0.06, 0.06); renderPhone("v3tube"); }, "tubeLike"),
+      vd.mine ? el("span", "ph-note", "Это твоё видео") : btn(subd ? "✓ Вы подписаны" : "Подписаться", subd, () => { TUBE.subs[vd.ch] = !subd; tone(660, 990, 0.08, 0.06); renderPhone("v3tube"); }, "tubeSub"),
+      btn("↗ Поделиться", false, () => toast("Ссылка на видео скопирована", 1.6), "tubeShare"));
+    scr.appendChild(row);
+    const com = el("div", "ph-list"); com.appendChild(el("p", "ph-note", "Комментарии"));
+    for (const [who, txt] of [["@nova_fan", "Лучшее видео за сегодня 🔥"], ["@" + CITY.id + "_local", "Узнаю наш " + CITY.name + "!"], ["@v3a_player", "Кто смотрит из игры? 😄"]]) com.appendChild(phRow(who, txt, null));
+    scr.appendChild(com);
+    if (!TUBE.vd || TUBE.vd.id !== vd.id) { TUBE.t = 0; TUBE.play = true; } TUBE.last = performance.now(); TUBE.vd = vd; requestAnimationFrame(tubeTick);
+    return;
+  }
+  const chips = el("div", null); chips.style.cssText = "display:flex;gap:6px;overflow:auto"; for (const t of ["Все", CITY.name, "Спорт", "Новости", "Shorts"]) { const c = el("span", null, t); c.style.cssText = "flex:none;padding:6px 12px;border-radius:999px;background:" + (t === "Все" ? "#f2f2f2;color:#14121a" : "#2c2937;color:#fff") + ";font-weight:800;font-size:12px"; chips.appendChild(c); } scr.appendChild(chips);
+  for (const vd of vids) {
+    const card = el("button", null); card.type = "button"; card.id = "tube-" + vd.id.replace(/[^a-z0-9-]/gi, ""); card.style.cssText = "display:flex;flex-direction:column;gap:6px;background:none;border:0;padding:0;color:#fff;text-align:left";
+    const th = tubeThumb(vd); th.style.cssText = "width:100%;height:auto;border-radius:12px;display:block"; card.appendChild(th);
+    const info = el("span", null); info.style.cssText = "display:flex;flex-direction:column;gap:2px"; info.append(el("b", null, vd.title), el("small", null, vd.ch + " · " + vd.views)); info.lastChild.style.color = "var(--muted)"; card.appendChild(info);
+    card.addEventListener("click", () => { TUBE.open = vd.id; TUBE.vd = null; renderPhone("v3tube"); $("phScreen").scrollTop = 0; });
+    scr.appendChild(card);
+  }
+}
+function tubeTick(tm) {
+  const c = $("tubeCv"); if (!c || state !== "phone" || !TUBE.open) return;
+  const dt = Math.min(0.05, (tm - TUBE.last) / 1000); TUBE.last = tm; const vd = TUBE.vd;
+  if (TUBE.play) { TUBE.t += dt; if (TUBE.t >= vd.len) TUBE.t = 0; }
+  const g = c.getContext("2d"), W = c.width, H = c.height; g.save(); try { vd.draw(g, W, H, TUBE.t); } catch (e) {} g.restore();
+  g.fillStyle = "rgba(255,255,255,.3)"; g.fillRect(0, H - 4, W, 4); g.fillStyle = "#e0213b"; g.fillRect(0, H - 4, (W * TUBE.t) / vd.len, 4);
+  if (!TUBE.play) { g.fillStyle = "rgba(0,0,0,.45)"; g.fillRect(0, 0, W, H); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(W / 2 - 14, H / 2 - 18); g.lineTo(W / 2 + 18, H / 2); g.lineTo(W / 2 - 14, H / 2 + 18); g.fill(); }
+  g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(W - 76, 6, 70, 16); g.fillStyle = "#fff"; g.font = "bold 10px Manrope,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(`0:${String(Math.floor(TUBE.t)).padStart(2, "0")} / 0:${String(vd.len).padStart(2, "0")}`, W - 41, 14);
+  requestAnimationFrame(tubeTick);
+}
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -4070,6 +4128,7 @@ const APPS = [
   { id: "tele", name: "Телепорт", col: "#8d3fd1", g: "TP" },
   { id: "fly", name: "Рейсы", col: "#5ad0ff", g: "✈" },
   { id: "crabgo", name: "Crusty Crab", col: "#c2452d", g: "CC" },
+  { id: "v3tube", name: "V3Tube", col: "#e0213b", g: "▶" },
   { id: "settings", name: "Настройки", col: "#6d6a86", g: "≡" },
 ];
 const TAXI = 50;
@@ -4105,6 +4164,7 @@ function renderPhone(app) {
     return;
   }
   if (app === "crabgo") { renderCrabGo(scr); return; }
+  if (app === "v3tube") { renderTube(scr); return; }
   if (app === "fly") { openShop(SHOPS.find((q) => q.id === "air")); return; }
   const A = APPS.find((a) => a.id === app); phBar(scr, A.name);
   const list = el("div", "ph-list");
