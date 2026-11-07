@@ -106,6 +106,12 @@ body.touch #homeBtn{display:none}
 body.touch #bagBtn{display:none}
 #rainBtn{display:flex;align-items:center;justify-content:center;color:#9cc6ff}
 #rainBtn svg{width:20px;height:20px}
+#rainMenu{position:absolute;z-index:8;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:14px;background:rgba(16,18,28,.94);border:1px solid #9cc6ff;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:168px}
+#rainMenu[hidden]{display:none}
+#rainMenu p{margin:0 2px 2px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9cc6ff}
+#rainMenu button{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#232837;color:var(--ink);font-weight:800;font-size:15px;text-align:left}
+#rainMenu button.on{background:#2a6fd6;border-color:#9cc6ff;color:#fff}
+#rainMenu button span{font-size:18px;width:22px;text-align:center}
 #rainBtn[aria-pressed="true"]{background:#2a6fd6;border-color:#9cc6ff;color:#fff}
 #bagBtn{display:flex;align-items:center;justify-content:center}
 body.touch #phoneBtn{display:none}
@@ -268,6 +274,12 @@ button.ph-row:disabled{opacity:.45}
     <div id="stars" aria-label="Уровень розыска" hidden></div>
     <div class="bars"><div class="bar"><i id="hpBar"></i></div><div class="bar"><i id="arBar" style="width:0"></i></div></div>
     <div id="weap">Кулаки</div>
+  </div>
+  <div id="rainMenu" role="menu" aria-label="Дождь" hidden>
+    <p>Дождь</p>
+    <button type="button" role="menuitem" id="rmLight" data-rain="light"><span aria-hidden="true">🌦</span>Лёгкий</button>
+    <button type="button" role="menuitem" id="rmHeavy" data-rain="heavy"><span aria-hidden="true">🌧</span>Ливень</button>
+    <button type="button" role="menuitem" id="rmOff" data-rain="off"><span aria-hidden="true">☀️</span>Выключить</button>
   </div>
   <div class="topbtns">
     <button type="button" id="pauseBtn" aria-label="Пауза">II</button>
@@ -2772,7 +2784,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
-  if (e.code === "KeyR" && state === "play") toggleRain();
+  if (e.code === "KeyR" && state === "play") toggleRainMenu();
   if (e.code === "KeyH") goHome();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
@@ -2988,7 +3000,9 @@ $("dDown").addEventListener("click", gearDown);
 $("dMode").addEventListener("click", gearMode);
 $("dRadio").addEventListener("click", radioNext);
 $("bHome").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); goHome(); });
-$("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRain(); });
+$("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRainMenu(); });
+for (const b of document.querySelectorAll("#rainMenu button")) b.addEventListener("click", () => { pickRain(b.dataset.rain); closeRainMenu(); });
+addEventListener("pointerdown", (e) => { if (!$("rainMenu").hidden && !e.target.closest("#rainMenu") && !e.target.closest("#rainBtn")) closeRainMenu(); }, true);
 $("bBag").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); toggleInv(); });
 $("invOut").addEventListener("click", resume);
 $("hmOut").addEventListener("click", resume);
@@ -3022,6 +3036,24 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && sta
 const WX = { rain: 0, target: 0, t: 25, storm: false, flash: 0, drops: [] };
 for (let i = 0; i < 320; i++) WX.drops.push({ x: Math.random(), y: Math.random(), sp: 0.9 + Math.random() * 0.8, len: 0.6 + Math.random() * 0.8 });
 WX.manual = false;
+/* the drop button opens a small menu: light rain, downpour, or off */
+function toggleRainMenu() { if ($("rainMenu").hidden) openRainMenu(); else closeRainMenu(); }
+function openRainMenu() {
+  const m = $("rainMenu"), r = $("rainBtn").getBoundingClientRect(), g = $("game").getBoundingClientRect();
+  const cur = WX.target <= 0 ? "off" : WX.target < 0.7 ? "light" : "heavy";
+  for (const b of m.querySelectorAll("button")) b.classList.toggle("on", b.dataset.rain === cur);
+  m.hidden = false;
+  const side = r.right + 8 + m.offsetWidth < g.right - 8;
+  m.style.left = (side ? r.right + 8 : Math.max(8, r.left)) - g.left + "px";
+  m.style.top = (side ? r.top : r.bottom + 8) - g.top + "px";
+  $("rainBtn").setAttribute("aria-expanded", "true");
+}
+function closeRainMenu() { $("rainMenu").hidden = true; $("rainBtn").setAttribute("aria-expanded", "false"); }
+function pickRain(kind) {
+  if (kind === "off") { WX.target = 0; WX.storm = false; WX.manual = false; WX.pick = null; WX.t = rand(70, 140); toast("Дождь выключен", 1.6); }
+  else { const heavy = kind === "heavy"; WX.target = heavy ? 0.95 : 0.4; WX.storm = false; WX.manual = true; WX.pick = kind; WX.t = 1e9; toast(heavy ? "Пошёл ливень" : "Пошёл лёгкий дождь", 1.6); }
+  tone(520, 880, 0.1, 0.06, "triangle"); syncRainBtn();
+}
 function toggleRain() {
   if (WX.target > 0) { WX.target = 0; WX.manual = false; WX.pick = null; WX.t = rand(70, 140); toast("Дождь выключен", 1.6); }
   else { WX.target = 0.8; WX.storm = false; WX.manual = true; WX.pick = "heavy"; WX.t = 1e9; toast("Пошёл дождь", 1.6); }
