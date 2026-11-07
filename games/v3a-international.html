@@ -341,7 +341,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Мышь / Z, C</dt><dd>в 3D: тяни мышью (правой кнопкой — без выстрела) или жми Z/C, чтобы крутить камеру</dd>
         <dt>P</dt><dd>пауза</dd>
       </dl>
-      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Хочешь снимать новости — зайди в офис WorldNews, метка <b style="color:#ff4a5a">WN</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции. <b style="color:#5ad0ff">✈ Аэропорт</b> на площади с фонтаном (или приложение «Рейсы» в телефоне) летает в 23 города 17 стран. Деньги, машины и вещи летят с тобой, а квартиру можно купить в каждом городе.</p>
+      <p class="prog">Магазины: оружие — метка <b style="color:var(--warn)">$</b> у старта, продукты — <b style="color:var(--cash)">П</b> по соседству, ресторан Crusty Crab — <b style="color:#ff5a3d">CC</b> на набережной, квартиры в ЖК «Нова» за $20 000, а рядом бар V BAR — <b style="color:#ff3d7f">VB</b> — <b style="color:#2fd0a0">Д</b> прямо под стартом, машины — <b style="color:var(--cop)">А</b> в автосалоне, стадион V3 с матчем каждый день — белая метка <b>V3</b>. Хочешь снимать новости — зайди в офис WorldNews, метка <b style="color:#ff4a5a">WN</b>. Город разделён стеной: на севере старт, магазины (оружие, продукты, электроника) и стадион, на юге только городские службы и промзона: больница, полиция, пожарные части, кладбища, суд, тюрьма, мэрия, автопарк, электростанция, склады и завод электроники (там можно отработать смену). Проехать можно через два КПП. Аптечки лежат в парках, бронежилет — у полиции. <b style="color:#5ad0ff">✈ Аэропорт</b> на площади с фонтаном (или приложение «Рейсы» в телефоне) летает в 23 города 17 стран. Деньги, машины и вещи летят с тобой, а квартиру можно купить в каждом городе. В каждом городе — настоящие достопримечательности (жёлтые точки на карте), реки и мосты, пляжи, горы на горизонте, местные вывески, местное время, местная еда в «Продуктах», а в Лондоне и Японии — левостороннее движение.</p>
     </div>
   </div>
 
@@ -553,6 +553,986 @@ function bindHome() {
   Object.defineProperty(save, "home", { configurable: true, enumerable: false, get() { return this.homes[CITY.id]; }, set(v) { this.homes[CITY.id] = v; } });
 }
 bindHome();
+
+/* ================= V3A International: the real look of every city ================= */
+// Each city gets its landmarks, river or sea, mountains on the horizon, local architecture, signs in the local language,
+// its own traffic (left-hand in London and Japan), local food and local time.
+const GOLD = "#d9b44a";
+const REAL = {
+  msk: { lang: "ru", style: "soviet", river: "Москва-река", sea: [], land: "#7f8a5c", tz: 3, bus: "#2e9e4f", stadium: "Лужники", food: ["Блины с икрой", "БЛ"], lms: ["kremlin", "basil", "mcity", "mgu"] },
+  spb: { lang: "ru", style: "euro", river: "Нева", sea: ["w"], land: "#7a8a60", tz: 3, bus: "#2a7de1", stadium: "Газпром Арена", food: ["Пышки", "П"], lms: ["isaac", "winter", "peter"] },
+  kzn: { lang: "ru", style: "soviet", river: "Казанка", sea: [], land: "#7f8a5c", tz: 3, bus: "#2a7de1", stadium: "Ак Барс Арена", food: ["Эчпочмак", "Э"], lms: ["kazkremlin", "chasha"] },
+  evn: { lang: "hy", style: "tuff", sea: [], land: "#a8996a", tz: 4, bus: "#f2c200", stadium: "Республиканский стадион", food: ["Хоровац", "Х"], lms: ["cascade", "republic", "motherarm"], back: ["ararat"] },
+  tbs: { lang: "ka", style: "med", river: "Кура", sea: [], land: "#6f8a4a", tz: 4, bus: "#2a7de1", stadium: "Динамо Арена", food: ["Хачапури по-аджарски", "ХЧ"], lms: ["narikala", "sameba"], bridge: "peacebridge", back: ["tbhills"] },
+  ala: { lang: "kk", style: "soviet", sea: [], land: "#7f8f55", tz: 5, bus: "#e8b923", stadium: "Центральный стадион", food: ["Бешбармак", "БШ"], lms: ["koktobe", "hotelkz"], back: ["alatau"], tree: "apple" },
+  ist: { lang: "tr", style: "med", river: "Золотой Рог", sea: ["s", "e"], land: "#8a8a5c", tz: 3, bus: "#2a7de1", stadium: "Стадион Ататюрка", food: ["Дёнер-кебаб", "К"], lms: ["sophia", "bluemosque", "galata"] },
+  dxb: { lang: "en", style: "glass", river: "Дубай-Крик", beach: true, sea: ["s"], land: "#d9c08a", sand: "#ecd9a8", tz: 4, bus: "#e8e8e8", stadium: "Стадион Аль-Мактум", food: ["Фалафель", "Ф"], lms: ["burj", "frame"], back: ["burjalarab"], palms: true, traffic: ["sport", "sport", "ters", "sedan", "sedan", "compact", "taxi", "van", "bus"] },
+  lon: { lang: "en", style: "brick", river: "Темза", sea: [], land: "#6f8a55", tz: 0, bus: "#c8102e", dd: true, left: true, stadium: "Уэмбли", food: ["Фиш-энд-чипс", "FC"], lms: ["bigben", "eye"], bridge: "towerbridge", decor: "phonebox" },
+  par: { lang: "fr", style: "haussmann", river: "Сена", sea: [], land: "#7a8a5a", tz: 1, bus: "#2f9e6b", stadium: "Стад де Франс", food: ["Круассан", "КР"], lms: ["eiffel", "arc", "louvre"], decor: "table" },
+  nce: { lang: "fr", style: "med", beach: true, chairs: true, sea: ["s"], land: "#7a8a55", sand: "#cfc7b8", tz: 1, stadium: "Альянц Ривьера", food: ["Салат нисуаз", "НС"], lms: ["negresco", "massena"], palms: true },
+  ber: { lang: "de", style: "euro", sea: [], land: "#7a8a5a", tz: 1, bus: "#f2c200", stadium: "Олимпиаштадион", food: ["Карривурст", "КВ"], lms: ["brandenburg", "fernseh", "reichstag"], wall: true },
+  muc: { lang: "de", style: "euro", river: "Изар", sea: [], land: "#6f8a50", tz: 1, bus: "#2a5aa8", stadium: "Альянц Арена", ring: { col: "#f2f2f2", glow: "#ff2a2a" }, food: ["Брецель с колбасками", "БР"], lms: ["frauenkirche", "bmw"], decor: "table" },
+  rom: { lang: "it", style: "med", river: "Тибр", sea: [], land: "#8a8a58", tz: 1, bus: "#d8d8d8", stadium: "Стадио Олимпико", food: ["Паста карбонара", "ПК"], lms: ["colosseum", "stpeter", "trevi"], tree: "pine" },
+  bcn: { lang: "ca", style: "med", beach: true, sea: ["s"], land: "#8a8a5a", tz: 1, bus: "#d8102e", stadium: "Камп Ноу", ring: { col: "#a50044", glow: "#2a6fd6" }, food: ["Паэлья", "ПЭ"], lms: ["sagrada", "glories"], palms: true },
+  nyc: { lang: "en", style: "brick", sea: ["n", "s", "e", "w"], tz: -5, bus: "#2a5aa8", stadium: "Янки-стэдиум", food: ["Хот-дог", "HD"], lms: ["empire", "central", "times"], back: ["liberty"], steam: true, traffic: ["taxi", "taxi", "taxi", "sedan", "sedan", "compact", "van", "bus"] },
+  lax: { lang: "en", style: "deco", beach: true, sea: ["s"], land: "#a89a6a", tz: -8, bus: "#e8b923", stadium: "Колизей Лос-Анджелеса", food: ["Тако", "Т"], lms: ["griffith", "chinese"], back: ["hollywood", "pier"], palms: true },
+  mia: { lang: "en", style: "deco", beach: true, guards: true, sea: ["s", "e"], land: "#7f9a52", tz: -5, bus: "#2a7de1", stadium: "Хард Рок Стэдиум", food: ["Кубинский сэндвич", "КС"], lms: ["ocean", "miamitower"], palms: true },
+  rio: { lang: "pt", style: "deco", beach: true, copa: true, sea: ["s"], land: "#4f7f3c", tz: -3, bus: "#e8b923", stadium: "Маракана", ring: { col: "#f2f2f2", glow: "#ffffff" }, food: ["Фейжоада", "ФЖ"], lms: ["selaron"], back: ["cristo", "sugarloaf", "favela"], palms: true },
+  tyo: { lang: "ja", style: "asia", river: "Сумида", sea: ["s"], land: "#6f8a5a", tz: 9, left: true, bus: "#2a9d5a", stadium: "Национальный стадион", food: ["Суши", "СШ"], lms: ["tokyotower", "skytree", "shibuya"], back: ["fuji"], tree: "sakura", decor: "vending" },
+  osa: { lang: "ja", style: "asia", river: "Ёдогава", sea: ["w"], land: "#6f8a5a", tz: 9, left: true, bus: "#2a7de1", stadium: "Стадион Нагаи", food: ["Такояки", "ТК"], lms: ["osakajo", "tsutenkaku", "dotonbori"], tree: "sakura", decor: "vending" },
+  sha: { lang: "zh", style: "glass", river: "Хуанпу", sea: ["e"], land: "#6f8a5a", tz: 8, bus: "#2a9d5a", stadium: "Стадион Хункоу", food: ["Сяолунбао", "СЛ"], lms: ["pearl", "shtower", "swfc", "bund"] },
+};
+for (const c of CITIES) Object.assign(c, REAL[c.id] || {});
+for (const c of CITIES) if (c.id === "nova") c.wall = true;
+// signs on buildings in the local language
+const LBL = ["ОРУЖИЕ", "АВТОСАЛОН", "ПРОДУКТЫ", "ПОЛИЦИЯ", "ПОЖАРНАЯ ЧАСТЬ", "БОЛЬНИЦА", "СУД", "МЭРИЯ", "ТЮРЬМА", "АВТОБУСНЫЙ ПАРК", "ЭЛЕКТРОСТАНЦИЯ", "СКЛАД", "СКОРАЯ ПОМОЩЬ", "ЭЛЕКТРОНИКА", "ЗАВОД ЭЛЕКТРОНИКИ"];
+const LANGS = {
+  en: ["GUN SHOP", "CAR DEALER", "GROCERY", "POLICE", "FIRE STATION", "HOSPITAL", "COURTHOUSE", "CITY HALL", "PRISON", "BUS DEPOT", "POWER PLANT", "WAREHOUSE", "AMBULANCE", "ELECTRONICS", "ELECTRONICS FACTORY"],
+  fr: ["ARMURERIE", "CONCESSIONNAIRE", "ÉPICERIE", "POLICE", "POMPIERS", "HÔPITAL", "PALAIS DE JUSTICE", "MAIRIE", "PRISON", "DÉPÔT DE BUS", "CENTRALE ÉLECTRIQUE", "ENTREPÔT", "SAMU", "ÉLECTRONIQUE", "USINE D'ÉLECTRONIQUE"],
+  de: ["WAFFENLADEN", "AUTOHAUS", "SUPERMARKT", "POLIZEI", "FEUERWACHE", "KRANKENHAUS", "GERICHT", "RATHAUS", "GEFÄNGNIS", "BUSBETRIEBSHOF", "KRAFTWERK", "LAGERHALLE", "RETTUNGSDIENST", "ELEKTRONIK", "ELEKTRONIKWERK"],
+  it: ["ARMERIA", "CONCESSIONARIA", "ALIMENTARI", "POLIZIA", "VIGILI DEL FUOCO", "OSPEDALE", "TRIBUNALE", "MUNICIPIO", "CARCERE", "DEPOSITO BUS", "CENTRALE ELETTRICA", "MAGAZZINO", "AMBULANZA", "ELETTRONICA", "FABBRICA DI ELETTRONICA"],
+  ca: ["ARMERIA", "CONCESSIONARI", "SUPERMERCAT", "POLICIA", "BOMBERS", "HOSPITAL", "JUTJATS", "AJUNTAMENT", "PRESÓ", "COTXERES", "CENTRAL ELÈCTRICA", "MAGATZEM", "AMBULÀNCIES", "ELECTRÒNICA", "FÀBRICA D'ELECTRÒNICA"],
+  pt: ["LOJA DE ARMAS", "CONCESSIONÁRIA", "MERCADO", "POLÍCIA", "BOMBEIROS", "HOSPITAL", "FÓRUM", "PREFEITURA", "PRESÍDIO", "GARAGEM DE ÔNIBUS", "USINA ELÉTRICA", "ARMAZÉM", "SAMU", "ELETRÔNICOS", "FÁBRICA DE ELETRÔNICOS"],
+  ja: ["銃砲店", "自動車ディーラー", "スーパー", "警察署", "消防署", "病院", "裁判所", "市役所", "刑務所", "バス営業所", "発電所", "倉庫", "救急センター", "家電量販店", "電子工場"],
+  zh: ["枪械店", "汽车城", "超市", "公安局", "消防站", "医院", "法院", "市政府", "监狱", "公交停车场", "发电厂", "仓库", "急救中心", "电子城", "电子厂"],
+  tr: ["SİLAH DÜKKANI", "OTO GALERİ", "MARKET", "POLİS", "İTFAİYE", "HASTANE", "ADLİYE", "BELEDİYE", "CEZAEVİ", "OTOBÜS GARAJI", "ELEKTRİK SANTRALİ", "DEPO", "AMBULANS", "ELEKTRONİK", "ELEKTRONİK FABRİKASI"],
+  hy: ["ԶԵՆՔԻ ԽԱՆՈՒԹ", "ԱՎՏՈՍՐԱՀ", "ՄԹԵՐՔ", "ՈՍՏԻԿԱՆՈՒԹՅՈՒՆ", "ՀՐՇԵՋ ԾԱՌԱՅՈՒԹՅՈՒՆ", "ՀԻՎԱՆԴԱՆՈՑ", "ԴԱՏԱՐԱՆ", "ՔԱՂԱՔԱՊԵՏԱՐԱՆ", "ԲԱՆՏ", "ԱՎՏՈԲՈՒՍԱՅԻՆ ՊԱՐԿ", "ԷԼԵԿՏՐԱԿԱՅԱՆ", "ՊԱՀԵՍՏ", "ՇՏԱՊ ՕԳՆՈՒԹՅՈՒՆ", "ԷԼԵԿՏՐՈՆԻԿԱ", "ԷԼԵԿՏՐՈՆԻԿԱՅԻ ԳՈՐԾԱՐԱՆ"],
+  ka: ["იარაღის მაღაზია", "ავტოსალონი", "მარკეტი", "პოლიცია", "სახანძრო", "საავადმყოფო", "სასამართლო", "მერია", "ციხე", "ავტობუსების პარკი", "ელექტროსადგური", "საწყობი", "სასწრაფო", "ელექტრონიკა", "ელექტრონიკის ქარხანა"],
+  kk: ["ҚАРУ ДҮКЕНІ", "АВТОСАЛОН", "АЗЫҚ-ТҮЛІК", "ПОЛИЦИЯ", "ӨРТ СӨНДІРУ", "АУРУХАНА", "СОТ", "ӘКІМДІК", "ТҮРМЕ", "АВТОБУС ПАРКІ", "ЭЛЕКТР СТАНСЫ", "ҚОЙМА", "ЖЕДЕЛ ЖӘРДЕМ", "ЭЛЕКТРОНИКА", "ЭЛЕКТРОНИКА ЗАУЫТЫ"],
+};
+function LOC(s) { const t = LANGS[CITY.lang]; const i = LBL.indexOf(s); return t && i >= 0 ? t[i] : s; }
+function localDayT() {
+  if (CITY.tz == null) return null;
+  const d = new Date(), h = (((d.getUTCHours() + d.getUTCMinutes() / 60 + CITY.tz) % 24) + 24) % 24;
+  return ((((h - 6) / 24) % 1) + 1) % 1;
+}
+function localClock() { const d = new Date(), m = Math.floor((((d.getUTCHours() * 60 + d.getUTCMinutes() + CITY.tz * 60) % 1440) + 1440) % 1440); return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"); }
+const hsh = (a, b, c) => { const s = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return s - Math.floor(s); };
+const lmBase = new Map();
+
+/* ================= landmarks =================
+   Each landmark fills one 4x4 city block. Local units: 0..256 in x and y (the inner block), height in world units.
+   d2: the top-down drawing, d3: the 3D model, solid: [tx, ty, w, h, "w" for water] footprints in tiles. */
+const rs = (b) => (b.by === 3 ? "n" : "s"); // which side the river is on for a riverside block
+const LMS = {
+  kremlin: { name: "Московский Кремль", info: "крепость XV века, 20 башен", fill: PLAZA_T(), solid: [[0, 0, 4, 4]], mm: "#b5312a", base: "#8a8070", h: 160,
+    d2(Q) {
+      const R = "#b5312a", G = "#4f8a5f", W = "#efe9dc";
+      Q.box(128, 8, 240, 8, 28, R); Q.box(128, 248, 240, 8, 28, R); Q.box(8, 128, 8, 240, 28, R); Q.box(248, 128, 8, 240, 28, R);
+      Q.box(92, 62, 140, 56, 48, "#6f9a6a", "#e8d8a8"); Q.box(196, 62, 70, 50, 34, "#e8d8a8"); Q.circ(196, 62, 14, 46, G);
+      Q.box(70, 150, 44, 40, 34, W); Q.circ(70, 150, 9, 64, GOLD); for (const [dx, dy] of [[-12, -12], [12, -12], [-12, 12], [12, 12]]) Q.circ(70 + dx, 150 + dy, 5, 56, GOLD);
+      Q.box(130, 168, 36, 34, 30, W); Q.circ(130, 168, 7, 50, "#c8ccd2");
+      Q.cyl(176, 140, 10, 120, GOLD, W);
+      for (const [x, y] of [[10, 10], [246, 10], [10, 246], [246, 246], [128, 8], [8, 128], [248, 128]]) Q.box(x, y, 20, 20, 80, G, R);
+      Q.box(128, 248, 30, 30, 150, G, R); Q.circ(128, 248, 5, 162, "#ff2a2a");
+    },
+    d3(B) {
+      const R = "#b5312a", G = "#3f7a4f", W = "#efe9dc", Y = "#e8d8a8", star = B.M("#ff2a2a", { glow: "#ff2a2a" });
+      B.box(R, 128, 8, 240, 8, 28); B.box(R, 128, 248, 240, 8, 28); B.box(R, 8, 128, 8, 240, 28); B.box(R, 248, 128, 8, 240, 28);
+      const mer = []; for (let i = 0; i < 24; i++) { const t = 16 + i * 9.6; mer.push([t, 31, 8, 4, 6, 3], [t, 31, 248, 4, 6, 3], [8, 31, t, 3, 6, 4], [248, 31, t, 3, 6, 4]); } B.inst(R, mer);
+      for (const [x, z] of [[10, 10], [246, 10], [10, 246], [246, 246], [128, 8], [8, 128], [248, 128]]) { B.box(R, x, z, 20, 20, 50); B.box(R, x, z, 14, 14, 14, 50); B.pyr(G, x, z, 16, 16, 30, 64); B.sph(star, x, z, 3, 97); }
+      B.box(R, 128, 248, 30, 30, 66); B.box(B.M("#ffffff", { map: B.X.clock("#b5312a") }), 128, 248, 26, 26, 18, 66); B.box(R, 128, 248, 20, 20, 24, 84); B.pyr(G, 128, 248, 20, 20, 54, 108); B.sph(star, 128, 248, 5, 166);
+      B.box(Y, 92, 62, 140, 56, 44); B.box(G, 92, 62, 142, 58, 4, 44); B.dome(G, 92, 62, 12, 48);
+      B.box(Y, 196, 62, 70, 50, 34); B.box(G, 196, 62, 72, 52, 3, 34); B.dome("#4f8a5f", 196, 62, 15, 37);
+      B.box(W, 70, 150, 44, 40, 34); for (const [dx, dz, r] of [[0, 0, 9], [-12, -12, 6], [12, -12, 6], [-12, 12, 6], [12, 12, 6]]) { B.cyl(W, 70 + dx, 150 + dz, r * 0.8, r * 0.8, 10, 34, 12); B.onion(GOLD, 70 + dx, 150 + dz, r, 44, GOLD); }
+      B.box(W, 130, 168, 36, 34, 30); for (const [dx, dz, r] of [[0, 0, 8], [-10, -10, 5], [10, -10, 5], [-10, 10, 5], [10, 10, 5]]) { B.cyl(W, 130 + dx, 168 + dz, r * 0.8, r * 0.8, 8, 30, 12); B.onion("#c8ccd2", 130 + dx, 168 + dz, r, 38); }
+      B.cyl(W, 176, 140, 11, 12, 44, 0, 8); B.cyl(W, 176, 140, 9, 10, 34, 44, 8); B.cyl(W, 176, 140, 7, 8, 28, 78, 8); B.onion(GOLD, 176, 140, 8, 106, GOLD);
+    } },
+  basil: { name: "Собор Василия Блаженного", info: "Красная площадь, 1561 год", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#c0392b", h: 160,
+    ground(g, b) { g.fillStyle = "#6e5f58"; g.fillRect(b.x, b.y, 256, 256); g.fillStyle = "rgba(0,0,0,.12)"; for (let i = 0; i < 256; i += 8) g.fillRect(b.x, b.y + i, 256, 1.5); },
+    d2(Q) {
+      Q.box(128, 128, 110, 110, 14, "#a33a2a");
+      const cols = [["#2f8f4e", "#f2d44a"], ["#d23a2a", "#f2f2f2"], ["#2a6fd6", "#f2f2f2"], ["#e8b923", "#2f8f4e"]];
+      for (let k = 0; k < 8; k++) { const a = (k * TAU) / 8, x = 128 + Math.cos(a) * 40, y = 128 + Math.sin(a) * 40, c = cols[k % 4], big = k % 2 === 0; Q.cyl(x, y, big ? 12 : 8, big ? 64 : 50, c[0], "#b5452f"); Q.circ(x, y, big ? 6 : 4, big ? 66 : 52, c[1]); }
+      Q.cyl(128, 128, 16, 150, "#3f8f5a", "#b5452f"); Q.circ(128, 128, 5, 156, GOLD);
+    },
+    d3(B) {
+      const X = B.X;
+      B.box("#a33a2a", 128, 128, 110, 110, 14);
+      B.cyl("#b5452f", 128, 128, 16, 18, 62, 14, 8); B.cyl("#e8d8a8", 128, 128, 13, 15, 18, 76, 8); B.cone(B.M("#ffffff", { map: X.stripes("#3f8f5a", "#f2f2f2", 10, true) }), 128, 128, 15, 56, 94, 8); B.onion(GOLD, 128, 128, 5, 148, GOLD);
+      const cols = [["#2f8f4e", "#f2d44a"], ["#d23a2a", "#f2f2f2"], ["#2a6fd6", "#f2f2f2"], ["#e8b923", "#2f8f4e"], ["#d23a2a", "#2f8f4e"], ["#f2d44a", "#d23a2a"], ["#2a6fd6", "#f2d44a"], ["#2f8f4e", "#d23a2a"]];
+      for (let k = 0; k < 8; k++) {
+        const a = (k * TAU) / 8, x = 128 + Math.cos(a) * 40, z = 128 + Math.sin(a) * 40, big = k % 2 === 0, r = big ? 12 : 8, h = big ? 50 : 36;
+        B.cyl(k % 3 ? "#b5452f" : "#efe9dc", x, z, r * 0.9, r, h, 14, 8); B.cyl("#e8d8a8", x, z, r * 0.7, r * 0.8, 6, 14 + h, 8);
+        B.onion(B.M("#ffffff", { map: X.stripes(cols[k][0], cols[k][1], 8, true) }), x, z, r, 20 + h, GOLD);
+      }
+    } },
+  mcity: { name: "Москва-Сити", info: "небоскрёбы делового центра", fill: PLAZA_T(), solid: [[0, 0, 1, 1], [2, 0, 1, 1], [3, 1, 1, 1], [1, 2, 1, 1], [3, 3, 1, 1], [0, 3, 1, 1]], mm: "#5a8fb0", h: 640, nofog: true,
+    T: [[32, 32, 560, "#6f9fc8"], [160, 32, 640, "#4f7fa8"], [224, 96, 420, "#b08a5a"], [96, 160, 520, "#8fb0c8"], [224, 224, 380, "#3f6f8f"], [32, 224, 330, "#9fc0d0"]],
+    d2(Q) { for (const [x, y, h, c] of this.T.slice().sort((a, b) => a[2] - b[2])) { Q.box(x, y, 52, 52, h, c); Q.flatAt(x - 20, y - 20, 40, 3, h, "rgba(255,255,255,.35)"); } },
+    d3(B) {
+      for (const [x, z, h, c] of this.T) {
+        const m = B.glass(c);
+        if (h === 520) { for (let i = 0; i < 26; i++) B.box(m, x, z, 50, 50, 20, i * 20, i * 0.06); }
+        else { B.box(m, x, z, 52, 52, h, 0, 0, 64); if (h === 640) B.cone("#c8d0d8", x, z, 4, 70, h, 6); }
+      }
+    } },
+  mgu: { name: "МГУ — сталинская высотка", info: "240 м, шпиль со звездой", fill: GRASS_T(), solid: [[0, 1, 4, 2]], mm: "#d8cdb0", h: 520,
+    d2(Q) { const S = "#d8cdb0"; Q.box(128, 128, 240, 60, 70, S); Q.box(30, 128, 40, 50, 110, S); Q.box(226, 128, 40, 50, 110, S); Q.box(128, 128, 80, 70, 190, S); Q.box(128, 128, 56, 50, 280, S); Q.box(128, 128, 36, 34, 350, S); Q.line(128, 128, 350, 128, 128, 500, GOLD, 4); Q.circ(128, 128, 4, 505, GOLD); },
+    d3(B) {
+      const S = B.M("#d8cdb0", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() }), gold = B.M(GOLD, { glow: "#ffcc55" });
+      B.box(S, 128, 128, 240, 60, 70, 0, 0, 128); B.box(S, 30, 128, 40, 50, 110, 0, 0, 128); B.box(S, 226, 128, 40, 50, 110, 0, 0, 128);
+      for (const x of [30, 226]) B.pyr("#b5a888", x, 128, 30, 30, 30, 110);
+      B.box(S, 128, 128, 80, 70, 190, 0, 0, 128); B.box(S, 128, 128, 56, 50, 90, 190, 0, 128); B.box(S, 128, 128, 36, 34, 70, 280, 0, 128);
+      for (const [dx, dz] of [[-38, -33], [38, -33], [-38, 33], [38, 33]]) B.cone("#b5a888", 128 + dx, 128 + dz, 4, 26, 190, 8);
+      B.cone(gold, 128, 128, 10, 150, 350, 8); B.sph(B.M("#ff3030", { glow: "#ff3030" }), 128, 128, 7, 506);
+    } },
+  isaac: { name: "Исаакиевский собор", info: "золотой купол, 101 м", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#9a958c", h: 300,
+    d2(Q) { Q.box(128, 128, 110, 110, 60, "#8a857c", "#9a958c"); for (const [dx, dy] of [[-40, -40], [40, -40], [-40, 40], [40, 40]]) Q.cyl(128 + dx, 128 + dy, 7, 90, GOLD, "#9a958c", 60); Q.cyl(128, 128, 31, 140, GOLD, "#9a958c", 60); Q.circ(128, 128, 7, 170, "#f2e08a"); },
+    d3(B) {
+      const S = "#9a958c", gold = B.M(GOLD, { glow: "#6a4a10" });
+      B.box(S, 128, 128, 110, 110, 60);
+      const cols = []; for (let i = 0; i < 8; i++) { const t = 92 + i * 10.3; cols.push([t, 24, 64, 3.5, 48, 3.5], [t, 24, 192, 3.5, 48, 3.5], [64, 24, t, 3.5, 48, 3.5], [192, 24, t, 3.5, 48, 3.5]); }
+      B.inst("#8a4a3a", cols.map((c) => [c[0] + (c[0] === 64 ? -6 : c[0] === 192 ? 6 : 0), c[1], c[2] + (c[2] === 64 ? -6 : c[2] === 192 ? 6 : 0), c[3], c[4], c[5]]), B.K.CYL8);
+      B.gable(S, 128, 58, 84, 12, 16, 48, true); B.gable(S, 128, 198, 84, 12, 16, 48, true); B.gable(S, 58, 128, 12, 84, 16, 48, false); B.gable(S, 198, 128, 12, 84, 16, 48, false);
+      B.box(S, 128, 128, 80, 80, 6, 60); B.cyl(S, 128, 128, 30, 30, 34, 66, 24);
+      const dc = []; for (let i = 0; i < 24; i++) { const a = (i * TAU) / 24; dc.push([128 + Math.cos(a) * 33, 81, 128 + Math.sin(a) * 33, 2, 30, 2]); } B.inst("#efe9dc", dc, B.K.CYL8);
+      B.dome(gold, 128, 128, 31, 100, 1.15); B.cyl(gold, 128, 128, 6, 6, 14, 134); B.dome(gold, 128, 128, 6, 148, 1.2); B.box(gold, 128, 128, 1.2, 1.2, 14, 154); B.box(gold, 128, 128, 7, 1.2, 1.2, 163);
+      for (const [dx, dz] of [[-40, -40], [40, -40], [-40, 40], [40, 40]]) { B.cyl(S, 128 + dx, 128 + dz, 7, 7, 16, 66, 12); B.dome(gold, 128 + dx, 128 + dz, 7.5, 82, 1.2); }
+    } },
+  winter: { name: "Зимний дворец · Эрмитаж", info: "1500 комнат, музей с 1764 года", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#5fa38a", h: 100,
+    d2(Q) { Q.box(128, 64, 250, 120, 50, "#c8ccc8", "#5fa38a"); Q.flatAt(8, 4, 240, 4, 50, "#f2f2f2"); Q.cyl(128, 190, 5, 100, GOLD, "#8a4a3a"); },
+    d3(B) {
+      const m = B.M("#5fa38a", { map: B.X.palace(), glow: "#ffd89a", emap: B.X.lit() });
+      B.box(m, 128, 64, 250, 120, 50, 0, 0, 64); B.box("#c8ccc8", 128, 64, 252, 122, 3, 50);
+      const st = []; for (let x = 8; x < 250; x += 15) st.push([x, 56, 4, 3, 10, 3], [x, 56, 124, 3, 10, 3]); B.inst("#4a4a3a", st);
+      B.box("#6a3a2e", 128, 190, 16, 16, 10); B.cyl("#8a4a3a", 128, 190, 4, 5, 90, 10, 12); B.box(GOLD, 128, 190, 4, 4, 10, 100); B.box(GOLD, 128, 190, 1, 1, 12, 110);
+    } },
+  peter: { name: "Петропавловская крепость", info: "шпиль собора — 122,5 м", fill: GRASS_T(), solid: [[0, 0, 4, 4]], mm: "#c8b07a", base: "#7a8a5a", h: 330,
+    d2(Q) { const S = "#b89a86"; Q.box(128, 10, 236, 12, 22, S); Q.box(128, 246, 236, 12, 22, S); Q.box(10, 128, 12, 236, 22, S); Q.box(246, 128, 12, 236, 22, S); Q.box(128, 150, 50, 90, 40, "#c8c0b0", "#f2d48a"); Q.box(128, 96, 30, 30, 114, "#f2d48a"); Q.line(128, 96, 114, 128, 96, 304, GOLD, 5); },
+    d3(B) {
+      const S = "#b89a86", Y = "#f2d48a", gold = B.M(GOLD, { glow: "#8a6a20" });
+      B.box(S, 128, 10, 236, 12, 22); B.box(S, 128, 246, 236, 12, 22); B.box(S, 10, 128, 12, 236, 22); B.box(S, 246, 128, 12, 236, 22);
+      for (const [x, z] of [[10, 10], [246, 10], [10, 246], [246, 246]]) B.box(S, x, z, 34, 34, 26, 0, Math.PI / 4);
+      B.box(Y, 128, 150, 50, 90, 40); B.gable("#7a8a8a", 128, 150, 52, 92, 14, 40, false); B.dome("#4f7f52", 128, 182, 11, 46); B.onion(GOLD, 128, 182, 4, 56, GOLD);
+      B.box(Y, 128, 96, 30, 30, 70); B.box(Y, 128, 96, 22, 22, 24, 70); B.box(Y, 128, 96, 14, 14, 20, 94); B.cone(gold, 128, 96, 7, 190, 114, 8); B.box(gold, 128, 96, 8, 6, 1, 304);
+    } },
+  kazkremlin: { name: "Казанский Кремль · Кул-Шариф", info: "мечеть и падающая башня Сююмбике", fill: PLAZA_T(), solid: [[0, 0, 4, 4]], mm: "#f2f2f2", base: "#8a8478", h: 200,
+    d2(Q) { const W = "#f4f4f4", tq = "#2fb5c8"; Q.box(128, 8, 240, 8, 22, W); Q.box(128, 248, 240, 8, 22, W); Q.box(8, 128, 8, 240, 22, W); Q.box(248, 128, 8, 240, 22, W); Q.box(110, 110, 60, 60, 40, W); Q.circ(110, 110, 24, 100, tq); for (const [dx, dy] of [[-40, -40], [40, -40], [-40, 40], [40, 40]]) Q.cyl(110 + dx, 110 + dy, 4, 148, tq, W); Q.box(200, 190, 26, 26, 66, "#3f8f5a", "#a8442f"); Q.box(200, 60, 40, 30, 30, W); Q.circ(200, 60, 8, 50, "#2a5ab0"); },
+    d3(B) {
+      const W = "#f4f4f4", tq = B.M("#2fb5c8", { glow: "#2fb5c8" }), brick = "#a8442f";
+      B.box(W, 128, 8, 240, 8, 22); B.box(W, 128, 248, 240, 8, 22); B.box(W, 8, 128, 8, 240, 22); B.box(W, 248, 128, 8, 240, 22);
+      for (const [x, z] of [[10, 10], [246, 10], [10, 246], [246, 246], [128, 248]]) { B.cyl(W, x, z, 11, 12, 40, 0, 12); B.cone("#3f8f5a", x, z, 12, 26, 40, 12); }
+      B.box(W, 110, 110, 60, 60, 40); B.cyl(W, 110, 110, 24, 26, 20, 40, 8); B.sph(tq, 110, 110, 24, 76, 1, 1.35, 1); B.cone(tq, 110, 110, 6, 22, 104); B.cyl(GOLD, 110, 110, 0.8, 0.8, 14, 126, 6);
+      for (const [dx, dz] of [[-40, -40], [40, -40], [-40, 40], [40, 40]]) { const x = 110 + dx, z = 110 + dz; B.cyl(W, x, z, 4, 5, 130, 0, 8); B.cyl(W, x, z, 7, 7, 3, 80, 12); B.cyl(W, x, z, 6, 6, 3, 110, 12); B.cone(tq, x, z, 5, 18, 130, 8); }
+      B.box(brick, 200, 190, 26, 26, 30); B.box(brick, 200, 190, 22, 22, 20, 30); B.box(brick, 200, 190, 18, 18, 16, 50); B.cyl(brick, 200, 190, 8, 9, 14, 66, 8); B.cone("#3f8f5a", 200, 190, 8, 40, 80, 8); B.sph(GOLD, 200, 190, 2.5, 122);
+      B.box(W, 200, 60, 40, 30, 30); for (const [dx, dz, r] of [[0, 0, 8], [-11, -8, 5], [11, -8, 5], [-11, 8, 5], [11, 8, 5]]) { B.cyl(W, 200 + dx, 60 + dz, r * 0.8, r * 0.8, 8, 30, 12); B.onion("#2a5ab0", 200 + dx, 60 + dz, r, 38, GOLD); }
+    } },
+  chasha: { name: "Дворец бракосочетания «Чаша»", info: "золотой казан над Казанкой", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: GOLD, h: 90,
+    d2(Q) { Q.cyl(128, 128, 30, 36, "#e8e2d4", "#c8c2b4"); Q.circ(128, 128, 68, 82, GOLD); Q.circ(128, 128, 58, 83, "#b8962a"); },
+    d3(B) { B.cyl("#e8e2d4", 128, 128, 26, 34, 36, 0, 24); B.cyl(B.M(GOLD, { glow: "#ffcc55" }), 128, 128, 70, 34, 46, 36, 32); B.cyl("#8a6a20", 128, 128, 64, 64, 2, 81, 32); } },
+  cascade: { name: "Ереванский Каскад", info: "572 ступени, вид на Арарат", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#efe6d4", h: 160,
+    d2(Q) { for (let i = 0; i < 5; i++) { Q.box(128, 172 - i * 38, 230, 40, 22 + i * 24, i % 2 ? "#efe6d4" : "#e4dac4"); Q.flatAt(98, 162 - i * 38, 60, 16, 22 + i * 24, "#5fb0d8"); } Q.cyl(128, 20, 6, 190, "#d8cfbc", "#c9c0ac", 118); Q.sph(128, 226, 9, 10, "#1a1a1a"); },
+    d3(B) {
+      for (let i = 0; i < 5; i++) { const z = 172 - i * 38, h = 22 + i * 24; B.box("#efe6d4", 128, z, 230, 40, h); B.box(B.M("#5fb0d8", { glow: "#5fb0d8" }), 128, z, 60, 26, 2, h); B.box("#d8cfbc", 40, z, 30, 40, h + 1); }
+      B.box("#d8cfbc", 128, 20, 10, 10, 70, 118); B.pyr("#d8cfbc", 128, 20, 10, 10, 12, 188);
+      B.sph("#1a1a1a", 128, 226, 10, 10, 1.4, 0.9, 0.8); B.sph("#1a1a1a", 116, 226, 6, 18); B.beam("#1a1a1a", 140, 12, 226, 152, 30, 226, 2.5);
+    } },
+  republic: { name: "Площадь Республики", info: "розовый туф и поющие фонтаны", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 1, 2], [3, 1, 1, 2], [1, 2, 2, 1, "w"]], mm: "#d99a82", h: 130,
+    ground(g, b) { g.strokeStyle = "rgba(120,80,60,.35)"; g.lineWidth = 3; g.beginPath(); g.ellipse(b.x + 128, b.y + 150, 70, 46, 0, 0, TAU); g.stroke(); },
+    d2(Q) { const P = "#d99a82"; Q.box(128, 32, 256, 60, 56, "#c98a72", P); Q.box(32, 128, 60, 120, 48, "#c98a72", P); Q.box(224, 128, 60, 120, 48, "#c98a72", P); Q.box(128, 32, 30, 30, 120, "#b8735a", P); Q.circ(128, 32, 6, 122, "#f2f2f2"); },
+    d3(B) {
+      const t = B.M("#d99a82", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() });
+      B.box(t, 128, 32, 256, 60, 56, 0, 0, 64); B.box(t, 32, 128, 60, 120, 48, 0, 0, 64); B.box(t, 224, 128, 60, 120, 48, 0, 0, 64);
+      B.box(t, 128, 32, 30, 30, 110, 0, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#d99a82") }), 128, 32, 31, 31, 16, 84); B.box("#c98a72", 128, 32, 20, 20, 14, 110); B.pyr("#b8735a", 128, 32, 20, 20, 12, 124);
+      const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
+      B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
+    } },
+  motherarm: { name: "Мать Армения", info: "статуя с мечом над городом, 51 м", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#5a5a5a", h: 240,
+    d2(Q) { Q.box(128, 128, 60, 60, 70, "#6f6a64"); Q.box(128, 128, 36, 36, 130, "#6f6a64"); Q.line(128, 128, 130, 128, 128, 205, "#4a4a48", 10); Q.line(84, 128, 178, 172, 128, 178, "#8a8a88", 3); },
+    d3(B) {
+      const S = "#6f6a64", cu = B.M("#4a4a48", { glow: "#6a6a68" });
+      B.box(S, 128, 128, 60, 60, 70); B.box(S, 128, 128, 36, 36, 60, 70);
+      B.cone(cu, 128, 128, 11, 52, 130); B.box(cu, 128, 128, 10, 18, 9, 168); B.sph(cu, 128, 128, 5, 191);
+      B.box("#8a8a88", 128, 126, 92, 3, 3, 178); B.box(cu, 128, 128, 3, 14, 3, 168);
+    } },
+  narikala: { name: "Крепость Нарикала", info: "IV век, над старым Тбилиси", fill: GRASS_T(), solid: [[0, 0, 4, 4]], mm: "#6f7f4a", base: "#6f7f4a", h: 160,
+    d2(Q) { Q.cyl(128, 128, 110, 60, "#7a8a50", "#5f6a3a"); for (let i = 0; i < 10; i++) { const a = (i * TAU) / 10; Q.box(128 + Math.cos(a) * 70, 128 + Math.sin(a) * 70, 26, 26, 80, "#a89878"); } Q.cyl(180, 150, 4, 112, "#c8ccd2", "#a8acb2", 60); },
+    d3(B) {
+      B.cyl("#6f7f4a", 128, 128, 90, 128, 60, 0, 24); const S = "#a89878";
+      for (let i = 0; i < 10; i++) { const a = (i * TAU) / 10, a2 = ((i + 1) * TAU) / 10; B.beam(S, 128 + Math.cos(a) * 72, 69, 128 + Math.sin(a) * 72, 128 + Math.cos(a2) * 72, 69, 128 + Math.sin(a2) * 72, 4, 18); }
+      for (const a of [0.3, 2.4, 4.4]) { B.cyl(S, 128 + Math.cos(a) * 72, 128 + Math.sin(a) * 72, 10, 11, 34, 60, 10); }
+      B.box("#c9b48a", 110, 120, 20, 30, 22, 60); B.cone("#8a6a4a", 110, 120, 8, 14, 82, 8);
+      const al = B.M("#c8ccd2", { glow: "#e8ecf2" }); B.cyl(al, 180, 150, 5, 7, 40, 60, 8); B.sph(al, 180, 150, 4, 104); B.box(al, 180, 150, 30, 2, 2, 92); B.box("#d0d0d0", 180, 150, 30, 30, 2, 62);
+    } },
+  peacebridge: { name: "Мост Мира", info: "стеклянная волна над Курой", bridge: true, mm: "#9fd8f0", h: 40,
+    d2(Q) { const pts = []; for (let i = 0; i <= 16; i++) pts.push([62 + Math.sin(i * 0.8) * 6, 58 + i * 8.7]); for (let i = 16; i >= 0; i--) pts.push([194 + Math.sin(i * 0.8) * 6, 58 + i * 8.7]); Q.poly(pts, 30, "rgba(159,216,240,.55)"); for (let i = 0; i <= 16; i += 2) Q.line(62, 58 + i * 8.7, 30, 194, 58 + i * 8.7, 30, "rgba(255,255,255,.7)", 2); },
+    d3(B) {
+      const gl = B.M("#9fd8f0", { op: 0.45, glow: "#6fd0ff" }), st = B.M("#f2f2f2", { glow: "#9fe0ff" });
+      for (let i = 0; i < 17; i++) { const z = 58 + i * 8.7, y = 24 + Math.sin((i / 16) * TAU * 1.5) * 7; const p = B.box(gl, 128, z, 136, 9, 1.6, y); p.rotation.x = Math.cos((i / 16) * TAU * 1.5) * 0.4; }
+      for (const x of [60, 196]) for (let i = 0; i < 16; i++) { const z1 = 58 + i * 8.7, z2 = z1 + 8.7; B.beam(st, x, 24 + Math.sin((i / 16) * TAU * 1.5) * 7, z1, x, 24 + Math.sin(((i + 1) / 16) * TAU * 1.5) * 7, z2, 1.6); }
+      for (const z of [70, 186]) for (const x of [60, 196]) B.cyl("#e8e8e8", x, z, 1.4, 1.4, 24, 0, 6);
+    } },
+  sameba: { name: "Собор Святой Троицы (Самеба)", info: "один из крупнейших православных соборов", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#d8c49a", h: 300,
+    d2(Q) { const S = "#d8c49a"; Q.box(128, 128, 110, 110, 40, S); Q.box(128, 128, 80, 80, 70, S); Q.box(128, 128, 50, 50, 96, S); Q.cyl(128, 128, 20, 180, GOLD, S, 96); },
+    d3(B) {
+      const S = B.M("#d8c49a", { map: B.X.win("arch"), glow: "#ffe0a0", emap: B.X.lit() }), gold = B.M(GOLD, { glow: "#ffcc55" });
+      B.box(S, 128, 128, 110, 110, 40, 0, 0, 64); B.box(S, 128, 128, 80, 80, 30, 40, 0, 64); B.box(S, 128, 128, 50, 50, 26, 70, 0, 64); B.cyl(S, 128, 128, 20, 20, 44, 96, 16);
+      B.cone(gold, 128, 128, 22, 40, 140, 16); B.box(gold, 128, 128, 2, 2, 22, 180); B.box(gold, 128, 128, 10, 2, 2, 192);
+      for (const [dx, dz] of [[-30, -30], [30, -30], [-30, 30], [30, 30]]) { B.cyl(S, 128 + dx, 128 + dz, 8, 8, 20, 70, 12); B.cone(gold, 128 + dx, 128 + dz, 9, 16, 90, 12); }
+    } },
+  koktobe: { name: "Кок-Тобе", info: "телебашня на горе над Алматы", fill: GRASS_T(), solid: [[0, 0, 4, 4]], mm: "#6f8a4a", base: "#6f8a4a", h: 700, nofog: true,
+    d2(Q) { Q.cyl(128, 128, 110, 90, "#7a9a52", "#5f7a3a"); Q.line(128, 128, 90, 128, 128, 500, "#f2f2f2", 8); Q.line(128, 128, 500, 128, 128, 700, "#d23a2a", 3); },
+    d3(B) {
+      B.cyl("#6f8a4a", 128, 128, 70, 128, 90, 0, 20);
+      for (let i = 0; i < 3; i++) { const a = (i * TAU) / 3; B.beam(B.M("#f2f2f2", { map: B.X.lat("#f2f2f2"), alpha: true }), 128 + Math.cos(a) * 46, 90, 128 + Math.sin(a) * 46, 128, 400, 128, 9); }
+      B.cyl(B.M("#f2f2f2", { map: B.X.lat("#e8e8e8", "#d23a2a"), alpha: true }), 128, 128, 5, 22, 330, 90, 6, true, 40);
+      B.cyl(B.M("#d23a2a", { map: B.X.stripes("#d23a2a", "#f2f2f2", 12) }), 128, 128, 1.6, 5, 240, 420, 8);
+      const l = B.sph(B.M("#ff2020", { neon: true }), 128, 128, 4, 662); B.blink(l);
+      B.wheel(200, 200, 126, 30, { caps: 12, glow: "#ffcc55" });
+    } },
+  hotelkz: { name: "Гостиница «Казахстан»", info: "символ города с золотой короной", fill: LOT_T(), solid: [[1, 0, 2, 2]], mm: "#f2f2f2", h: 360,
+    d2(Q) { Q.box(128, 64, 100, 64, 300, "#f2f2f2"); Q.circ(128, 64, 30, 310, GOLD); },
+    d3(B) {
+      B.box(B.M("#f2f2f2", { map: B.X.win("panel"), glow: "#ffd89a", emap: B.X.lit() }), 128, 64, 100, 64, 300, 0, 0, 64);
+      const gold = B.M(GOLD, { glow: "#ffcc55" }); B.cyl(gold, 128, 64, 30, 34, 14, 300, 16, true);
+      for (let i = 0; i < 8; i++) { const a = (i * TAU) / 8; B.cone(gold, 128 + Math.cos(a) * 31, 64 + Math.sin(a) * 31, 3, 12, 314, 6); } B.sph(gold, 128, 64, 6, 322);
+    } },
+  sophia: { name: "Айя-София", info: "537 год, купол 55 м", fill: GRASS_T(), solid: [[0, 0, 4, 3]], mm: "#d9a07a", h: 260,
+    d2(Q) { Q.box(128, 96, 170, 120, 46, "#d9a07a"); Q.ell(82, 96, 34, 34, 70, "#8a8f99"); Q.ell(174, 96, 34, 34, 70, "#8a8f99"); Q.circ(128, 96, 46, 100, "#8a8f99"); Q.circ(128, 96, 26, 104, "#9aa0aa"); for (const [x, y] of [[20, 20], [236, 20], [20, 176], [236, 176]]) Q.cyl(x, y, 4, 176, "#8a8f99", "#e8dcc8"); },
+    d3(B) {
+      const O = B.M("#d9a07a", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() }), lead = "#8a8f99";
+      B.box(O, 128, 96, 170, 120, 46, 0, 0, 64); B.box(O, 128, 96, 110, 90, 20, 46, 0, 64);
+      B.cyl(O, 128, 96, 44, 46, 12, 66, 32); B.dome(lead, 128, 96, 46, 78, 0.55);
+      B.half(lead, 84, 96, 36, 66, 0); B.half(lead, 172, 96, 36, 66, Math.PI);
+      for (const [x, z] of [[46, 40], [210, 40], [46, 152], [210, 152]]) B.box("#c98a6a", x, z, 26, 26, 64);
+      for (const [x, z] of [[20, 20], [236, 20], [20, 176], [236, 176]]) { B.cyl("#e8dcc8", x, z, 4, 5, 150, 0, 10); B.cyl("#e8dcc8", x, z, 7, 7, 2, 100, 12); B.cone(lead, x, z, 5, 26, 150, 10); }
+    } },
+  bluemosque: { name: "Голубая мечеть", info: "шесть минаретов, 1616 год", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#a8b0b8", h: 260,
+    d2(Q) { Q.box(128, 96, 160, 140, 40, "#c8c8c0"); for (const [x, y] of [[88, 96], [168, 96], [128, 56], [128, 136]]) Q.circ(x, y, 26, 70, "#8a96a6"); Q.circ(128, 96, 42, 102, "#8a96a6"); Q.circ(128, 96, 22, 104, "#9aa6b6"); for (const [x, y] of [[20, 20], [236, 20], [20, 176], [236, 176], [20, 240], [236, 240]]) Q.cyl(x, y, 4, 200, "#7a8aa0", "#e8e8e0"); },
+    d3(B) {
+      const S = B.M("#c8c8c0", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() }), D = "#8a96a6";
+      B.box(S, 128, 96, 160, 140, 40, 0, 0, 64); B.cyl(S, 128, 96, 40, 42, 14, 46, 32); B.dome(D, 128, 96, 42, 60, 0.62);
+      B.half(D, 88, 96, 30, 40, 0); B.half(D, 168, 96, 30, 40, Math.PI); B.half(D, 128, 56, 30, 40, -Math.PI / 2); B.half(D, 128, 136, 30, 40, Math.PI / 2);
+      for (const [dx, dz] of [[-55, -55], [55, -55], [-55, 55], [55, 55]]) B.dome(D, 128 + dx, 96 + dz, 14, 40, 0.8);
+      B.box("#c8c8c0", 128, 224, 240, 60, 14);
+      for (const [x, z] of [[20, 20], [236, 20], [20, 176], [236, 176], [20, 240], [236, 240]]) { B.cyl("#e8e8e0", x, z, 4, 5, 170, 0, 12); for (const y of [70, 105, 140]) B.cyl(B.M("#e8e8e0", { glow: "#ffe9a8" }), x, z, 7, 7, 2, y, 12); B.cone("#7a8aa0", x, z, 4.6, 30, 170, 12); B.cyl(GOLD, x, z, 0.6, 0.6, 8, 200, 6); }
+    } },
+  galata: { name: "Галатская башня", info: "1348 год, 67 м", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#a8946e", h: 170,
+    d2(Q) { Q.cyl(128, 128, 38, 90, "#7a6a50", "#a8946e"); Q.cyl(128, 128, 34, 150, "#5a6070", "#a8946e", 90); Q.circ(128, 128, 4, 160, GOLD); },
+    d3(B) {
+      const S = B.M("#a8946e", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() });
+      B.cyl(S, 128, 128, 34, 38, 90, 0, 24, false, 64); B.cyl("#7a6a50", 128, 128, 40, 40, 4, 90, 24); B.cyl(S, 128, 128, 32, 32, 20, 94, 24, false, 64); B.cone("#5a6070", 128, 128, 36, 56, 114, 24); B.cyl(GOLD, 128, 128, 1, 1, 12, 170, 6);
+    } },
+  burj: { name: "Бурдж-Халифа", info: "828 м — самое высокое здание мира", fill: PLAZA_T(), solid: [[1, 1, 2, 2], [0, 3, 4, 1, "w"]], mm: "#c8d0d8", h: 1400, nofog: true,
+    d2(Q) { for (let k = 0; k < 6; k++) { const h = 90 + k * 200, L = 60 - k * 9; for (const a of [0, 2.094, 4.189]) Q.poly([[128 + Math.cos(a - 0.3) * 12, 128 + Math.sin(a - 0.3) * 12], [128 + Math.cos(a) * L, 128 + Math.sin(a) * L], [128 + Math.cos(a + 0.3) * 12, 128 + Math.sin(a + 0.3) * 12]], h, k % 2 ? "#c8d0d8" : "#b0bcc8"); } Q.line(128, 128, 1100, 128, 128, 1400, "#e8eef2", 3); },
+    d3(B) {
+      const gl = B.glass("#b8c4d0");
+      for (let k = 0; k < 12; k++) { const L = 64 - k * 4.6, w = 28 - k * 1.3; for (const a of [0, 2.094, 4.189]) B.box(gl, 128 + (Math.cos(a) * L) / 2, 128 + (Math.sin(a) * L) / 2, L, w, 92, k * 90, -a, 64); }
+      B.cyl(gl, 128, 128, 16, 22, 1100, 0, 12, false, 64); B.cyl(B.M("#e8eef2", { glow: "#ffffff" }), 128, 128, 1.5, 9, 300, 1080, 8);
+      const l = B.sph(B.M("#ff2020", { neon: true }), 128, 128, 5, 1385); B.blink(l);
+      const jets = []; for (let i = 0; i < 14; i++) jets.push(B.cyl(B.M("#e8f6ff", { op: 0.55, glow: "#bfe6ff" }), 20 + i * 16, 226, 1.4, 2.6, 1, 0, 8));
+      B.anim((t, night) => jets.forEach((j, i) => { const on = night > 0.3 || (t % 30) < 8, h = on ? 8 + Math.abs(Math.sin(t * 2.2 + i * 0.45)) * 70 : 0.1; j.scale.y = h; j.position.y = h / 2; j.visible = on; }));
+    } },
+  frame: { name: "Дубай Фрейм", info: "золотая рамка высотой 150 м", fill: PLAZA_T(), solid: [[0, 1, 1, 1], [3, 1, 1, 1]], mm: GOLD, h: 320,
+    d2(Q) { Q.box(32, 96, 56, 40, 300, GOLD); Q.box(224, 96, 56, 40, 300, GOLD); Q.box(128, 96, 248, 40, 320, "#e8c860", GOLD, 280); },
+    d3(B) { const g = B.M("#ffffff", { map: B.X.goldLat(), glow: "#ffcc55" }); B.box(g, 32, 96, 56, 40, 300, 0, 0, 32); B.box(g, 224, 96, 56, 40, 300, 0, 0, 32); B.box(g, 128, 96, 248, 40, 40, 280, 0, 32); B.box(B.M("#9fd8f0", { op: 0.5 }), 128, 96, 140, 30, 2, 281); } },
+  bigben: { name: "Биг-Бен и Парламент", info: "часовая башня Елизаветы, 96 м", fill: PLAZA_T(), solid: (by) => (by === 3 ? [[0, 0, 4, 2]] : [[0, 2, 4, 2]]), mm: "#c9b48a", h: 300, river: true,
+    d2(Q, b) { const z = rs(b) === "n" ? 64 : 192, S = "#c9b48a"; Q.box(128, z, 230, 100, 44, "#7a8a8a", S); Q.box(20, z, 40, 40, 120, "#5a6a6a", S); Q.box(236, z, 26, 26, 110, S); Q.box(236, z, 30, 30, 150, "#3a4a4a", S, 110); Q.circ(236, z, 3, 192, GOLD); },
+    d3(B, b) {
+      const z = rs(b) === "n" ? 64 : 192, S = B.M("#c9b48a", { map: B.X.win("gothic"), glow: "#ffd89a", emap: B.X.lit() });
+      B.box(S, 128, z, 230, 100, 44, 0, 0, 48); B.gable("#5a6a6a", 128, z, 226, 96, 14, 44, true);
+      const pin = []; for (let x = 18; x < 240; x += 14) pin.push([x, 50, z - 50, 2, 12, 2], [x, 50, z + 50, 2, 12, 2]); B.inst("#b8a47a", pin, B.K.CONE6);
+      B.box(S, 20, z, 40, 40, 120, 0, 0, 56); for (const [dx, dz] of [[-17, -17], [17, -17], [-17, 17], [17, 17]]) B.cone("#b8a47a", 20 + dx, z + dz, 3, 18, 120, 6); B.cyl("#888", 20, z, 0.6, 0.6, 30, 120, 6); B.plane(B.M("#ffffff", { map: B.X.flag("uk") }), 26, z, 14, 9, 140, 0);
+      B.cyl(S, 128, z, 12, 14, 30, 44, 8); B.cone("#5a6a6a", 128, z, 12, 34, 74, 8);
+      B.box(S, 236, z, 26, 26, 110, 0, 0, 56); B.box(B.M("#ffffff", { map: B.X.clock("#c9b48a"), glow: "#fff1c0" }), 236, z, 30, 30, 24, 110); B.box(S, 236, z, 24, 24, 16, 134); B.pyr("#3a4a4a", 236, z, 24, 24, 40, 150); B.cyl(GOLD, 236, z, 0.8, 0.8, 10, 190, 6);
+    } },
+  eye: { name: "Лондонский глаз", info: "колесо обозрения 135 м", fill: PLAZA_T(), solid: [[1, 1, 2, 1]], mm: "#e8e8f0", h: 240, river: true,
+    d2(Q) { Q.box(128, 96, 120, 40, 8, "#d8d8e0"); Q.line(20, 96, 120, 236, 96, 120, "#f2f2f2", 6); for (let i = 0; i < 14; i++) Q.circ(20 + i * 16.6, 96, 4, 120 + Math.sin(i * 0.45) * 100, "#bfe0f0"); Q.circ(128, 96, 8, 120, "#d8d8e0"); },
+    d3(B) { B.box("#d8d8e0", 128, 96, 120, 40, 8); B.wheel(128, 96, 122, 108, { caps: 32, glow: "#4fa8ff", speed: 0.02 }); B.beam("#e8e8f0", 70, 0, 140, 128, 122, 96, 5); B.beam("#e8e8f0", 186, 0, 140, 128, 122, 96, 5); } },
+  towerbridge: { name: "Тауэрский мост", info: "1894 год, разводной мост через Темзу", bridge: true, mm: "#c8bba0", h: 150,
+    d2(Q) { for (const z of [84, 172]) { Q.box(52, z, 26, 30, 120, "#4a5a6a", "#c8bba0"); Q.box(204, z, 26, 30, 120, "#4a5a6a", "#c8bba0"); } Q.line(52, 84, 100, 52, 172, 100, "#5f8fc8", 6); Q.line(204, 84, 100, 204, 172, 100, "#5f8fc8", 6); Q.line(52, 84, 90, 52, 0, 30, "#5f8fc8", 4); Q.line(52, 172, 90, 52, 256, 30, "#5f8fc8", 4); Q.line(204, 84, 90, 204, 0, 30, "#5f8fc8", 4); Q.line(204, 172, 90, 204, 256, 30, "#5f8fc8", 4); },
+    d3(B) {
+      const S = B.M("#c8bba0", { map: B.X.win("gothic"), glow: "#ffd89a", emap: B.X.lit() }), bl = "#5f8fc8", sl = "#4a5a6a";
+      for (const z of [84, 172]) {
+        for (const x of [50, 206]) { B.box(S, x, z, 30, 34, 120, 0, 0, 32); B.pyr(sl, x, z, 30, 34, 26, 120); for (const [dx, dz] of [[-12, -14], [12, -14], [-12, 14], [12, 14]]) { B.box(S, x + dx, z + dz, 7, 7, 14, 120); B.pyr(sl, x + dx, z + dz, 8, 8, 12, 134); } }
+        B.box(S, 128, z, 128, 20, 30, 56);
+      }
+      for (const x of [56, 200]) B.box(bl, x, 128, 6, 88, 6, 100);
+      for (const x of [56, 200]) { B.beam(bl, x, 92, 84, x, 26, 0, 3); B.beam(bl, x, 92, 172, x, 26, 256, 3); }
+      B.box(bl, 64, 128, 2, 256, 4, 1); B.box(bl, 192, 128, 2, 256, 4, 1);
+    } },
+  eiffel: { name: "Эйфелева башня", info: "330 м, построена в 1889 году", fill: GRASS_T(), solid: [], mm: "#7a5a3a", h: 520, nofog: true,
+    ground(g, b) { g.fillStyle = "#c8b890"; g.fillRect(b.x + 30, b.y + 30, 196, 196); g.fillStyle = "#5f8f4b"; g.fillRect(b.x + 110, b.y + 226, 36, 30); },
+    d2(Q) {
+      const c = "#6a4a2a";
+      for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { Q.line(128 + sx * 90, 128 + sy * 90, 0, 128 + sx * 40, 128 + sy * 40, 115, c, 10); Q.line(128 + sx * 40, 128 + sy * 40, 120, 128 + sx * 20, 128 + sy * 20, 240, c, 6); }
+      Q.ring(128, 128, 55, 55, 115, c, 6, true); Q.ring(128, 128, 30, 30, 240, c, 4, true); Q.line(128, 128, 250, 128, 128, 500, c, 7); Q.circ(128, 128, 3, 505, "#ffd23d");
+    },
+    d3(B) {
+      const lat = B.M("#8a6a4a", { map: B.X.lat("#7a5a3a"), alpha: true, glow: "#ffb347" }), solid = B.M("#7a5a3a", { glow: "#ffb347" });
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { B.beam(lat, 128 + sx * 88, 0, 128 + sz * 88, 128 + sx * 40, 116, 128 + sz * 40, 24); B.beam(lat, 128 + sx * 40, 126, 128 + sz * 40, 128 + sx * 18, 240, 128 + sz * 18, 14); }
+      for (const ry of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { const a = B.torus(solid, 128 + Math.sin(ry) * 64, 128 + Math.cos(ry) * 64, 52, 2.5, 58, 0, ry, Math.PI, 16); }
+      B.box(solid, 128, 128, 116, 116, 10, 115); B.box(solid, 128, 128, 62, 62, 8, 240);
+      B.cyl(lat, 128, 128, 4, 26, 200, 248, 4, true, 30); B.box(solid, 128, 128, 14, 14, 10, 446); B.cyl("#cfcfcf", 128, 128, 1, 2.4, 60, 456, 6);
+      const beacon = B.sph(B.M("#fff6c8", { neon: true }), 128, 128, 4, 462); B.anim((t, n) => (beacon.visible = n > 0.3));
+      const pts = []; for (let i = 0; i < 520; i++) { const h = Math.random() * 450, r = h < 116 ? 88 - (h / 116) * 48 : h < 240 ? 40 - ((h - 116) / 124) * 22 : 22 - ((h - 240) / 210) * 20, s = [[-1, -1], [1, -1], [-1, 1], [1, 1]][i % 4], f = Math.random(); pts.push([128 + s[0] * r * (f < 0.5 ? 1 : f), h, 128 + s[1] * r * (f < 0.5 ? f : 1)]); }
+      B.sparkle(pts);
+    } },
+  arc: { name: "Триумфальная арка", info: "площадь Звезды, 50 м", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#e8dcc0", h: 130,
+    ground(g, b) { g.strokeStyle = "rgba(255,255,255,.25)"; g.lineWidth = 3; for (const r of [100, 116]) { g.beginPath(); g.arc(b.x + 128, b.y + 128, r, 0, TAU); g.stroke(); } for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12; g.beginPath(); g.moveTo(b.x + 128 + Math.cos(a) * 70, b.y + 128 + Math.sin(a) * 70); g.lineTo(b.x + 128 + Math.cos(a) * 128, b.y + 128 + Math.sin(a) * 128); g.stroke(); } },
+    d2(Q) { Q.box(128, 128, 112, 70, 104, "#e8dcc0"); Q.flatAt(108, 98, 40, 60, 104, "rgba(0,0,0,.18)"); },
+    d3(B) {
+      const S = B.M("#e8dcc0", { glow: "#ffd89a" });
+      for (const [dx, dz] of [[-38, -22], [38, -22], [-38, 22], [38, 22]]) B.box(S, 128 + dx, 128 + dz, 36, 26, 72);
+      B.box(S, 128, 128, 112, 70, 32, 72); B.box(S, 128, 128, 116, 74, 4, 100);
+      const v = B.add(new B.THREE.CylinderGeometry(20, 20, 70, 16, 1, false, 0, Math.PI), S, 128, 52, 128); v.rotation.set(Math.PI / 2, 0, Math.PI / 2);
+      B.plane(B.M("#ffffff", { map: B.X.flag("fr"), ds: true }), 128, 128, 24, 34, 18, 0);
+      B.sph(B.M("#ffb347", { neon: true }), 128, 128, 2, 1.5);
+    } },
+  louvre: { name: "Лувр", info: "стеклянная пирамида, 21 м", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 1, 3], [3, 1, 1, 3], [1, 1, 2, 2]], mm: "#e6dac2", h: 100,
+    d2(Q) { const S = "#e6dac2", R = "#4a5058"; Q.box(128, 32, 256, 64, 46, R, S); Q.box(32, 160, 64, 192, 46, R, S); Q.box(224, 160, 64, 192, 46, R, S); Q.poly([[80, 80], [176, 80], [176, 176], [80, 176]], 0, "rgba(168,208,232,.5)"); Q.line(80, 80, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(176, 80, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(80, 176, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(176, 176, 0, 128, 128, 60, "#cfe6f2", 2); },
+    d3(B) {
+      const S = B.M("#e6dac2", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() }), R = "#4a5058";
+      B.box(S, 128, 32, 256, 64, 46, 0, 0, 64); B.box(S, 32, 160, 64, 192, 46, 0, 0, 64); B.box(S, 224, 160, 64, 192, 46, 0, 0, 64);
+      B.box(R, 128, 32, 248, 52, 12, 46); B.box(R, 32, 160, 52, 186, 12, 46); B.box(R, 224, 160, 52, 186, 12, 46); B.pyr(R, 128, 32, 46, 46, 30, 58);
+      B.pyr(B.M("#a8d0e8", { op: 0.5, glow: "#ffe9a8" }), 128, 128, 96, 96, 60, 0); B.add(B.K.PYR, B.M("#cfe6f2", { map: B.X.lat("#e8f4fa"), alpha: true }), 128, 30, 128).scale.set(97, 61, 97);
+    } },
+  negresco: { name: "Отель «Негреско»", info: "розовый купол на Английской набережной", fill: PLAZA_T(), solid: [[0, 0, 3, 2]], mm: "#f2f2f2", h: 130,
+    d2(Q) { Q.box(96, 64, 190, 124, 52, "#e8e0d8", "#f2f2f2"); Q.cyl(170, 104, 22, 60, "#f2f2f2", "#e8e0d8"); Q.circ(170, 104, 24, 96, "#e86a7a"); Q.circ(170, 104, 4, 112, GOLD); },
+    d3(B) { const S = B.M("#f2f2f2", { map: B.X.win("shutter"), glow: "#ffd89a", emap: B.X.lit() }); B.box(S, 96, 64, 190, 124, 52, 0, 0, 64); B.cyl(S, 170, 104, 22, 22, 60, 0, 24, false, 64); B.dome(B.M("#e86a7a", { glow: "#ff9aa8" }), 170, 104, 24, 60, 1.2); B.cyl(GOLD, 170, 104, 3, 3, 10, 88); B.plane(B.M("#ffffff", { map: B.X.flag("fr"), ds: true }), 60, 4, 16, 10, 60, 0); } },
+  massena: { name: "Площадь Массена", info: "фонтан Солнца и светящиеся статуи", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [2, 2, 1, 1]], mm: "#c4553a", h: 90,
+    ground(g, b) { for (let y = 64; y < 256; y += 16) for (let x = 0; x < 256; x += 16) { g.fillStyle = ((x + y) / 16) % 2 ? "#e8e4dc" : "#3a3a3a"; g.fillRect(b.x + x, b.y + y, 16, 16); } },
+    d2(Q) { Q.box(128, 32, 256, 64, 48, "#a8442f", "#c4553a"); Q.circ(160, 160, 22, 4, "#5fb0d8"); Q.cyl(160, 160, 4, 60, "#f2f2f2"); for (let i = 0; i < 7; i++) Q.cyl(30 + i * 32, 112, 2, 60, ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#5de0d0"][i]); },
+    d3(B) {
+      B.box(B.M("#c4553a", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() }), 128, 32, 256, 64, 48, 0, 0, 64);
+      B.cyl("#f2f2f2", 160, 160, 20, 22, 4, 0, 24); B.cyl(B.M("#5fb0d8", { glow: "#5fb0d8" }), 160, 160, 18, 18, 1, 3.5, 24); B.cyl("#f2f2f2", 160, 160, 3, 4, 40, 4, 8); B.box("#f2f2f2", 160, 160, 6, 6, 18, 44); B.sph("#f2f2f2", 160, 160, 3.5, 66);
+      const cols = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#5de0d0"];
+      cols.forEach((c, i) => { const x = 30 + i * 32; B.cyl("#d8d8d8", x, 112, 1, 1, 60, 0, 6); B.box(B.M(c, { glow: c }), x, 112, 6, 6, 8, 60); B.sph(B.M(c, { glow: c }), x, 112, 3, 71); });
+    } },
+  brandenburg: { name: "Бранденбургские ворота", info: "1791 год, квадрига на вершине", fill: PLAZA_T(), solid: [[0, 1, 1, 1], [3, 1, 1, 1]], mm: "#d8c8a0", h: 110,
+    d2(Q) { const S = "#d8c8a0"; for (const x of [50, 80, 110, 146, 176, 206]) for (const z of [84, 108]) Q.cyl(x, z, 5, 60, S); Q.box(128, 96, 190, 40, 76, "#c8b890", S, 62); Q.box(128, 96, 30, 14, 104, "#5f8f7a", "#4a7a6a", 92); Q.box(32, 96, 50, 40, 40, S); Q.box(224, 96, 50, 40, 40, S); },
+    d3(B) {
+      const S = B.M("#d8c8a0", { glow: "#ffd89a" }), cu = "#5f8f7a";
+      for (const x of [50, 80, 110, 146, 176, 206]) for (const z of [84, 108]) { B.box(S, x, z, 12, 12, 6); B.cyl(S, x, z, 4.5, 5.2, 56, 6, 12); }
+      B.box(S, 128, 96, 190, 40, 14, 62); B.box(S, 128, 96, 110, 32, 16, 76);
+      B.box(cu, 128, 96, 14, 10, 10, 92); for (const dx of [-15, -5, 5, 15]) B.box(cu, 128 + dx, 106, 5, 9, 16, 92); B.box(cu, 128, 92, 4, 4, 16, 102); B.box(cu, 128, 92, 1, 1, 10, 118);
+      B.box(S, 32, 96, 50, 40, 40); B.box(S, 224, 96, 50, 40, 40); B.gable("#c8b890", 32, 96, 52, 42, 10, 40, true); B.gable("#c8b890", 224, 96, 52, 42, 10, 40, true);
+    } },
+  fernseh: { name: "Берлинская телебашня", info: "368 м, Александерплац", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#a8a8a8", h: 560, nofog: true,
+    d2(Q) { Q.box(128, 128, 90, 90, 12, "#d8d8d8"); Q.line(128, 128, 0, 128, 128, 260, "#c8c8c4", 22); Q.circ(128, 128, 34, 275, "#b8bcc4"); Q.circ(128, 128, 20, 280, "#d8dce2"); Q.line(128, 128, 300, 128, 128, 520, "#d23a2a", 4); },
+    d3(B) {
+      B.box("#d8d8d8", 128, 128, 90, 90, 12);
+      B.cyl("#c8c8c4", 128, 128, 9, 18, 250, 0, 24); B.sph(B.M("#b8bcc4", { map: B.X.panels() }), 128, 128, 34, 275);
+      B.cyl(B.M("#2a3a4a", { glow: "#ffd89a" }), 128, 128, 34.6, 34.6, 8, 268, 24); B.cyl("#c8c8c4", 128, 128, 5, 6, 40, 305, 16);
+      B.cyl(B.M("#ffffff", { map: B.X.stripes("#d23a2a", "#f2f2f2", 14) }), 128, 128, 1.5, 4, 170, 345, 8);
+      for (const y of [300, 420, 515]) B.blink(B.sph(B.M("#ff2020", { neon: true }), 128, 128, 3, y));
+    } },
+  reichstag: { name: "Рейхстаг", info: "стеклянный купол над парламентом", fill: GRASS_T(), solid: [[0, 0, 4, 2]], mm: "#bfb39a", h: 150,
+    d2(Q) { const S = "#bfb39a"; Q.box(128, 64, 220, 110, 56, S); for (const [x, y] of [[28, 20], [228, 20], [28, 108], [228, 108]]) Q.box(x, y, 40, 40, 74, "#a89a80", S); Q.circ(128, 64, 32, 90, "rgba(191,224,240,.75)"); },
+    d3(B) {
+      const S = B.M("#bfb39a", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() });
+      B.box(S, 128, 64, 220, 110, 56, 0, 0, 64); for (const [x, z] of [[28, 20], [228, 20], [28, 108], [228, 108]]) B.box(S, x, z, 40, 40, 74, 0, 0, 64);
+      for (let i = 0; i < 6; i++) B.cyl("#d8ccb0", 88 + i * 16, 124, 3, 3.5, 44, 0, 10); B.gable("#bfb39a", 128, 124, 96, 10, 14, 44, true);
+      B.plane(B.M("#ffffff", { map: B.X.txt("DEM DEUTSCHEN VOLKE", "#3a3020", "#bfb39a", 512, 48, 30) }), 128, 130, 70, 6, 46, 0);
+      B.dome(B.M("#bfe0f0", { op: 0.4, glow: "#ffe9b0" }), 128, 64, 32, 56, 0.9); B.add(B.K.HEMI, B.M("#e0f0f8", { map: B.X.lat("#d0e8f0"), alpha: true }), 128, 56, 64).scale.set(32.4, 29, 32.4);
+      for (const [x, z] of [[28, 20], [228, 20]]) { B.cyl("#888", x, z, 0.6, 0.6, 24, 74, 6); B.plane(B.M("#ffffff", { map: B.X.flag("de"), ds: true }), x + 7, z, 14, 9, 88, 0); }
+    } },
+  frauenkirche: { name: "Фрауэнкирхе", info: "две башни с «луковицами», 99 м", fill: PLAZA_T(), solid: [[1, 0, 2, 4]], mm: "#a8442f", h: 230,
+    d2(Q) { Q.box(128, 150, 96, 180, 70, "#7a3a2a", "#a8442f"); for (const x of [104, 152]) { Q.box(x, 30, 40, 40, 150, "#a8442f"); Q.circ(x, 30, 18, 180, "#5f8f6a"); } },
+    d3(B) { const br = B.M("#a8442f", { map: B.X.win("gothic"), glow: "#ffd89a", emap: B.X.lit() }); B.box(br, 128, 150, 96, 180, 70, 0, 0, 32); B.gable("#7a3a2a", 128, 150, 100, 184, 60, 70, false); for (const x of [104, 152]) { B.box(br, x, 30, 40, 40, 150, 0, 0, 32); B.cyl("#5f8f6a", x, 30, 16, 18, 10, 150, 12); B.sph("#5f8f6a", x, 30, 18, 172, 1, 1.25, 1); B.cyl("#5f8f6a", x, 30, 3, 3, 12, 192, 8); B.sph(GOLD, x, 30, 3, 206); } } },
+  bmw: { name: "Башня BMW", info: "«четыре цилиндра», 1973 год", fill: PLAZA_T(), solid: [[0, 0, 2, 2], [3, 2, 1, 1]], mm: "#c0c4cc", h: 280,
+    d2(Q) { for (const [dx, dy] of [[-19, -19], [19, -19], [-19, 19], [19, 19]]) Q.cyl(64 + dx, 64 + dy, 18, 240, "#c0c4cc"); Q.cyl(224, 160, 30, 34, "#c0c4cc"); },
+    d3(B) { const s = B.M("#c0c4cc", { map: B.X.win("band"), glow: "#ffd89a", emap: B.X.lit() }); for (const [dx, dz] of [[-19, -19], [19, -19], [-19, 19], [19, 19]]) B.cyl(s, 64 + dx, 64 + dz, 18, 18, 240, 0, 24, false, 64); B.cyl("#8a8e96", 64, 64, 8, 8, 260, 0, 12); B.cyl("#c0c4cc", 224, 160, 30, 16, 34, 0, 24); B.cyl("#e8e8ec", 224, 160, 30, 30, 1, 34, 24); } },
+  colosseum: { name: "Колизей", info: "80 год н. э., 50 000 зрителей", fill: PLAZA_T(), solid: [[0, 0, 4, 4]], mm: "#d8c8a8", base: "#c8a878", h: 90,
+    d2(Q) { Q.ring(128, 128, 112, 90, 0, "#b8a888", 18, false); Q.ring(128, 128, 112, 90, 70, "#d8c8a8", 16, false); Q.ell(128, 128, 76, 56, 4, "#c8a878"); Q.ring(128, 128, 90, 70, 40, "#c8b898", 6, false); },
+    d3(B) {
+      const tr = B.M("#d8c8a8", { map: B.X.arches(), glow: "#ffb347", emap: B.X.archesLit() }), N = 48, A = 118, Bb = 96;
+      for (let i = 0; i < N; i++) {
+        const t1 = (i * TAU) / N, t2 = ((i + 1) * TAU) / N, x1 = 128 + Math.cos(t1) * A, z1 = 128 + Math.sin(t1) * Bb, x2 = 128 + Math.cos(t2) * A, z2 = 128 + Math.sin(t2) * Bb;
+        const len = Math.hypot(x2 - x1, z2 - z1) + 1, ruin = Math.sin((t1 + t2) / 2) > 0.45, h = ruin ? 50 : 78;
+        B.box(tr, (x1 + x2) / 2, (z1 + z2) / 2, len, 14, h, 0, -Math.atan2(z2 - z1, x2 - x1), 48);
+        const x3 = 128 + Math.cos(t1) * (A - 26), z3 = 128 + Math.sin(t1) * (Bb - 26), x4 = 128 + Math.cos(t2) * (A - 26), z4 = 128 + Math.sin(t2) * (Bb - 26);
+        B.box("#c8b898", (x3 + x4) / 2, (z3 + z4) / 2, Math.hypot(x4 - x3, z4 - z3) + 1, 20, 40, 0, -Math.atan2(z4 - z3, x4 - x3));
+      }
+      const fl = B.cyl("#c8a878", 128, 128, 1, 1, 2, 0, 32); fl.scale.set(78, 1, 58);
+    } },
+  stpeter: { name: "Собор Святого Петра", info: "купол Микеланджело, 136 м", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#e8dcc4", h: 300,
+    ground(g, b) { g.strokeStyle = "rgba(255,255,255,.35)"; g.lineWidth = 2; for (let i = 0; i < 16; i++) { const a = (i * TAU) / 16; g.beginPath(); g.moveTo(b.x + 128, b.y + 198); g.lineTo(b.x + 128 + Math.cos(a) * 80, b.y + 198 + Math.sin(a) * 56); g.stroke(); } },
+    d2(Q) { const S = "#e8dcc4"; Q.box(128, 64, 170, 110, 64, S); Q.box(128, 124, 220, 14, 74, S); Q.cyl(128, 56, 42, 180, "#8d9aa6", S, 64); Q.circ(128, 56, 8, 200, GOLD); for (let i = 0; i < 14; i++) for (const s of [-1, 1]) { const a = -Math.PI / 2 + (i / 13) * Math.PI; Q.cyl(128 + s * Math.cos(a) * 90, 198 + Math.sin(a) * 50, 3, 34, S); } Q.line(128, 198, 0, 128, 198, 78, "#c8b89a", 5); },
+    d3(B) {
+      const S = B.M("#e8dcc4", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() }), lead = "#8d9aa6";
+      B.box(S, 128, 64, 170, 110, 64, 0, 0, 64); B.box(S, 128, 124, 220, 14, 74, 0, 0, 64);
+      const st = []; for (let x = 24; x < 236; x += 14) st.push([x, 78, 124, 3, 8, 3]); B.inst("#d8ccb0", st);
+      B.cyl(S, 128, 56, 40, 40, 40, 64, 24); B.dome(lead, 128, 56, 42, 104, 1.3); B.cyl(S, 128, 56, 8, 8, 20, 158, 12); B.dome(lead, 128, 56, 8, 178, 1.3); B.sph(GOLD, 128, 56, 3, 190); B.box(GOLD, 128, 56, 1, 1, 10, 192);
+      for (const dx of [-70, 70]) { B.cyl(S, 128 + dx, 40, 12, 12, 12, 64, 12); B.dome(lead, 128 + dx, 40, 13, 76, 1.2); }
+      const cols = []; for (let i = 0; i < 14; i++) for (const s of [-1, 1]) for (const r of [84, 96]) { const a = -Math.PI / 2 + (i / 13) * Math.PI; cols.push([128 + s * Math.cos(a) * r, 17, 198 + Math.sin(a) * r * 0.58, 3, 34, 3]); } B.inst("#e8dcc4", cols, B.K.CYL8);
+      for (const s of [-1, 1]) for (let i = 0; i < 13; i++) { const a1 = -Math.PI / 2 + (i / 13) * Math.PI, a2 = -Math.PI / 2 + ((i + 1) / 13) * Math.PI, x1 = 128 + s * Math.cos(a1) * 90, z1 = 198 + Math.sin(a1) * 52, x2 = 128 + s * Math.cos(a2) * 90, z2 = 198 + Math.sin(a2) * 52; B.box("#e8dcc4", (x1 + x2) / 2, (z1 + z2) / 2, Math.hypot(x2 - x1, z2 - z1) + 2, 18, 6, 34, -Math.atan2(z2 - z1, x2 - x1)); B.box("#d8ccb0", x1, z1, 3, 3, 6, 40); }
+      B.box("#d8ccb0", 128, 198, 12, 12, 8); B.box("#c8b89a", 128, 198, 6, 6, 70, 8); B.pyr("#c8b89a", 128, 198, 6, 6, 8, 78);
+    } },
+  trevi: { name: "Фонтан Треви", info: "брось монетку — вернёшься в Рим", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 4, 1, "w"]], mm: "#e8dcc4", h: 90,
+    ground(g, b) { g.fillStyle = "rgba(63,200,208,.85)"; g.fillRect(b.x + 4, b.y + 64, 248, 62); },
+    d2(Q) { Q.box(128, 32, 256, 64, 70, "#d8ccb0", "#e8dcc4"); Q.box(128, 62, 70, 6, 64, "#efe6d4"); Q.cyl(128, 66, 6, 30, "#f4f4f0"); for (let i = 0; i < 9; i++) Q.circ(40 + i * 22, 74, 9, 6, "#c8c0b0"); },
+    d3(B) {
+      B.box(B.M("#e8dcc4", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() }), 128, 32, 256, 64, 70, 0, 0, 64);
+      for (const dx of [-30, -15, 15, 30]) B.cyl("#efe6d4", 128 + dx, 66, 3, 3, 56, 4, 10); B.box("#efe6d4", 128, 66, 80, 6, 10, 60);
+      B.box("#f4f4f0", 128, 70, 10, 8, 26, 10); B.sph("#f4f4f0", 128, 70, 4, 40); for (const dx of [-24, 24]) { B.box("#f4f4f0", 128 + dx, 76, 6, 12, 14, 6); B.sph("#f4f4f0", 128 + dx + 4, 80, 4, 22); }
+      for (let i = 0; i < 9; i++) B.sph("#c8c0b0", 40 + i * 22, 74, 10 + (i % 3) * 3, 4, 1.4, 0.6, 1);
+      B.floor(B.M("#3fc8d0", { op: 0.75, glow: "#3fc8d0" }), 128, 95, 248, 60, 0.6);
+    } },
+  sagrada: { name: "Саграда Фамилия", info: "строится с 1882 года", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#b8a07a", h: 380,
+    d2(Q) { Q.box(128, 96, 150, 110, 70, "#a8906a", "#b8a07a"); for (const z of [40, 160]) for (let i = 0; i < 4; i++) Q.cyl(70 + i * 38, z, 8, z === 40 ? 250 : 200, ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f"][i], "#b8a07a", 60); Q.cyl(128, 100, 16, 340, "#f2f2f2", "#b8a07a", 60); Q.line(40, 190, 0, 40, 190, 320, "#ffc400", 4); Q.line(40, 190, 320, 160, 190, 320, "#ffc400", 3); },
+    d3(B) {
+      const S = B.M("#d2bf96", { map: B.X.porous(), glow: "#ffd89a" }), cols = ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f"];
+      B.box(S, 128, 96, 150, 110, 70, 0, 0, 32);
+      for (const [z, hh] of [[40, 230], [160, 190]]) for (let i = 0; i < 4; i++) { const x = 70 + i * 38, h = hh + (i === 1 || i === 2 ? 20 : 0); B.cyl(S, x, z, 2.5, 8, h, 60, 12, false, 32); B.sph(B.M(cols[i], { glow: cols[i] }), x, z, 5, 64 + h); B.cone(B.M(cols[(i + 2) % 4]), x, z, 2, 8, 68 + h, 6); }
+      B.cyl(S, 128, 100, 6, 20, 280, 60, 12, false, 32); B.sph(B.M("#ffffff", { glow: "#ffffff" }), 128, 100, 9, 350);
+      B.cyl(S, 128, 150, 5, 16, 220, 60, 12, false, 32); B.sph(B.M("#bfe6ff", { glow: "#bfe6ff" }), 128, 150, 7, 284);
+      for (const [x, z, a] of [[40, 190, 0.4], [220, 20, 2.6]]) { B.box(B.M("#ffc400", { map: B.X.lat("#e0a800"), alpha: true }), x, z, 7, 7, 320, 0, 0, 16); const j = B.box("#ffc400", x + Math.cos(a) * 60, z + Math.sin(a) * 60, 170, 4, 5, 320, -a); B.box("#5a5a5a", x - Math.cos(a) * 26, z - Math.sin(a) * 26, 12, 8, 8, 314, -a); }
+    } },
+  glories: { name: "Башня Глориес", info: "небоскрёб-«пуля» с 4500 огнями", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#3f7fd0", h: 260,
+    d2(Q) { Q.cyl(128, 128, 40, 250, "#3f7fd0", "#d23a2a"); Q.circ(128, 128, 18, 258, "#5aa0e8"); },
+    d3(B) { const t = B.X.leds(); B.lathe([[40, 0], [40, 180], [37, 208], [30, 230], [18, 250], [0, 260]], B.M("#ffffff", { map: t, glow: "#ffffff", emap: t }), 128, 128, 0, 32); } },
+  empire: { name: "Эмпайр-стейт-билдинг", info: "443 м, ар-деко 1931 года", fill: LOT_T(), solid: [[1, 1, 2, 2]], mm: "#c9c3b2", h: 680, nofog: true,
+    d2(Q) { const S = "#c9c3b2"; Q.box(128, 128, 124, 124, 90, S); Q.box(128, 128, 96, 96, 300, S); Q.box(128, 128, 72, 72, 410, S); Q.box(128, 128, 52, 52, 460, S); Q.box(128, 128, 34, 34, 490, "#ffd77a", S); Q.line(128, 128, 490, 128, 128, 640, "#d8d8d8", 4); },
+    d3(B) {
+      const S = B.M("#c9c3b2", { map: B.X.win("deco"), glow: "#ffd89a", emap: B.X.lit() }), top = B.M("#d8d2c0", { glow: "#4fa8ff" });
+      B.box(S, 128, 128, 124, 124, 90, 0, 0, 64); B.box(S, 128, 128, 96, 96, 210, 90, 0, 64); B.box(S, 128, 128, 72, 72, 110, 300, 0, 64); B.box(top, 128, 128, 52, 52, 50, 410); B.box(top, 128, 128, 34, 34, 30, 460);
+      B.cyl("#d8d8d8", 128, 128, 5, 9, 60, 490, 8); B.cyl("#d8d8d8", 128, 128, 1, 2, 90, 550, 6); B.blink(B.sph(B.M("#ff2020", { neon: true }), 128, 128, 2.5, 640));
+    } },
+  central: { name: "Центральный парк", info: "341 гектар посреди Манхэттена", fill: GRASS_T(), solid: [[1, 1, 2, 2, "w"]], mm: "#5f8f4b", h: 10,
+    gen(o) { for (let i = 0; i < 26; i++) { const a = (i * TAU) / 26, r = 100 + (i % 3) * 8; addTree((o.ix + 2) * T + Math.cos(a) * r, (o.iy + 2) * T + Math.sin(a) * r, 13 + (i % 4) * 2); } },
+    ground(g, b) { g.strokeStyle = "#c8b890"; g.lineWidth = 6; g.beginPath(); g.ellipse(b.x + 128, b.y + 128, 82, 82, 0, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(b.x, b.y + 30); g.bezierCurveTo(b.x + 90, b.y + 10, b.x + 160, b.y + 250, b.x + 256, b.y + 226); g.stroke(); },
+    d2() {}, d3(B) { B.box("#b8a888", 128, 210, 40, 10, 6, 0); B.torus("#e8e2d4", 128, 210, 20, 1.5, 0, 0, 0, Math.PI, 12); } },
+  times: { name: "Таймс-сквер", info: "перекрёсток с гигантскими экранами", fill: PLAZA_T(), solid: [[0, 0, 1, 4], [3, 0, 1, 4], [1, 0, 2, 1]], mm: "#2a2a3a", h: 300,
+    d2(Q) { Q.box(32, 128, 64, 256, 260, "#2a2a34"); Q.box(224, 128, 64, 256, 220, "#2a2a34"); Q.box(128, 32, 128, 64, 300, "#3a3a44"); const c = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d"]; for (let i = 0; i < 5; i++) { Q.flatAt(60, 20 + i * 48, 6, 36, 260, c[i]); Q.flatAt(190, 30 + i * 46, 6, 36, 220, c[(i + 2) % 5]); } Q.flatAt(70, 60, 116, 8, 300, "#ff3d7f"); Q.box(128, 96, 60, 30, 8, "#c8102e"); },
+    d3(B) {
+      B.box("#2a2a34", 32, 128, 64, 256, 260); B.box("#2a2a34", 224, 128, 64, 256, 220); B.box("#3a3a44", 128, 32, 128, 64, 300);
+      const ads = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => B.M("#ffffff", { neon: true, map: B.X.ad(i) }));
+      for (let i = 0; i < 5; i++) { B.plane(ads[i], 64.5, 30 + i * 48, 44, 26, 30 + (i % 3) * 60, Math.PI / 2); B.plane(ads[(i + 3) % 8], 191.5, 30 + i * 48, 44, 26, 40 + (i % 2) * 70, -Math.PI / 2); }
+      B.plane(ads[5], 128, 64.5, 100, 40, 200, 0); B.plane(ads[6], 128, 64.5, 100, 30, 140, 0); B.plane(ads[7], 128, 64.5, 100, 26, 90, 0);
+      const tk = B.X.ticker(); B.plane(B.M("#ffffff", { neon: true, map: tk }), 128, 64.6, 110, 8, 70, 0); B.anim((t) => (tk.offset.x = (t * 0.08) % 1));
+      B.box("#c8102e", 128, 100, 60, 30, 8); B.blink(B.sph(B.M("#e8f4ff", { neon: true }), 128, 32, 5, 312));
+    } },
+  griffith: { name: "Обсерватория Гриффита", info: "вид на Голливуд и весь город", fill: GRASS_T(), solid: [[0, 0, 4, 4]], mm: "#7f9a52", base: "#8a8a5a", h: 130,
+    d2(Q) { Q.cyl(128, 128, 120, 50, "#9a9a6a", "#7a7a4a"); Q.box(128, 128, 130, 40, 80, "#f2efe6"); Q.circ(128, 128, 22, 112, "#5f8f7f"); Q.circ(68, 128, 13, 94, "#5f8f7f"); Q.circ(188, 128, 13, 94, "#5f8f7f"); },
+    d3(B) { B.cyl("#8a8a5a", 128, 128, 100, 128, 50, 0, 24); const W = B.M("#f2efe6", { glow: "#ffe9b0" }); B.box(W, 128, 128, 130, 40, 30, 50); B.cyl(W, 128, 128, 22, 22, 10, 80, 24); B.dome("#5f8f7f", 128, 128, 22, 90); for (const x of [68, 188]) { B.cyl(W, x, 128, 13, 13, 6, 80, 16); B.dome("#5f8f7f", x, 128, 13, 86); } } },
+  chinese: { name: "Китайский театр и Аллея славы", info: "звёзды на тротуарах Голливуда", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#c8102e", h: 130,
+    ground(g, b) { const star = (x, y) => { g.fillStyle = "#e8a0b0"; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 4 : 9; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.closePath(); g.fill(); }; for (let x = 16; x < 256; x += 32) for (const y of [150, 200, 244]) star(b.x + x, b.y + y); for (let x = -40; x < 300; x += 32) { star(b.x + x, b.y - 40); star(b.x + x, b.y + 296); } },
+    d2(Q) { Q.box(128, 48, 220, 90, 40, "#c8a070"); Q.cyl(88, 100, 6, 70, "#c8102e"); Q.cyl(168, 100, 6, 70, "#c8102e"); Q.box(128, 96, 150, 40, 92, "#3f7a5a", "#2f6a4a", 70); Q.box(128, 96, 60, 20, 126, "#3f7a5a", "#2f6a4a", 110); },
+    d3(B) { B.box("#c8a070", 128, 48, 220, 90, 40); for (const x of [88, 168]) B.cyl("#c8102e", x, 100, 6, 6, 70, 0, 12); const g = B.M("#3f7a5a", { glow: "#5fd0a0" }); B.pyr(g, 128, 96, 150, 40, 22, 70); B.pyr(g, 128, 96, 100, 30, 18, 92); B.pyr(g, 128, 96, 60, 20, 16, 110); B.box("#c8102e", 128, 100, 70, 4, 50, 0); } },
+  ocean: { name: "Оушен-драйв", info: "отели в стиле ар-деко", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#f2b5a0", h: 90,
+    H: [["#f7c6d0", 60, "COLONY", "#ff3d7f"], ["#a8e0d8", 74, "CARLYLE", "#3dd8ff"], ["#f7e3a1", 52, "BREAKWATER", "#5fd35f"], ["#c8b5f0", 68, "LESLIE", "#ff7a3d"]],
+    d2(Q) { this.H.forEach(([c, h, , n], i) => { Q.box(32 + 64 * i, 64, 58, 110, h, c); Q.flatAt(8 + 64 * i, 116, 48, 4, h, n); }); },
+    d3(B) { this.H.forEach(([c, h, name, n], i) => { const x = 32 + 64 * i; B.box(B.M(c, { map: B.X.win("deco"), glow: "#ffd89a", emap: B.X.lit() }), x, 64, 58, 110, h, 0, 0, 64); for (let y = 16; y < h; y += 18) B.box("#ffffff", x, 121, 58, 6, 1.5, y); B.box(B.M(n, { neon: true }), x + 22, 120, 3, 4, h * 0.7, h * 0.2); B.plane(B.M("#ffffff", { neon: true, map: B.X.txt(name, n, "#14121a", 512, 96, 64) }), x, 122, 50, 10, h - 14, 0); }); } },
+  miamitower: { name: "Майами-тауэр", info: "башня, меняющая цвет каждую ночь", fill: LOT_T(), solid: [[1, 1, 2, 2]], mm: "#f2f2f2", h: 330,
+    d2(Q) { Q.box(128, 128, 100, 70, 200, "#f2f2f2"); Q.box(128, 128, 80, 60, 260, "#e8e8f0"); Q.box(128, 128, 60, 50, 300, "#3dd8ff"); },
+    d3(B) {
+      const gl = B.glass("#d8e0e8"), crown = B.M("#ffffff", { glow: "#ff3d7f" });
+      B.box(gl, 128, 128, 100, 70, 200, 0, 0, 64); B.box(gl, 128, 128, 80, 60, 60, 200, 0, 64); B.box(gl, 128, 128, 60, 50, 40, 260, 0, 64);
+      for (const [w, y, d] of [[100, 200, 70], [80, 260, 60], [60, 300, 50]]) { const v = B.add(new B.THREE.CylinderGeometry(w / 2, w / 2, d, 20, 1, false, -Math.PI / 2, Math.PI), crown, 128, y, 128); v.rotation.x = Math.PI / 2; v.scale.y = 1; v.scale.z = 0.35; }
+      B.anim((t, night) => { crown.emissive.setHSL((t * 0.03) % 1, 1, 0.5); crown.emissiveIntensity = 0.15 + night; });
+    } },
+  selaron: { name: "Лестница Селарона", info: "215 ступеней из плитки 60 стран", fill: PLAZA_T(), solid: [[1, 0, 2, 4]], mm: "#e8433a", h: 80,
+    d2(Q) { const c = ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f"]; for (let i = 0; i < 16; i++) Q.box(128, 248 - i * 16, 120, 16, 4 + i * 4, c[i % 4]); },
+    d3(B) { const m = B.M("#ffffff", { map: B.X.mosaic() }); for (let i = 0; i < 16; i++) B.box(m, 128, 248 - i * 16, 120, 16, 4 + i * 4, 0, 0, 32); for (let i = 0; i < 16; i++) { B.box(m, 62, 248 - i * 16, 8, 16, 14 + i * 4, 0, 0, 32); B.box(m, 194, 248 - i * 16, 8, 16, 14 + i * 4, 0, 0, 32); } } },
+  tokyotower: { name: "Токийская башня", info: "333 м, оранжево-белая", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#ff5a2a", h: 460, nofog: true,
+    d2(Q) { const c = "#ff5a1f"; for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) Q.line(128 + sx * 70, 128 + sy * 70, 0, 128 + sx * 28, 128 + sy * 28, 140, c, 9); Q.box(128, 128, 60, 60, 174, "#f2f2f2", "#ff5a1f", 150); Q.line(128, 128, 174, 128, 128, 320, c, 9); Q.box(128, 128, 22, 22, 310, "#f2f2f2", c, 300); Q.line(128, 128, 310, 128, 128, 430, "#f2f2f2", 3); },
+    d3(B) {
+      const lt = B.M("#ffffff", { map: B.X.latBand("#ff5a1f", "#f2f2f2"), alpha: true, glow: "#ff7a2a" });
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) B.beam(lt, 128 + sx * 70, 0, 128 + sz * 70, 128 + sx * 26, 150, 128 + sz * 26, 18);
+      B.box(B.M("#f2f2f2", { glow: "#ffd89a" }), 128, 128, 60, 60, 24, 150);
+      B.cyl(lt, 128, 128, 10, 26, 130, 174, 4, true, 30); B.box(B.M("#f2f2f2", { glow: "#ffd89a" }), 128, 128, 22, 22, 10, 300);
+      B.cyl(B.M("#ffffff", { map: B.X.stripes("#ff5a1f", "#f2f2f2", 10) }), 128, 128, 1.5, 4, 120, 310, 8); B.blink(B.sph(B.M("#ff2020", { neon: true }), 128, 128, 3, 432));
+    } },
+  skytree: { name: "Токио Скайтри", info: "634 м — самая высокая башня мира", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#e8eef5", h: 950, nofog: true,
+    d2(Q) { Q.cyl(128, 128, 40, 30, "#e8eef5"); Q.line(128, 128, 30, 128, 128, 620, "#e8eef5", 22); Q.circ(128, 128, 32, 362, "#9fd0ff"); Q.circ(128, 128, 22, 456, "#9fd0ff"); Q.line(128, 128, 620, 128, 128, 900, "#e8eef5", 4); },
+    d3(B) {
+      const lat = B.M("#e8eef5", { map: B.X.lat("#dfe8f2"), alpha: true }), core = B.M("#eef4fa", { glow: "#4fa8ff" }), dk = B.M("#9fd0ff", { glow: "#9fd0ff" });
+      B.cyl(lat, 128, 128, 14, 42, 620, 0, 12, true, 40); B.cyl(core, 128, 128, 10, 26, 620, 0, 12);
+      B.cyl(dk, 128, 128, 32, 26, 24, 350, 24); B.cyl(dk, 128, 128, 22, 20, 12, 450, 24); B.cyl("#e8eef5", 128, 128, 2, 7, 280, 620, 8); B.blink(B.sph(B.M("#ff2020", { neon: true }), 128, 128, 3, 900));
+      B.anim((t) => core.emissive.set(Math.floor(t / 20) % 2 ? "#4fa8ff" : "#b05ae8"));
+    } },
+  shibuya: { name: "Перекрёсток Сибуя", info: "до 3000 человек за один зелёный", fill: LOT_T(), solid: [[0, 0, 2, 2], [2, 0, 2, 2], [0, 2, 2, 2], [2, 2, 2, 2]], mm: "#3a3a44", h: 220,
+    gen(o) { CITY.scramble = [o.x0 + 6, o.y0 + 6]; },
+    d2(Q) { const H = [150, 200, 120, 170]; [[64, 64], [192, 64], [64, 192], [192, 192]].forEach(([x, y], i) => { Q.box(x, y, 120, 120, H[i], i % 2 ? "#4a4a54" : "#3a3a44"); }); Q.flatAt(140, 250, 100, 6, 170, "#3dd8ff"); Q.flatAt(250, 140, 6, 100, 170, "#ff3d7f"); },
+    d3(B) {
+      const H = [150, 200, 120, 170], S = B.M("#9a9aa6", { map: B.X.win("band"), glow: "#ffd89a", emap: B.X.lit() });
+      [[64, 64], [192, 64], [64, 192], [192, 192]].forEach(([x, z], i) => B.box(S, x, z, 120, 120, H[i], 0, 0, 64));
+      const scr = B.X.screen(); const sm = B.M("#ffffff", { neon: true, map: scr.t });
+      B.plane(sm, 192, 252.6, 100, 56, 90, 0); B.plane(sm, 252.6, 192, 100, 56, 70, Math.PI / 2); B.plane(sm, 64, 252.6, 90, 50, 40, 0); B.plane(sm, 252.6, 64, 90, 50, 110, Math.PI / 2);
+      B.anim((t) => scr.draw(t));
+    } },
+  osakajo: { name: "Осакский замок", info: "1583 год, окружён рвом", fill: GRASS_T(), solid: [[0, 0, 4, 4, "w"], [1, 1, 2, 2]], mm: "#f2f2ee", base: "#7a8a6a", h: 220,
+    d2(Q) { Q.box(128, 128, 140, 140, 40, "#8a8a80"); for (let i = 0; i < 5; i++) { const w = 90 - i * 14; Q.box(128, 128, w + 20, w + 20, 40 + i * 30 + 32, "#3f7f6a", "#f2f2ee", 40 + i * 30); } Q.circ(128, 128, 6, 200, GOLD); },
+    d3(B) {
+      const st = B.add(new B.THREE.CylinderGeometry(56, 74, 40, 4), "#8a8a80", 128, 20, 128); st.rotation.y = Math.PI / 4;
+      const W = B.M("#f4f4f0", { map: B.X.stripes("#f4f4f0", "#5a5a5a", 16), glow: "#ffe9b0" }), R = B.M("#3f7f6a", { glow: "#3f7f6a" }), gold = B.M(GOLD, { glow: "#ffcc55" });
+      for (let i = 0; i < 5; i++) { const w = 90 - i * 14, y = 40 + i * 30; B.box(W, 128, 128, w, w, 22, y, 0, 32); B.pyr(R, 128, 128, w + 22, w + 22, 12, y + 22); B.box(gold, 128, 128, w + 23, w + 23, 1.2, y + 22); }
+      for (const dx of [-10, 10]) B.box(gold, 128 + dx, 128, 3, 3, 8, 202);
+    } },
+  tsutenkaku: { name: "Цутэнкаку", info: "огни на макушке показывают погоду", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#c8c8c8", h: 320,
+    d2(Q) { Q.box(128, 128, 60, 60, 40, "#a8a8a8"); Q.box(128, 128, 30, 30, 240, "#d0d0c8", null, 40); Q.cyl(128, 128, 22, 290, "#d0d0c8", null, 240); Q.circ(128, 128, 8, 300, "#ffffff"); },
+    d3(B) {
+      for (const [dx, dz] of [[-24, -24], [24, -24], [-24, 24], [24, 24]]) B.box("#a8a8a8", 128 + dx, 128 + dz, 10, 10, 40); B.box("#a8a8a8", 128, 128, 60, 60, 6, 40);
+      B.box(B.M("#d0d0c8", { map: B.X.win("panel"), glow: "#ffd89a", emap: B.X.lit() }), 128, 128, 30, 30, 200, 40, 0, 32); B.cyl("#d0d0c8", 128, 128, 24, 18, 40, 240, 8); B.cone("#a8a8a8", 128, 128, 22, 16, 280, 8);
+      for (const ry of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { const p = B.plane(B.M("#ffffff", { neon: true, map: B.X.txt("通天閣", "#ffe14a", "#14121a", 256, 512, 180, true) }), 128 + Math.sin(ry) * 15.2, 128 + Math.cos(ry) * 15.2, 18, 80, 140, ry); }
+      const top = B.sph(B.M("#ffffff", { neon: true }), 128, 128, 9, 304);
+      B.anim(() => top.material.color.set(WX.rain > 0.3 ? "#3d8bff" : WX.target > 0 ? "#ff9a2a" : "#ffffff"));
+    } },
+  dotonbori: { name: "Дотонбори", info: "неоновый канал Осаки", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 1, 2, "w"], [3, 1, 1, 2, "w"], [0, 3, 4, 1]], mm: "#ff3d7f", h: 130,
+    d2(Q) { for (let i = 0; i < 4; i++) { Q.box(32 + i * 64, 32, 60, 60, 80 + (i % 2) * 30, "#3a3a44"); Q.box(32 + i * 64, 224, 60, 60, 70 + ((i + 1) % 2) * 40, "#3a3a44"); } const c = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f"]; for (let i = 0; i < 4; i++) { Q.flatAt(8 + i * 64, 58, 48, 6, 90, c[i]); Q.flatAt(8 + i * 64, 192, 48, 6, 80, c[(i + 2) % 4]); } Q.box(128, 128, 120, 128, 10, "#8a7a6a"); },
+    d3(B) {
+      const S = B.M("#7a7a86", { map: B.X.win("plain"), glow: "#ffd89a", emap: B.X.lit() });
+      for (let i = 0; i < 4; i++) { B.box(S, 32 + i * 64, 32, 60, 60, 80 + (i % 2) * 30); B.box(S, 32 + i * 64, 224, 60, 60, 70 + ((i + 1) % 2) * 40); }
+      for (let i = 0; i < 4; i++) { const x = 32 + i * 64; B.box(B.M(["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f"][i], { neon: true }), x + 24, 255, 8, 4, 50, 20); B.box(B.M(["#5fd35f", "#ff7a3d", "#c77ae8", "#3dd8ff"][i], { neon: true }), x - 24, 1, 8, 4, 50, 30); }
+      const neon = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d", "#c77ae8"], signs = [];
+      for (let i = 0; i < 8; i++) { const north = i < 4, x = 32 + (i % 4) * 64; signs.push(B.plane(B.M("#ffffff", { neon: true, map: B.X.txt(["たこ焼き", "ラーメン", "カニ", "寿司", "串カツ", "OSAKA", "お好み焼き", "居酒屋"][i], neon[i % 6], "#14121a", 512, 128, 80) }), x, north ? 62.6 : 193.4, 52, 14, 30 + (i % 3) * 18, north ? 0 : Math.PI)); }
+      B.plane(B.M("#ffffff", { neon: true, map: B.X.runner() }), 180, 62.8, 50, 50, 44, 0);
+      const crab = B.sub(60, 66, { y: 50 }); crab.sph("#e8433a", 0, 0, 12, 0, 1.6, 0.8, 0.9); for (const s of [-1, 1]) { crab.sph("#e8433a", s * 22, 4, 7, 10, 1.2, 0.8, 0.8); for (let k = 0; k < 3; k++) crab.beam("#b8301e", s * 10, -2, -4 + k * 4, s * 26, -14, -6 + k * 5, 2); }
+      B.box("#8a7a6a", 128, 128, 120, 128, 4, 6); B.anim((t) => signs.forEach((s, i) => (s.visible = Math.sin(t * 9 + i * 3) > -0.95)));
+    } },
+  pearl: { name: "Восточная жемчужина", info: "468 м, розовые шары над Хуанпу", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#e85a9a", h: 620, nofog: true, river: true,
+    d2(Q) { Q.line(128, 128, 0, 128, 128, 330, "#d8d8d8", 18); Q.circ(128, 128, 46, 120, "#d8508a"); Q.circ(128, 128, 30, 330, "#d8508a"); Q.circ(128, 128, 12, 450, "#d8508a"); Q.line(128, 128, 460, 128, 128, 590, "#d8d8d8", 3); },
+    d3(B) {
+      const pk = B.M("#d8508a", { glow: "#ff5aa8" }), C = "#d8d8d8";
+      for (let i = 0; i < 3; i++) { const a = (i * TAU) / 3; B.beam(C, 128 + Math.cos(a) * 60, 0, 128 + Math.sin(a) * 60, 128 + Math.cos(a) * 16, 110, 128 + Math.sin(a) * 16, 9); B.cyl(C, 128 + Math.cos(a) * 14, 128 + Math.sin(a) * 14, 6, 7, 330, 0, 12); }
+      B.sph(pk, 128, 128, 46, 120); for (let k = 0; k < 5; k++) B.sph(pk, 128 + Math.cos(k * 2) * 16, 128 + Math.sin(k * 2) * 16, 8, 190 + k * 18);
+      B.sph(pk, 128, 128, 30, 330); B.cyl(C, 128, 128, 6, 8, 90, 360, 12); B.sph(pk, 128, 128, 12, 450); B.cyl(C, 128, 128, 1.5, 5, 130, 460, 8);
+    } },
+  shtower: { name: "Шанхайская башня", info: "632 м, закрученная спираль", fill: LOT_T(), solid: [[1, 1, 2, 2]], mm: "#7fb8c8", h: 960, nofog: true,
+    d2(Q) { for (let i = 0; i < 8; i++) { const r = 56 - i * 5; Q.poly([0, 1, 2].map((k) => { const a = (k * TAU) / 3 + i * 0.2; return [128 + Math.cos(a) * r, 128 + Math.sin(a) * r]; }), 60 + i * 115, i % 2 ? "#7fb8c8" : "#6fa8b8"); } },
+    d3(B) { const gl = B.glass("#7fb8c8"); for (let i = 0; i < 40; i++) { const r = 58 - i * 0.95, m = B.add(new B.THREE.CylinderGeometry(r, r + 0.95, 24, 3), gl, 128, 12 + i * 24, 128); m.rotation.y = i * 0.045; } B.blink(B.sph(B.M("#ff2020", { neon: true }), 128, 128, 4, 965)); } },
+  swfc: { name: "Шанхайский всемирный финансовый центр", info: "«открывашка», 492 м", fill: LOT_T(), solid: [[1, 1, 2, 2]], mm: "#9fb8c8", h: 860, nofog: true,
+    d2(Q) { Q.poly([[78, 100], [178, 100], [178, 156], [78, 156]], 0, "#8aa8b8"); Q.poly([[98, 112], [158, 112], [158, 144], [98, 144]], 820, "#9fb8c8"); Q.line(78, 128, 0, 98, 128, 820, "#7a98a8", 4); Q.line(178, 128, 0, 158, 128, 820, "#7a98a8", 4); },
+    d3(B) { const s = new B.THREE.Shape([new B.THREE.Vector2(-52, 0), new B.THREE.Vector2(52, 0), new B.THREE.Vector2(30, 820), new B.THREE.Vector2(-30, 820)]); const h = new B.THREE.Path([new B.THREE.Vector2(-18, 700), new B.THREE.Vector2(18, 700), new B.THREE.Vector2(18, 770), new B.THREE.Vector2(-18, 770)]); s.holes.push(h); B.ext(s, 64, B.glass("#9fb8c8"), 128, 0, 128, 0); } },
+  bund: { name: "Набережная Вайтань", info: "колониальные дворцы у Хуанпу", fill: PLAZA_T(), solid: (by) => (by === 3 ? [[0, 0, 4, 2]] : [[0, 2, 4, 2]]), mm: "#c8bfa8", h: 160, river: true,
+    d2(Q, b) { const z = rs(b) === "n" ? 64 : 192, S = "#c8bfa8"; Q.box(32, z, 60, 90, 70, S); Q.box(96, z, 60, 90, 70, S); Q.box(96, z + (z < 128 ? -30 : 30), 24, 24, 120, "#a89a80", S); Q.box(160, z, 64, 90, 60, S); Q.circ(160, z, 22, 90, "#8a9a9a"); Q.box(224, z, 60, 90, 76, S); },
+    d3(B, b) {
+      const z = rs(b) === "n" ? 64 : 192, S = B.M("#c8bfa8", { map: B.X.win("tall"), glow: "#ffcf80", emap: B.X.lit() });
+      B.box(S, 32, z, 60, 90, 70, 0, 0, 64); B.box(S, 96, z, 60, 90, 70, 0, 0, 64); const tz = z + (z < 128 ? -30 : 30); B.box(S, 96, tz, 24, 24, 50, 70, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#c8bfa8"), glow: "#fff1c0" }), 96, tz, 25, 25, 16, 100); B.pyr("#8a8070", 96, tz, 24, 24, 20, 116);
+      B.box(S, 160, z, 64, 90, 60, 0, 0, 64); B.cyl(S, 160, z, 20, 20, 14, 60, 20); B.dome("#8a9a9a", 160, z, 22, 74, 1.1);
+      B.box(S, 224, z, 60, 90, 76, 0, 0, 64); B.pyr("#7a8a7a", 224, z, 40, 40, 24, 76);
+    } },
+};
+function PLAZA_T() { return 4; } function GRASS_T() { return 3; } function LOT_T() { return 5; }
+
+/* placing landmarks into the street plan of the city */
+function placeLandmarks() {
+  const list = (CITY.lms || []).filter((id) => LMS[id] && !LMS[id].bridge);
+  if (!list.length) return;
+  const north = [], south = [];
+  for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) { const k = bx + "," + by, v = SPECIAL[k]; if (by < 3 && !v) north.push([bx, by]); if (by >= 3 && ["police2", "fire2", "stores", "prison"].includes(v)) south.push([bx, by]); }
+  const mix = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = (srnd() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  mix(north); mix(south);
+  list.forEach((id, i) => {
+    let pool = i % 2 === 0 ? (north.length ? north : south) : south.length ? south : north;
+    if (LMS[id].river && CITY.river) { const other = pool === north ? south : north; const pick2 = (p) => p.findIndex(([, by]) => by === 2 || by === 3); if (pick2(pool) < 0 && pick2(other) >= 0) pool = other; const k = pick2(pool); if (k > 0) pool.unshift(pool.splice(k, 1)[0]); }
+    const spot = pool.shift(); if (!spot) return;
+    SPECIAL[spot[0] + "," + spot[1]] = "lm:" + id;
+  });
+}
+function buildLM(id, x0, y0, ix, iy, bx, by) {
+  const D = LMS[id];
+  fill(ix, iy, 4, 4, D.fill || PLAZA);
+  const sol = typeof D.solid === "function" ? D.solid(by) : D.solid || [];
+  for (const [u, v, w, h, t] of sol) for (let y = iy + v; y < iy + v + h; y++) for (let x = ix + u; x < ix + u + w; x++) { tiles[y * N + x] = t === "w" ? WATER : BLD; if (t !== "w") lmBase.set(y * N + x, D.base || "#8a8478"); }
+  const b = { kind: "lm", lm: id, x: ix * T, y: iy * T, w: 4 * T, h: 4 * T, hgt: Math.min(0.5, (D.h || 60) / 1000), roof: D.mm || "#bbbbbb", wall: "#888", side: "#666", ac: [], bx, by, sol };
+  blds.push(b);
+  (places.lms || (places.lms = [])).push({ id, name: D.name, info: D.info, x: (x0 + 3) * T, y: (y0 + 5.5) * T, cx: (ix + 2) * T, cy: (iy + 2) * T });
+  if (D.gen) D.gen({ x0, y0, ix, iy, bx, by, b });
+}
+/* rivers, bridges and beaches */
+const RIVER_Y = [24, 25];
+function cityWater() {
+  if (CITY.river) {
+    for (const y of RIVER_Y) for (let x = 0; x < N; x++) if (!isR(x)) tiles[y * N + x] = WATER;
+    places.bridges = []; for (let x = 0; x < N; x += 8) places.bridges.push({ x: (x + 1) * T, y: 25 * T });
+    if (CITY.bridge && LMS[CITY.bridge]) {
+      const D = LMS[CITY.bridge];
+      blds.push({ kind: "lm", lm: CITY.bridge, x: 23 * T, y: 23 * T, w: 4 * T, h: 4 * T, hgt: Math.min(0.5, D.h / 1000), roof: D.mm, wall: "#888", side: "#666", ac: [], by: 3, sol: [] });
+      (places.lms || (places.lms = [])).push({ id: CITY.bridge, name: D.name, info: D.info, x: 25 * T, y: 22.5 * T, cx: 25 * T, cy: 25 * T });
+    }
+  }
+  if (CITY.beach) for (const y of [48, 49]) for (let x = 0; x < N; x++) tiles[y * N + x] = SAND;
+}
+function cityDecor() {
+  if (CITY.beach) {
+    for (let x = 0.8; x < N; x += 2.6) addTree(x * T, 48.25 * T, 11, CITY.palms ? "palm" : "tree");
+    for (let x = 1.6; x < N; x += 2.2) if (srnd() < 0.7) addTree(x * T, 49.35 * T, 10, "parasol");
+    if (CITY.guards) for (let x = 4; x < N; x += 9) addTree(x * T, 48.9 * T, 9, "guard");
+    if (CITY.chairs) for (let x = 0.5; x < N; x += 1.3) if (tile(Math.floor(x), 47) === WALK) addTree(x * T, 47.75 * T, 5, "chair");
+  }
+  if (CITY.palms) for (const [x, y] of walkTiles) if ((tile(x, y + 1) === ROAD || tile(x, y - 1) === ROAD) && hsh(x, y, 3) < 0.12) addTree((x + 0.5) * T, (y + (tile(x, y + 1) === ROAD ? 0.82 : 0.18)) * T, 9, "palm");
+  if (CITY.decor) {
+    let n = 0;
+    for (const [x, y] of walkTiles) {
+      if (n > 46 || tile(x, y) !== WALK || hsh(x, y, 7) > 0.07) continue;
+      const down = tile(x, y + 1) === ROAD, up = tile(x, y - 1) === ROAD; if (!down && !up) continue;
+      const k = CITY.decor;
+      addTree((x + 0.5) * T, (y + (down ? 0.75 : 0.25)) * T, k === "table" ? 12 : 6, k); n++;
+    }
+  }
+}
+function hardAt(x, y) { const t = tile(Math.floor(x / T), Math.floor(y / T)); return t < 0 || t === BLD; }
+
+/* ===== 2D extras ===== */
+const SEA = CITY.sea || ["n", "s", "e", "w"];
+function landRects() {
+  const E = 9000, W = WORLD, out = [];
+  if (!SEA.includes("n")) out.push([-E, -E, W + 2 * E, E]);
+  if (!SEA.includes("s")) out.push([-E, W, W + 2 * E, E]);
+  const side = (x0, w) => { if (CITY.river) { out.push([x0, 0, w, 24 * T], [x0, 26 * T, w, W - 26 * T]); } else out.push([x0, 0, w, W]); };
+  if (!SEA.includes("w")) side(-E, E);
+  if (!SEA.includes("e")) side(W, E);
+  return out;
+}
+const LAND = landRects();
+function landAt(x, y) { for (const [a, b2, w, h] of LAND) if (x >= a && x < a + w && y >= b2 && y < b2 + h) return true; return false; }
+function miniBg() { return SEA.length <= 1 ? CITY.land : CITY.water; }
+function drawLand2D() {
+  const vx0 = view.x - 20, vy0 = view.y - 20, vx1 = view.x + view.w + 20, vy1 = view.y + view.h + 20;
+  for (const [a, b2, w, h] of LAND) {
+    const x0 = Math.max(a, vx0), y0 = Math.max(b2, vy0), x1 = Math.min(a + w, vx1), y1 = Math.min(b2 + h, vy1); if (x0 >= x1 || y0 >= y1) continue;
+    ctx.fillStyle = CITY.land; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+    const S = 96;
+    for (let gy = Math.floor(y0 / S) * S; gy < y1; gy += S) for (let gx = Math.floor(x0 / S) * S; gx < x1; gx += S) {
+      if (gx < a || gx >= a + w || gy < b2 || gy >= b2 + h) continue;
+      const r = hsh(gx, gy, 1), d = Math.max(-gx, gx - WORLD, -gy, gy - WORLD);
+      if (r < 0.5 - d / 6000) { const hw = 26 + hsh(gx, gy, 2) * 30; ctx.fillStyle = shade(CITY.roofs[(hsh(gx, gy, 3) * CITY.roofs.length) | 0], 0.9); ctx.fillRect(gx + 14, gy + 14, hw, hw * 0.8); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(gx + 14, gy + 14 + hw * 0.8, hw, 5); }
+      else if (r < 0.75) { ctx.fillStyle = "rgba(40,70,30,.55)"; ctx.beginPath(); ctx.arc(gx + 48, gy + 48, 14 + r * 10, 0, TAU); ctx.fill(); }
+      else { ctx.fillStyle = "rgba(255,255,255,.05)"; ctx.fillRect(gx + 4, gy + 4, S - 8, S - 8); }
+    }
+  }
+  if (CITY.river) { ctx.fillStyle = CITY.water; ctx.fillRect(vx0, 24 * T, vx1 - vx0, 2 * T); }
+}
+function drawFoam() { ctx.fillStyle = "#e8f4f8"; for (let x = 0; x < WORLD; x += 40) { const o = Math.sin(now * 1.6 + x * 0.05) * 4; ctx.fillRect(x, WORLD + 2 + o, 34, 4); } }
+const BACK2D = {
+  liberty: (x, y) => { ctx.fillStyle = "#6f8a5a"; ctx.beginPath(); ctx.arc(x, y, 95, 0, TAU); ctx.fill(); ctx.fillStyle = "#9a9a90"; ctx.beginPath(); for (let i = 0; i < 22; i++) { const a = (i * Math.PI) / 11, r = i % 2 ? 42 : 62; ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.fillStyle = "#b8b0a0"; ctx.fillRect(x - 18, y - 18, 36, 36); ctx.fillStyle = "#6fb59c"; ctx.beginPath(); ctx.arc(x, y, 12, 0, TAU); ctx.fill(); ctx.fillStyle = "#ffcc55"; ctx.beginPath(); ctx.arc(x + 14, y - 20, 5, 0, TAU); ctx.fill(); },
+  burjalarab: (x, y) => { ctx.fillStyle = "#e8d8b0"; ctx.beginPath(); ctx.arc(x, y, 95, 0, TAU); ctx.fill(); ctx.fillStyle = "#f4f4f4"; ctx.beginPath(); ctx.moveTo(x - 40, y + 10); ctx.quadraticCurveTo(x + 40, y - 80, x + 60, y + 10); ctx.closePath(); ctx.fill(); ctx.fillStyle = "#d8d8d8"; ctx.fillRect(x - 6, WORLD, 12, y - WORLD - 90); },
+  pier: (x, y) => { ctx.fillStyle = "#8a6a4a"; ctx.fillRect(x - 35, WORLD, 70, 420); ctx.strokeStyle = "#ff3d7f"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x - 48, WORLD + 340); ctx.lineTo(x + 48, WORLD + 340); ctx.stroke(); },
+  sugarloaf: (x, y) => { ctx.fillStyle = "#6f7a5a"; ctx.beginPath(); ctx.ellipse(x, y, 160, 120, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(x - 340, y - 60, 100, 80, 0, 0, TAU); ctx.fill(); },
+};
+const BACKPOS = { liberty: [WORLD * 0.22, WORLD + 560], burjalarab: [WORLD * 0.72, WORLD + 420], pier: [WORLD * 0.6, WORLD + 200], sugarloaf: [WORLD + 640, WORLD + 700] };
+function drawBack2D() { for (const k of CITY.back || []) if (BACK2D[k]) { const [x, y] = BACKPOS[k]; if (!offscreen(x, y, 500)) BACK2D[k](x, y); } }
+function groundHooks() {
+  for (const b of blds) if (b.kind === "lm" && LMS[b.lm].ground && !(b.x > view.x + view.w + 300 || b.x + b.w < view.x - 300 || b.y > view.y + view.h + 300 || b.y + b.h < view.y - 300)) { ctx.save(); LMS[b.lm].ground(ctx, b); ctx.restore(); }
+}
+function extraTile(x, y, t, px, py) {
+  if (t === ROAD && CITY.river && RIVER_Y.includes(y)) { ctx.fillStyle = "#9a9a9a"; if (x % 8 === 0) ctx.fillRect(px, py, 5, T); if (x % 8 === 1) ctx.fillRect(px + T - 5, py, 5, T); }
+  if (t === ROAD && CITY.scramble && x >= CITY.scramble[0] && x <= CITY.scramble[0] + 1 && y >= CITY.scramble[1] && y <= CITY.scramble[1] + 1) {
+    const ox = CITY.scramble[0] * T, oy = CITY.scramble[1] * T; ctx.save(); ctx.beginPath(); ctx.rect(px, py, T, T); ctx.clip(); ctx.fillStyle = "rgba(245,245,245,.85)";
+    for (let k = 0; k < 7; k++) { ctx.fillRect(ox + 10 + k * 16, oy + 2, 9, 18); ctx.fillRect(ox + 10 + k * 16, oy + 108, 9, 18); ctx.fillRect(ox + 2, oy + 10 + k * 16, 18, 9); ctx.fillRect(ox + 108, oy + 10 + k * 16, 18, 9); }
+    ctx.translate(ox + 64, oy + 64); for (const r of [Math.PI / 4, -Math.PI / 4]) { ctx.save(); ctx.rotate(r); for (let k = -4; k <= 4; k++) ctx.fillRect(-8, k * 12, 16, 7); ctx.restore(); } ctx.restore();
+  }
+  if (t === WALK && CITY.copa && y === 47) { ctx.fillStyle = "#1a1a1a"; ctx.beginPath(); for (let k = 0; k <= T; k += 4) ctx.lineTo(px + k, py + 26 + Math.sin(((x * T + k) / T) * TAU) * 14); for (let k = T; k >= 0; k -= 4) ctx.lineTo(px + k, py + 40 + Math.sin(((x * T + k) / T) * TAU) * 14); ctx.closePath(); ctx.fill(); }
+}
+// trees and street furniture that are special to some cities
+function tree2d(t) {
+  const g = ctx;
+  if (t.kind === "palm") { g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.arc(t.x + 8, t.y + 8, 15, 0, TAU); g.fill(); g.strokeStyle = "#3f8a3a"; g.lineWidth = 4; g.lineCap = "round"; for (let k = 0; k < 7; k++) { const a = (k * TAU) / 7 + t.hue * 3; g.beginPath(); g.moveTo(t.x, t.y); g.quadraticCurveTo(t.x + Math.cos(a) * 12, t.y + Math.sin(a) * 12 - 4, t.x + Math.cos(a) * 19, t.y + Math.sin(a) * 19); g.stroke(); } g.lineCap = "butt"; g.fillStyle = "#6b4a32"; g.beginPath(); g.arc(t.x, t.y, 3, 0, TAU); g.fill(); return true; }
+  if (t.kind === "pine") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 9, t.y + 9, t.r * 1.3, 0, TAU); g.fill(); g.fillStyle = "#2f5a2f"; g.beginPath(); g.ellipse(t.x, t.y, t.r * 1.35, t.r * 1.2, t.hue * 3, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,.08)"; g.beginPath(); g.arc(t.x - 4, t.y - 4, t.r * 0.6, 0, TAU); g.fill(); return true; }
+  if (t.kind === "sakura" || t.kind === "apple") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 6, t.y + 6, t.r, 0, TAU); g.fill(); g.fillStyle = t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"; g.beginPath(); g.arc(t.x, t.y, t.r, 0, TAU); g.fill(); if (t.kind === "apple") { g.fillStyle = "#d8302a"; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(t.x + Math.cos(k * 1.7) * t.r * 0.6, t.y + Math.sin(k * 1.7) * t.r * 0.6, 2, 0, TAU); g.fill(); } } else { g.fillStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.arc(t.x - t.r * 0.3, t.y - t.r * 0.3, t.r * 0.45, 0, TAU); g.fill(); } return true; }
+  if (t.kind === "parasol") { const c = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d"][(t.hue * 5) | 0]; for (let k = 0; k < 8; k++) { g.fillStyle = k % 2 ? "#f2f2f2" : c; g.beginPath(); g.moveTo(t.x, t.y); g.arc(t.x, t.y, 13, (k * TAU) / 8, ((k + 1) * TAU) / 8); g.closePath(); g.fill(); } g.fillStyle = "#f2f2f2"; g.fillRect(t.x + 8, t.y + 6, 7, 14); return true; }
+  if (t.kind === "guard") { g.fillStyle = ["#ff7ab0", "#7fe0d8", "#ffd23d", "#a8a0ff"][(t.hue * 4) | 0]; g.fillRect(t.x - 10, t.y - 10, 20, 20); g.fillStyle = "#3d8bff"; g.fillRect(t.x - 10, t.y - 10, 20, 5); return true; }
+  if (t.kind === "chair") { g.fillStyle = "#2a6fd6"; g.fillRect(t.x - 4, t.y - 4, 8, 8); g.fillStyle = "#1a4fa6"; g.fillRect(t.x - 4, t.y - 6, 8, 3); return true; }
+  if (t.kind === "phonebox") { g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(t.x - 4, t.y - 4, 12, 12); g.fillStyle = "#c8102e"; g.fillRect(t.x - 6, t.y - 6, 12, 12); g.fillStyle = "#8a0a1e"; g.fillRect(t.x - 4, t.y - 4, 8, 8); return true; }
+  if (t.kind === "vending") { g.fillStyle = ["#f2f2f2", "#d23a2a", "#2a6fd6"][(t.hue * 3) | 0]; g.fillRect(t.x - 7, t.y - 4, 14, 8); g.fillStyle = "#9fe0ff"; g.fillRect(t.x - 5, t.y - 2, 10, 3); return true; }
+  return false;
+}
+function tree3d(K, t) {
+  const THREE = K.THREE, sc = K.scene, mat = K.mat, add = (geo, m, x, y, z) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.castShadow = true; sc.add(me); return me; };
+  if (t.kind === "palm") {
+    const h = 44 + t.hue * 20, lean = (t.hue - 0.5) * 0.25;
+    const tr = add(K.PALMT || (K.PALMT = new THREE.CylinderGeometry(1.4, 2.4, 1, 6)), mat("#7a5a3a"), t.x, h / 2, t.y); tr.scale.y = h; tr.rotation.z = lean;
+    const tx = t.x - (Math.sin(lean) * h) / 2, fr = K.FROND || (K.FROND = new THREE.BoxGeometry(22, 1.2, 5));
+    for (let k = 0; k < 7; k++) { const f = add(fr, mat("#3f8a3a"), tx, h, t.y); f.rotation.set(0, (k * TAU) / 7 + t.hue, -0.45); f.translateX(9); }
+    return true;
+  }
+  if (t.kind === "pine") { add(K.TRUNK, mat("#6b4a32"), t.x, 20, t.y).scale.set(0.8, 2, 0.8); const c = add(K.SPH, mat("#2f5a2f"), t.x, 44, t.y); c.scale.set(t.r * 1.5, t.r * 0.45, t.r * 1.4); return true; }
+  if (t.kind === "sakura" || t.kind === "apple") { add(K.TRUNK, mat("#5a3a2a"), t.x, 10, t.y); const c = add(K.CROWN, mat(t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"), t.x, 20 + t.r * 0.7, t.y); c.scale.setScalar(t.r * 1.15); if (t.kind === "apple") for (let k = 0; k < 5; k++) add(K.SPH, mat("#d8302a"), t.x + Math.cos(k * 1.3) * t.r * 0.9, 20 + t.r * 0.5, t.y + Math.sin(k * 1.3) * t.r * 0.9).scale.setScalar(1.8); return true; }
+  if (t.kind === "parasol") { add(K.BOX, mat("#dddddd"), t.x, 12, t.y).scale.set(0.8, 24, 0.8); const u = add(K.UMB || (K.UMB = new THREE.ConeGeometry(14, 6, 8)), mat(["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d"][(t.hue * 5) | 0]), t.x, 25, t.y); add(K.BOX, mat("#f2f2f2"), t.x + 11, 2, t.y + 10).scale.set(6, 2, 14); return true; }
+  if (t.kind === "guard") { const c = mat(["#ff7ab0", "#7fe0d8", "#ffd23d", "#a8a0ff"][(t.hue * 4) | 0]); for (const [dx, dz] of [[-7, -7], [7, -7], [-7, 7], [7, 7]]) add(K.BOX, mat("#dddddd"), t.x + dx, 6, t.y + dz).scale.set(1.2, 12, 1.2); add(K.BOX, c, t.x, 18, t.y).scale.set(18, 12, 18); add(K.PYR, mat("#3d8bff"), t.x, 27, t.y).scale.set(22, 6, 22); return true; }
+  if (t.kind === "chair") { const c = mat("#2a6fd6"); add(K.BOX, c, t.x, 3.5, t.y).scale.set(6, 1, 6); add(K.BOX, c, t.x, 7, t.y - 3).scale.set(6, 7, 1); return true; }
+  if (t.kind === "phonebox") { add(K.BOX, mat("#c8102e"), t.x, 12, t.y).scale.set(8, 24, 8); add(K.BOX, mat("#1d2a3a"), t.x, 12, t.y).scale.set(8.4, 14, 6); add(K.BOX, mat("#c8102e"), t.x, 25, t.y).scale.set(9, 2, 9); return true; }
+  if (t.kind === "vending") { add(K.BOX, mat(["#f2f2f2", "#d23a2a", "#2a6fd6"][(t.hue * 3) | 0]), t.x, 9, t.y).scale.set(10, 18, 7); add(K.BOX, K.vendGlow || (K.vendGlow = new THREE.MeshBasicMaterial({ color: 0xbfeaff })), t.x, 12, t.y + 3.6).scale.set(8, 7, 0.4); return true; }
+  return false;
+}
+
+/* ===== 2D landmark drawing helper ===== */
+function lm2d(b) {
+  const D = LMS[b.lm]; if (!D || !D.d2) return;
+  const g = ctx, vx = view.x + view.w / 2, vy = view.y + view.h / 2, K2 = (h) => Math.min(0.5, (h || 0) / 1000);
+  const P = (x, y, h) => { const k = K2(h), wx = b.x + x, wy = b.y + y; return [wx + (wx - vx) * k, wy + (wy - vy) * k]; };
+  const Q = {
+    box(cx, cy, w, d, h, top, side, y0 = 0) {
+      const X0 = b.x + cx - w / 2, Y0 = b.y + cy - d / 2, X1 = X0 + w, Y1 = Y0 + d, mx = b.x + cx, my = b.y + cy, k0 = K2(y0), k1 = K2(h);
+      const ax = (mx - vx) * k0, ay = (my - vy) * k0, bx2 = (mx - vx) * k1, by2 = (my - vy) * k1;
+      const s1 = side || shade(top, 0.62), s2 = side ? shade(side, 0.8) : shade(top, 0.48);
+      const face = (x1, y1, x2, y2, col) => { g.fillStyle = col; g.beginPath(); g.moveTo(x1 + ax, y1 + ay); g.lineTo(x2 + ax, y2 + ay); g.lineTo(x2 + bx2, y2 + by2); g.lineTo(x1 + bx2, y1 + by2); g.closePath(); g.fill(); };
+      if (by2 - ay < 0) face(X0, Y1, X1, Y1, s1); else face(X0, Y0, X1, Y0, s1);
+      if (bx2 - ax < 0) face(X1, Y0, X1, Y1, s2); else face(X0, Y0, X0, Y1, s2);
+      g.fillStyle = top; g.fillRect(X0 + bx2, Y0 + by2, w, d);
+    },
+    cyl(cx, cy, r, h, top, side, y0 = 0) { const [a1, b1] = P(cx, cy, y0), [a2, b2] = P(cx, cy, h); g.strokeStyle = side || (top[0] === "#" ? shade(top, 0.65) : top); g.lineWidth = r * 2; g.lineCap = "round"; g.beginPath(); g.moveTo(a1, b1); g.lineTo(a2 + 0.01, b2); g.stroke(); g.lineCap = "butt"; g.fillStyle = top; g.beginPath(); g.arc(a2, b2, r, 0, TAU); g.fill(); },
+    circ(cx, cy, r, h, col) { const [a, c] = P(cx, cy, h); g.fillStyle = col; g.beginPath(); g.arc(a, c, r, 0, TAU); g.fill(); },
+    sph(cx, cy, r, h, col) { Q.circ(cx, cy, r, h, col); const [a, c] = P(cx, cy, h); g.fillStyle = "rgba(255,255,255,.2)"; g.beginPath(); g.arc(a - r * 0.3, c - r * 0.3, r * 0.4, 0, TAU); g.fill(); },
+    ell(cx, cy, rx, ry, h, col) { const [a, c] = P(cx, cy, h); g.fillStyle = col; g.beginPath(); g.ellipse(a, c, rx, ry, 0, 0, TAU); g.fill(); },
+    ring(cx, cy, rx, ry, h, col, lw, square) { const [a, c] = P(cx, cy, h); g.strokeStyle = col; g.lineWidth = lw; g.beginPath(); if (square) g.rect(a - rx, c - ry, rx * 2, ry * 2); else g.ellipse(a, c, rx, ry, 0, 0, TAU); g.stroke(); },
+    poly(pts, h, col) { g.fillStyle = col; g.beginPath(); pts.forEach(([x, y], i) => { const [a, c] = P(x, y, h); i ? g.lineTo(a, c) : g.moveTo(a, c); }); g.closePath(); g.fill(); },
+    line(x1, y1, h1, x2, y2, h2, col, w) { const [a1, b1] = P(x1, y1, h1), [a2, b2] = P(x2, y2, h2); g.strokeStyle = col; g.lineWidth = w; g.lineCap = "round"; g.beginPath(); g.moveTo(a1, b1); g.lineTo(a2, b2); g.stroke(); g.lineCap = "butt"; },
+    flatAt(x, y, w, d, h, col) { const [a, c] = P(x + w / 2, y + d / 2, h); g.fillStyle = col; g.fillRect(a - w / 2, c - d / 2, w, d); },
+  };
+  D.d2(Q, b);
+}
+
+/* ===== 3D: city surroundings, landmarks and styles ===== */
+function kTex(K) {
+  const THREE = K.THREE, C = K.texCache || (K.texCache = {});
+  const ct = (key, w, h, f) => { if (key && C[key]) return C[key]; const c = document.createElement("canvas"); c.width = w; c.height = h; f(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; if (key) C[key] = t; return t; };
+  const cell = (g, f) => { for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) f(i * 32, j * 32); };
+  const X = {
+    ct,
+    lit: () => K.litT,
+    stripes: (a, b2, n = 8, diag) => ct("st" + a + b2 + n + diag, 64, 64, (g, w, h) => { g.fillStyle = a; g.fillRect(0, 0, w, h); g.fillStyle = b2; if (diag) { g.save(); g.translate(32, 32); g.rotate(0.7); for (let i = -6; i < 6; i += 2) g.fillRect(i * 10, -60, 10, 120); g.restore(); } else for (let i = 0; i < n; i += 2) g.fillRect(0, (i * h) / n, w, h / n); }),
+    lat: (a, b2) => ct("lat" + a + b2, 64, 64, (g) => { g.clearRect(0, 0, 64, 64); g.lineWidth = 5; g.strokeStyle = a; g.strokeRect(2, 2, 60, 60); g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(64, 64); g.moveTo(64, 0); g.lineTo(0, 64); g.stroke(); if (b2) { g.strokeStyle = b2; g.lineWidth = 5; g.beginPath(); g.moveTo(0, 32); g.lineTo(64, 32); g.stroke(); } }),
+    latBand: (a, b2) => ct("lb" + a + b2, 64, 128, (g) => { g.clearRect(0, 0, 64, 128); for (const [y, c] of [[0, a], [64, b2]]) { g.strokeStyle = c; g.lineWidth = 5; g.strokeRect(2, y + 2, 60, 60); g.lineWidth = 3; g.beginPath(); g.moveTo(0, y); g.lineTo(64, y + 64); g.moveTo(64, y); g.lineTo(0, y + 64); g.stroke(); } }),
+    goldLat: () => ct("gl", 64, 64, (g) => { g.fillStyle = "#c8a040"; g.fillRect(0, 0, 64, 64); g.strokeStyle = "#f2d880"; g.lineWidth = 2; for (let i = -64; i < 128; i += 12) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.moveTo(i + 64, 0); g.lineTo(i, 64); g.stroke(); } }),
+    win: (kind) => ct("win" + kind, 128, 128, (g) => {
+      g.fillStyle = "#ffffff"; g.fillRect(0, 0, 128, 128);
+      if (kind === "brick") { g.fillStyle = "rgba(0,0,0,.12)"; for (let y = 0; y < 128; y += 6) { g.fillRect(0, y, 128, 1); for (let x = (y / 6) % 2 ? 0 : 6; x < 128; x += 12) g.fillRect(x, y, 1, 6); } }
+      if (kind === "panel") { g.fillStyle = "rgba(0,0,0,.12)"; for (let k = 0; k < 128; k += 32) { g.fillRect(0, k, 128, 2); g.fillRect(k, 0, 2, 128); } }
+      if (kind === "band") { g.fillStyle = "#4a5a70"; for (let j = 0; j < 4; j++) g.fillRect(0, j * 32 + 6, 128, 20); g.fillStyle = "rgba(255,255,255,.25)"; for (let j = 0; j < 4; j++) g.fillRect(0, j * 32 + 6, 128, 3); return; }
+      cell(g, (x, y) => {
+        g.fillStyle = "#3a4760";
+        if (kind === "tall") { g.fillRect(x + 10, y + 4, 12, 23); g.fillStyle = "#1a1a1a"; if ((y / 32) % 2 === 1) g.fillRect(x + 6, y + 22, 20, 3); }
+        else if (kind === "arch" || kind === "gothic") { g.beginPath(); g.moveTo(x + 9, y + 28); g.lineTo(x + 9, y + 14); if (kind === "gothic") g.lineTo(x + 16, y + 4); else g.arc(x + 16, y + 14, 7, Math.PI, 0); g.lineTo(x + 23, y + 14); g.lineTo(x + 23, y + 28); g.closePath(); g.fill(); if (kind === "gothic") { g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(x, y, 2, 32); } }
+        else if (kind === "shutter") { g.fillRect(x + 10, y + 6, 12, 20); g.fillStyle = "#5f9a6a"; g.fillRect(x + 4, y + 6, 6, 20); g.fillRect(x + 22, y + 6, 6, 20); }
+        else if (kind === "deco") { g.fillRect(x + 4, y + 8, 24, 14); g.fillStyle = "rgba(0,0,0,.15)"; g.fillRect(x, y + 4, 32, 2); }
+        else { g.fillRect(x + 7, y + 7, 18, 17); g.fillStyle = "rgba(255,255,255,.28)"; g.fillRect(x + 7, y + 7, 18, 3); }
+      });
+    }),
+    palace: () => ct("palace", 128, 128, (g) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, 128, 128); cell(g, (x, y) => { g.fillStyle = "#f2f2f2"; g.fillRect(x, y, 4, 32); g.fillStyle = "#e8eee8"; g.fillRect(x + 2, y, 2, 32); g.fillStyle = "#3a4760"; g.fillRect(x + 11, y + 6, 12, 20); g.fillStyle = "#d9b44a"; g.fillRect(x + 11, y + 4, 12, 2); }); }),
+    arches: () => ct("arches", 128, 128, (g) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, 128, 128); g.fillStyle = "rgba(0,0,0,.1)"; for (let y = 0; y < 128; y += 43) g.fillRect(0, y, 128, 4); g.fillStyle = "#4a3a2a"; for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { const x = i * 32 + 8, y = r * 43 + 10; g.beginPath(); g.moveTo(x, y + 30); g.lineTo(x, y + 10); g.arc(x + 8, y + 10, 8, Math.PI, 0); g.lineTo(x + 16, y + 30); g.closePath(); g.fill(); } }),
+    archesLit: () => ct("archesL", 128, 128, (g) => { g.fillStyle = "#000"; g.fillRect(0, 0, 128, 128); g.fillStyle = "#ff9a3a"; for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { const x = i * 32 + 8, y = r * 43 + 10; g.beginPath(); g.moveTo(x, y + 30); g.lineTo(x, y + 10); g.arc(x + 8, y + 10, 8, Math.PI, 0); g.lineTo(x + 16, y + 30); g.closePath(); g.fill(); } }),
+    porous: () => ct("porous", 64, 64, (g) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, 64, 64); g.fillStyle = "rgba(60,40,20,.35)"; for (let i = 0; i < 26; i++) { g.beginPath(); g.ellipse(hsh(i, 1, 2) * 64, hsh(i, 2, 3) * 64, 2 + hsh(i, 3, 4) * 3, 3 + hsh(i, 4, 5) * 4, 0, 0, TAU); g.fill(); } }),
+    panels: () => ct("panels", 64, 64, (g) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, 64, 64); g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 1.5; for (let k = 0; k <= 64; k += 8) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k, 64); g.moveTo(0, k); g.lineTo(64, k); g.stroke(); } }),
+    mosaic: () => ct("mosaic", 64, 64, (g) => { const c = ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f", "#f2f2f2", "#ff7a3d"]; for (let y = 0; y < 64; y += 8) for (let x = 0; x < 64; x += 8) { g.fillStyle = c[(hsh(x, y, 9) * c.length) | 0]; g.fillRect(x, y, 7, 7); } }),
+    leds: () => ct("leds", 64, 64, (g) => { g.fillStyle = "#1a2a4a"; g.fillRect(0, 0, 64, 64); const c = ["#3d8bff", "#e8433a", "#5fd0ff", "#ff7ab0", "#2a5ab0"]; for (let y = 2; y < 64; y += 6) for (let x = 2; x < 64; x += 6) { g.fillStyle = c[(hsh(x, y, 5) * c.length) | 0]; g.fillRect(x, y, 4, 4); } }),
+    clock: (bg) => ct("clock" + bg, 128, 128, (g) => { g.fillStyle = bg; g.fillRect(0, 0, 128, 128); g.fillStyle = "#f8f4e8"; g.beginPath(); g.arc(64, 64, 46, 0, TAU); g.fill(); g.strokeStyle = "#1a1a1a"; g.lineWidth = 4; g.stroke(); g.lineWidth = 5; g.beginPath(); g.moveTo(64, 64); g.lineTo(64, 30); g.moveTo(64, 64); g.lineTo(88, 72); g.stroke(); for (let i = 0; i < 12; i++) { const a = (i * TAU) / 12; g.fillStyle = "#1a1a1a"; g.fillRect(64 + Math.cos(a) * 38 - 2, 64 + Math.sin(a) * 38 - 2, 4, 4); } }),
+    txt: (s, fg, bg, w = 512, h = 128, px = 80, vert) => ct("tx" + s + fg + bg + w + h + px + !!vert, w, h, (g) => { if (bg) { g.fillStyle = bg; g.fillRect(0, 0, w, h); } else g.clearRect(0, 0, w, h); g.fillStyle = fg; g.shadowColor = fg; g.shadowBlur = 10; g.font = `bold ${px}px 'Russo One','Arial Black',sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; if (vert) [...s].forEach((ch, i, a) => g.fillText(ch, w / 2, ((i + 0.5) * h) / a.length)); else g.fillText(s, w / 2, h / 2 + 4, w - 20); }),
+    flag: (k) => ct("flag" + k, 96, 64, (g) => {
+      if (k === "fr") { ["#0055a4", "#ffffff", "#ef4135"].forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 32, 0, 32, 64); }); }
+      else if (k === "de") { ["#000000", "#dd0000", "#ffce00"].forEach((c, i) => { g.fillStyle = c; g.fillRect(0, (i * 64) / 3, 96, 22); }); }
+      else { g.fillStyle = "#012169"; g.fillRect(0, 0, 96, 64); g.strokeStyle = "#ffffff"; g.lineWidth = 12; g.beginPath(); g.moveTo(0, 0); g.lineTo(96, 64); g.moveTo(96, 0); g.lineTo(0, 64); g.stroke(); g.lineWidth = 18; g.beginPath(); g.moveTo(48, 0); g.lineTo(48, 64); g.moveTo(0, 32); g.lineTo(96, 32); g.stroke(); g.strokeStyle = "#c8102e"; g.lineWidth = 10; g.stroke(); }
+    }),
+    ad: (i) => ct("ad" + i, 256, 144, (g) => { const bgs = ["#ff3d7f", "#2a6fd6", "#ffd23d", "#14121a", "#5fd35f", "#ff7a3d", "#c77ae8", "#e0213b"], t = ["V3A", "BROADWAY", "I ♥ NY", "CRUSTY CRAB", "V3 FM", "WORLDNEWS", "SHOW TONIGHT", "NEW YORK"]; const gr = g.createLinearGradient(0, 0, 256, 144); gr.addColorStop(0, bgs[i]); gr.addColorStop(1, bgs[(i + 3) % 8]); g.fillStyle = gr; g.fillRect(0, 0, 256, 144); g.fillStyle = "#ffffff"; g.font = "bold 40px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(t[i], 128, 72, 236); }),
+    ticker: () => { const t = ct(null, 1024, 32, (g) => { g.fillStyle = "#101018"; g.fillRect(0, 0, 1024, 32); g.fillStyle = "#ffd23d"; g.font = "bold 22px Manrope,sans-serif"; g.textBaseline = "middle"; g.fillText("BREAKING · V3A INTERNATIONAL · DOW +1.2% · WORLDNEWS LIVE · TIMES SQUARE · NEW YORK CITY · ", 8, 17); }); t.wrapS = THREE.RepeatWrapping; return t; },
+    runner: () => ct("runner", 256, 256, (g) => { g.fillStyle = "#1a3a8a"; g.fillRect(0, 0, 256, 256); g.strokeStyle = "#ffffff"; g.lineWidth = 6; g.strokeRect(10, 10, 236, 236); g.strokeStyle = "#ffe14a"; g.lineWidth = 16; g.lineCap = "round"; g.beginPath(); g.arc(128, 60, 18, 0, TAU); g.stroke(); g.beginPath(); g.moveTo(120, 84); g.lineTo(110, 150); g.lineTo(150, 200); g.moveTo(110, 150); g.lineTo(70, 190); g.moveTo(118, 100); g.lineTo(60, 80); g.moveTo(118, 100); g.lineTo(190, 70); g.stroke(); g.fillStyle = "#ffffff"; g.font = "bold 30px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("OSAKA", 128, 236); }),
+    screen: () => { const c = document.createElement("canvas"); c.width = 256; c.height = 144; const t = new THREE.CanvasTexture(c), g = c.getContext("2d"); let lastT = -1; return { t, draw(tm) { if (tm - lastT < 0.2) return; lastT = tm; const k = Math.floor(tm / 4) % 4, gr = g.createLinearGradient(0, 0, 256, 144); gr.addColorStop(0, ["#ff3d7f", "#2a6fd6", "#5fd35f", "#ffd23d"][k]); gr.addColorStop(1, ["#2a6fd6", "#c77ae8", "#3dd8ff", "#ff7a3d"][k]); g.fillStyle = gr; g.fillRect(0, 0, 256, 144); for (let i = 0; i < 6; i++) { g.fillStyle = "rgba(255,255,255,.25)"; g.beginPath(); g.arc((tm * 60 + i * 50) % 300 - 20, 72 + Math.sin(tm * 2 + i) * 40, 14, 0, TAU); g.fill(); } g.fillStyle = "#ffffff"; g.font = "bold 34px 'Russo One',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(["渋谷 SHIBUYA", "V3A TOKYO", "WORLDNEWS", "♪ V3 FM"][k], 128, 72); t.needsUpdate = true; } }; },
+  };
+  return X;
+}
+function mk3d(K, ox, oz, o = {}) {
+  const THREE = K.THREE, g = new THREE.Group(); g.position.set(ox, o.y || 0, oz); if (o.s) g.scale.setScalar(o.s); K.scene.add(g);
+  const nf = !!o.nofog, cache = new Map();
+  const M = (c, op) => {
+    if (c && c.isMaterial) return c;
+    op = op || {};
+    const key = op.map || op.emap ? null : c + "|" + (op.glow || "") + "|" + (op.op == null ? "" : op.op) + "|" + (op.neon ? 1 : 0) + "|" + (op.ds ? 1 : 0) + "|" + (op.alpha ? 1 : 0);
+    if (key && cache.has(key)) return cache.get(key);
+    const p = { color: new THREE.Color(c || "#ffffff") };
+    if (nf) p.fog = false;
+    if (op.map) p.map = op.map;
+    if (op.alpha) { p.transparent = true; p.alphaTest = 0.35; p.side = THREE.DoubleSide; }
+    if (op.ds) p.side = THREE.DoubleSide;
+    if (op.op != null) { p.transparent = true; p.opacity = op.op; p.depthWrite = false; }
+    let m;
+    if (op.neon) m = new THREE.MeshBasicMaterial(p);
+    else { if (op.glow) { p.emissive = new THREE.Color(op.glow === true ? c : op.glow); p.emissiveIntensity = 0; if (op.emap) p.emissiveMap = op.emap; } m = new THREE.MeshLambertMaterial(p); if (op.glow) K.glows.push(m); }
+    if (key) cache.set(key, m); return m;
+  };
+  const add = (geo, m, x, y, z, sh) => { const me = new THREE.Mesh(geo, M(m)); me.position.set(x, y, z); if (sh !== false) { me.castShadow = true; me.receiveShadow = true; } g.add(me); return me; };
+  const uvs = (geo, su, sv) => { const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * su, uv.getY(i) * sv); return geo; };
+  const B = {
+    THREE, g, M, K, X: K.X, add,
+    box(m, x, z, w, d, h, y = 0, ry = 0, tile) {
+      let me;
+      if (tile) { const geo = new THREE.BoxGeometry(w, h, d), uv = geo.attributes.uv; for (let f = 0; f < 6; f++) { const fw = f < 2 ? d : w, fh = f === 2 || f === 3 ? d : h; for (let k = 0; k < 4; k++) { const i = f * 4 + k; uv.setXY(i, (uv.getX(i) * fw) / tile, (uv.getY(i) * fh) / tile); } } me = add(geo, m, x, y + h / 2, z); }
+      else { me = add(K.BOX, m, x, y + h / 2, z); me.scale.set(w, h, d); }
+      me.rotation.y = ry; return me;
+    },
+    cyl(m, x, z, rt, rb, h, y = 0, seg = 16, open = false, tile) { const geo = new THREE.CylinderGeometry(rt, rb, h, seg, 1, open); if (tile) uvs(geo, (Math.PI * (rt + rb)) / tile, h / tile); const me = add(geo, m, x, y + h / 2, z); if (seg === 4) me.rotation.y = Math.PI / 4; return me; },
+    cone(m, x, z, r, h, y = 0, seg = 16) { const me = add(new THREE.ConeGeometry(r, h, seg), m, x, y + h / 2, z); if (seg === 4) me.rotation.y = Math.PI / 4; return me; },
+    sph(m, x, z, r, y, sx = 1, sy = 1, sz = 1) { const me = add(K.SPH, m, x, y, z); me.scale.set(r * sx, r * sy, r * sz); return me; },
+    dome(m, x, z, r, y, sy = 1) { const me = add(K.HEMI, m, x, y, z); me.scale.set(r, r * sy, r); return me; },
+    half(m, x, z, r, y, ry = 0) { const me = add(K.QDOME, m, x, y, z); me.scale.setScalar(r); me.rotation.y = ry; return me; },
+    onion(m, x, z, r, y, tip) { B.sph(m, x, z, r, y + r * 0.95, 1, 1.12, 1); B.cone(m, x, z, r * 0.42, r * 1.25, y + r * 1.7, 12); if (tip) { B.cyl(tip, x, z, 0.5, 0.5, r * 0.9, y + r * 2.85, 6); B.box(tip, x, z, r * 0.55, 0.6, 0.6, y + r * 3.45); } },
+    pyr(m, x, z, w, d, h, y = 0) { const me = add(K.PYR, m, x, y + h / 2, z); me.scale.set(w, h, d); return me; },
+    gable(m, x, z, w, d, h, y = 0, alongX = true) { const me = add(alongX ? K.GABX : K.GABZ, m, x, y, z); me.scale.set(w, h, d); return me; },
+    beam(m, x1, y1, z1, x2, y2, z2, t = 4, t2) { const dx = x2 - x1, dy = y2 - y1, dz = z2 - z1, len = Math.hypot(dx, dy, dz) || 1; const me = add(K.BOX, m, (x1 + x2) / 2, (y1 + y2) / 2, (z1 + z2) / 2); me.scale.set(t, len, t2 || t); me.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len)); return me; },
+    torus(m, x, z, R, r, y, rx = 0, ry = 0, arc = TAU, seg = 32) { const me = add(new THREE.TorusGeometry(R, r, 6, seg, arc), m, x, y, z, false); me.rotation.set(rx, ry, 0); return me; },
+    plane(m, x, z, w, h, y, ry = 0) { const me = add(new THREE.PlaneGeometry(w, h), m, x, y + h / 2, z, false); me.rotation.y = ry; return me; },
+    floor(m, x, z, w, d, y = 0.4) { const me = add(new THREE.PlaneGeometry(w, d), m, x, y, z, false); me.rotation.x = -Math.PI / 2; me.receiveShadow = true; return me; },
+    ext(shape, depth, m, x, y, z, ry = 0) { const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false }); geo.translate(0, 0, -depth / 2); uvs(geo, 1 / 64, 1 / 64); const me = add(geo, m, x, y, z); me.rotation.y = ry; return me; },
+    lathe(pts, m, x, z, y = 0, seg = 24) { return add(new THREE.LatheGeometry(pts.map(([a, c]) => new THREE.Vector2(a, c)), seg), m, x, y, z); },
+    inst(m, list, geo) {
+      const im = new THREE.InstancedMesh(geo || K.BOX, M(m), list.length), mt = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), s = new THREE.Vector3();
+      list.forEach((a, i) => { e.set(0, a[6] || 0, 0); q.setFromEuler(e); mt.compose(v.set(a[0], a[1], a[2]), q, s.set(a[3], a[4], a[5])); im.setMatrixAt(i, mt); });
+      im.castShadow = true; im.receiveShadow = true; g.add(im); return im;
+    },
+    glass(c) { return M(c, { map: K.X.win("band"), glow: "#ffd89a", emap: K.litT }); },
+    sub(x, z, o2 = {}) { return mk3d(K, ox + x * (o.s || 1), oz + z * (o.s || 1), Object.assign({ nofog: nf }, o2)); },
+    anim(f) { K.anims.push(f); },
+    blink(mesh) { (G3.blinks || (G3.blinks = [])).push(mesh); return mesh; },
+    wheel(x, z, y, R, op = {}) {
+      const w = new THREE.Group(); w.position.set(x, y, z); g.add(w);
+      const rimM = M(op.rim || "#f2f2f2", { glow: op.glow || "#ffffff" });
+      w.add(new THREE.Mesh(new THREE.TorusGeometry(R, op.t || 1.6, 6, 64), rimM));
+      const n = op.spokes || 16; for (let i = 0; i < n; i++) { const a = (i / n) * TAU, s = new THREE.Mesh(K.BOX, rimM); s.scale.set(0.7, R, 0.7); s.position.set((Math.cos(a) * R) / 2, (Math.sin(a) * R) / 2, 0); s.rotation.z = a - Math.PI / 2; w.add(s); }
+      const cn = op.caps || 24, cm = M(op.cap || "#bfe0f0", { glow: op.glow || "#bfe0f0" }); for (let i = 0; i < cn; i++) { const a = (i / cn) * TAU, c = new THREE.Mesh(K.SPH, cm); c.scale.set(3.4, 2.6, 3.4); c.position.set(Math.cos(a) * (R + 2), Math.sin(a) * (R + 2), 0); w.add(c); }
+      const hub = new THREE.Mesh(K.SPH, M("#d8d8e0")); hub.scale.setScalar(5); w.add(hub);
+      B.anim((t) => (w.rotation.z = t * (op.speed || 0.06)));
+      return w;
+    },
+    sparkle(pts) {
+      const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pts.flat(), 3)); const cols = new Float32Array(pts.length * 3); geo.setAttribute("color", new THREE.BufferAttribute(cols, 3));
+      const p = new THREE.Points(geo, new THREE.PointsMaterial({ size: 3.4, vertexColors: true, fog: !nf, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); g.add(p);
+      B.anim((t, night) => { p.visible = night > 0.35; if (!p.visible) return; for (let i = 0; i < pts.length; i++) { const on = Math.random() < 0.14 ? 1 : 0; cols[i * 3] = on; cols[i * 3 + 1] = on * 0.95; cols[i * 3 + 2] = on * 0.8; } geo.attributes.color.needsUpdate = true; });
+    },
+  };
+  return B;
+}
+function mountain(K, x, z, r, h, col, snow = 0.3, seg = 22) {
+  const THREE = K.THREE, geo = new THREE.ConeGeometry(r, h, seg, 7), pos = geo.attributes.position, cols = [], c1 = new THREE.Color(col), cs = new THREE.Color("#f2f5fa"), tmp = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    let px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i); const t = (py + h / 2) / h, n = hsh(Math.round(px), Math.round(py), Math.round(pz));
+    if (t < 0.999 && t > 0.001) { const j = 1 + (n - 0.5) * 0.3; px *= j; pz *= j; py += (hsh(Math.round(pz), Math.round(px), 3) - 0.5) * h * 0.05; pos.setXYZ(i, px, py, pz); }
+    const sn = snow > 0 && t > 1 - snow + (n - 0.5) * 0.12; tmp.copy(sn ? cs : c1).multiplyScalar(sn ? 1 : 0.8 + n * 0.35); cols.push(tmp.r, tmp.g, tmp.b);
+  }
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3)); geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ vertexColors: true, flatShading: true, shininess: 0, fog: false }));
+  m.position.set(x, h / 2 - 3, z); K.scene.add(m); return m;
+}
+const BACK3D = {
+  ararat(K) { mountain(K, WORLD * 0.3, WORLD + 7600, 3800, 2300, "#8a7a6a", 0.38, 28); mountain(K, WORLD * 0.3 + 4600, WORLD + 7000, 2000, 1250, "#8a7a6a", 0.26, 22); },
+  alatau(K) { for (let i = 0; i < 10; i++) mountain(K, -5000 + i * 1450, WORLD + 4600 + (i % 2) * 900, 2000 + (i % 3) * 300, 1500 + ((i * 37) % 5) * 160, "#6a6a7a", 0.42, 18); },
+  tbhills(K) { for (let i = 0; i < 6; i++) mountain(K, -1500 + i * 1300, -1300 - (i % 2) * 300, 900, 380 + (i % 3) * 80, "#5f7a45", 0, 16); for (let i = 0; i < 5; i++) mountain(K, -1500 + i * 1400, WORLD + 1300, 900, 340, "#6a7a4a", 0, 16); const B = mk3d(K, WORLD * 0.45, -1400, { nofog: true, y: 400 }); for (let i = 0; i < 3; i++) { const a = (i * TAU) / 3; B.beam(B.M("#e8e8e8", { map: K.X.lat("#e0e0e0", "#d23a2a"), alpha: true }), Math.cos(a) * 30, 0, Math.sin(a) * 30, 0, 260, 0, 6); } B.blink(B.sph(B.M("#ff2020", { neon: true }), 0, 0, 4, 262)); },
+  fuji(K) { mountain(K, -7600, WORLD * 0.5, 4300, 2300, "#5a6a8a", 0.33, 30); },
+  hollywood(K) {
+    for (let i = 0; i < 7; i++) mountain(K, -800 + i * 900, -1700 - (i % 2) * 300, 950, 420 + (i % 3) * 90, "#8a7a50", 0, 16);
+    const B = mk3d(K, WORLD * 0.15, -1180, { nofog: true }); [..."HOLLYWOOD"].forEach((ch, i) => B.plane(B.M("#ffffff", { map: K.X.txt(ch, "#ffffff", null, 128, 128, 116), alpha: true, glow: "#ffffff" }), i * 125, 0, 120, 130, 120 + Math.sin(i * 0.9) * 14, 0));
+  },
+  cristo(K) { mountain(K, -900, WORLD * 0.25, 650, 760, "#4f6f3a", 0, 14); const B = mk3d(K, -900, WORLD * 0.25, { nofog: true, y: 752 }); const W = B.M("#f2f2f2", { glow: "#ffffff" }); B.box("#d8d8d8", 0, 0, 14, 14, 22); B.cyl(W, 0, 0, 5, 9, 60, 22, 10); B.box(W, 0, 0, 80, 6, 6, 70); B.sph(W, 0, 0, 5, 88); },
+  sugarloaf(K) { const B = mk3d(K, WORLD + 640, WORLD + 700, { nofog: true }); B.sph("#6f7a5a", 0, 0, 160, 0, 1, 2.1, 1); B.sph("#6f7a5a", -340, -60, 100, 0, 1, 1.4, 1); const top1 = [0, 330, 0], top2 = [-340, 136, -60]; B.beam("#333", ...top2, ...top1, 0.8); const car = B.box("#d23a2a", 0, 0, 8, 6, 6, 0); B.anim((t) => { const k = (Math.sin(t * 0.15) + 1) / 2; car.position.set(lerp(top2[0], top1[0], k), lerp(top2[1], top1[1], k) - 6, lerp(top2[2], top1[2], k)); }); },
+  favela(K) {
+    mountain(K, -450, WORLD * 0.7, 560, 300, "#4f6f3a", 0, 14);
+    const THREE = K.THREE, n = 520, im = new THREE.InstancedMesh(K.BOX, new THREE.MeshLambertMaterial({ fog: false }), n), mt = new THREE.Matrix4(), col = new THREE.Color(), q = new THREE.Quaternion();
+    const pal = ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f", "#f2f2f2", "#ff7ab0", "#ff9a3a", "#c8b8a0"];
+    for (let i = 0; i < n; i++) { const a = hsh(i, 1, 1) * Math.PI + Math.PI / 2, rr = 120 + hsh(i, 2, 2) * 400, y = 300 * (1 - rr / 560); mt.compose(new THREE.Vector3(-450 + Math.cos(a) * rr, y + 6, WORLD * 0.7 + Math.sin(a) * rr), q, new THREE.Vector3(14, 12 + hsh(i, 3, 3) * 10, 14)); im.setMatrixAt(i, mt); im.setColorAt(i, col.set(pal[i % pal.length])); }
+    K.scene.add(im);
+  },
+  liberty(K) {
+    const [x, z] = BACKPOS.liberty, B = mk3d(K, x, z, { nofog: true });
+    B.cyl("#6f8a5a", 0, 0, 90, 100, 8, -5, 24);
+    const s = new K.THREE.Shape(); for (let i = 0; i < 22; i++) { const a = (i * Math.PI) / 11, r = i % 2 ? 42 : 62; i ? s.lineTo(Math.cos(a) * r, Math.sin(a) * r) : s.moveTo(Math.cos(a) * r, Math.sin(a) * r); } const st = B.ext(s, 14, "#9a9a90", 0, 3, 0); st.rotation.x = -Math.PI / 2; st.position.y = 3 + 7;
+    const S = B.sub(0, 0, { y: 17, s: 1.5 }); const cu = S.M("#6fb59c", { glow: "#9fe0c8" });
+    S.box("#b8b0a0", 0, 0, 30, 30, 50); S.box("#a8a090", 0, 0, 24, 24, 8, 50);
+    S.cone(cu, 0, 0, 11, 52, 58); S.cyl(cu, 0, 0, 6, 8, 14, 104); S.sph(cu, 0, 0, 4.6, 124);
+    for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + ((i - 3) * Math.PI) / 9; S.beam(cu, Math.cos(a) * 3, 128, Math.sin(a) * 3 + 0, Math.cos(a) * 10, 132, Math.sin(a) * 10, 0.8); }
+    S.beam(cu, 5, 114, 0, 9, 142, 0, 2.6); S.cyl(GOLD, 9, 0, 2, 1.4, 5, 142); S.sph(S.M("#ffb347", { glow: "#ffcc55" }), 9, 0, 3, 150); S.box(cu, -7, 3, 4, 9, 2, 100);
+  },
+  burjalarab(K) {
+    const [x, z] = BACKPOS.burjalarab, B = mk3d(K, x, z, { nofog: true });
+    B.cyl("#e8d8b0", 0, 0, 90, 100, 8, -5, 24); B.box("#d8d8d8", 0, -(z - WORLD) / 2, 14, z - WORLD, 3, 2);
+    const s = new K.THREE.Shape(); s.moveTo(-40, 0); s.lineTo(-40, 340); s.quadraticCurveTo(120, 260, 110, 0); s.lineTo(-40, 0);
+    const sail = B.M("#f4f4f4", { glow: "#ff6aa8" }); B.ext(s, 60, sail, 0, 3, 0, 0);
+    B.beam("#d8d8d8", -48, 3, 0, -36, 360, 0, 6); B.beam("#d8d8d8", -48, 3, 30, -36, 360, 0, 4); B.beam("#d8d8d8", -48, 3, -30, -36, 360, 0, 4); B.cyl("#e8e8e8", -70, 0, 18, 18, 2, 230); B.beam("#d8d8d8", -40, 228, 0, -62, 230, 0, 3);
+    B.anim((t) => sail.emissive.setHSL((t * 0.02) % 1, 0.8, 0.5));
+  },
+  pier(K) { const [x] = BACKPOS.pier, B = mk3d(K, x, WORLD, { nofog: true }); B.box("#8a6a4a", 0, 210, 70, 420, 4, 8); for (let zz = 20; zz < 420; zz += 40) for (const xx of [-30, 30]) B.cyl("#5a4a3a", xx, zz, 2, 2, 14, -5, 6); B.wheel(0, 340, 70, 50, { caps: 16, glow: "#ff3d7f", cap: "#ffd23d" }); B.torus("#e8433a", 20, 280, 30, 2, 20, Math.PI / 2, 0); },
+};
+function cityExtras3d(K) {
+  const THREE = K.THREE;
+  // land around the city instead of the sea (fields, villages, trees)
+  const landM = new THREE.MeshLambertMaterial({ color: CITY.land });
+  for (const [a, b2, w, h] of LAND) { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), landM); p.rotation.x = -Math.PI / 2; p.position.set(a + w / 2, -0.4, b2 + h / 2); p.receiveShadow = true; K.scene.add(p); }
+  if (LAND.length) {
+    const n = 700, im = new THREE.InstancedMesh(K.BOX, new THREE.MeshLambertMaterial(), n), tm = new THREE.InstancedMesh(K.CROWN, new THREE.MeshLambertMaterial({ color: 0x3f6a35 }), n), mt = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
+    let k = 0, kt = 0;
+    for (let i = 0; i < 6000 && (k < n || kt < n); i++) {
+      const x = -2600 + hsh(i, 1, 7) * (WORLD + 5200), z = -2600 + hsh(i, 2, 7) * (WORLD + 5200);
+      if ((x > -40 && x < WORLD + 40 && z > -40 && z < WORLD + 40) || !landAt(x, z)) continue;
+      if (hsh(i, 3, 7) < 0.55 && k < n) { const s = 26 + hsh(i, 4, 7) * 40, hh = (16 + hsh(i, 5, 7) * 70) * (CITY.tall || 1); mt.compose(new THREE.Vector3(x, hh / 2, z), q, new THREE.Vector3(s, hh, s * 0.8)); im.setMatrixAt(k, mt); im.setColorAt(k, col.set(CITY.roofs[(hsh(i, 6, 7) * CITY.roofs.length) | 0])); k++; }
+      else if (kt < n) { const r = 12 + hsh(i, 8, 7) * 12; mt.compose(new THREE.Vector3(x, r + 8, z), q, new THREE.Vector3(r, r * 1.2, r)); tm.setMatrixAt(kt, mt); kt++; }
+    }
+    im.count = k; tm.count = kt; K.scene.add(im, tm);
+  }
+  // bridge railings and piers on the river
+  if (CITY.river) for (const br of places.bridges) { for (const dx of [-T, T]) { const r = new THREE.Mesh(K.BOX, K.mat("#9a9a9a")); r.scale.set(4, 7, 2 * T); r.position.set(br.x + dx + (dx < 0 ? 2 : -2), 3.5, br.y); K.scene.add(r); } const p = new THREE.Mesh(K.BOX, K.mat("#7a7670")); p.scale.set(2 * T - 10, 12, 2 * T); p.position.set(br.x, -6.5, br.y); K.scene.add(p); }
+  for (const k of CITY.back || []) if (BACK3D[k]) BACK3D[k](K);
+}
+function lm3d(K, b) { const D = LMS[b.lm]; if (!D || !D.d3) return; D.d3(mk3d(K, b.x, b.y, { nofog: D.nofog }), b); }
+// city styles for ordinary buildings (3D)
+const STYLES = {
+  haussmann: { walls: ["#e8dcc4", "#e2d4b8", "#eadfca", "#ddd0b4"], win: "tall", roof: "mansard" },
+  brick: { walls: ["#8a4a3a", "#a0583f", "#7a4a3a", "#9a6a50", "#b07a5a", "#6e5a4e"], win: "brick", roof: "tank" },
+  glass: { walls: ["#6f9fc8", "#4f7fa8", "#8fb0c8", "#3f6f8f", "#9fc0d0", "#b8c4d0"], win: "band", roof: "spire" },
+  tuff: { walls: ["#d99a82", "#c98a72", "#e3b8a0", "#b8735a", "#d8a88a"], win: "arch", roof: "flat" },
+  med: { walls: ["#e3b88a", "#d89a5b", "#e8cfa0", "#c98a6a", "#f0dcb4", "#e8a878"], win: "shutter", roof: "hip", roofCol: "#b8573f" },
+  euro: { walls: ["#b5ad9c", "#a9a397", "#c8bfa8", "#9c9a96", "#d8cdb6", "#c0b8a8"], win: "tall", roof: "hip", roofCol: "#5a6068" },
+  soviet: { walls: ["#c8c8c0", "#d8d4c8", "#b8b4aa", "#e0dcd0", "#c8bca8"], win: "panel", roof: "flat" },
+  asia: { walls: ["#d8d8d8", "#a8a8a8", "#c8c4bc", "#6a6a72", "#e8e4dc"], win: "plain", roof: "neon" },
+  deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
+};
+const NEON_WORDS = { ja: ["ラーメン", "カラオケ", "居酒屋", "薬", "寿司", "ホテル", "焼肉", "ゲーム"], zh: ["饭店", "酒店", "银行", "药房", "火锅", "茶", "书店", "电影"] };
+function styleMats(K, b, h) {
+  const S = STYLES[CITY.style]; if (!S) return null;
+  const THREE = K.THREE, n = hsh(b.x, b.y, 11), wallC = S.walls[(n * S.walls.length) | 0];
+  const key = CITY.style + wallC, C = K.styleCache || (K.styleCache = {});
+  const wall = C[key] || (C[key] = new THREE.MeshLambertMaterial({ color: wallC, map: K.X.win(S.win), emissive: 0xffc46b, emissiveMap: K.litT, emissiveIntensity: 0 }));
+  if (!K.winMats.includes(wall)) K.winMats.push(wall);
+  const roofM = K.mat(S.roofCol || shade(wallC, 0.7));
+  const deco = () => {
+    const cx = b.x + b.w / 2, cz = b.y + b.h / 2, add = (geo, m, x, y, z, sx, sy, sz) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.scale.set(sx, sy, sz); me.castShadow = true; K.scene.add(me); return me; };
+    if (S.roof === "mansard") { add(K.BOX, K.mat("#4a5058"), cx, h + 7, cz, b.w - 8, 14, b.h - 8); add(K.BOX, K.mat("#5a6068"), cx, h + 15, cz, b.w - 22, 4, b.h - 22); for (let i = 0; i < 3; i++) add(K.BOX, K.mat("#b86a4a"), b.x + 14 + hsh(b.x, i, 1) * (b.w - 28), h + 18, b.y + 14 + hsh(b.y, i, 2) * (b.h - 28), 6, 10, 4); }
+    else if (S.roof === "hip") add(K.PYR, roofM, cx, h + 11, cz, b.w + 2, 22, b.h + 2);
+    else if (S.roof === "tank" && h > 90 && n < 0.55) { const tx = b.x + b.w * 0.3, tz = b.y + b.h * 0.3; for (const [dx, dz] of [[-5, -5], [5, -5], [-5, 5], [5, 5]]) add(K.BOX, K.mat("#3a3a3a"), tx + dx, h + 5, tz + dz, 1.2, 10, 1.2); add(K.TANK || (K.TANK = new THREE.CylinderGeometry(9, 9, 16, 12)), K.mat("#7a5a3a"), tx, h + 18, tz, 1, 1, 1); add(K.UMBC || (K.UMBC = new THREE.ConeGeometry(10, 7, 12)), K.mat("#5a4a3a"), tx, h + 29.5, tz, 1, 1, 1); }
+    else if (S.roof === "spire" && h > 220) add(K.UMBC || (K.UMBC = new THREE.ConeGeometry(10, 7, 12)), K.mat("#c8d0d8"), cx, h + 30, cz, 0.5, 9, 0.5);
+    else if (S.roof === "neon") {
+      const words = NEON_WORDS[CITY.lang] || NEON_WORDS.ja, cols = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f", "#ff7a3d", "#c77ae8"], w = words[(n * 97 | 0) % words.length], c = cols[(n * 31 | 0) % cols.length];
+      const mt = K.signMat[w + c] || (K.signMat[w + c] = new THREE.MeshBasicMaterial({ map: K.X.txt(w, c, "#14121a", 128, 512, 100, true) }));
+      const sh = Math.min(h * 0.6, 90); add(K.BOX, mt, b.x + b.w - 6, h * 0.45 + 10, b.y + b.h + 4, 12, sh, 3);
+      if (n < 0.35) add(K.BOX, K.signMat["bb" + c] || (K.signMat["bb" + c] = new THREE.MeshBasicMaterial({ map: K.X.ad((n * 80 | 0) % 8) })), cx, h + 16, cz, b.w * 0.7, 26, 3);
+    }
+    else if (S.roof === "trim" && n < 0.5) { const c = ["#ff3d7f", "#3dd8ff", "#5fd35f", "#ffd23d"][(n * 8 | 0) % 4], m = K.signMat["trim" + c] || (K.signMat["trim" + c] = new THREE.MeshBasicMaterial({ color: c })); add(K.BOX, m, cx, h - 4, b.y + b.h + 0.6, b.w, 1.6, 1); add(K.BOX, m, cx, h - 4, b.y - 0.6, b.w, 1.6, 1); }
+  };
+  return { mats: [wall, wall, S.roof === "hip" ? roofM : K.mat(shade(wallC, 0.85)), roofM, wall, wall], deco };
+}
+// the 2D roofs of ordinary buildings in each style
+function styleRoof2d(b, rx, ry) {
+  const s = CITY.style; if (!s) return;
+  const n = hsh(b.x, b.y, 11);
+  if (s === "med" || s === "euro") { ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 2; const r = Math.min(b.w, b.h) / 2, mx = rx + b.w / 2, my = ry + b.h / 2; ctx.beginPath(); if (b.w >= b.h) { ctx.moveTo(rx, ry); ctx.lineTo(rx + r, my); ctx.lineTo(rx, ry + b.h); ctx.moveTo(rx + b.w, ry); ctx.lineTo(rx + b.w - r, my); ctx.lineTo(rx + b.w, ry + b.h); ctx.moveTo(rx + r, my); ctx.lineTo(rx + b.w - r, my); } else { ctx.moveTo(rx, ry); ctx.lineTo(mx, ry + r); ctx.lineTo(rx + b.w, ry); ctx.moveTo(rx, ry + b.h); ctx.lineTo(mx, ry + b.h - r); ctx.lineTo(rx + b.w, ry + b.h); ctx.moveTo(mx, ry + r); ctx.lineTo(mx, ry + b.h - r); } ctx.stroke(); }
+  else if (s === "haussmann") { ctx.fillStyle = "#5a6068"; ctx.fillRect(rx + 8, ry + 8, b.w - 16, b.h - 16); ctx.fillStyle = "#6a7078"; ctx.fillRect(rx + 16, ry + 16, b.w - 32, b.h - 32); ctx.fillStyle = "#b86a4a"; ctx.fillRect(rx + 20 + n * 30, ry + 14, 6, 5); }
+  else if (s === "brick" && n < 0.55) { ctx.fillStyle = "#7a5a3a"; ctx.beginPath(); ctx.arc(rx + b.w * 0.3, ry + b.h * 0.3, 9, 0, TAU); ctx.fill(); ctx.fillStyle = "#5a4a3a"; ctx.beginPath(); ctx.arc(rx + b.w * 0.3, ry + b.h * 0.3, 4, 0, TAU); ctx.fill(); }
+  else if (s === "glass") { ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.beginPath(); ctx.moveTo(rx, ry + b.h * 0.6); ctx.lineTo(rx + b.w * 0.6, ry); ctx.lineTo(rx + b.w * 0.8, ry); ctx.lineTo(rx, ry + b.h * 0.8); ctx.closePath(); ctx.fill(); }
+  else if (s === "asia") { ctx.fillStyle = ["#ff3d7f", "#3d8bff", "#ffd23d", "#5fd35f"][(n * 4) | 0]; ctx.fillRect(rx + b.w - 10, ry + b.h - 26, 8, 22); }
+  else if (s === "soviet") { ctx.fillStyle = "rgba(0,0,0,.1)"; for (let k = 16; k < b.w; k += 16) ctx.fillRect(rx + k, ry, 1.5, b.h); }
+  else if (s === "deco" && n < 0.5) { ctx.strokeStyle = ["#ff3d7f", "#3dd8ff", "#5fd35f", "#ffd23d"][(n * 8 | 0) % 4]; ctx.lineWidth = 3; ctx.strokeRect(rx + 4, ry + 4, b.w - 8, b.h - 8); }
+  else if (s === "tuff") { ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(rx + 6, ry + 6, b.w - 12, 6); }
+}
+function stadRing3d(K, b, cx, cz) {
+  const THREE = K.THREE, t = K.X.ct("cush" + CITY.ring.col, 64, 64, (g) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, 64, 64); g.strokeStyle = "rgba(0,0,0,.18)"; g.lineWidth = 2; for (let i = -64; i < 128; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.moveTo(i + 64, 0); g.lineTo(i, 64); g.stroke(); } });
+  const geo = new THREE.CylinderGeometry(b.w * 0.6, b.w * 0.66, 58, 48, 1, true); const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 24, uv.getY(i) * 2);
+  const m = new THREE.MeshLambertMaterial({ color: CITY.ring.col, map: t, side: THREE.DoubleSide, emissive: new THREE.Color(CITY.ring.glow), emissiveIntensity: 0 });
+  const r = new THREE.Mesh(geo, m); r.scale.z = b.h / b.w; r.position.set(cx, 29, cz); r.castShadow = true; K.scene.add(r); K.winMats.push(m);
+}
+
+/* ===== small life of the city ===== */
+let lmLast = null, steamT = 0;
+function lmNear() {
+  const P = player.inCar || player; let best = null;
+  for (const l of places.lms || []) if (Math.hypot(l.cx - P.x, l.cy - P.y) < 250) best = l;
+  if (best && best !== lmLast) toast("📍 " + best.name + (best.info ? " — " + best.info : ""), 3.4);
+  lmLast = best;
+}
+function cityTick(dt) {
+  if (CITY.steam) { steamT -= dt; if (steamT <= 0) { steamT = 0.12; const P = player.inCar || player; for (let k = 0; k < 3; k++) { const tx = Math.floor(P.x / T / 8) * 8 + (k - 1) * 8, ty = Math.floor(P.y / T / 8) * 8 + 4 + (k % 2) * 8; const x = (tx + 0.5) * T + 10, y = (ty + 0.5) * T; if (tile(tx, ty) === ROAD) addPart({ x: x + rand(-4, 4), y: y + rand(-4, 4), vx: rand(-6, 6), vy: rand(-14, -4), life: 1.6, max: 1.6, size: rand(8, 13), col: "#e8eef2", type: "smoke" }); } } }
+}
+
+CITY.land = CITY.land || "#7d8a5a"; CITY.sand = CITY.sand || "#e8d5a3";
+const LH = !!CITY.left;
 let flying = false;
 function flyTo(c) {
   if (c.id === CITY.id || flying) return;
@@ -568,11 +1548,11 @@ function flyTo(c) {
 /* ================= city ================= */
 let seed = CITY.seed;
 const srnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
-const ROAD = 0, WALK = 1, BLD = 2, GRASS = 3, PLAZA = 4, LOT = 5, CEM = 6;
+const ROAD = 0, WALK = 1, BLD = 2, GRASS = 3, PLAZA = 4, LOT = 5, CEM = 6, WATER = 7, SAND = 8;
 const tiles = new Uint8Array(N * N);
 const tile = (x, y) => (x < 0 || y < 0 || x >= N || y >= N ? -1 : tiles[y * N + x]);
 const isR = (i) => i % 8 < 2;
-const solid = (x, y) => { const t = tile(x, y); return t < 0 || t === BLD; };
+const solid = (x, y) => { const t = tile(x, y); return t < 0 || t === BLD || t === WATER; };
 const solidAt = (wx, wy) => solid(Math.floor(wx / T), Math.floor(wy / T));
 const blds = [], treeGrid = new Map(), places = {}, pickupSpots = [];
 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) tiles[y * N + x] = isR(x) || isR(y) ? ROAD : WALK;
@@ -597,7 +1577,7 @@ function addB(tx, ty, w, h, kind = "bld", col) {
 function addTree(x, y, r, kind) {
   const k = Math.floor(y / T) * N + Math.floor(x / T);
   if (!treeGrid.has(k)) treeGrid.set(k, []);
-  treeGrid.get(k).push({ x, y, r, hue: srnd(), kind: kind || "tree" });
+  treeGrid.get(k).push({ x, y, r, hue: srnd(), kind: kind || CITY.tree || (CITY.palms ? "palm" : "tree") });
 }
 const parkSpots = [];
 function fill(x0, y0, w, h, v) { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) tiles[y * N + x] = v; }
@@ -617,10 +1597,12 @@ if (CITY.shuffle) for (const half of [[0, 1, 2], [3, 4, 5]]) {
   for (let i = kinds.length - 1; i > 0; i--) { const j = (srnd() * (i + 1)) | 0; [kinds[i], kinds[j]] = [kinds[j], kinds[i]]; }
   keys.forEach((k, i) => { if (kinds[i] === "city") delete SPECIAL[k]; else SPECIAL[k] = kinds[i]; });
 }
+placeLandmarks();
 for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
   const x0 = bx * 8 + 2, y0 = by * 8 + 2, ix = x0 + 1, iy = y0 + 1;
   const kind = SPECIAL[bx + "," + by] || "city";
   const cx = (x0 + 3) * T, cy = (y0 + 3) * T;
+  if (kind.startsWith("lm:")) { buildLM(kind.slice(3), x0, y0, ix, iy, bx, by); continue; }
   if (kind === "city") cityBlock(ix, iy);
   else if (kind === "bar") { addB(ix, iy, 4, 2, "bar", "#4a2a4f"); fill(ix, iy + 2, 4, 2, LOT); places.bar = { x: cx, y: (y0 + 4) * T }; places.barLot = { x: x0, y: y0 }; }
   else if (kind === "stadium") { addB(ix, iy, 4, 4, "stadium", "#8f8b9a"); places.stadium = { x: cx, y: (y0 + 5.5) * T }; }
@@ -646,27 +1628,27 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
     for (const [tx2, ty2] of [[1.55, 3.45], [2.35, 3.45], [1.55, 4.35], [2.35, 4.35], [3.65, 3.45], [4.45, 3.45], [3.65, 4.35], [4.45, 4.35]]) addTree((x0 + tx2) * T, (y0 + ty2) * T, 12, "table");
   }
   else if (kind === "electro") {
-    const b = addB(ix, iy, 4, 2, "svc", "#2b2f45"); b.label = "ЭЛЕКТРОНИКА"; b.labelCol = "#c77ae8"; b.h3 = 58; fill(ix, iy + 2, 4, 2, LOT);
+    const b = addB(ix, iy, 4, 2, "svc", "#2b2f45"); b.label = LOC("ЭЛЕКТРОНИКА"); b.labelCol = "#c77ae8"; b.h3 = 58; fill(ix, iy + 2, 4, 2, LOT);
     places.electro = { x: cx, y: (y0 + 4) * T };
   }
   else if (kind === "factory") {
-    const b = addB(ix, iy, 4, 3, "svc", "#6f8a9c"); b.label = "ЗАВОД ЭЛЕКТРОНИКИ"; b.labelCol = "#5de0d0"; b.h3 = 62; b.factory = true; fill(ix, iy + 3, 4, 1, LOT);
+    const b = addB(ix, iy, 4, 3, "svc", "#6f8a9c"); b.label = LOC("ЗАВОД ЭЛЕКТРОНИКИ"); b.labelCol = "#5de0d0"; b.h3 = 62; b.factory = true; fill(ix, iy + 3, 4, 1, LOT);
     places.factory = { x: cx, y: (y0 + 4.5) * T };
     parkSpots.push({ type: "van", x: (x0 + 1.6) * T, y: (y0 + 4.5) * T, a: 0 });
   }
   else if (kind === "ems") {
-    const b = addB(ix, iy, 4, 2, "svc", "#f2f2f2"); b.label = "СКОРАЯ ПОМОЩЬ"; b.labelCol = "#e0303e"; b.h3 = 56; fill(ix, iy + 2, 4, 2, LOT);
+    const b = addB(ix, iy, 4, 2, "svc", "#f2f2f2"); b.label = LOC("СКОРАЯ ПОМОЩЬ"); b.labelCol = "#e0303e"; b.h3 = 56; fill(ix, iy + 2, 4, 2, LOT);
     parkSpots.push({ type: "ambulance", x: (x0 + 1.9) * T, y: (y0 + 4) * T, a: Math.PI / 2 }, { type: "ambulance", x: (x0 + 4.1) * T, y: (y0 + 4) * T, a: Math.PI / 2 });
   }
-  else if (kind === "court") { const b = addB(ix, iy, 4, 2, "svc", "#c8bfa8"); b.label = "СУД"; b.h3 = 70; b.columns = true; fill(ix, iy + 2, 4, 2, PLAZA); }
-  else if (kind === "cityhall") { const b = addB(ix, iy, 4, 3, "svc", "#d8cdb6"); b.label = "МЭРИЯ"; b.h3 = 120; b.columns = true; b.flag = true; fill(ix, iy + 3, 4, 1, PLAZA); }
-  else if (kind === "prison") { const b = addB(ix, iy, 4, 4, "svc", "#77736b"); b.label = "ТЮРЬМА"; b.h3 = 64; b.bars = true; b.labelCol = "#ffcc00"; }
+  else if (kind === "court") { const b = addB(ix, iy, 4, 2, "svc", "#c8bfa8"); b.label = LOC("СУД"); b.h3 = 70; b.columns = true; fill(ix, iy + 2, 4, 2, PLAZA); }
+  else if (kind === "cityhall") { const b = addB(ix, iy, 4, 3, "svc", "#d8cdb6"); b.label = LOC("МЭРИЯ"); b.h3 = 120; b.columns = true; b.flag = true; fill(ix, iy + 3, 4, 1, PLAZA); }
+  else if (kind === "prison") { const b = addB(ix, iy, 4, 4, "svc", "#77736b"); b.label = LOC("ТЮРЬМА"); b.h3 = 64; b.bars = true; b.labelCol = "#ffcc00"; }
   else if (kind === "depot") {
-    const b = addB(ix, iy, 4, 1, "svc", "#3a6e9e"); b.label = "АВТОБУСНЫЙ ПАРК"; b.h3 = 46; fill(ix, iy + 1, 4, 3, LOT);
+    const b = addB(ix, iy, 4, 1, "svc", "#3a6e9e"); b.label = LOC("АВТОБУСНЫЙ ПАРК"); b.h3 = 46; fill(ix, iy + 1, 4, 3, LOT);
     for (const bx2 of [0.75, 2, 3.25]) parkSpots.push({ type: "bus", x: (ix + bx2) * T, y: (iy + 2.45) * T, a: Math.PI / 2 });
   }
-  else if (kind === "power") { const b = addB(ix, iy, 4, 2, "svc", "#8b8f94"); b.label = "ЭЛЕКТРОСТАНЦИЯ"; b.h3 = 80; b.chimneys = true; fill(ix, iy + 2, 4, 2, LOT); }
-  else if (kind === "stores") { for (const sx of [ix, ix + 2]) { const b = addB(sx, iy, 2, 4, "svc", "#9a7b55"); b.label = "СКЛАД"; b.h3 = 44; b.labelVert = true; } }
+  else if (kind === "power") { const b = addB(ix, iy, 4, 2, "svc", "#8b8f94"); b.label = LOC("ЭЛЕКТРОСТАНЦИЯ"); b.h3 = 80; b.chimneys = true; fill(ix, iy + 2, 4, 2, LOT); }
+  else if (kind === "stores") { for (const sx of [ix, ix + 2]) { const b = addB(sx, iy, 2, 4, "svc", "#9a7b55"); b.label = LOC("СКЛАД"); b.h3 = 44; b.labelVert = true; } }
   else if (kind === "police2") { addB(ix, iy, 4, 4, "police", "#2c3e66"); if (POLICE) parkSpots.push({ type: "cop", x: (x0 + 1.5) * T, y: (y0 + 5.5) * T, a: 0 }); }
   else if (kind === "fire2") {
     addB(ix, iy, 4, 2, "fire", "#a8322a"); fill(ix, iy + 2, 4, 2, LOT);
@@ -712,30 +1694,32 @@ for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
 
 /* the wall: splits the city into a north and a south half along the middle road; two checkpoints let you through */
 const WALL_Y = 24, GATES = [16, 32];
-{
+if (CITY.wall) {
   let x0 = 0;
   const segs = [];
   for (const gx of GATES) { segs.push([x0, gx - x0]); x0 = gx + 2; }
   segs.push([x0, N - x0]);
   for (const [sx, w] of segs) addB(sx, WALL_Y, w, 1, "wall", "#a9a397");
   places.gates = GATES.map((gx) => ({ x: (gx + 1) * T, y: (WALL_Y + 0.5) * T }));
-}
+} else places.gates = [];
+cityWater();
 const laneTiles = [], walkTiles = [];
 for (const b of blds) if (b.kind === "bld" && b.y > WALL_Y * T) console.warn("housing south of the wall at", b.x, b.y);
 for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
   const t = tile(x, y);
   if (t === ROAD && !(isR(x) && isR(y))) laneTiles.push([x, y]);
-  if (t === WALK || t === PLAZA || t === GRASS || t === CEM) walkTiles.push([x, y]);
+  if (t === WALK || t === PLAZA || t === GRASS || t === CEM || t === SAND) walkTiles.push([x, y]);
 }
+cityDecor();
 
 /* prerendered minimap: 4 px per tile */
 const MMS = 4;
 const mm = document.createElement("canvas"); mm.width = mm.height = N * MMS;
 {
   const g = mm.getContext("2d");
-  const col = { [ROAD]: "#4a4955", [WALK]: shade(CITY.walk, 0.86), [GRASS]: shade(CITY.grass, 0.96), [PLAZA]: "#a99b84", [LOT]: "#5c5b64", [CEM]: "#4c6a44" };
+  const col = { [ROAD]: "#4a4955", [WALK]: shade(CITY.walk, 0.86), [GRASS]: shade(CITY.grass, 0.96), [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#a99b84", [LOT]: "#5c5b64", [CEM]: "#4c6a44" };
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const t = tile(x, y); if (t !== BLD) { g.fillStyle = col[t]; g.fillRect(x * MMS, y * MMS, MMS, MMS); } }
-  for (const b of blds) { g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : b.kind === "fire" ? "#d7261e" : b.kind === "chapel" ? "#e8e2d4" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
+  for (const b of blds) { if (b.kind === "lm") { g.fillStyle = b.roof; for (const s of b.sol) if (s[4] !== "w") g.fillRect((b.x / T + s[0]) * MMS, (b.y / T + s[1]) * MMS, s[2] * MMS, s[3] * MMS); continue; } g.fillStyle = b.kind === "hosp" ? "#f2f2f2" : b.kind === "police" ? "#3a5aa8" : b.kind === "bar" ? "#b03a7a" : b.kind === "food" ? "#4fa86a" : b.kind === "stadium" ? "#3f9a45" : b.kind === "fire" ? "#d7261e" : b.kind === "chapel" ? "#e8e2d4" : shade(b.roof, 0.85); g.fillRect(b.x / T * MMS, b.y / T * MMS, b.w / T * MMS, b.h / T * MMS); }
 }
 
 /* ================= world helpers ================= */
@@ -802,7 +1786,7 @@ function flowTarget(x, y, steps) {
 const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 function laneOk(d, x, y) {
   if (tile(x, y) !== ROAD) return false;
-  return d === 0 ? y % 8 === 1 : d === 2 ? y % 8 === 0 : d === 1 ? x % 8 === 0 : x % 8 === 1;
+  const rr = LH ? 0 : 1, ll = 1 - rr; return d === 0 ? y % 8 === rr : d === 2 ? y % 8 === ll : d === 1 ? x % 8 === ll : x % 8 === rr;
 }
 function randFrom(list, from, minD, maxD, tries = 80) {
   for (let i = 0; i < tries; i++) {
@@ -827,7 +1811,8 @@ const CT = {
   ters: { name: "V3 TERS", len: 50, wid: 23, max: 480, acc: 420, grip: 9.8, gears: 6, radio: true, cols: ["#14171c", "#e9e9ee", "#6e0f1f", "#1b2f5a"] },
 };
 if (CITY.taxi) CT.taxi.cols = [CITY.taxi];
-const TRAFFIC = ["compact", "compact", "sedan", "sedan", "sedan", "van", "taxi", "sport"];
+if (CITY.bus) CT.bus.cols = [CITY.bus];
+const TRAFFIC = CITY.traffic || (CITY.id === "nova" ? ["compact", "compact", "sedan", "sedan", "sedan", "van", "taxi", "sport"] : ["compact", "compact", "sedan", "sedan", "sedan", "van", "taxi", "sport", "bus"]);
 const cars = [], people = [], bullets = [], parts = [], decals = [], pickups = [];
 function mkCar(type, x, y, a, col) {
   const t = CT[type];
@@ -1099,6 +2084,7 @@ const SHOPS = [
       { id: "shawarma", name: "Шаурма", info: "+35 здоровья", price: 15, heal: 35 },
       { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
       { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
+      ...(CITY.food ? [{ id: "sp_" + CITY.id, name: CITY.food[0], info: "Местное блюдо: +60 здоровья", price: 18, heal: 60 }] : []),
     ].map((it) => (it.heal ? Object.assign(it, { act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
   { id: "electro", who: "Электроника «Вольт»", title: "Магазин электроники", col: "#c77ae8", hex: 0xc77ae8, label: "Э", at: () => places.electro, bonus: 0,
     note: "Гаджеты покупаются один раз и остаются навсегда. Их делают на заводе электроники на юге.",
@@ -1154,6 +2140,7 @@ const ITEMS = {
   lemonade: { name: "Лимонад «V»", col: "#f2f27a", g: "Л", heal: 15 }, cola: { name: "Кола V3", col: "#b5562f", g: "К3", boost: 15 },
   milkshake: { name: "Молочный коктейль", col: "#f7d6e6", g: "МК", heal: 30 }, neon: { name: "Коктейль «Неон»", col: "#ff3d7f", g: "Н", heal: 50, boost: 20 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
 };
+for (const c of CITIES) if (c.food) ITEMS["sp_" + c.id] = { name: c.food[0], col: "#ffb347", g: c.food[1], heal: 60 };
 const inv = () => save.inv || (save.inv = {});
 function invAdd(id, n = 1) { inv()[id] = (inv()[id] || 0) + n; }
 function itemInfo(it) { return [it.heal ? (it.heal >= 100 ? "полное здоровье" : "+" + it.heal + " здоровья") : "", it.boost ? "быстрый бег " + it.boost + " с" : ""].filter(Boolean).join(", "); }
@@ -1361,8 +2348,8 @@ function newsStories() {
   if (save.home) out.push({ tag: "ГОРОД", pic: "tower", title: "В ЖК «Нова» въехал новый жилец",
     lines: ["Однушку на 12-м этаже купили за 20 тысяч долларов.", "Соседи говорят, новый жилец часто смотрит наш канал.", "Привет, сосед!"] });
   out.push(
-    { tag: "ГОРОД", pic: "wall", title: "Очереди на КПП: мэрия обещает третий проезд",
-      lines: ["Утром очередь на северном КПП растянулась на два квартала.", "Мэрия обещает открыть третий проезд в городской стене.", "Пока горожанам советуют пользоваться такси и телепортом."] },
+    CITY.wall ? { tag: "ГОРОД", pic: "wall", title: "Очереди на КПП: мэрия обещает третий проезд",
+      lines: ["Утром очередь на северном КПП растянулась на два квартала.", "Мэрия обещает открыть третий проезд в городской стене.", "Пока горожанам советуют пользоваться такси и телепортом."] } : { tag: "ГОРОД", pic: "tower", title: CITY.river ? "Пробки на мостах через реку " + CITY.river : "Пробки в центре: мэрия расширяет дороги", lines: ["Утром центр встал в пробке на несколько кварталов.", "Мэрия обещает новые полосы и автобусы.", "Пока горожанам советуют пользоваться такси и телепортом."] },
     { tag: "ПРОИСШЕСТВИЯ", pic: "fire", title: "Пожарные потушили склады за семь минут",
       lines: ["Ночью на южных складах загорелись поддоны.", "Расчёт части 01 прибыл через три минуты и справился за семь.", "Никто не пострадал, причину ищут."] },
     { tag: "ЭКОНОМИКА", pic: "factory", title: "Завод «V3 Электроникс» собрал миллионную плату",
@@ -1374,6 +2361,7 @@ function newsStories() {
     { tag: "КУЛЬТУРА", pic: "chapel", title: "На кладбищенской часовне обновили купол",
       lines: ["Реставраторы покрыли купол часовни свежей позолотой.", "Теперь его видно даже с северного берега.", "Жители благодарят мэрию и пожарных за помощь."] },
   );
+  for (const l of (places.lms || []).slice(0, 3)) out.push({ tag: "ТУРИЗМ", pic: "tower", title: l.name + ": туристы бьют рекорды", lines: ["Сегодня у места «" + l.name + "» толпы туристов.", "Гиды напоминают: " + l.info + ".", "Лучшие фото получаются на закате."] });
   return out;
 }
 function newsPic(g, kind, x, y, w, h, t) {
@@ -2124,7 +3112,7 @@ function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.
 function renderStadium() {
   const now0 = new Date(), key = dayKey(now0), m = genMatch(key);
   const st = save.stadium && save.stadium.day === key ? save.stadium : null;
-  $("stWho").textContent = "Стадион V3 · матч дня, " + ruDate(now0);
+  $("stWho").textContent = (CITY.stadium || "Стадион V3") + " · матч дня, " + ruDate(now0);
   $("stTeams").textContent = "V3 " + CITY.name + " — " + m.opp;
   const box = $("stBody"); box.innerHTML = "";
   box.appendChild(el("p", "prog", "У тебя: " + fmt(money)));
@@ -2311,7 +3299,7 @@ function updMission(dt) {
     for (const sh of SHOPS) { const d = dist(player, sh.at()); if (d < 34) near = sh; if (d < 70) close = true; }
     if (near && !player.inCar && !player.dead && state === "play" && shopLock !== near.id) { shopLock = near.id; near.open ? near.open() : openShop(near); }
     if (!close) shopLock = null;
-    updNewsJob();
+    updNewsJob(); lmNear();
     return;
   }
   if (!M.active) {
@@ -2630,7 +3618,7 @@ function aiTraffic(c, dt) {
       ai.inInter = false;
       if (tile(cx + DIRS[ai.dir][0], cy + DIRS[ai.dir][1]) !== ROAD) {
         // dead end (the wall): U-turn into the other lane instead of turning round in our own
-        const side = [[0, -1], [1, 0], [0, 1], [-1, 0]][ai.dir];
+        const side = [[0, -1], [1, 0], [0, 1], [-1, 0]][ai.dir].map((v) => (LH ? -v : v));
         ai.dir = (ai.dir + 2) % 4;
         if (laneOk(ai.dir, cx + side[0], cy + side[1])) { ai.tx = cx + side[0]; ai.ty = cy + side[1]; ai.uturn = true; }
       }
@@ -2682,7 +3670,7 @@ function aiCop(c, dt) {
 /* ================= people AI ================= */
 function walkTarget(p) {
   const tx = Math.floor(p.x / T), ty = Math.floor(p.y / T), opts = [];
-  for (const [dx, dy] of DIRS) { const t = tile(tx + dx, ty + dy); if (t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM) opts.push([tx + dx, ty + dy]); }
+  for (const [dx, dy] of DIRS) { const t = tile(tx + dx, ty + dy); if (t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM || t === SAND) opts.push([tx + dx, ty + dy]); }
   if (!opts.length) return { x: p.x + rand(-40, 40), y: p.y + rand(-40, 40) };
   let o = pick(opts);
   if (p.lastT && opts.length > 1) { const f = opts.filter((q) => !(q[0] === p.lastT[0] && q[1] === p.lastT[1])); if (f.length) o = pick(f); }
@@ -2757,7 +3745,7 @@ function spawnTraffic(type) {
     const [tx, ty] = pick(laneTiles), x = (tx + 0.5) * T, y = (ty + 0.5) * T, d = Math.hypot(x - player.x, y - player.y);
     if (d < 650 || d > 1300 || !offscreen(x, y, 60)) continue;
     if (cars.some((c) => Math.hypot(c.x - x, c.y - y) < 90)) continue;
-    const dir = isR(ty) ? (ty % 8 === 1 ? 0 : 2) : tx % 8 === 0 ? 1 : 3;
+    const dir = isR(ty) ? (ty % 8 === (LH ? 0 : 1) ? 0 : 2) : tx % 8 === (LH ? 1 : 0) ? 1 : 3;
     const c = mkCar(type || pick(TRAFFIC), x, y, Math.atan2(DIRS[dir][1], DIRS[dir][0]));
     if (type === "cop") { c.driver = "cop"; c.spd = 0; }
     else { c.driver = "ai"; c.ai = { dir, tx: tx + DIRS[dir][0], ty: ty + DIRS[dir][1], cruise: rand(95, 135), inInter: false, entry: dir, panic: 0 }; c.spd = c.ai.cruise; c.vx = Math.cos(c.a) * c.spd; c.vy = Math.sin(c.a) * c.spd; }
@@ -2849,6 +3837,7 @@ function newWorld(fresh) {
   for (let i = 0; i < 50; i++) spawnPed();
   ownCars().slice(0, 4).forEach((o, i) => placeOwned(o, carSlots()[i]));
   barLock = true; shopLock = "guns"; player.boost = 0;
+  { const lt = localDayT(); if (lt != null) dayT = lt; }
   writeSave();
 }
 
@@ -2949,8 +3938,9 @@ function taxiStops() {
   const c = (places.cemeteries || [])[0];
   return [
     ["Оружейный магазин", places.bar, "guns"], ["Продукты", places.food, "food"], ["Электроника", places.electro, "electro"], ["Автосалон", places.garage, "cars"],
-    ["Аэропорт ✈", places.air, "air"], ["Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Офис WorldNews", places.news, "news"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
+    ["Аэропорт ✈", places.air, "air"], [CITY.stadium || "Стадион V3", places.stadium, "stadium"], save.home ? ["Домой (ЖК «Нова»)", places.home, "home"] : null, ["Ресторан Crusty Crab", places.crab, "crab"], ["V BAR", places.vbar, "vbar"], ["Офис WorldNews", places.news, "news"], ["Больница", places.hosp, null], ["Полиция", places.police, null], ["Завод электроники", places.factory, "factory"],
     c ? ["Кладбище", { x: c.x, y: c.y + 2.5 * T }, null] : null,
+    ...(places.lms || []).map((l) => ["📍 " + l.name, l, null]),
   ].filter((x) => x && x[1]);
 }
 function openPhone() { if (state !== "play") return; renderPhone("home"); showOv("phone"); }
@@ -2978,7 +3968,7 @@ function renderPhone(app) {
   const A = APPS.find((a) => a.id === app); phBar(scr, A.name);
   const list = el("div", "ph-list");
   if (app === "taxi") {
-    scr.appendChild(el("p", "ph-note", wanted > 0 ? "Таксисты не возят тех, кого ищет полиция. Сначала оторвись от копов." : `Поездка в любую точку города — ${fmt(TAXI)}. Таксист знает, как проехать через КПП.`));
+    scr.appendChild(el("p", "ph-note", wanted > 0 ? "Таксисты не возят тех, кого ищет полиция. Сначала оторвись от копов." : `Поездка в любую точку города — ${fmt(TAXI)}. ${CITY.wall ? "Таксист знает, как проехать через КПП." : "Таксист знает город как свои пять пальцев."}`));
     for (const [name, at, lock] of taxiStops()) {
       const d = Math.round((dist(at, player.inCar || player) / T) * 4);
       list.appendChild(phRow(name, d + " м", fmt(TAXI), () => taxiTo(name, at, lock), money < TAXI || wanted > 0));
@@ -2989,11 +3979,12 @@ function renderPhone(app) {
     const dot = (q, col, r = 5) => { if (!q) return; g.fillStyle = col; g.beginPath(); g.arc((q.x / T) * MMS, (q.y / T) * MMS, r, 0, TAU); g.fill(); g.strokeStyle = "#000"; g.lineWidth = 1.5; g.stroke(); };
     for (const sh of SHOPS) dot(sh.at(), sh.col);
     dot(places.hosp, "#ffffff"); dot(places.police, "#3d8bff");
+    for (const l of places.lms || []) dot({ x: l.cx, y: l.cy }, "#ffd77a", 6);
     const P = player.inCar || player; dot(P, "#ffd23d", 7);
     scr.appendChild(c);
-    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["V BAR VB", "#ff3d7f"], ["WorldNews WN", "#ff4a5a"], ["Задание ●", "#ff2d3d"], ["Завод З", "#5de0d0"], ["Аэропорт ✈", "#5ad0ff"], ["Больница", "#ffffff"]];
+    const legend = [["Ты", "#ffd23d"], ["Оружие $", "#ffb000"], ["Продукты П", "#8be38a"], ["Электроника Э", "#c77ae8"], ["Автосалон А", "#4d93ff"], ["Стадион V3", "#e8f0ff"], ["Crusty Crab CC", "#ff5a3d"], ["Квартира Д", "#2fd0a0"], ["V BAR VB", "#ff3d7f"], ["WorldNews WN", "#ff4a5a"], ["Задание ●", "#ff2d3d"], ["Завод З", "#5de0d0"], ["Аэропорт ✈", "#5ad0ff"], ["Достопримечательности", "#ffd77a"], ["Больница", "#ffffff"]];
     const lg = el("div", "ph-note"); lg.innerHTML = ""; legend.forEach(([t, col]) => { const s2 = el("span", null, "● " + t + "  "); s2.style.color = col; lg.appendChild(s2); });
-    scr.appendChild(lg); scr.appendChild(el("p", "ph-note", "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП."));
+    scr.appendChild(lg); scr.appendChild(el("p", "ph-note", (CITY.wall ? "Стена делит город: север — дома и магазины, юг — городские службы. Проезд через два КПП." : CITY.river ? "Река «" + CITY.river + "» делит город: на севере дома и магазины, на юге городские службы. Через реку ведут мосты." : "На севере — дома и магазины, на юге — городские службы.") + (places.lms && places.lms.length ? " Жёлтые точки — достопримечательности: " + places.lms.map((l) => l.name).join(", ") + "." : "")));
   } else if (app === "bank") {
     scr.append(el("p", "ph-note", "Баланс"), el("p", "ph-big", fmt(money)));
     const gd = { scanner: "Полицейский сканер", gps: "GPS-навигатор", radio: "Автомагнитола", laptop: "Ноутбук" };
@@ -3051,7 +4042,7 @@ function freeSpot(wx, wy) {
   for (let r = 0; r < 8; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
     if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
     const x = tx + dx, y = ty + dy, t = tile(x, y);
-    if (t === ROAD || t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM) { const p2 = { x: (x + 0.5) * T, y: (y + 0.5) * T }; if (!pushOut(p2.x, p2.y, 10).some((v) => Math.abs(v) > 0.5)) return p2; }
+    if (t === ROAD || t === WALK || t === PLAZA || t === GRASS || t === LOT || t === CEM || t === SAND) { const p2 = { x: (x + 0.5) * T, y: (y + 0.5) * T }; if (!pushOut(p2.x, p2.y, 10).some((v) => Math.abs(v) > 0.5)) return p2; }
   }
   return null;
 }
@@ -3308,7 +4299,7 @@ function update(dt) {
     let gone = false;
     for (let s = 0; s < 3 && !gone; s++) {
       b.x += (b.vx * dt) / 3; b.y += (b.vy * dt) / 3;
-      if (solidAt(b.x, b.y)) { gone = true; for (let k = 0; k < 3; k++) addPart({ x: b.x, y: b.y, vx: rand(-80, 80), vy: rand(-80, 80), life: 0.18, max: 0.18, size: 1.6, col: "#ffe1a0", type: "dot" }); break; }
+      if (hardAt(b.x, b.y)) { gone = true; for (let k = 0; k < 3; k++) addPart({ x: b.x, y: b.y, vx: rand(-80, 80), vy: rand(-80, 80), life: 0.18, max: 0.18, size: 1.6, col: "#ffe1a0", type: "dot" }); break; }
       if (b.owner === "player") {
         for (const p of people) if (!p.dead && Math.abs(p.x - b.x) < 10 && Math.abs(p.y - b.y) < 10) { hurtPerson(p, b.dmg, Math.atan2(b.vy, b.vx), true); gone = true; break; }
         if (!gone) for (const c of cars) if (c !== player.inCar && !c.wreck) for (const [cx, cy, r] of carCircles(c)) if (Math.hypot(b.x - cx, b.y - cy) < r) { damageCar(c, b.dmg * 0.45, true); if (c.driver === "ai") c.ai.panic = 3; gone = true; break; }
@@ -3343,7 +4334,7 @@ function update(dt) {
     p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 1 - dt * 2.5; p.vy *= 1 - dt * 2.5;
     if (p.type === "smoke") p.size += dt * 12;
   }
-  updMission(dt);
+  updMission(dt); cityTick(dt);
 
   // camera
   const lead = player.inCar ? 0.45 : 0;
@@ -3364,13 +4355,13 @@ function update(dt) {
 /* ================= render ================= */
 function toWorld(sx, sy) { return { x: view.x + sx / view.s, y: view.y + sy / view.s }; }
 function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
-const GROUND = { [ROAD]: "#3b3a44", [WALK]: CITY.walk, [GRASS]: CITY.grass, [PLAZA]: "#bcae96", [LOT]: "#4f4e57", [CEM]: "#536f48" };
+const GROUND = { [ROAD]: "#3b3a44", [WALK]: CITY.walk, [GRASS]: CITY.grass, [WATER]: CITY.water, [SAND]: CITY.sand, [PLAZA]: "#bcae96", [LOT]: "#4f4e57", [CEM]: "#536f48" };
 function drawGround() {
   const x0 = Math.max(0, Math.floor(view.x / T)), y0 = Math.max(0, Math.floor(view.y / T));
   const x1 = Math.min(N - 1, Math.floor((view.x + view.w) / T)), y1 = Math.min(N - 1, Math.floor((view.y + view.h) / T));
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     const t = tile(x, y), px = x * T, py = y * T;
-    ctx.fillStyle = t === BLD ? "#2a2830" : GROUND[t]; ctx.fillRect(px, py, T + 0.5, T + 0.5);
+    ctx.fillStyle = t === BLD ? lmBase.get(y * N + x) || "#2a2830" : GROUND[t]; ctx.fillRect(px, py, T + 0.5, T + 0.5);
     if (t === WALK) {
       ctx.fillStyle = "rgba(0,0,0,.06)"; ctx.fillRect(px + T / 2, py, 1, T); ctx.fillRect(px, py + T / 2, T, 1);
       ctx.fillStyle = "#c9c0b2";
@@ -3384,7 +4375,7 @@ function drawGround() {
       // crosswalks next to junctions
       ctx.fillStyle = "rgba(240,240,240,.75)";
       if (hR && !vR && (isR(x + 1) || isR(x - 1))) { const ex = isR(x + 1) ? px + T - 14 : px + 4; for (let k = 0; k < 6; k++) ctx.fillRect(ex, py + 4 + k * 10, 10, 6); }
-      if (y === WALL_Y) { for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#1a1a1a" : "#ffcc00"; ctx.fillRect(px + k * 8, py, 8, 6); ctx.fillRect(px + k * 8, py + T - 6, 8, 6); } ctx.fillStyle = "rgba(240,240,240,.75)"; }
+      if (y === WALL_Y && CITY.wall) { for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#1a1a1a" : "#ffcc00"; ctx.fillRect(px + k * 8, py, 8, 6); ctx.fillRect(px + k * 8, py + T - 6, 8, 6); } ctx.fillStyle = "rgba(240,240,240,.75)"; }
       if (vR && !hR && (isR(y + 1) || isR(y - 1))) { const ey = isR(y + 1) ? py + T - 14 : py + 4; for (let k = 0; k < 6; k++) ctx.fillRect(px + 4 + k * 10, ey, 6, 10); }
     } else if (t === CEM) {
       ctx.fillStyle = "#b9ae98";
@@ -3401,19 +4392,24 @@ function drawGround() {
       ctx.fillStyle = "rgba(255,255,255,.55)"; for (let k = 0; k < 2; k++) ctx.fillRect(px + k * 32 + 2, py + T - 26, 2, 24);
     } else if (t === PLAZA) {
       ctx.fillStyle = "rgba(0,0,0,.07)"; ctx.fillRect(px, py, T, 2); ctx.fillRect(px, py, 2, T);
-    }
+    } else if (t === WATER) { ctx.strokeStyle = "rgba(255,255,255,.13)"; ctx.lineWidth = 2; ctx.beginPath(); const wy = py + 18 + (x % 3) * 10; ctx.moveTo(px + 8, wy); ctx.quadraticCurveTo(px + 20, wy - 6, px + 32, wy); ctx.stroke(); }
+    else if (t === SAND) { ctx.fillStyle = "rgba(0,0,0,.06)"; ctx.fillRect(px + ((x * 13) % 50), py + ((y * 7) % 50), 6, 3); ctx.fillRect(px + ((x * 29) % 50), py + ((y * 17) % 50), 4, 2); }
+    extraTile(x, y, t, px, py);
   }
+  groundHooks();
 }
 function drawWater() {
-  ctx.fillStyle = CITY.water; ctx.fillRect(view.x - 10, view.y - 10, view.w + 20, view.h + 20);
+  ctx.fillStyle = CITY.water; ctx.fillRect(view.x - 10, view.y - 10, view.w + 20, view.h + 20); drawLand2D();
   ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = 2;
   const sx = Math.floor(view.x / 80) * 80, sy = Math.floor(view.y / 60) * 60;
   for (let y = sy; y < view.y + view.h + 60; y += 60) for (let x = sx; x < view.x + view.w + 80; x += 80) {
-    if (x > -40 && x < WORLD + 40 && y > -40 && y < WORLD + 40) continue;
+    if ((x > -40 && x < WORLD + 40 && y > -40 && y < WORLD + 40) || landAt(x, y)) continue;
     const o = Math.sin(now * 1.4 + x * 0.05 + y * 0.03) * 6;
     ctx.beginPath(); ctx.moveTo(x + o, y); ctx.quadraticCurveTo(x + 12 + o, y - 5, x + 24 + o, y); ctx.stroke();
   }
   ctx.fillStyle = "#6e675e"; ctx.fillRect(-8, -8, WORLD + 16, 8); ctx.fillRect(-8, WORLD, WORLD + 16, 8); ctx.fillRect(-8, 0, 8, WORLD); ctx.fillRect(WORLD, 0, 8, WORLD);
+  if (CITY.beach) drawFoam();
+  drawBack2D();
 }
 function drawDecals() {
   for (const d of decals) {
@@ -3494,6 +4490,7 @@ function drawHuman(p, isPlayer) {
   ctx.restore();
 }
 function drawTree(t) {
+  if (tree2d(t)) return;
   if (t.kind === "table") {
     ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.beginPath(); ctx.arc(t.x + 4, t.y + 4, 13, 0, TAU); ctx.fill();
     for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? "#f2f2f2" : "#e8433a"; ctx.beginPath(); ctx.moveTo(t.x, t.y); ctx.arc(t.x, t.y, 13, (k * TAU) / 8, ((k + 1) * TAU) / 8); ctx.closePath(); ctx.fill(); }
@@ -3507,6 +4504,7 @@ function drawTree(t) {
   ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.beginPath(); ctx.arc(t.x - t.r * 0.3, t.y - t.r * 0.3, t.r * 0.5, 0, TAU); ctx.fill();
 }
 function drawBuilding(b) {
+  if (b.kind === "lm") return lm2d(b);
   const cx = view.x + view.w / 2, cy = view.y + view.h / 2;
   const bx = b.x + b.w / 2, by = b.y + b.h / 2;
   const ox = (bx - cx) * b.hgt, oy = (by - cy) * b.hgt;
@@ -3535,6 +4533,7 @@ function drawBuilding(b) {
     const sc = ["#ff7a3d", "#f2f2f2", "#ff3d7f"];
     for (let k = 0; k < 3; k++) { ctx.strokeStyle = sc[k]; ctx.lineWidth = 6; ctx.strokeRect(rx + 6 + k * 8, ry + 6 + k * 8, b.w - 12 - k * 16, b.h - 12 - k * 16); }
     drawPitch(ctx, rx + 34, ry + 34, b.w - 68, b.h - 68);
+    if (CITY.ring) { ctx.strokeStyle = CITY.ring.col; ctx.lineWidth = 12; ctx.beginPath(); ctx.ellipse(rx + b.w / 2, ry + b.h / 2, b.w * 0.58, b.h * 0.58, 0, 0, TAU); ctx.stroke(); }
     ctx.fillStyle = "#fff"; ctx.font = "22px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("V3", rx + b.w / 2, ry + 16);
     return;
   }
@@ -3542,10 +4541,11 @@ function drawBuilding(b) {
   ctx.strokeStyle = "rgba(0,0,0,.22)"; ctx.lineWidth = 3; ctx.strokeRect(rx + 1.5, ry + 1.5, b.w - 3, b.h - 3);
   if (b.kind === "cont") { ctx.fillStyle = "rgba(0,0,0,.15)"; const v = b.h > b.w; for (let k = 1; k < 6; k++) v ? ctx.fillRect(rx, ry + (b.h * k) / 6, b.w, 2) : ctx.fillRect(rx + (b.w * k) / 6, ry, 2, b.h); return; }
   for (const [ax, ay, s] of b.ac) { ctx.fillStyle = shade(b.roof, 0.8); ctx.fillRect(rx + ax * b.w, ry + ay * b.h, s, s); ctx.fillStyle = "rgba(255,255,255,.18)"; ctx.fillRect(rx + ax * b.w, ry + ay * b.h, s, 2); }
+  if (b.kind === "bld") styleRoof2d(b, rx, ry);
   if (b.kind === "hosp") { ctx.fillStyle = "#e0303e"; const mx = rx + b.w / 2, my = ry + b.h / 2; ctx.fillRect(mx - 30, my - 9, 60, 18); ctx.fillRect(mx - 9, my - 30, 18, 60); }
-  if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЛИЦИЯ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
-  if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", rx + b.w / 2, ry + b.h / 2); }
-  if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "police") { ctx.fillStyle = "#f2f2f2"; ctx.font = "bold 30px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(LOC("ПОЛИЦИЯ"), rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e9c24a"; ctx.beginPath(); ctx.arc(rx + b.w / 2, ry + b.h / 2 - 44, 12, 0, TAU); ctx.fill(); }
+  if (b.kind === "bar") { const glow = 0.6 + 0.4 * Math.sin(now * 4); ctx.fillStyle = MISSIONS ? `rgba(255,61,127,${glow})` : `rgba(255,176,0,${glow})`; ctx.font = "44px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "БАР «V»" : LOC("ОРУЖИЕ"), rx + b.w / 2, ry + b.h / 2); }
+  if (b.kind === "garage") { ctx.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) ctx.fillRect(rx + 8, ry + 10 + k * 13, b.w - 16, 5); ctx.fillStyle = "#ffd23d"; ctx.font = "26px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(MISSIONS ? "ГАРАЖ" : LOC("АВТОСАЛОН"), rx + b.w / 2, ry + b.h / 2); }
   if (b.kind === "crab") {
     ctx.fillStyle = "rgba(0,0,0,.15)"; for (let y = 6; y < b.h; y += 9) ctx.fillRect(rx, ry + y, b.w, 2);
     const cx2 = rx + b.w / 2, cy2 = ry + b.h / 2, snap = Math.sin(now * 3) * 0.25;
@@ -3568,9 +4568,9 @@ function drawBuilding(b) {
     ctx.fillStyle = b.labelCol || "#ffffff"; ctx.font = Math.min(32, Math.floor((lw * 0.85) / (b.label.length * 0.68))) + "px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(b.label, 0, b.bars ? 0 : 0); ctx.restore();
   }
-  if (b.kind === "fire") { ctx.fillStyle = "#f2f2f2"; ctx.font = "28px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПОЖАРНАЯ ЧАСТЬ", rx + b.w / 2, ry + b.h / 2 - 14); ctx.fillStyle = "#ffd23d"; ctx.fillText("01", rx + b.w / 2, ry + b.h / 2 + 22); }
+  if (b.kind === "fire") { ctx.fillStyle = "#f2f2f2"; ctx.font = "28px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(LOC("ПОЖАРНАЯ ЧАСТЬ"), rx + b.w / 2, ry + b.h / 2 - 14); ctx.fillStyle = "#ffd23d"; ctx.fillText("01", rx + b.w / 2, ry + b.h / 2 + 22); }
   if (b.kind === "chapel") { ctx.fillStyle = "#e8d48a"; ctx.fillRect(rx + b.w / 2 - 3, ry + b.h / 2 - 16, 6, 32); ctx.fillRect(rx + b.w / 2 - 11, ry + b.h / 2 - 8, 22, 6); }
-  if (b.kind === "food") { ctx.fillStyle = "#e9f7e0"; ctx.font = "34px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ПРОДУКТЫ", rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e8c95d"; for (let k = 0; k < 6; k++) ctx.fillRect(rx + 10 + k * (b.w - 20) / 6, ry + b.h - 12, (b.w - 20) / 12, 8); }
+  if (b.kind === "food") { ctx.fillStyle = "#e9f7e0"; ctx.font = "34px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(LOC("ПРОДУКТЫ"), rx + b.w / 2, ry + b.h / 2); ctx.fillStyle = "#e8c95d"; for (let k = 0; k < 6; k++) ctx.fillRect(rx + 10 + k * (b.w - 20) / 6, ry + b.h - 12, (b.w - 20) / 12, 8); }
 }
 function drawPickup(k) {
   const bob = Math.sin(now * 4 + k.x) * 3;
@@ -3699,7 +4699,7 @@ function drawRain2D(W, H, only) {
 function drawMini() {
   const S = 248, Pp = player.inCar || player;
   mctx.setTransform(1, 0, 0, 1, 0, 0);
-  mctx.fillStyle = CITY.water; mctx.fillRect(0, 0, S, S);
+  mctx.fillStyle = miniBg(); mctx.fillRect(0, 0, S, S);
   const scale = gadget("gps") ? 1.15 : 2; // minimap px per prerendered px (GPS zooms out)
   const px = (Pp.x / T) * MMS, py = (Pp.y / T) * MMS;
   const rot = mode3d && started ? -Math.PI / 2 - cam3.yaw : 0;
@@ -3716,6 +4716,7 @@ function drawMini() {
   const tg = stepTarget();
   if (tg) { const s = M.steps[M.i]; if (s.t === "kill") s.units.forEach((u) => !u.dead && dot(u.x, u.y, 3, "#ff3d3d")); else dot(tg.x, tg.y, 5, "#ffd23d"); }
   dot(places.hosp.x, places.hosp.y, 3, "#ffffff");
+  for (const l of places.lms || []) dot(l.cx, l.cy, 5, "#ffd77a");
   mctx.setTransform(1, 0, 0, 1, 0, 0);
   // clamp off-map target dot to edge
   if (tg) {
@@ -3776,7 +4777,7 @@ function init3d() {
   r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#f3b48c"); scene.fog = new THREE.Fog(0xf3b48c, 380, 1250);
-  const camera = new THREE.PerspectiveCamera(62, 1, 2, 3200);
+  const camera = new THREE.PerspectiveCamera(62, 1, 2, 16000);
   const hemi = new THREE.HemisphereLight(0xfff0e0, 0x51475a, 0.85);
   const sun = new THREE.DirectionalLight(0xffd6b0, 0.85);
   sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); sun.shadow.bias = -0.0012;
@@ -3816,19 +4817,27 @@ function init3d() {
     g.fillStyle = b.roof; g.fillRect(0, 0, w, h); g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
     g.textAlign = "center"; g.textBaseline = "middle";
     if (b.kind === "hosp") { g.fillStyle = "#e0303e"; g.fillRect(w / 2 - 70, h / 2 - 22, 140, 44); g.fillRect(w / 2 - 22, h / 2 - 70, 44, 140); }
-    if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЛИЦИЯ", w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
-    if (b.kind === "bar") { g.fillStyle = MISSIONS ? "#ff3d7f" : "#ffb000"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "БАР «V»" : "ОРУЖИЕ", w / 2, h / 2); }
-    if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "ГАРАЖ" : "АВТОСАЛОН", w / 2, h / 2); }
+    if (b.kind === "police") { g.fillStyle = "#f2f2f2"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText(LOC("ПОЛИЦИЯ"), w / 2, h / 2 + 20); g.fillStyle = "#e9c24a"; g.beginPath(); g.arc(w / 2, h / 2 - 50, 20, 0, TAU); g.fill(); }
+    if (b.kind === "bar") { g.fillStyle = MISSIONS ? "#ff3d7f" : "#ffb000"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "БАР «V»" : LOC("ОРУЖИЕ"), w / 2, h / 2); }
+    if (b.kind === "garage") { g.fillStyle = "rgba(0,0,0,.25)"; for (let k = 0; k < 8; k++) g.fillRect(14, 12 + k * (h - 20) / 8, w - 28, 6); g.fillStyle = "#ffd23d"; g.font = "48px 'Russo One','Arial Black',sans-serif"; g.fillText(MISSIONS ? "ГАРАЖ" : LOC("АВТОСАЛОН"), w / 2, h / 2); }
     if (b.kind === "svc") {
       if (b.bars) { g.fillStyle = "#2a2826"; for (let x = 30; x < w - 30; x += 14) g.fillRect(x, 30, 4, h - 60); }
       g.save(); g.translate(w / 2, h / 2); if (b.labelVert) g.rotate(-Math.PI / 2);
       const lw = b.labelVert ? h : w;
       g.fillStyle = b.labelCol || "#ffffff"; g.font = Math.min(60, Math.floor((lw * 0.85) / (b.label.length * 0.68))) + "px 'Russo One','Arial Black',sans-serif"; g.fillText(b.label, 0, 0); g.restore();
     }
-    if (b.kind === "fire") { g.fillStyle = "#f2f2f2"; g.font = "36px 'Russo One','Arial Black',sans-serif"; g.fillText("ПОЖАРНАЯ ЧАСТЬ", w / 2, h / 2 - 18); g.fillStyle = "#ffd23d"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("01", w / 2, h / 2 + 26); }
-    if (b.kind === "food") { g.fillStyle = "#e9f7e0"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.fillText("ПРОДУКТЫ", w / 2, h / 2); }
+    if (b.kind === "fire") { g.fillStyle = "#f2f2f2"; g.font = "36px 'Russo One','Arial Black',sans-serif"; g.fillText(LOC("ПОЖАРНАЯ ЧАСТЬ"), w / 2, h / 2 - 18); g.fillStyle = "#ffd23d"; g.font = "44px 'Russo One','Arial Black',sans-serif"; g.fillText("01", w / 2, h / 2 + 26); }
+    if (b.kind === "food") { g.fillStyle = "#e9f7e0"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.fillText(LOC("ПРОДУКТЫ"), w / 2, h / 2); }
   }
+  const K = { THREE, scene, BOX, SPH, mat, lam, basic, litT, winMats, glows: winMats, anims: (G3.anims = []), signMat: {},
+    HEMI: new THREE.SphereGeometry(1, 24, 12, 0, TAU, 0, Math.PI / 2), QDOME: new THREE.SphereGeometry(1, 16, 8, -Math.PI / 2, Math.PI, 0, Math.PI / 2),
+    CROWN: new THREE.IcosahedronGeometry(1, 0), TRUNK: new THREE.CylinderGeometry(2.2, 3.2, 20, 6), CYL8: new THREE.CylinderGeometry(1, 1, 1, 8), CONE6: new THREE.ConeGeometry(1, 1, 6) };
+  K.PYR = new THREE.ConeGeometry(Math.SQRT1_2, 1, 4); K.PYR.rotateY(Math.PI / 4);
+  { const sh = new THREE.Shape([new THREE.Vector2(-0.5, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 1)]); K.GABZ = new THREE.ExtrudeGeometry(sh, { depth: 1, bevelEnabled: false }); K.GABZ.translate(0, 0, -0.5); K.GABX = K.GABZ.clone(); K.GABX.rotateY(Math.PI / 2); }
+  K.X = kTex(K); G3.K = K;
+  cityExtras3d(K);
   for (const b of blds) {
+    if (b.kind === "lm") { try { lm3d(K, b); } catch (e) { console.warn("landmark", b.lm, e); } continue; }
     const cx = b.x + b.w / 2, cz = b.y + b.h / 2;
     if (b.kind === "crab") {
       const h = 46;
@@ -3882,7 +4891,7 @@ function init3d() {
           g.fillStyle = "rgba(60,40,20,.12)"; g.fillRect(0, 110, 128, 18);
           if (graffiti) { g.save(); g.translate(64, 70); g.rotate(-0.12); g.font = "34px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.lineWidth = 5; g.strokeStyle = "#1a1a1a"; g.strokeText(graffiti, 0, 0); g.fillStyle = pick(["#ff3d7f", "#ff7a3d", "#3d8bff", "#8be38a"]); g.fillText(graffiti, 0, 0); g.restore(); }
         });
-        G3.wallT = [mkC(""), mkC("V3"), mkC("НОВА"), mkC("ЮГ"), mkC("СЕВЕР")];
+        G3.wallT = CITY.id === "ber" ? [mkC(""), mkC("BERLIN"), mkC("1989"), mkC("FREIHEIT"), mkC("LOVE")] : [mkC(""), mkC("V3"), mkC("НОВА"), mkC("ЮГ"), mkC("СЕВЕР")];
       }
       const h = 46, n = Math.round(b.w / 128);
       for (let i = 0; i < n; i++) {
@@ -3933,6 +4942,7 @@ function init3d() {
       const ball = new THREE.Mesh(SPH, lam(0xffffff)); ball.scale.setScalar(1.8); ball.castShadow = true; mgroup.add(ball);
       G3.stad = { b, cx, cz, fx0: b.x + ins, fz0: b.y + ins, fw, fh, fans, fanBody, fanHead, mtx, mgroup, ball, players: [],
         seat: { x: seatX, y: (seatStep + 1) * 12.5 + 11, z: seatZ }, look: { x: cx, z: cz } };
+      if (CITY.ring) stadRing3d(K, b, cx, cz);
       for (const [px, pz] of [[b.x + 6, b.y + 6], [b.x + b.w - 6, b.y + 6], [b.x + 6, b.y + b.h - 6], [b.x + b.w - 6, b.y + b.h - 6]]) {
         const pole = new THREE.Mesh(BOX, lam(0x5d5a66)); pole.scale.set(4, 120, 4); pole.position.set(px, 60, pz); pole.castShadow = true; scene.add(pole);
         const lamp = new THREE.Mesh(BOX, basic(0xfff6d8)); lamp.scale.set(16, 9, 4); lamp.position.set(px, 122, pz); lamp.lookAt(cx, 122, cz); scene.add(lamp);
@@ -3940,7 +4950,7 @@ function init3d() {
       const sb = document.createElement("canvas"); sb.width = 256; sb.height = 96;
       { const g = sb.getContext("2d"); g.fillStyle = "#14121a"; g.fillRect(0, 0, 256, 96); g.fillStyle = "#ff7a3d"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("V3", 128, 50); }
       const bn = document.createElement("canvas"); bn.width = 512; bn.height = 80;
-      { const g = bn.getContext("2d"); g.fillStyle = "#ff7a3d"; g.fillRect(0, 0, 512, 80); g.fillStyle = "#14121a"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("СТАДИОН V3", 256, 42); }
+      { const g = bn.getContext("2d"); g.fillStyle = "#ff7a3d"; g.fillRect(0, 0, 512, 80); g.fillStyle = "#14121a"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText((CITY.stadium || "Стадион V3").toUpperCase(), 256, 42, 490); }
       const banner = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(bn) })); banner.scale.set(b.w * 0.75, 12, 1.5); banner.position.set(cx, 25, b.y + b.h + 1); scene.add(banner);
       const board = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(sb) })); board.scale.set(70, 26, 3); board.position.set(cx, sh + 16, b.y + 6); scene.add(board);
       continue;
@@ -3952,7 +4962,8 @@ function init3d() {
       continue;
     }
     const special = b.kind === "hosp" || b.kind === "police" || b.kind === "bar" || b.kind === "garage" || b.kind === "food" || b.kind === "fire" || b.kind === "svc";
-    const h = b.h3 ? b.h3 : b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    let h = b.h3 ? b.h3 : b.kind === "cont" ? 26 : b.kind === "bar" ? 64 : b.kind === "garage" || b.kind === "food" || b.kind === "fire" ? 52 : special ? 110 : Math.round(60 + b.hgt * 900);
+    if (b.kind === "bld" && CITY.style === "haussmann") h = 72 + Math.round(hsh(b.x, b.y, 4) * 22);
     const geo = new THREE.BoxGeometry(b.w, h, b.h);
     if (b.kind !== "cont") {
       const uv = geo.attributes.uv;
@@ -3963,12 +4974,14 @@ function init3d() {
     let roof;
     if (special) { const c = document.createElement("canvas"); c.width = 256; c.height = Math.round((256 * b.h) / b.w); paintRoof(b, c); const t = new THREE.CanvasTexture(c); roofArt.push([b, c, t]); roof = lam(0xffffff, { map: t }); }
     else roof = lam(b.roof);
-    const m = new THREE.Mesh(geo, [wall, wall, roof, roof, wall, wall]);
+    const sty = b.kind === "bld" ? styleMats(K, b, h) : null;
+    const m = new THREE.Mesh(geo, sty ? sty.mats : [wall, wall, roof, roof, wall, wall]);
     m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
+    if (sty) sty.deco();
     for (const [ax, ay, s] of b.ac) { const a = new THREE.Mesh(BOX, mat(shade(b.roof, 0.78))); a.scale.set(s, s * 0.7, s); a.position.set(b.x + ax * b.w + s / 2, h + s * 0.35, b.y + ay * b.h + s / 2); a.castShadow = true; scene.add(a); }
     if (b.kind === "svc" || b.kind === "fire" || b.kind === "police" || b.kind === "hosp") {
       // a sign on the street side so the building reads from the ground
-      const label = b.kind === "svc" ? b.label : b.kind === "fire" ? "ПОЖАРНАЯ ЧАСТЬ 01" : b.kind === "police" ? "ПОЛИЦИЯ" : "БОЛЬНИЦА";
+      const label = b.kind === "svc" ? b.label : b.kind === "fire" ? LOC(LOC("ПОЖАРНАЯ ЧАСТЬ")) + " 01" : b.kind === "police" ? LOC("ПОЛИЦИЯ") : LOC("БОЛЬНИЦА");
       const bg = b.kind === "svc" ? (b.labelCol ? "#14121a" : shade(b.roof, 0.55)) : b.kind === "fire" ? "#f2f2f2" : b.kind === "police" ? "#1c2b55" : "#ffffff";
       const fg = b.kind === "svc" ? b.labelCol || "#ffffff" : b.kind === "fire" ? "#d7261e" : b.kind === "police" ? "#ffffff" : "#e0303e";
       const sc = document.createElement("canvas"); sc.width = 512; sc.height = 72;
@@ -4039,6 +5052,7 @@ function init3d() {
   const crownM = [new THREE.MeshPhongMaterial({ color: 0x3f7a3a, flatShading: true, shininess: 0 }), new THREE.MeshPhongMaterial({ color: 0x4f8a3c, flatShading: true, shininess: 0 })];
   const stoneM = lam(0x8d8a86), crossM = lam(0x3b3632), cypM = new THREE.MeshPhongMaterial({ color: 0x24452a, flatShading: true, shininess: 0 });
   for (const list of treeGrid.values()) for (const t of list) {
+    if (tree3d(K, t)) continue;
     if (t.kind === "table") {
       const top = new THREE.Mesh(new THREE.CylinderGeometry(7, 7, 1.5, 14), lam(0xf2f2f2)); top.position.set(t.x, 9, t.y); top.castShadow = true; scene.add(top);
       const leg = new THREE.Mesh(BOX, lam(0x6b4a32)); leg.scale.set(1.5, 9, 1.5); leg.position.set(t.x, 4.5, t.y); scene.add(leg);
@@ -4067,7 +5081,7 @@ function init3d() {
     const g = new THREE.Group(), L = c.t.len, W = c.t.wid;
     const paint = lam(c.wreck ? 0x2b2725 : c.col);
     const add = (m, sx, sy, sz, x, y, z, sh) => { const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; g.add(b); return b; };
-    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance" || c.type === "bus", sport = c.type === "sport" || c.type === "ters", base = 3.2, bh = van ? 17 : sport ? 7 : 8.5;
+    const van = c.type === "van" || c.type === "fire" || c.type === "ambulance" || c.type === "bus", sport = c.type === "sport" || c.type === "ters", base = 3.2, bh = c.type === "bus" && CITY.dd ? 31 : van ? 17 : sport ? 7 : 8.5;
     add(paint, L, bh, W, 0, base + bh / 2, 0, true);
     let top = base + bh;
     if (van) { add(M3.glass, 2, 7, W - 3, L / 2 - 0.4, base + bh - 5, 0); add(M3.glass, L * 0.22, 5, W + 0.4, L * 0.3, base + bh - 5, 0); }
@@ -4078,6 +5092,7 @@ function init3d() {
     let red = null, blue = null;
     if (c.type === "cop") { add(mat("#1c2b55"), L * 0.36, bh * 0.5, W + 0.3, 0, base + bh * 0.45, 0); red = add(M3.redOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, -W / 4); blue = add(M3.blueOff, 3, 2.2, W / 2 - 1.5, -L * 0.07, top + 1.1, W / 4); }
     if (c.type === "taxi") add(mat("#fff4a0"), 4, 3, 9, -L * 0.07, top + 1.5, 0);
+    if (c.type === "bus" && CITY.dd) add(M3.glass, L * 0.86, 5.5, W + 0.3, -L * 0.02, base + bh - 18, 0);
     if (c.type === "bus") { add(M3.glass, L * 0.82, 5.5, W + 0.3, -L * 0.04, base + bh - 5, 0); add(M3.glass, 1, 9, W - 4, L / 2 + 0.1, base + bh - 6, 0); add(mat("#f2f2f2"), L + 0.2, 1.4, W + 0.2, 0, base + 5, 0); }
     if (c.type === "fire") { for (const z of [-5, 5]) add(mat("#9a9a9a"), L * 0.72, 1.4, 1.4, -L * 0.1, top + 2, z); for (let k = 0; k < 9; k++) add(mat("#9a9a9a"), 1.2, 1.2, 10, -L * 0.42 + k * 5, top + 2, 0); add(mat("#f2f2f2"), L + 0.2, 1.6, W + 0.2, 0, base + bh * 0.35, 0); add(M3.red, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
     if (c.type === "ambulance") { add(mat("#e0303e"), L + 0.2, 2.2, W + 0.2, 0, base + bh * 0.4, 0); add(mat("#e0303e"), 10, 0.6, 3, -L * 0.15, top + 0.3, 0); add(mat("#e0303e"), 3, 0.6, 10, -L * 0.15, top + 0.3, 0); add(M3.blue, 4, 2.4, W * 0.6, L * 0.38, top + 1.2, 0); }
@@ -4259,6 +5274,7 @@ function sync3d() {
   // markers
   const tg = stepTarget(), s2 = M.steps && M.steps[M.i];
   G3.mkBar.visible = MISSIONS && started && !M.active;
+  if (G3.anims) { const nk = Math.max(0, G3.night); for (const f of G3.anims) f(now, nk); }
   if (G3.blinks) { const on = Math.sin(now * 4) > 0; for (const n of G3.blinks) n.visible = on; }
   if (G3.neons) { const on = Math.sin(now * 7) > -0.92 || Math.random() < 0.5; for (const n of G3.neons) n.visible = on; }
   if (G3.crabJaws) for (const c of G3.crabJaws) { c.jaw.rotation.z = -Math.abs(Math.sin(now * 3 + c.sd)) * 0.6; c.arm.rotation.x = Math.sin(now * 1.5 + c.sd) * 0.15; }
@@ -4469,7 +5485,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
@@ -4479,7 +5495,7 @@ if (save.arrive) {
   resetPlayerAt({ x: places.air.x, y: places.air.y + T * 0.6 }); shopLock = "air"; cam3.init = false;
   resume(); writeSave();
   big(CITY.flag + " " + CITY.name.toUpperCase(), "Добро пожаловать · " + CITY.country, "#5ad0ff", 3.4);
-  setTimeout(() => toast(CITY.slogan, 4), 3500);
+  setTimeout(() => toast(CITY.slogan + (CITY.tz != null ? " Местное время " + localClock() + "." : ""), 5), 3500);
 }
 if (want3d) setView(true); else applyView(false);
 requestAnimationFrame(frame);
