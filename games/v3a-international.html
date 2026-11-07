@@ -568,12 +568,12 @@ const REAL = {
   ist: { lang: "tr", style: "med", river: "Золотой Рог", sea: ["s", "e"], land: "#8a8a5c", tz: 3, bus: "#2a7de1", stadium: "Стадион Ататюрка", food: ["Дёнер-кебаб", "К"], lms: ["sophia", "bluemosque", "galata"] },
   dxb: { lang: "en", style: "glass", river: "Дубай-Крик", beach: true, sea: ["s"], land: "#d9c08a", sand: "#ecd9a8", tz: 4, bus: "#e8e8e8", stadium: "Стадион Аль-Мактум", food: ["Фалафель", "Ф"], lms: ["burj", "frame"], back: ["burjalarab"], palms: true, traffic: ["sport", "sport", "ters", "sedan", "sedan", "compact", "taxi", "van", "bus"] },
   lon: { lang: "en", style: "brick", river: "Темза", sea: [], land: "#6f8a55", tz: 0, bus: "#c8102e", dd: true, left: true, stadium: "Уэмбли", food: ["Фиш-энд-чипс", "FC"], lms: ["bigben", "eye"], bridge: "towerbridge", decor: "phonebox" },
-  par: { lang: "fr", style: "haussmann", river: "Сена", sea: [], land: "#7a8a5a", tz: 1, bus: "#2f9e6b", stadium: "Стад де Франс", food: ["Круассан", "КР"], lms: ["eiffel", "arc", "louvre"], decor: "table" },
+  par: { lang: "fr", style: "haussmann", river: "Сена", sea: [], land: "#7a8a5a", tz: 1, bus: "#2f9e6b", stadium: "Парк де Пренс · ПСЖ", tag: "PSG", ringText: ["PARC DES PRINCES", "#ffffff", "#e0213b"], ring: { col: "#1c2b55", glow: "#e0213b" }, seats: ["#1c2b55", "#e0213b", "#f2f2f2", "#1c2b55"], food: ["Круассан", "КР"], lms: ["eiffel", "arc", "louvre"], decor: "table" },
   nce: { lang: "fr", style: "med", beach: true, chairs: true, sea: ["s"], land: "#7a8a55", sand: "#cfc7b8", tz: 1, stadium: "Альянц Ривьера", food: ["Салат нисуаз", "НС"], lms: ["negresco", "massena"], palms: true },
   ber: { lang: "de", style: "euro", sea: [], land: "#7a8a5a", tz: 1, bus: "#f2c200", stadium: "Олимпиаштадион", food: ["Карривурст", "КВ"], lms: ["brandenburg", "fernseh", "reichstag"], wall: true },
   muc: { lang: "de", style: "euro", river: "Изар", sea: [], land: "#6f8a50", tz: 1, bus: "#2a5aa8", stadium: "Альянц Арена", ring: { col: "#f2f2f2", glow: "#ff2a2a" }, food: ["Брецель с колбасками", "БР"], lms: ["frauenkirche", "bmw"], decor: "table" },
   rom: { lang: "it", style: "med", river: "Тибр", sea: [], land: "#8a8a58", tz: 1, bus: "#d8d8d8", stadium: "Стадио Олимпико", food: ["Паста карбонара", "ПК"], lms: ["colosseum", "stpeter", "trevi"], tree: "pine" },
-  bcn: { lang: "ca", style: "med", beach: true, sea: ["s"], land: "#8a8a5a", tz: 1, bus: "#d8102e", stadium: "Камп Ноу", ring: { col: "#a50044", glow: "#2a6fd6" }, food: ["Паэлья", "ПЭ"], lms: ["sagrada", "glories"], palms: true },
+  bcn: { lang: "ca", style: "med", beach: true, sea: ["s"], land: "#8a8a5a", tz: 1, bus: "#d8102e", stadium: "Камп Ноу · Барса", tag: "BARÇA", ringText: ["CAMP NOU · BARÇA", "#ffcc00", "#004d98"], ring: { col: "#a50044", glow: "#2a6fd6" }, seats: ["#a50044", "#004d98", "#ffcc00", "#004d98"], food: ["Паэлья", "ПЭ"], lms: ["sagrada", "glories"], palms: true },
   nyc: { lang: "en", style: "brick", sea: ["n", "s", "e", "w"], tz: -5, bus: "#2a5aa8", stadium: "Янки-стэдиум", food: ["Хот-дог", "HD"], lms: ["empire", "central", "times"], back: ["liberty"], steam: true, traffic: ["taxi", "taxi", "taxi", "sedan", "sedan", "compact", "van", "bus"] },
   lax: { lang: "en", style: "deco", beach: true, sea: ["s"], land: "#a89a6a", tz: -8, bus: "#e8b923", stadium: "Колизей Лос-Анджелеса", food: ["Тако", "Т"], lms: ["griffith", "chinese"], back: ["hollywood", "pier"], palms: true },
   mia: { lang: "en", style: "deco", beach: true, guards: true, sea: ["s", "e"], land: "#7f9a52", tz: -5, bus: "#2a7de1", stadium: "Хард Рок Стэдиум", food: ["Кубинский сэндвич", "КС"], lms: ["ocean", "miamitower"], palms: true },
@@ -1517,6 +1517,7 @@ function stadRing3d(K, b, cx, cz) {
   const geo = new THREE.CylinderGeometry(b.w * 0.6, b.w * 0.66, 58, 48, 1, true); const uv = geo.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 24, uv.getY(i) * 2);
   const m = new THREE.MeshLambertMaterial({ color: CITY.ring.col, map: t, side: THREE.DoubleSide, emissive: new THREE.Color(CITY.ring.glow), emissiveIntensity: 0 });
   const r = new THREE.Mesh(geo, m); r.scale.z = b.h / b.w; r.position.set(cx, 29, cz); r.castShadow = true; K.scene.add(r); K.winMats.push(m);
+  if (CITY.ringText) { const [txt, fg, bg] = CITY.ringText, sm = new THREE.MeshBasicMaterial({ map: K.X.txt(txt, fg, bg, 1024, 128, 92) }); for (const sd of [1, -1]) { const sg = new THREE.Mesh(new THREE.PlaneGeometry(210, 26), sm); sg.position.set(cx, 36, cz + sd * b.h * 0.64 + sd * 1.5); sg.rotation.y = sd > 0 ? 0 : Math.PI; K.scene.add(sg); } }
 }
 
 /* ===== small life of the city ===== */
@@ -4530,11 +4531,11 @@ function drawBuilding(b) {
   }
   if (b.kind === "stadium") {
     ctx.fillStyle = b.roof; ctx.fillRect(rx, ry, b.w, b.h);
-    const sc = ["#ff7a3d", "#f2f2f2", "#ff3d7f"];
+    const sc = CITY.seats || ["#ff7a3d", "#f2f2f2", "#ff3d7f"];
     for (let k = 0; k < 3; k++) { ctx.strokeStyle = sc[k]; ctx.lineWidth = 6; ctx.strokeRect(rx + 6 + k * 8, ry + 6 + k * 8, b.w - 12 - k * 16, b.h - 12 - k * 16); }
     drawPitch(ctx, rx + 34, ry + 34, b.w - 68, b.h - 68);
     if (CITY.ring) { ctx.strokeStyle = CITY.ring.col; ctx.lineWidth = 12; ctx.beginPath(); ctx.ellipse(rx + b.w / 2, ry + b.h / 2, b.w * 0.58, b.h * 0.58, 0, 0, TAU); ctx.stroke(); }
-    ctx.fillStyle = "#fff"; ctx.font = "22px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("V3", rx + b.w / 2, ry + 16);
+    ctx.fillStyle = "#fff"; ctx.font = "22px 'Russo One',sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(CITY.tag || "V3", rx + b.w / 2, ry + 16);
     return;
   }
   ctx.fillStyle = b.roof; ctx.fillRect(rx, ry, b.w, b.h);
@@ -4911,7 +4912,7 @@ function init3d() {
       const fc = document.createElement("canvas"); fc.width = 512; fc.height = Math.round((512 * fh) / fw); drawPitch(fc.getContext("2d"), 0, 0, fc.width, fc.height);
       const field = new THREE.Mesh(new THREE.PlaneGeometry(fw, fh), lam(0xffffff, { map: new THREE.CanvasTexture(fc) }));
       field.rotation.x = -Math.PI / 2; field.position.set(cx, 0.6, cz); field.receiveShadow = true; scene.add(field);
-      const seats = tex(64, (g) => { const cols = ["#ff7a3d", "#f2f2f2", "#ff3d7f", "#3a3550"]; for (let k = 0; k < 8; k++) { g.fillStyle = cols[k % 4]; g.fillRect(0, k * 8, 64, 6); g.fillStyle = "#2a2733"; g.fillRect(0, k * 8 + 6, 64, 2); } });
+      const seats = tex(64, (g) => { const cols = CITY.seats || ["#ff7a3d", "#f2f2f2", "#ff3d7f", "#3a3550"]; for (let k = 0; k < 8; k++) { g.fillStyle = cols[k % 4]; g.fillRect(0, k * 8, 64, 6); g.fillStyle = "#2a2733"; g.fillRect(0, k * 8 + 6, 64, 2); } });
       const standM = lam(0xffffff, { map: seats }), greyM = lam(0x8f8b9a), sh = 38, stepD = ins / 3;
       const stand = (w, d, x, z, h) => { const m = new THREE.Mesh(BOX, [greyM, greyM, standM, greyM, greyM, greyM]); m.scale.set(w, h, d); m.position.set(x, h / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m); };
       // three steps per side, rising away from the pitch, with fans sitting on each step
@@ -4948,9 +4949,9 @@ function init3d() {
         const lamp = new THREE.Mesh(BOX, basic(0xfff6d8)); lamp.scale.set(16, 9, 4); lamp.position.set(px, 122, pz); lamp.lookAt(cx, 122, cz); scene.add(lamp);
       }
       const sb = document.createElement("canvas"); sb.width = 256; sb.height = 96;
-      { const g = sb.getContext("2d"); g.fillStyle = "#14121a"; g.fillRect(0, 0, 256, 96); g.fillStyle = "#ff7a3d"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("V3", 128, 50); }
+      { const g = sb.getContext("2d"); g.fillStyle = "#14121a"; g.fillRect(0, 0, 256, 96); g.fillStyle = "#ff7a3d"; g.font = "64px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(CITY.tag || "V3", 128, 50, 240); }
       const bn = document.createElement("canvas"); bn.width = 512; bn.height = 80;
-      { const g = bn.getContext("2d"); g.fillStyle = "#ff7a3d"; g.fillRect(0, 0, 512, 80); g.fillStyle = "#14121a"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText((CITY.stadium || "Стадион V3").toUpperCase(), 256, 42, 490); }
+      { const g = bn.getContext("2d"); g.fillStyle = CITY.seats ? CITY.seats[0] : "#ff7a3d"; g.fillRect(0, 0, 512, 80); if (CITY.seats) { g.fillStyle = CITY.seats[1]; g.fillRect(0, 0, 512, 10); g.fillRect(0, 70, 512, 10); } g.fillStyle = CITY.seats ? "#ffffff" : "#14121a"; g.font = "52px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText((CITY.stadium || "Стадион V3").toUpperCase(), 256, 42, 490); }
       const banner = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(bn) })); banner.scale.set(b.w * 0.75, 12, 1.5); banner.position.set(cx, 25, b.y + b.h + 1); scene.add(banner);
       const board = new THREE.Mesh(BOX, basic(0xffffff, { map: new THREE.CanvasTexture(sb) })); board.scale.set(70, 26, 3); board.position.set(cx, sh + 16, b.y + 6); scene.add(board);
       continue;
