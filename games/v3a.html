@@ -3391,11 +3391,24 @@ function drawHuman(p, isPlayer) {
   const sw = Math.sin(p.walk) * 4;
   ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(2.5, 2.5, 7, 9.5, 0, 0, TAU); ctx.fill();
   const armed = isPlayer ? player.weapons[player.w] !== "fist" : p.armed;
-  ctx.fillStyle = p.skin;
-  if (armed) { ctx.beginPath(); ctx.arc(9, 3, 2.8, 0, TAU); ctx.arc(7, -4, 2.8, 0, TAU); ctx.fill(); ctx.fillStyle = "#1a1a1a"; ctx.fillRect(9, 1, isPlayer && player.weapons[player.w] === "smg" ? 11 : 8, 3.4); }
-  else { const pu = isPlayer && player.punch > 0 ? 8 : 0; ctx.beginPath(); ctx.arc(sw + pu, -8, 2.8, 0, TAU); ctx.arc(-sw, 8, 2.8, 0, TAU); ctx.fill(); }
-  ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, 6, 9, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(0.5, 0, 5, 0, TAU); ctx.fill();
+  // arms: a sleeve from the shoulder, then the forearm and a hand
+  const limb = (sx, sy, hx, hy) => {
+    const mx = (sx + hx) / 2, my = (sy + hy) / 2;
+    ctx.lineCap = "round"; ctx.strokeStyle = p.col; ctx.lineWidth = 3.8; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(mx, my); ctx.stroke();
+    ctx.strokeStyle = p.kind === "cop" ? p.col : p.skin; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(hx, hy); ctx.stroke(); ctx.lineCap = "butt";
+    ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(hx, hy, 2.2, 0, TAU); ctx.fill();
+  };
+  if (armed) { limb(1, 7, 10, 2.5); limb(1, -7, 9, -1); ctx.fillStyle = "#1a1a1a"; ctx.fillRect(10, 0.6, isPlayer && player.weapons[player.w] === "smg" ? 11 : 8, 3.4); }
+  else { const pu = isPlayer && player.punch > 0 ? 8 : 0; limb(0, -7.5, 1 + sw + pu, -9.5); limb(0, 7.5, 1 - sw, 9.5); }
+  // torso: broad shoulders, narrower waist, a collar line
+  ctx.fillStyle = p.col; ctx.beginPath(); ctx.moveTo(3.4, -8.6); ctx.quadraticCurveTo(5.2, 0, 3.4, 8.6); ctx.quadraticCurveTo(0, 10.2, -3.6, 7.6); ctx.quadraticCurveTo(-5.2, 0, -3.6, -7.6); ctx.quadraticCurveTo(0, -10.2, 3.4, -8.6); ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.beginPath(); ctx.ellipse(-2.2, 0, 2.2, 7, 0, 0, TAU); ctx.fill();
+  // head: ears, face, nose, hair on the back and top
+  ctx.fillStyle = p.skin; ctx.beginPath(); ctx.arc(0.6, -4.3, 1.3, 0, TAU); ctx.arc(0.6, 4.3, 1.3, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(1, 0, 4.6, 4.1, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = shade(p.skin, 0.85); ctx.beginPath(); ctx.ellipse(5.2, 0, 1.1, 0.9, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = p.hair; ctx.beginPath(); ctx.ellipse(0, 0, 4.4, 4.2, 0, Math.PI * 0.42, Math.PI * 1.58); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0.4, 0, 3.4, 3.9, 0, 0, TAU); ctx.fill();
   if (p.kind === "cop") { ctx.fillStyle = "#16244a"; ctx.beginPath(); ctx.arc(0.5, 0, 5.4, 0, TAU); ctx.fill(); ctx.fillRect(3, -4, 4, 8); ctx.fillStyle = "#e9c24a"; ctx.fillRect(0, -1, 2, 2); }
   if (p.kind === "gang") { ctx.fillStyle = "#e0213b"; ctx.fillRect(-4, -5, 3, 10); }
   if (p.kind === "ped" && WX.rain > 0.3) {
@@ -4018,29 +4031,74 @@ function init3d() {
     const beam = new THREE.Mesh(beamGeo, M3.beam); beam.position.set(L / 2, base + 4, 0); beam.rotation.z = -0.07; beam.visible = false; g.add(beam);
     return { g, paint, tails, red, blue, beam, doors, wrecked: !!c.wreck };
   }
+  // body parts share these geometries: tapered limbs hang down from their joint, the torso narrows to the waist
+  const LIMB = new THREE.CylinderGeometry(1, 0.82, 1, 10); LIMB.translate(0, -0.5, 0);
+  const TORSO = new THREE.CylinderGeometry(1, 0.78, 1, 14);
+  const CAP = new THREE.SphereGeometry(1, 14, 10, 0, Math.PI * 2, 0, 1.3);
+  const SPH2 = new THREE.SphereGeometry(1, 14, 12);
   function personMesh(p, me) {
     const g = new THREE.Group();
-    const shirt = mat(me ? player.col : p.col), pants = mat(p.kind === "cop" ? "#1a2546" : me ? "#2a3550" : "#2c2f3d"), skin = mat(p.skin);
-    const limb = (m, sx, sy, sz, x, y, z) => { const piv = new THREE.Group(); piv.position.set(x, y, z); const b = new THREE.Mesh(BOX, m); b.scale.set(sx, sy, sz); b.position.y = -sy / 2; piv.add(b); g.add(piv); return piv; };
-    const lL = limb(pants, 2.8, 7, 2.6, 0, 7, -1.7), lR = limb(pants, 2.8, 7, 2.6, 0, 7, 1.7);
-    const torso = new THREE.Mesh(BOX, shirt); torso.scale.set(4, 7, 7.2); torso.position.y = 10.5; torso.castShadow = true; g.add(torso);
-    const aL = limb(shirt, 2.3, 6.4, 2.3, 0, 13.6, -4.7), aR = limb(shirt, 2.3, 6.4, 2.3, 0, 13.6, 4.7);
-    for (const a of [aL, aR]) { const hnd = new THREE.Mesh(BOX, skin); hnd.scale.setScalar(2.2); hnd.position.y = -7.4; a.add(hnd); }
-    const gun = new THREE.Mesh(BOX, M3.gun); gun.scale.set(1.4, 6, 1.6); gun.position.set(0, -9, 0); aR.add(gun);
-    const head = new THREE.Mesh(SPH, skin); head.scale.setScalar(2.7); head.position.y = 16.8; g.add(head);
-    const hair = new THREE.Mesh(SPH, mat(p.kind === "cop" ? "#16244a" : me ? "#222222" : p.hair)); hair.scale.set(2.9, 1.7, 2.9); hair.position.set(-0.4, 18.1, 0); g.add(hair);
-    if (p.kind === "cop" || me) { const brim = new THREE.Mesh(BOX, mat(me ? "#222222" : "#16244a")); brim.scale.set(3.2, 0.6, 4.6); brim.position.set(2.5, 18.3, 0); g.add(brim); }
-    if (p.kind === "gang") { const band = new THREE.Mesh(BOX, mat("#e0213b")); band.scale.set(5.8, 1.3, 5.8); band.position.y = 17.6; g.add(band); }
+    const cop = p.kind === "cop", shirtC = me ? player.col : p.col;
+    const shirt = mat(shirtC), pants = mat(cop ? "#1a2546" : me ? "#2a3550" : "#2c2f3d"), skin = mat(p.skin), shoe = mat(me ? "#f2f2f2" : "#1d1b20");
+    const hairC = cop ? "#16244a" : me ? "#222222" : p.hair;
+    const part = (geo, m, sx, sy, sz, x, y, z, parent, sh) => { const b = new THREE.Mesh(geo, m); b.scale.set(sx, sy, sz); b.position.set(x, y, z); if (sh) b.castShadow = true; (parent || g).add(b); return b; };
+    const joint = (x, y, z, parent) => { const j = new THREE.Group(); j.position.set(x, y, z); (parent || g).add(j); return j; };
+    // legs: hip -> thigh -> knee -> shin -> shoe
+    const leg = (z) => {
+      const hip = joint(0, 7.6, z);
+      part(LIMB, pants, 1.35, 3.9, 1.35, 0, 0, 0, hip, true);
+      const knee = joint(0, -3.9, 0, hip);
+      part(LIMB, pants, 1.12, 3.4, 1.12, 0, 0, 0, knee, true);
+      part(BOX, shoe, 3.5, 1.15, 2.1, 0.75, -3.7, 0, knee);
+      hip.knee = knee; return hip;
+    };
+    const lL = leg(-1.55), lR = leg(1.55);
+    // pelvis, belt, torso, shoulders, neck
+    part(BOX, pants, 3.6, 2.4, 5.6, 0, 7.9, 0, null, true);
+    part(BOX, mat("#1a1612"), 3.75, 0.7, 5.75, 0, 9.0, 0);
+    part(TORSO, shirt, 2.2, 5.6, 3.55, 0, 12.0, 0, null, true);
+    for (const z of [-3.2, 3.2]) part(SPH2, shirt, 1.2, 1.0, 1.25, 0, 14.25, z, null, true);
+    if (cop) { part(BOX, mat("#e9c24a"), 0.3, 1, 0.8, 2.25, 13.2, -1.6); }
+    else if (!me) part(BOX, mat(shade(shirtC, 0.78)), 0.25, 1.6, 1.4, 2.12, 14.6, 0);
+    part(LIMB, skin, 0.85, 1.6, 0.85, 0, 16.2, 0);
+    // arms: shoulder -> upper arm (sleeve) -> elbow -> forearm -> hand with thumb
+    const arm = (z) => {
+      const sh = joint(0, 14.5, z);
+      part(LIMB, shirt, 0.98, 3.5, 0.98, 0, 0, 0, sh, true);
+      const el = joint(0, -3.5, 0, sh);
+      part(LIMB, cop ? shirt : skin, 0.8, 3.0, 0.8, 0, 0, 0, el, true);
+      part(SPH2, skin, 0.75, 1.0, 0.6, 0.15, -3.55, 0, el);
+      part(BOX, skin, 0.55, 0.9, 0.5, 0.7, -3.1, z < 0 ? 0.35 : -0.35, el);
+      sh.elbow = el; return sh;
+    };
+    const aL = arm(-4.15), aR = arm(4.15);
+    const gun = new THREE.Mesh(BOX, M3.gun); gun.scale.set(1.4, 5, 1.6); gun.position.set(0.4, -5.4, 0); aR.elbow.add(gun);
+    // head: skull, jaw, ears, eyes, brows, nose, mouth, hair
+    const head = joint(0, 18.5, 0);
+    part(SPH2, skin, 2.3, 2.65, 2.1, 0, 0, 0, head, true);
+    part(SPH2, skin, 1.7, 1.4, 1.7, 0.45, -1.15, 0, head);
+    for (const z of [-2.05, 2.05]) part(SPH2, skin, 0.45, 0.75, 0.35, -0.15, -0.1, z, head);
+    for (const z of [-0.8, 0.8]) {
+      part(SPH2, mat("#f6f3ee"), 0.32, 0.36, 0.42, 1.95, 0.35, z, head);
+      part(SPH2, mat("#2a1d14"), 0.2, 0.24, 0.24, 2.17, 0.35, z, head);
+      part(BOX, mat(hairC), 0.3, 0.28, 0.85, 2.05, 0.95, z * 1.05, head);
+    }
+    part(BOX, mat(shade(p.skin, 0.9)), 0.9, 1.0, 0.55, 2.2, -0.3, 0, head);
+    part(BOX, mat("#9c4a42"), 0.3, 0.26, 1.1, 1.98, -1.25, 0, head);
+    const hair = part(CAP, mat(hairC), 2.42, 2.55, 2.25, -0.25, 0.35, 0, head);
+    hair.rotation.z = 0.35;
+    if (cop || me) { part(BOX, mat(me ? "#222222" : "#16244a"), 3.2, 0.5, 4.4, 2.2, 1.85, 0, head); part(SPH2, mat(me ? "#222222" : "#16244a"), 2.45, 1.35, 2.3, -0.1, 1.9, 0, head); }
+    if (p.kind === "gang") part(BOX, mat("#e0213b"), 4.9, 1.0, 4.6, 0, 1.2, 0, head);
     let umb = null;
     if (p.kind === "ped" || me) {
       const uz = me ? -3 : 3, ucol = me ? "#22222a" : p.col;
       umb = new THREE.Group(); umb.visible = false;
-      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 12, 0.6); pole.position.set(2.5, 18, uz); umb.add(pole);
-      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: ucol, side: THREE.DoubleSide })); can.position.set(2.5, 25.5, uz); umb.add(can);
-      if (me) { const rim = new THREE.Mesh(new THREE.ConeGeometry(12.3, 1.2, 8, 1, true), new THREE.MeshLambertMaterial({ color: player.col, side: THREE.DoubleSide })); rim.position.set(2.5, 23.4, uz); umb.add(rim); }
+      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 13, 0.6); pole.position.set(2.5, 19.5, uz); umb.add(pole);
+      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: ucol, side: THREE.DoubleSide })); can.position.set(2.5, 27.5, uz); umb.add(can);
+      if (me) { const rim = new THREE.Mesh(new THREE.ConeGeometry(12.3, 1.2, 8, 1, true), new THREE.MeshLambertMaterial({ color: player.col, side: THREE.DoubleSide })); rim.position.set(2.5, 25.4, uz); umb.add(rim); }
       g.add(umb);
     }
-    return { g, lL, lR, aL, aR, gun, umb };
+    return { g, lL, lR, aL, aR, gun, umb, head };
   }
   function markerObj(col) {
     const g = new THREE.Group();
@@ -4151,6 +4209,13 @@ function sync3d() {
   }
   for (const [id, o] of G3.cars) if (!seen.has(id)) { G3.scene.remove(o.g); o.paint.dispose(); G3.cars.delete(id); }
   seen.clear();
+  // knees fold when the leg swings back or when sitting; elbows stay slightly bent unless the arm is raised
+  const bendJoints = (o, sit, walk) => {
+    if (!o.lL.knee) return;
+    for (const l of [o.lL, o.lR]) l.knee.rotation.z = -Math.max(0, -l.rotation.z) * 1.1 - sit * 1.55;
+    for (const a of [o.aL, o.aR]) a.elbow.rotation.z = Math.abs(a.rotation.z) > 1.2 ? 0 : 0.35 + Math.max(0, a.rotation.z) * 0.5;
+  };
+  G3.bendJoints = bendJoints;
   const putPerson = (p, key, me) => {
     seen.add(key);
     let o = G3.ppl.get(key);
@@ -4166,6 +4231,7 @@ function sync3d() {
     o.lL.rotation.z = sw + sit * 1.45; o.lR.rotation.z = -sw + sit * 1.45; o.aL.rotation.z = grab ? Math.PI / 2 : -sw * 0.8 + sit * 0.7;
     o.aR.rotation.z = armed || grab || (me && player.punch > 0) ? Math.PI / 2 : sw * 0.8 + sit * 0.7;
     o.gun.visible = armed;
+    bendJoints(o, sit, moving ? p.walk : null);
     if (o.umb) {
       o.umb.visible = me ? !!player.umbOn && !indoor : WX.rain > 0.3 && !lying;
       if (o.umb.visible) { if (me) o.aL.rotation.z = 2.6; else o.aR.rotation.z = 2.6; }
@@ -4269,6 +4335,7 @@ function watchMatch3d(dt) {
     o.g.position.set(x, 0, z); o.g.rotation.y = -Math.atan2(bz - z, bx - x);
     const sw = sp > 4 ? Math.sin(o.walk) * 0.8 : 0;
     o.lL.rotation.z = sw; o.lR.rotation.z = -sw; o.aL.rotation.z = -sw * 0.8; o.aR.rotation.z = sw * 0.8;
+    if (G3.bendJoints) G3.bendJoints(o, 0, sw);
   });
   S.ball.position.set(bx, 1.8 + Math.abs(Math.sin(MT.t * 9)) * (MT.ball.sp > 400 ? 3 : 1), bz);
   // fans bob, and jump when a goal goes in
