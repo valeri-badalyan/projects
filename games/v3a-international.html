@@ -111,7 +111,7 @@ body.touch #bagBtn{display:none}
 #ppPhoto{width:112px;height:140px;border-radius:6px;background:#cfd8e0;display:block}
 .pp-f{display:flex;flex-direction:column;gap:6px;min-width:0}
 .pp-f label{display:flex;flex-direction:column;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8a6a5a}
-.pp-f span,.pp-f input{font-size:14px;font-weight:800;color:#1e1a26;text-transform:none;letter-spacing:0}
+.pp-f span{font-size:14px;font-weight:800;color:#1e1a26;text-transform:none;letter-spacing:0}
 .pp-f input{border:0;border-bottom:1.5px dashed #b8a090;background:transparent;padding:2px 0;font-family:var(--body);width:100%}
 .pp-f input:focus{outline:none;border-bottom-color:#5a1424}
 .pp-sig{font-family:"Brush Script MT","Segoe Script",cursive;font-size:22px;color:#2a3a7a}
@@ -358,7 +358,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Q</dt><dd>сменить оружие</dd>
         <dt>Окно дома</dt><dd>выбрать погоду: ясно, дождь, ливень, гроза или как в природе</dd>
         <dt>1 / 2 / 3 / 0</dt><dd>дома: каналы телевизора — WorldNews, Sport, YouTube Shorts, выключить</dd>
-        <dt>J</dt><dd>паспорт V3: фото, имя и штампы городов</dd>
+        <dt>J</dt><dd>паспорт V3: фото, имя (игра придумывает его сама) и штампы городов</dd>
         <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
@@ -475,7 +475,7 @@ button.ph-row:disabled{opacity:.45}
         <div class="pp-main">
           <canvas id="ppPhoto" width="224" height="280" aria-label="Фото владельца"></canvas>
           <div class="pp-f">
-            <label>Имя / Name<input id="ppName" maxlength="24" placeholder="Впиши своё имя" autocomplete="off"></label>
+            <label>Имя / Name<span id="ppName"></span></label>
             <label>Гражданство / Nationality<span>Республика V3</span></label>
             <label>№ паспорта / No.<span id="ppNo"></span></label>
             <label>Дата выдачи / Issued<span id="ppIssued"></span></label>
@@ -3190,10 +3190,17 @@ function updMrz(no, id) {
   const lat = [...(save.name || "GRAZHDANIN V3").toUpperCase()].map((ch) => (TRL[ch] != null ? TRL[ch] : /[A-Z0-9]/.test(ch) ? ch : "<")).join("");
   $("ppMrz").textContent = ("P<V3A" + lat + "<".repeat(44)).slice(0, 44) + "\n" + (ppNo + "<V3A" + ppId.slice(2) + "<".repeat(44)).slice(0, 44);
 }
+const PP_FIRST = ["Арно", "Тимур", "Марко", "Давид", "Леон", "Самвел", "Нико", "Эмиль", "Рафаэль", "Лука", "Мартин", "Артём", "Карен", "Феликс", "Оскар", "Габриэль", "Рустам", "Матео", "Виктор", "Ян"];
+const PP_LAST = ["Вэйлер", "Новак", "Арсенян", "Ромеро", "Сато", "Беридзе", "Ковальски", "Делакруа", "Мендес", "Орлов", "Ланской", "Фаррелл", "Кастро", "Варданян", "Ильин", "Моретти", "Закатов", "Нованди", "Хаяси", "Брандт"];
+function ppEnsureName() {
+  if (save.nameAuto && save.name) return;
+  save.name = pick(PP_FIRST) + " " + pick(PP_LAST); save.nameAuto = 1; writeSave();
+}
 function renderPassport() {
+  ppEnsureName();
   const id = (save.since || dayKey()).replace(/-/g, ""), no = "V3" + String((parseInt(id, 10) * 7919) % 9000000 + 1000000);
   const nm = save.name || "";
-  $("ppName").value = nm; $("ppNo").textContent = no; $("ppIssued").textContent = ruD(save.since);
+  $("ppName").textContent = nm; $("ppNo").textContent = no; $("ppIssued").textContent = ruD(save.since);
   const [y, m, d] = (save.since || dayKey()).split("-"); $("ppExp").textContent = ruD(+y + 10 + "-" + m + "-" + d);
   $("ppSig").textContent = nm || "—";
   updMrz(no, id);
@@ -3210,9 +3217,6 @@ function renderPassport() {
     sp.title = c.name + ", " + c.country; box.appendChild(sp);
   });
 }
-$("ppName").addEventListener("input", (e) => { save.name = e.target.value.slice(0, 24); $("ppSig").textContent = save.name || "—"; updMrz(); writeSave(); });
-$("ppName").addEventListener("change", renderPassport);
-$("ppName").addEventListener("keydown", (e) => e.stopPropagation());
 $("ppOut").addEventListener("click", resume);
 $("passBtn").addEventListener("click", () => { initAudio(); togglePassport(); });
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
@@ -4150,7 +4154,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
   if (e.code === "KeyR" && state === "play") toggleRainMenu();
   if (e.code === "KeyH") goHome();
-  if (e.code === "KeyJ" && (state === "play" || state === "passport") && document.activeElement !== $("ppName")) togglePassport();
+  if (e.code === "KeyJ" && (state === "play" || state === "passport")) togglePassport();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
