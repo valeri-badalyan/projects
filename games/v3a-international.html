@@ -524,7 +524,7 @@ button.ph-row:disabled{opacity:.45}
       <canvas id="tmBoard" width="360" height="230" aria-label="Табло вылетов"></canvas>
       <div class="row" id="tmTabs"></div>
       <div id="tmBody" class="shop-list"></div>
-      <button type="button" class="btn alt" id="tmOut" style="flex:none">Выйти из терминала</button>
+      <button type="button" class="btn alt" id="tmOut" style="flex:none">Закрыть и вернуться в зал</button>
     </div>
   </div>
 
@@ -2025,6 +2025,101 @@ function villageGround() {
   g.strokeStyle = "#6a4a2a"; g.lineWidth = 3;
   for (const [ix, iy] of yards) { const x = ix * T + 4, y = iy * T + 4, w = 4 * T - 8; if (x > vx1 || x + w < vx0 || y > vy1 || y + w < vy0) continue; g.strokeRect(x, y, w, w); g.fillStyle = "#6a4a2a"; for (let k = 0; k <= w; k += 16) { g.fillRect(x + k - 1.5, y - 3, 3, 6); g.fillRect(x + k - 1.5, y + w - 3, 3, 6); g.fillRect(x - 3, y + k - 1.5, 6, 3); g.fillRect(x + w - 3, y + k - 1.5, 6, 3); } }
 }
+/* ===== the airport hall: you walk inside it like inside your flat ===== */
+const HOME_ROOM = { RW: 320, RH: 260, OX: WORLD + 2600, OZ: WORLD / 2, solids: null, spots: null };
+const TW = 480, TH = 320;
+const TERM_ROOM = { RW: TW, RH: TH, OX: WORLD + 2600, OZ: WORLD / 2 + 1400,
+  solids: [[30, 30, 170, 26], [356, 26, 104, 18], [356, 70, 104, 18], [380, 196, 44, 30], [54, 196, 22, 22], [104, 222, 22, 22], [54, 252, 22, 22], [170, 140, 150, 12], [170, 196, 150, 12], [6, 110, 10, 90]],
+  spots: [
+    { id: "door", x: TW / 2, y: TH - 16, r: 34, label: "ВЫЙТИ", text: "Выйти на улицу" },
+    { id: "checkin", x: 115, y: 78, r: 36, label: "РЕЙС", text: "Стойка регистрации: выбрать рейс" },
+    { id: "board", x: 262, y: 40, r: 30, label: "ТАБЛО", text: "Посмотреть табло вылетов" },
+    { id: "duty", x: 408, y: 118, r: 34, label: "DUTY", text: "Duty Free" },
+    { id: "souv", x: 402, y: 250, r: 30, label: "МАГНИТ", text: "Киоск сувениров" },
+    { id: "cafe", x: 92, y: 290, r: 28, label: "КАФЕ", text: "Кафе — кофе и сэндвичи" },
+    { id: "gate", x: 34, y: 155, r: 32, label: "ВЫЛЕТ", text: "Выход на посадку" },
+  ] };
+function useRoom(kind) {
+  if (!HOME_ROOM.solids) { HOME_ROOM.solids = ROOM_SOLIDS; HOME_ROOM.spots = ROOM_SPOTS; }
+  const R = kind === "air" ? TERM_ROOM : HOME_ROOM; INT = kind;
+  RW = R.RW; RH = R.RH; OX = R.OX; OZ = R.OZ; ROOM_SOLIDS = R.solids; ROOM_SPOTS = R.spots;
+}
+function enterTerminal() {
+  useRoom("air");
+  player.umbOn = false; if (player.inCar) exitCar(true);
+  if (TV.on) tvSet(-1);
+  indoor = true; player.couch = false; setLocal(TW / 2, TH - 40); player.a = -Math.PI / 2;
+  cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.add("indoor"); sfx.doorOpen(); toast(CITY.village ? "Автостанция Нова-Э" : "Терминал аэропорта · " + CITY.name, 1.8);
+  setTimeout(() => tone(660, 660, 0.25, 0.06, "sine"), 300); setTimeout(() => tone(880, 880, 0.35, 0.06, "sine"), 560);
+  if (G3.ready && !G3.term) buildTerm();
+  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false;
+}
+function termAct(sp) {
+  if (sp.id === "door") return leaveHome();
+  if (sp.id === "checkin" || sp.id === "gate" || sp.id === "board") return openTerminal("fly");
+  if (sp.id === "duty" || sp.id === "cafe") return openTerminal("duty");
+  if (sp.id === "souv") return openTerminal("souv");
+}
+const termBoardCv = document.createElement("canvas"); termBoardCv.width = 360; termBoardCv.height = 230;
+function buildTerm() {
+  const K = G3.K, THREE = K.THREE, B = mk3d(K, TERM_ROOM.OX, TERM_ROOM.OZ, {}), g = B.g, HH = 74;
+  const tile = B.X.ct("termfloor", 64, 64, (c) => { c.fillStyle = "#e8e6e2"; c.fillRect(0, 0, 64, 64); c.fillStyle = "#d4d2ce"; c.fillRect(0, 0, 32, 32); c.fillRect(32, 32, 32, 32); });
+  const fm = B.M("#ffffff", { map: tile }); fm.map.repeat.set(TW / 32, TH / 32); B.floor(fm, TW / 2, TH / 2, TW, TH, 0.3);
+  B.box("#f4f4f2", TW / 2, TH / 2, TW + 12, TH + 12, 2, HH);
+  const wall = "#e4e8ec"; B.box(wall, -3, TH / 2, 6, TH, HH); B.box(wall, TW + 3, TH / 2, 6, TH, HH);
+  B.box(wall, (TW / 2 - 30) / 2, TH + 3, TW / 2 - 30, 6, HH); B.box(wall, TW - (TW / 2 - 30) / 2, TH + 3, TW / 2 - 30, 6, HH); B.box(wall, TW / 2, TH + 3, 60, 6, HH - 40, 40);
+  B.box(B.M("#bfe6ff", { op: 0.3 }), TW / 2, -2, TW, 2, HH - 10, 5); for (let x = 0; x <= TW; x += 60) B.box("#8a9aaa", x, -2, 3, 4, HH); B.box("#8a9aaa", TW / 2, -2, TW, 4, 5);
+  // outside the glass: the apron with a plane at the gate
+  B.floor(B.M("#6a6a72"), TW / 2, -260, TW + 600, 500, 0.2); for (let x = -200; x < TW + 200; x += 70) B.box("#f2f2f2", x, -150, 36, 3, 0.4, 0.3);
+  const pl = B.sub(TW / 2 + 40, -160, { s: 4 }); pl.sph("#f4f6f8", 0, 0, 30, 10, 1, 0.16, 0.16); pl.box("#2a6fd6", 0, 0, 56, 5, 1, 9.5); pl.box("#f4f6f8", -2, 0, 9, 60, 0.8, 9); pl.box("#f4f6f8", -25, 0, 5, 18, 0.6, 12); pl.box("#ff7a3d", -26, 0, 6, 0.8, 10, 13);
+  for (const z of [-12, 12]) pl.cyl("#b8c0c8", 2, z, 2, 2, 6, 6.5, 10).rotation.z = Math.PI / 2;
+  pl.g.rotation.y = 0.3;
+  B.box("#9aa4ae", 70, -60, 14, 120, 10, 24); // jet bridge
+  // check-in counters
+  for (let i = 0; i < 4; i++) { const x = 52 + i * 42; B.box("#2a6fd6", x, 43, 38, 26, 22); B.box("#f2f2f2", x, 43, 39, 27, 2, 22); B.box("#2a3a4a", x, 36, 8, 2, 6, 24); }
+  B.plane(B.M("#ffffff", { map: B.X.txt(CITY.village ? "КАССЫ · БИЛЕТЫ" : "РЕГИСТРАЦИЯ · CHECK-IN", "#ffffff", "#2a6fd6", 512, 64, 40) }), 115, 4, 150, 16, 44, 0);
+  // the departures board on the wall
+  const bt = new THREE.CanvasTexture(termBoardCv); B.plane(B.M("#ffffff", { neon: true, map: bt }), 262, 4.5, 110, 70, 0, 0).position.y = 46;
+  // duty free shelves full of colourful boxes
+  for (const z of [35, 79]) { B.box("#3a3a44", 408, z, 104, 18, 40); const items = []; for (let x = 0; x < 9; x++) for (let y = 0; y < 3; y++) items.push([362 + x * 11.5, 8 + y * 12, z, 8, 9, 14]); const im = B.inst("#ffffff", items); const col = new THREE.Color(); items.forEach((_, i) => im.setColorAt(i, col.set(["#e8433a", "#ffd23d", "#2a6fd6", "#5fd35f", "#c77ae8", "#ff7a3d"][i % 6]))); }
+  B.plane(B.M("#ffffff", { map: B.X.txt("DUTY FREE", "#ffd23d", "#14121a", 512, 96, 64) }), 408, 3.5, 100, 18, 48, 0);
+  // souvenir kiosk with magnets
+  B.box("#ff7a3d", 402, 211, 44, 30, 26); B.box("#f2f2f2", 402, 211, 46, 32, 2, 26); B.plane(B.M("#ffffff", { map: B.X.txt("🧲 СУВЕНИРЫ", "#14121a", "#ffd23d", 512, 96, 54) }), 402, 226.6, 40, 8, 30, 0);
+  // café: tables and chairs
+  for (const [x, z] of [[65, 207], [115, 233], [65, 263]]) { B.cyl("#f2f2f2", x, z, 11, 11, 1.5, 14, 14); B.cyl("#8a8a8a", x, z, 1.5, 1.5, 14, 0, 6); B.box("#c2452d", x - 15, z, 7, 7, 8); B.box("#c2452d", x + 15, z, 7, 7, 8); }
+  B.box("#6a4a2a", 40, 300, 60, 20, 22); B.plane(B.M("#ffffff", { map: B.X.txt("☕ КАФЕ", "#ffffff", "#6a4a2a", 256, 64, 40) }), 40, 289.8, 40, 10, 26, 0);
+  // rows of waiting seats
+  for (const z of [146, 202]) for (let i = 0; i < 12; i++) { const x = 176 + i * 12.4; B.box("#2a6fd6", x, z, 10, 10, 6, 3); B.box("#2a6fd6", x, z + (z === 146 ? 5 : -5), 10, 2, 10, 6); B.box("#8a8a8a", x, z, 1.5, 1.5, 3, 0); }
+  // the gate
+  B.box("#3a4a5a", 2, 155, 4, 70, 50); B.plane(B.M("#ffffff", { map: B.X.txt("ВЫХОД A1 · GATE", "#ffd23d", "#14121a", 512, 64, 40) }), 4.5, 155, 60, 10, 52, Math.PI / 2);
+  // ceiling lights
+  for (let x = 60; x < TW; x += 120) for (let z = 60; z < TH; z += 100) B.box(B.M("#fffbe8", { neon: true }), x, z, 40, 8, 1, HH - 1);
+  const l1 = new THREE.PointLight(0xfff4e0, 1.1, 520, 1.2); l1.position.set(TW / 2, 60, TH / 2); g.add(l1);
+  const l2 = new THREE.PointLight(0xe8f4ff, 0.6, 400, 1.4); l2.position.set(TW / 2, 50, 40); g.add(l2);
+  const subs = [g, pl.g];
+  let bt0 = -1;
+  G3.term = { g: { set visible(v) { subs.forEach((q) => (q.visible = v)); } }, tick: (dt) => { if (now - bt0 > 0.25) { bt0 = now; drawBoard(termBoardCv, now, null); bt.needsUpdate = true; } } };
+  G3.term.g.visible = indoor && INT === "air";
+}
+function drawTerm2D(dpr, W, H) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
+  const top = W < 640 ? 196 : 150, k = Math.min((W - 32) / (TW + 16), (H - top - 110) / (TH + 16), 2.2), ox = (W - TW * k) / 2, oy = Math.max(top, (H - TH * k) / 2);
+  ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
+  ctx.fillStyle = "#e8e6e2"; ctx.fillRect(0, 0, TW, TH); ctx.fillStyle = "#d8d6d2"; for (let y = 0; y < TH; y += 32) for (let x = (y / 32) % 2 ? 32 : 0; x < TW; x += 64) ctx.fillRect(x, y, 32, 32);
+  ctx.fillStyle = "#9fd8f0"; ctx.fillRect(0, -10, TW, 8); ctx.fillStyle = "#c8ccd2"; ctx.fillRect(-8, 0, 8, TH); ctx.fillRect(TW, 0, 8, TH); ctx.fillRect(-8, TH, TW / 2 - 22, 8); ctx.fillRect(TW / 2 + 30, TH, TW / 2 - 22, 8);
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  for (let i = 0; i < 4; i++) R(33 + i * 42, 30, 38, 26, "#2a6fd6");
+  R(207, 0, 110, 10, "#14121a"); R(212, 2, 100, 6, "#ffd23d");
+  R(356, 26, 104, 18, "#3a3a44"); R(356, 70, 104, 18, "#3a3a44"); for (let x = 0; x < 9; x++) { R(360 + x * 11, 30, 8, 10, ["#e8433a", "#ffd23d", "#2a6fd6", "#5fd35f"][x % 4]); R(360 + x * 11, 74, 8, 10, ["#c77ae8", "#ff7a3d", "#2a6fd6", "#5fd35f"][x % 4]); }
+  R(380, 196, 44, 30, "#ff7a3d"); R(170, 140, 150, 12, "#2a6fd6"); R(170, 196, 150, 12, "#2a6fd6"); R(6, 110, 10, 90, "#3a4a5a");
+  for (const [x, y] of [[65, 207], [115, 233], [65, 263]]) { ctx.fillStyle = "#f2f2f2"; ctx.beginPath(); ctx.arc(x, y, 11, 0, TAU); ctx.fill(); }
+  ctx.fillStyle = "#14121a"; ctx.font = "bold 11px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const [t, x, y] of [["РЕГИСТРАЦИЯ", 115, 66], ["ТАБЛО", 262, 18], ["DUTY FREE", 408, 58], ["СУВЕНИРЫ", 402, 240], ["КАФЕ", 92, 300], ["ВЫХОД A1", 40, 105], ["ВЫХОД", TW / 2, TH - 8]]) ctx.fillText(t, x, y);
+  const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#2fd0a0"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
+  if (SUM) drawSummon2D(OX, OZ);
+  const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
+}
 /* ===== small life of the city ===== */
 let lmLast = null, steamT = 0;
 function lmNear() {
@@ -2625,7 +2720,7 @@ const SHOPS = [
       { id: "newsjob", name: "Взять задание", info: "Съезди на место, сними сюжет — от $60 до $250", price: 0, priceText: "задание",
         no: () => (!save.press ? "Сначала зарегистрируйся репортёром" : NJ ? "Уже есть: " + NJ.title : ""), open: () => takeNewsJob() },
     ] },
-  { id: "air", who: "Аэропорт V3A International", title: "Рейсы по всему миру", col: "#5ad0ff", hex: 0x5ad0ff, label: "✈", at: () => places.air, bonus: 0, open: () => openTerminal(),
+  { id: "air", who: "Аэропорт V3A International", title: "Рейсы по всему миру", col: "#5ad0ff", hex: 0x5ad0ff, label: "✈", at: () => places.air, bonus: 0, open: () => enterTerminal(),
     note: "Деньги, машины, оружие и сумка летят с тобой. В каждом городе — свои улицы, своя погода и свои такси.",
     items: (CITY.dream ? [{ id: "wake", name: "☀ Проснуться", info: "Вернуться из сна в " + ((CITIES.find((q) => q.id === save.dreamFrom) || CITIES[0]).name), price: 0, priceText: "проснуться", open: () => wakeUp() }] : []).concat(CITIES).map((c) => (c.id === "wake" ? c : { id: "fly-" + c.id, name: c.flag + " " + c.name, info: c.country + " · " + flightInfo(c), price: flightPrice(c), quiet: true,
       no: () => (c.dream && !CITY.dream ? "Туда не летают — только во сне: усни в своей кровати" : CITY.dream && c.id !== CITY.id ? "Из сна не улететь — сначала проснись" : c.id === CITY.id ? "Ты сейчас здесь" : flying ? "Посадка уже идёт" : ""), act: () => flyTo(c) })) },
@@ -2858,7 +2953,7 @@ function setOutfit(col) {
   renderHome();
 }
 /* ===== inside the apartment: a real room you walk around in ===== */
-const RW = 320, RH = 260, OX = WORLD + 2600, OZ = WORLD / 2;
+let RW = 320, RH = 260, OX = WORLD + 2600, OZ = WORLD / 2, INT = "home";
 let indoor = false, tvOn = false;
 /* ===== TV: three live channels drawn frame by frame ===== */
 const TV = { on: false, ch: 0, t: 0, cv: document.createElement("canvas"), sim: null, dirty: true };
@@ -3171,8 +3266,8 @@ function drawTvFrame(dt) {
 }
 
 // furniture you bump into (local x, y, w, h)
-const ROOM_SOLIDS = [[20, 20, 70, 110], [110, 10, 60, 26], [RW - 130, 12, 76, 26], [RW - 50, 12, 36, 34], [RW - 26, 100, 18, 70], [RW - 130, 105, 34, 64], [RW - 39, RH - 39, 16, 16], [16, RH - 34, 8, 8]];
-const ROOM_SPOTS = [
+let ROOM_SOLIDS = [[20, 20, 70, 110], [110, 10, 60, 26], [RW - 130, 12, 76, 26], [RW - 50, 12, 36, 34], [RW - 26, 100, 18, 70], [RW - 130, 105, 34, 64], [RW - 39, RH - 39, 16, 16], [16, RH - 34, 8, 8]];
+let ROOM_SPOTS = [
   { id: "door", x: 160, y: RH - 16, r: 30, label: "ВЫЙТИ", text: "Выйти на улицу" },
   { id: "bed", x: 104, y: 84, r: 26, label: "СПАТЬ", text: "Поспать до утра" },
   { id: "wardrobe", x: 140, y: 52, r: 24, label: "ШКАФ", text: "Гардероб" },
@@ -3193,6 +3288,7 @@ function roomPush(x, y, r) {
 }
 function nearSpot() { const L = toLocal(); let best = null, bd = 1e9; for (const s2 of ROOM_SPOTS) { const d = Math.hypot(L.x - s2.x, L.y - s2.y); if (d < s2.r && d < bd) { bd = d; best = s2; } } return best; }
 function enterHome() {
+  useRoom("home");
   player.umbOn = false;
   if (player.inCar) exitCar(true);
   indoor = true; player.couch = false; setLocal(160, RH - 40); player.a = -Math.PI / 2;
@@ -3200,17 +3296,20 @@ function enterHome() {
   $("game").classList.add("indoor"); sfx.door(); toast("Дом, милый дом", 1.6);
   if (G3.ready && !G3.room) G3.buildRoom();
   if (G3.room) G3.room.g.visible = true;
+  if (G3.term) G3.term.g.visible = false;
 }
 function leaveHome() {
   commHush();
   indoor = false; player.couch = false;
-  const q = places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = "home";
+  const q = INT === "air" ? places.air : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
   if (G3.room) G3.room.g.visible = false;
+  if (G3.term) G3.term.g.visible = false;
 }
 function roomAct(sp) {
+  if (INT === "air") return termAct(sp);
   if (sp.id === "door") return leaveHome();
   if (sp.id === "bed") { hmView = "sleep"; renderHome(); showOv("home"); return; }
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
@@ -3251,6 +3350,7 @@ function updIndoor(dt) {
   if ((hit.KeyF || hit.KeyE) && spot) roomAct(spot);
 }
 function drawIndoor2D(dpr, W, H) {
+  if (INT === "air") return drawTerm2D(dpr, W, H);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
   let top = W < 640 ? 196 : 150; // clear the button column on phones
   if (TV.on) {
@@ -3729,7 +3829,7 @@ function renderBankCard(scr) {
 /* the airport terminal: departures board, check-in with take-off, duty free, souvenirs */
 let TM = null;
 const flightNo = (c) => "V3 " + (100 + ((CITIES.indexOf(c) * 37 + CITIES.indexOf(CITY) * 11) % 900));
-function openTerminal() { TM = { tab: "fly", t: 0, last: performance.now(), go: null }; $("tmWho").textContent = "Аэропорт · " + CITY.flag + " " + CITY.name; renderTerminal(); showOv("terminal"); requestAnimationFrame(tickTerminal); sfx.doorOpen(); }
+function openTerminal(tab = "fly") { TM = { tab, t: 0, last: performance.now(), go: null }; $("tmWho").textContent = "Аэропорт · " + CITY.flag + " " + CITY.name; renderTerminal(); showOv("terminal"); requestAnimationFrame(tickTerminal); sfx.doorOpen(); }
 function renderTerminal() {
   const tabs = $("tmTabs"); tabs.innerHTML = "";
   for (const [k, n] of [["fly", "✈ Вылеты"], ["duty", "🛍 Duty Free"], ["souv", "🧲 Сувениры"]]) { const b = el("button", TM.tab === k ? "on" : "", n); b.type = "button"; b.id = "tm-" + k; b.addEventListener("click", () => { TM.tab = k; renderTerminal(); }); tabs.appendChild(b); }
@@ -3759,10 +3859,10 @@ function tickTerminal(tm) {
   if (TM.go) { TM.go.t += dt; if (TM.go.t > 4.2) { const c = TM.go.c; TM = null; flyTo(c); return; } }
   requestAnimationFrame(tickTerminal);
 }
-function drawBoard() {
-  const cv = $("tmBoard"), g = cv.getContext("2d"), W = cv.width, H = cv.height, t = TM.t;
-  if (TM.go) { // take-off seen through the terminal window
-    const k = TM.go.t / 4.2, sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#7fb6e8"); sky.addColorStop(1, "#cfe6f6"); g.fillStyle = sky; g.fillRect(0, 0, W, H);
+function drawBoard(cv = $("tmBoard"), t = TM ? TM.t : 0, go = TM && TM.go) {
+  const g = cv.getContext("2d"), W = cv.width, H = cv.height;
+  if (go) { // take-off seen through the terminal window
+    const k = go.t / 4.2, sky = g.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#7fb6e8"); sky.addColorStop(1, "#cfe6f6"); g.fillStyle = sky; g.fillRect(0, 0, W, H);
     g.fillStyle = "#5a5a64"; g.fillRect(0, H * 0.72, W, H); g.fillStyle = "#f2f2f2"; for (let x = -40 + ((t * 300) % 60); x < W; x += 60) g.fillRect(x, H * 0.84, 30, 4);
     const px = -60 + k * (W + 140), py = H * 0.7 - Math.max(0, k - 0.45) * H * 1.3;
     g.save(); g.translate(px, py); g.rotate(-Math.max(0, Math.min(0.28, (k - 0.45) * 1.2)));
@@ -3770,7 +3870,7 @@ function drawBoard() {
     g.fillStyle = "#d8dde2"; g.beginPath(); g.moveTo(-6, 2); g.lineTo(16, 2); g.lineTo(-14, 26); g.closePath(); g.fill(); g.beginPath(); g.moveTo(-40, -4); g.lineTo(-30, -4); g.lineTo(-52, -26); g.lineTo(-58, -26); g.closePath(); g.fillStyle = "#ff7a3d"; g.fill();
     g.fillStyle = "#3a4760"; for (let i = 0; i < 9; i++) g.fillRect(-30 + i * 8, -5, 4, 3); g.fillStyle = "#1a2a3a"; g.beginPath(); g.ellipse(48, -3, 8, 4, 0, 0, TAU); g.fill();
     g.restore();
-    g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(0, 0, W, 26); g.fillStyle = "#ffd23d"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(flightNo(TM.go.c) + " → " + TM.go.c.name + (k < 0.45 ? " · разбег" : " · взлёт!"), 10, 13);
+    g.fillStyle = "rgba(10,12,20,.8)"; g.fillRect(0, 0, W, 26); g.fillStyle = "#ffd23d"; g.font = "bold 13px Manrope,sans-serif"; g.textAlign = "left"; g.textBaseline = "middle"; g.fillText(flightNo(go.c) + " → " + go.c.name + (k < 0.45 ? " · разбег" : " · взлёт!"), 10, 13);
     return;
   }
   g.fillStyle = "#0d1018"; g.fillRect(0, 0, W, H);
@@ -6327,7 +6427,7 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (indoor && G3.room) {
+  if (indoor && (INT === "air" ? G3.term : G3.room)) {
     const L = toLocal(), cam = G3.camera;
     cam3.dragT = Math.max(0, cam3.dragT - dt);
     if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; } if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
@@ -6340,7 +6440,7 @@ function render3d(t) {
     if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
     const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
     cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
-    G3.room.tick(dt);
+    (INT === "air" ? G3.term : G3.room).tick(dt);
   } else if (state === "lift" && LIFT && places.statue) {
     const S = places.statue, a = Math.atan2(WORLD / 2 - S.y, WORLD / 2 - S.x) + Math.sin(LIFT.ang) * 1.3, h = 30 + LIFT.h * 7.4, d = 300 + LIFT.h * 7;
     cam.position.set(S.x + Math.cos(a) * 60, h, S.y + Math.sin(a) * 60); cam.lookAt(S.x + Math.cos(a) * d, 10, S.y + Math.sin(a) * d);
