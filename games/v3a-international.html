@@ -654,7 +654,7 @@ const REAL = {
   nyc: { lang: "en", style: "brick", sea: ["n", "s", "e", "w"], tz: -5, bus: "#2a5aa8", stadium: "Янки-стэдиум", food: ["Хот-дог", "HD"], lms: ["empire", "central", "times"], back: ["liberty"], steam: true, traffic: ["taxi", "taxi", "taxi", "sedan", "sedan", "compact", "van", "bus"] },
   lax: { lang: "en", style: "deco", beach: true, sea: ["s"], land: "#a89a6a", tz: -8, bus: "#e8b923", stadium: "Колизей Лос-Анджелеса", food: ["Тако", "Т"], lms: ["griffith", "chinese"], back: ["hollywood", "pier"], palms: true },
   mia: { lang: "en", style: "deco", beach: true, guards: true, sea: ["s", "e"], land: "#7f9a52", tz: -5, bus: "#2a7de1", stadium: "Хард Рок Стэдиум", food: ["Кубинский сэндвич", "КС"], lms: ["ocean", "miamitower"], palms: true },
-  rio: { lang: "pt", style: "deco", beach: true, copa: true, sea: ["s"], land: "#4f7f3c", tz: -3, bus: "#e8b923", stadium: "Маракана", ring: { col: "#f2f2f2", glow: "#ffffff" }, food: ["Фейжоада", "ФЖ"], lms: ["selaron"], back: ["cristo", "sugarloaf", "favela"], palms: true },
+  rio: { lang: "pt", style: "deco", beach: true, copa: true, sea: ["s"], land: "#4f7f3c", tz: -3, bus: "#e8b923", stadium: "Маракана", ring: { col: "#f2f2f2", glow: "#ffffff" }, food: ["Фейжоада", "ФЖ"], lms: ["cristo", "selaron"], back: ["cristo", "sugarloaf", "favela"], palms: true },
   tyo: { lang: "ja", style: "asia", river: "Сумида", sea: ["s"], land: "#6f8a5a", tz: 9, left: true, bus: "#2a9d5a", stadium: "Национальный стадион", food: ["Суши", "СШ"], lms: ["tokyotower", "skytree", "shibuya"], back: ["fuji"], tree: "sakura", decor: "vending" },
   osa: { lang: "ja", style: "asia", river: "Ёдогава", sea: ["w"], land: "#6f8a5a", tz: 9, left: true, bus: "#2a7de1", stadium: "Стадион Нагаи", food: ["Такояки", "ТК"], lms: ["osakajo", "tsutenkaku", "dotonbori"], tree: "sakura", decor: "vending" },
   sha: { lang: "zh", style: "glass", river: "Хуанпу", sea: ["e"], land: "#6f8a5a", tz: 8, bus: "#2a9d5a", stadium: "Стадион Хункоу", food: ["Сяолунбао", "СЛ"], lms: ["pearl", "shtower", "swfc", "bund"] },
@@ -1102,6 +1102,25 @@ const LMS = {
       for (const [w, y, d] of [[100, 200, 70], [80, 260, 60], [60, 300, 50]]) { const v = B.add(new B.THREE.CylinderGeometry(w / 2, w / 2, d, 20, 1, false, -Math.PI / 2, Math.PI), crown, 128, y, 128); v.rotation.x = Math.PI / 2; v.scale.y = 1; v.scale.z = 0.35; }
       B.anim((t, night) => { crown.emissive.setHSL((t * 0.03) % 1, 1, 0.5); crown.emissiveIntensity = 0.15 + night; });
     } },
+  cristo: { name: "Христос-Искупитель", info: "38 м на горе Корковаду, одно из семи новых чудес света", fill: GRASS_T(), solid: [[0, 0, 4, 4]], mm: "#4f6f3a", base: "#4f6f3a", h: 330, nofog: true,
+    d2(Q) {
+      Q.cyl(128, 128, 118, 40, "#5a7a42", "#3f5a2e"); Q.cyl(128, 128, 70, 120, "#6a7a5a", "#4a5a3a", 40); Q.cyl(128, 128, 38, 170, "#7a7a6a", "#5a5a4a", 120);
+      Q.box(128, 128, 30, 30, 192, "#d8d6d0", "#b8b6b0", 170);
+      Q.line(128, 128, 192, 128, 128, 290, "#efede8", 18); Q.line(72, 128, 268, 184, 128, 268, "#efede8", 9); Q.circ(128, 128, 7, 300, "#f4f2ee");
+    },
+    d3(B) {
+      const rock = B.M("#5f6a4e"), green = B.M("#4f6f3a");
+      B.cyl(green, 128, 128, 74, 128, 60, 0, 12); B.cyl(green, 128, 128, 44, 74, 60, 60, 10); B.cyl(rock, 128, 128, 24, 44, 50, 120, 9);
+      for (let i = 0; i < 9; i++) { const a = (i * TAU) / 9; B.sph(i % 2 ? green : rock, 128 + Math.cos(a) * 92, 128 + Math.sin(a) * 92, 22 + (i % 3) * 6, 30, 1, 1.4, 1); }
+      B.box("#c8c6c0", 128, 128, 40, 40, 6, 168); B.box("#d8d6d0", 128, 128, 26, 26, 20, 174);
+      const W = B.M("#efede8", { glow: "#ffffff" }), y0 = 194;
+      B.cyl(W, 128, 128, 9, 13, 68, y0, 8); // robe with art-deco folds
+      for (const dx of [-5, 0, 5]) B.box(B.M("#dddbd4"), 128 + dx, 132.5, 1.2, 1, 60, y0 + 4);
+      B.box(W, 128, 128, 22, 13, 18, y0 + 62); // chest and shoulders
+      B.box(W, 128, 128, 116, 8, 7, y0 + 72); // outstretched arms
+      for (const sx of [-1, 1]) { B.box(W, 128 + sx * 52, 128, 12, 9, 10, y0 + 70); B.box(W, 128 + sx * 61, 128, 6, 6, 6, y0 + 71); } // wide sleeves and hands
+      B.cyl(W, 128, 128, 3, 3.5, 5, y0 + 80, 8); B.sph(W, 128, 128, 6.5, y0 + 91, 1, 1.15, 1);
+    } },
   selaron: { name: "Лестница Селарона", info: "215 ступеней из плитки 60 стран", fill: PLAZA_T(), solid: [[1, 0, 2, 4]], mm: "#e8433a", h: 80,
     d2(Q) { const c = ["#e8433a", "#ffd23d", "#3d8bff", "#5fd35f"]; for (let i = 0; i < 16; i++) Q.box(128, 248 - i * 16, 120, 16, 4 + i * 4, c[i % 4]); },
     d3(B) { const m = B.M("#ffffff", { map: B.X.mosaic() }); for (let i = 0; i < 16; i++) B.box(m, 128, 248 - i * 16, 120, 16, 4 + i * 4, 0, 0, 32); for (let i = 0; i < 16; i++) { B.box(m, 62, 248 - i * 16, 8, 16, 14 + i * 4, 0, 0, 32); B.box(m, 194, 248 - i * 16, 8, 16, 14 + i * 4, 0, 0, 32); } } },
@@ -1492,7 +1511,7 @@ const BACK3D = {
     for (let i = 0; i < 7; i++) mountain(K, -800 + i * 900, -1700 - (i % 2) * 300, 950, 420 + (i % 3) * 90, "#8a7a50", 0, 16);
     const B = mk3d(K, WORLD * 0.15, -1180, { nofog: true }); [..."HOLLYWOOD"].forEach((ch, i) => B.plane(B.M("#ffffff", { map: K.X.txt(ch, "#ffffff", null, 128, 128, 116), alpha: true, glow: "#ffffff" }), i * 125, 0, 120, 130, 120 + Math.sin(i * 0.9) * 14, 0));
   },
-  cristo(K) { mountain(K, -900, WORLD * 0.25, 650, 760, "#4f6f3a", 0, 14); const B = mk3d(K, -900, WORLD * 0.25, { nofog: true, y: 752 }); const W = B.M("#f2f2f2", { glow: "#ffffff" }); B.box("#d8d8d8", 0, 0, 14, 14, 22); B.cyl(W, 0, 0, 5, 9, 60, 22, 10); B.box(W, 0, 0, 80, 6, 6, 70); B.sph(W, 0, 0, 5, 88); },
+  cristo(K) { mountain(K, -900, WORLD * 0.25, 650, 760, "#4f6f3a", 0, 14); const B = mk3d(K, -900, WORLD * 0.25, { nofog: true, y: 752, s: 2.6 }); const W = B.M("#f2f2f2", { glow: "#ffffff" }); B.box("#d8d8d8", 0, 0, 14, 14, 22); B.cyl(W, 0, 0, 5, 9, 60, 22, 10); B.box(W, 0, 0, 80, 6, 6, 70); B.sph(W, 0, 0, 5, 88); },
   sugarloaf(K) { const B = mk3d(K, WORLD + 640, WORLD + 700, { nofog: true }); B.sph("#6f7a5a", 0, 0, 160, 0, 1, 2.1, 1); B.sph("#6f7a5a", -340, -60, 100, 0, 1, 1.4, 1); const top1 = [0, 330, 0], top2 = [-340, 136, -60]; B.beam("#333", ...top2, ...top1, 0.8); const car = B.box("#d23a2a", 0, 0, 8, 6, 6, 0); B.anim((t) => { const k = (Math.sin(t * 0.15) + 1) / 2; car.position.set(lerp(top2[0], top1[0], k), lerp(top2[1], top1[1], k) - 6, lerp(top2[2], top1[2], k)); }); },
   favela(K) {
     mountain(K, -450, WORLD * 0.7, 560, 300, "#4f6f3a", 0, 14);
