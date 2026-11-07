@@ -76,6 +76,7 @@ body.touch #homeBtn{display:none}
 #dash #dDown:disabled,#dash #dUp:disabled{opacity:.35}
 #dRadio{text-align:left;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dRadio.off{color:var(--muted)}
+#dash #dMJ{background:#f2efe6;color:#14121a;border-color:#fff;text-align:left;padding:0 8px}
 #tvBar{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:3}
 #tvBar button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(20,18,28,.82);color:var(--ink);font-weight:800;font-size:13px;text-align:left}
 #tvBar button.on{background:#2a7de1;border-color:#9cc6ff}
@@ -331,6 +332,7 @@ button.ph-row:disabled{opacity:.45}
     <div class="dsh-top"><b id="dGear">1</b><div class="dsh-num"><span id="dSpd">0</span><small>км/ч</small><i><u id="dRpm"></u></i></div></div>
     <div class="dsh-row" id="dGearRow"><button type="button" id="dMode">АВТО</button><button type="button" id="dDown" aria-label="Передача вниз">▼</button><button type="button" id="dUp" aria-label="Передача вверх">▲</button></div>
     <button type="button" id="dRadio">📻 V3 FM</button>
+    <button type="button" id="dMJ" hidden>▶ Smooth Criminal</button>
   </div>
   <div id="tvBar" hidden>
     <button type="button" data-ch="0">1 · WorldNews</button>
@@ -1978,11 +1980,12 @@ function updDash() {
   if (hudCache.dashOn !== show) { hudCache.dashOn = show; $("dash").hidden = !show; hudCache.dash = null; }
   if (!show) return;
   const gears = !!c.t.gears, stn = save.station == null ? 0 : save.station;
-  const key = gears + "|" + !!c.manual + "|" + c.gear + "|" + stn + "|" + radio;
+  const key = c.type + "|" + gears + "|" + !!c.manual + "|" + c.gear + "|" + stn + "|" + radio;
   if (hudCache.dash !== key) {
     hudCache.dash = key;
     $("dGearRow").hidden = !gears; $("dash").querySelector(".dsh-top").style.display = gears ? "" : "none";
     $("dMode").textContent = c.manual ? "РУЧНАЯ" : "АВТО"; $("dMode").classList.toggle("on", !!c.manual);
+    $("dMJ").hidden = c.type !== "ters";
     $("dRadio").hidden = !radio; $("dRadio").textContent = "📻 " + (stn < 0 ? "Радио выкл" : stn === 0 && !songBad ? "V3 FM · ♪ " + SONG_TITLE : STATIONS[stn]); $("dRadio").classList.toggle("off", stn < 0);
     $("dUp").disabled = !gears || c.gear >= c.t.gears; $("dDown").disabled = !gears || (c.gear || 1) <= 1;
   }
@@ -4418,6 +4421,11 @@ $("dUp").addEventListener("click", gearUp);
 $("dDown").addEventListener("click", gearDown);
 $("dMode").addEventListener("click", gearMode);
 $("dRadio").addEventListener("click", radioNext);
+$("dMJ").addEventListener("click", () => {
+  save.station = -1; writeSave(); hudCache.dash = null; updRadioSong();
+  window.open("https://www.youtube.com/results?search_query=Michael+Jackson+Smooth+Criminal+Official+Video", "_blank", "noopener");
+  toast("Радио выключено · Smooth Criminal открыт на YouTube", 2.6);
+});
 $("bHome").addEventListener("pointerdown", (e) => { e.preventDefault(); initAudio(); goHome(); });
 $("rainBtn").addEventListener("click", () => { initAudio(); if (state === "play" || state === "start") toggleRainMenu(); });
 for (const b of document.querySelectorAll("#rainMenu button")) b.addEventListener("click", () => { pickRain(b.dataset.rain); closeRainMenu(); });
