@@ -537,6 +537,16 @@ button.ph-row:disabled{opacity:.45}
     </div>
   </div>
 
+  <div class="ov" id="lift" hidden style="background:none;align-items:flex-start;pointer-events:none">
+    <div class="card" style="margin:0 auto;pointer-events:auto;max-width:360px;background:rgba(20,18,28,.88)">
+      <span class="who">Статуя Основателя · лифт</span>
+      <h3 id="lfTitle">Лифт поднимается</h3>
+      <div style="display:flex;align-items:center;gap:14px"><b id="lfMeters" style="white-space:nowrap;min-width:110px;font-family:var(--display);font-size:44px;color:#ffd23d;font-variant-numeric:tabular-nums">0 м</b><span class="prog" id="lfNote">Лифт внутри статуи едет вверх, к смотровой площадке в голове.</span></div>
+      <i style="display:block;height:8px;border-radius:4px;background:#2a2e38;overflow:hidden"><u id="lfBar" style="display:block;height:100%;width:0;background:linear-gradient(90deg,#5fd35f,#ffd23d)"></u></i>
+      <button type="button" class="btn alt" id="lfDown" style="flex:none" hidden>Спуститься вниз</button>
+    </div>
+  </div>
+
   <div class="ov dim" id="kitchen" hidden>
     <div class="card">
       <span class="who">Кухня Crusty Crab</span>
@@ -695,7 +705,7 @@ const REAL = {
   sha: { lang: "zh", style: "glass", river: "Хуанпу", sea: ["e"], land: "#6f8a5a", tz: 8, bus: "#2a9d5a", stadium: "Стадион Хункоу", food: ["Сяолунбао", "СЛ"], lms: ["pearl", "shtower", "swfc", "bund"] },
 };
 for (const c of CITIES) Object.assign(c, REAL[c.id] || {});
-for (const c of CITIES) if (c.id === "nova") c.wall = true;
+for (const c of CITIES) if (c.id === "nova") { c.wall = true; c.lms = ["founder"]; }
 // signs on buildings in the local language
 const LBL = ["ОРУЖИЕ", "АВТОСАЛОН", "ПРОДУКТЫ", "ПОЛИЦИЯ", "ПОЖАРНАЯ ЧАСТЬ", "БОЛЬНИЦА", "СУД", "МЭРИЯ", "ТЮРЬМА", "АВТОБУСНЫЙ ПАРК", "ЭЛЕКТРОСТАНЦИЯ", "СКЛАД", "СКОРАЯ ПОМОЩЬ", "ЭЛЕКТРОНИКА", "ЗАВОД ЭЛЕКТРОНИКИ"];
 const LANGS = {
@@ -1182,6 +1192,38 @@ const LMS = {
       B.anim((t) => { m.rotation.y = t * 0.3; m.rotation.x = Math.sin(t * 0.5) * 0.2; glow.scale.setScalar(44 + Math.sin(t * 3) * 4); });
       B.box(B.M("#ffd23d"), 60, 60, 2, 2, 20, 0); B.box(B.M("#ffd23d"), 196, 196, 2, 2, 20, 0); B.plane(B.M("#ffffff", { map: B.X.txt("ОПАСНО · DANGER", "#111", "#ffd23d", 512, 64, 40) }), 128, 30, 60, 8, 14, 0);
     } },
+  founder: { name: "Статуя Основателя", info: "70 метров, стоит 70 лет (с 1956 года), внутри — лифт на смотровую площадку", fill: PLAZA_T(), solid: [[0, 0, 4, 4]], mm: "#5f9a84", base: "#8a8478", h: 800, nofog: true,
+    gen(o) { places.liftDoor = { x: (o.x0 + 3) * T, y: (o.y0 + 5.4) * T }; places.statue = { x: (o.ix + 2) * T, y: (o.iy + 2) * T }; },
+    d2(Q) {
+      const cu = "#5f9a84", st = "#a8a090";
+      Q.box(128, 128, 220, 220, 40, st); Q.box(128, 128, 160, 160, 95, "#b8b0a0", st, 40); Q.box(128, 128, 116, 116, 150, "#c8c0b0", st, 95);
+      Q.cyl(108, 132, 22, 380, cu, "#4a8a74", 150); Q.cyl(148, 132, 22, 380, cu, "#4a8a74", 150);
+      Q.cyl(128, 128, 62, 640, "#6aa890", "#4a8a74", 380); Q.circ(128, 128, 32, 760, "#7ab8a0");
+      Q.line(160, 128, 640, 175, 128, 820, "#6aa890", 14); Q.line(175, 128, 820, 175, 128, 880, GOLD, 8); Q.circ(175, 128, 10, 890, GOLD);
+    },
+    d3(B) {
+      const st = B.M("#b8b0a0", { map: B.X.win("panel"), glow: "#ffe0a8" }), cu = B.M("#5f9a84", { map: B.X.stripes("#5f9a84", "#558e78", 24), glow: "#2a5a4a" }), cu2 = B.M("#6aa890", { glow: "#2a5a4a" }), gold = B.M(GOLD, { glow: "#ffcc55" });
+      // stepped pedestal with the entrance and a plaque
+      B.box(st, 128, 128, 220, 220, 40, 0, 0, 64); B.box(st, 128, 128, 160, 160, 55, 40, 0, 64); B.box(st, 128, 128, 116, 116, 55, 95, 0, 64);
+      B.box(B.M("#3a3226"), 128, 238.5, 34, 2, 30, 0); B.plane(B.M("#ffffff", { map: B.X.txt("ЛИФТ · 70 М", "#ffd23d", "#2a2620", 512, 96, 60) }), 128, 239.8, 40, 8, 32, 0);
+      B.plane(B.M("#ffffff", { map: B.X.txt("ОСНОВАТЕЛЬ · 1956", "#3a3020", "#d8ccb0", 512, 80, 48) }), 128, 186.2, 70, 11, 70, 0);
+      // the founder in a long coat, a giant key of the city raised high, a book in the other hand
+      const y0 = 150;
+      for (const dz of [-20, 20]) { B.box(cu, 128, 128 + dz, 34, 30, 120, y0, 0, 64); B.box(cu2, 136, 128 + dz, 46, 34, 18, y0); }
+      B.cyl(cu, 128, 128, 52, 74, 260, y0 + 70, 18, false, 64); // coat
+      B.box(cu2, 128, 128, 56, 118, 90, y0 + 300); B.sph(cu2, 128, 128 - 52, 26, y0 + 380); B.sph(cu2, 128, 128 + 52, 26, y0 + 380); // chest and shoulders
+      B.cyl(cu2, 128, 128, 16, 18, 30, y0 + 386, 12); B.sph(cu2, 128, 128, 36, y0 + 450, 1, 1.15, 1); // neck and head
+      B.cyl(cu, 128, 128, 40, 40, 10, y0 + 470, 20); B.cyl(cu, 128, 128, 30, 33, 26, y0 + 478, 20); // hat
+      B.beam(cu2, 128, y0 + 380, 128 + 56, 140, y0 + 560, 128 + 72, 22); // raised arm
+      B.cyl(gold, 140, 128 + 72, 3, 3, 120, y0 + 560, 8); B.torus(gold, 140, 128 + 72, 18, 4, y0 + 696, 0, Math.PI / 2); for (const dy of [0, 22]) B.box(gold, 148, 128 + 72, 16, 5, 8, y0 + 572 + dy); // the key
+      B.beam(cu2, 128, y0 + 380, 128 - 56, 150, y0 + 250, 128 - 70, 20); B.box(B.M("#8a6a3a"), 156, 128 - 72, 30, 8, 38, y0 + 236); // arm and book
+      // the lift: a glass shaft up the back and the cabin going up and down, windows in the eyes of the head
+      B.box(B.M("#bfe6ff", { op: 0.35 }), 128 - 64, 128, 18, 18, 470, y0 + 5);
+      const cab = B.box(B.M("#ffd23d", { glow: "#ffd23d" }), 128 - 64, 128, 14, 14, 16, y0 + 10);
+      B.anim((t) => { const k = (Math.sin(t * 0.25) + 1) / 2; cab.position.y = y0 + 18 + k * 440; });
+      for (const dz of [-14, 14]) B.sph(B.M("#fff1c0", { neon: true }), 128 + 31, 128 + dz, 5, y0 + 458);
+      B.cyl(B.M("#2a3a4a", { glow: "#ffe9a8" }), 128, 128, 37, 37, 8, y0 + 440, 24);
+    } },
   kingpine: { name: "Король Сосна", info: "сосна высотой 30 метров, самое высокое дерево Страны снов, на макушке — корона", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#2f6a3a", base: "#3a5a2a", h: 380, nofog: true,
     ground(g, b) { g.fillStyle = "rgba(60,30,20,.25)"; g.beginPath(); g.arc(b.x + 128, b.y + 128, 110, 0, TAU); g.fill(); g.fillStyle = "#6a3a20"; for (let i = 0; i < 14; i++) { const a = (i * TAU) / 14; g.beginPath(); g.ellipse(b.x + 128 + Math.cos(a) * 96, b.y + 128 + Math.sin(a) * 96, 5, 7, a, 0, TAU); g.fill(); } },
     d2(Q) { Q.cyl(128, 128, 14, 60, "#6a4428", "#4a2e1a"); for (let i = 0; i < 7; i++) Q.circ(128, 128, 96 - i * 12, 70 + i * 40, i % 2 ? "#2f6a3a" : "#3a7a44"); Q.circ(128, 128, 12, 345, GOLD); for (let k = 0; k < 6; k++) { const a = (k * TAU) / 6; Q.circ(128 + Math.cos(a) * 12, 128 + Math.sin(a) * 12, 4, 352, "#fff07a"); } },
@@ -1334,6 +1376,7 @@ function PLAZA_T() { return 4; } function GRASS_T() { return 3; } function LOT_T
 function placeLandmarks() {
   const list = (CITY.lms || []).filter((id) => LMS[id] && !LMS[id].bridge);
   if (!list.length) return;
+  const keepSeed = seed;
   const north = [], south = [];
   for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) { const k = bx + "," + by, v = SPECIAL[k]; if (by < 3 && !v) north.push([bx, by]); if (by >= 3 && ["police2", "fire2", "stores", "prison"].includes(v)) south.push([bx, by]); }
   const mix = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = (srnd() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -1344,6 +1387,7 @@ function placeLandmarks() {
     const spot = pool.shift(); if (!spot) return;
     SPECIAL[spot[0] + "," + spot[1]] = "lm:" + id;
   });
+  if (CITY.id === "nova") seed = keepSeed;
 }
 function buildLM(id, x0, y0, ix, iy, bx, by) {
   const D = LMS[id];
@@ -1899,6 +1943,19 @@ function drawSummon2D(ox = 0, oy = 0) {
 }
 $("whistleBtn").addEventListener("click", () => { initAudio(); openWhistle(); });
 $("wsOut").addEventListener("click", resume);
+/* the lift inside the Founder statue */
+let LIFT = null, liftZoom = 0;
+function openLift() { LIFT = { ph: "up", t: 0, h: 0, ang: 0 }; liftZoom = cam.z; showOv("lift"); $("lfDown").hidden = true; $("lfTitle").textContent = "Лифт поднимается"; $("lfNote").textContent = "Лифт внутри статуи едет вверх, к смотровой площадке в голове."; sfx.doorClose(); tone(220, 440, 6, 0.03, "sine"); }
+function updLift(dt) {
+  if (!LIFT) return; const L = LIFT; L.t += dt; L.ang += dt * 0.18;
+  if (toastT > 0 && (toastT -= dt) <= 0) $("toast").classList.remove("on");
+  if (bigT > 0 && (bigT -= dt) <= 0) $("big").innerHTML = "";
+  if (L.ph === "up") { L.h = Math.min(70, (L.t / 7) * 70); if (L.t >= 7) { L.ph = "top"; L.t = 0; [880, 1108].forEach((f, k) => setTimeout(() => tone(f, f, 0.4, 0.1, "sine"), k * 220)); $("lfTitle").textContent = "Смотровая площадка · 70 м"; $("lfNote").textContent = "Ты в голове статуи и смотришь на весь " + CITY.name + " сквозь её глаза."; $("lfDown").hidden = false; } }
+  else if (L.ph === "down") { L.h = Math.max(0, 70 - (L.t / 5) * 70); if (L.t >= 5) { LIFT = null; cam.z = liftZoom; player.x = places.liftDoor.x; player.y = places.liftDoor.y + 40; shopLock = "lift"; cam3.init = false; sfx.doorOpen(); resume(); return; } }
+  $("lfMeters").textContent = Math.round(L.h) + " м"; $("lfBar").style.width = (L.h / 70) * 100 + "%";
+  if (!mode3d) { const S = places.statue; cam.x = S.x; cam.y = S.y + 60; cam.z = lerp(0.8, 0.22, L.h / 70); }
+}
+$("lfDown").addEventListener("click", () => { if (!LIFT || LIFT.ph !== "top") return; LIFT.ph = "down"; LIFT.t = 0; $("lfDown").hidden = true; $("lfTitle").textContent = "Лифт спускается"; $("lfNote").textContent = "Двери откроются у подножия статуи."; tone(440, 220, 5, 0.03, "sine"); });
 /* ===== small life of the city ===== */
 let lmLast = null, steamT = 0;
 function lmNear() {
@@ -3832,6 +3889,7 @@ function buy(sh, it) {
   writeSave(); if (state === "shop") renderShop(); updHud();
 }
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
+if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
@@ -4669,8 +4727,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -6205,6 +6263,10 @@ function render3d(t) {
     const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
     cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
     G3.room.tick(dt);
+  } else if (state === "lift" && LIFT && places.statue) {
+    const S = places.statue, a = Math.atan2(WORLD / 2 - S.y, WORLD / 2 - S.x) + Math.sin(LIFT.ang) * 1.3, h = 30 + LIFT.h * 7.4, d = 300 + LIFT.h * 7;
+    cam.position.set(S.x + Math.cos(a) * 60, h, S.y + Math.sin(a) * 60); cam.lookAt(S.x + Math.cos(a) * d, 10, S.y + Math.sin(a) * d);
+    view.x = P.x - 520; view.y = P.y - 520; view.w = view.h = 1040;
   } else if (state === "match" && MT && MT.live && G3.stad) {
     watchMatch3d(dt);
   } else if (!started) {
@@ -6275,6 +6337,7 @@ function frame(t) {
   if (state === "factory") updFactory(dt);
   if (state === "kitchen") updKitchen(dt);
   if (state === "darts") updDarts(dt);
+  if (state === "lift") updLift(dt);
   if (state === "film") updFilm(dt);
   updRadioSong();
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
