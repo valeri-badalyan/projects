@@ -155,6 +155,7 @@ body.touch #phoneBtn{display:none}
 #stBody .btn{flex:none;min-height:52px}
 #fjBody,#kjBody{display:flex;flex-direction:column;gap:12px}
 #fmCam{display:block;width:100%;max-width:384px;height:auto;margin:0 auto;border-radius:14px;touch-action:none}
+#mlCam{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:14px}
 #dtBoard{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:16px;touch-action:manipulation}
 .inv-card{width:min(100%,540px)}
 .home-card{width:min(100%,600px)}
@@ -426,6 +427,17 @@ button.ph-row:disabled{opacity:.45}
       <p class="prog" id="fmInfo"></p>
       <button type="button" class="btn" id="fmGo" style="flex:none;min-height:52px">Начать запись</button>
       <button type="button" class="btn alt" id="fmOut" style="flex:none">Отложить</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="museum" hidden>
+    <div class="card">
+      <span class="who">Лувр · Зал Государств</span>
+      <h3>«Мона Лиза»</h3>
+      <canvas id="mlCam" width="360" height="480" aria-label="Мона Лиза в Лувре"></canvas>
+      <p class="prog">Леонардо да Винчи, «Джоконда», 1503–1519. Тополь, масло, 77 × 53 см. Самая знаменитая картина в мире висит за пуленепробиваемым стеклом, а перед ней всегда толпа.</p>
+      <button type="button" class="btn" id="mlSelfie" style="flex:none;min-height:52px">Селфи с Джокондой</button>
+      <button type="button" class="btn alt" id="mlOut" style="flex:none">Выйти из Лувра</button>
     </div>
   </div>
 
@@ -880,13 +892,15 @@ const LMS = {
       B.plane(B.M("#ffffff", { map: B.X.flag("fr"), ds: true }), 128, 128, 24, 34, 18, 0);
       B.sph(B.M("#ffb347", { neon: true }), 128, 128, 2, 1.5);
     } },
-  louvre: { name: "Лувр", info: "стеклянная пирамида, 21 м", fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 1, 3], [3, 1, 1, 3], [1, 1, 2, 2]], mm: "#e6dac2", h: 100,
+  louvre: { name: "Лувр", info: "стеклянная пирамида, а внутри — «Мона Лиза»", gen(o) { places.louvreDoor = { x: (o.ix + 2) * T, y: (o.iy + 3.55) * T }; }, fill: PLAZA_T(), solid: [[0, 0, 4, 1], [0, 1, 1, 3], [3, 1, 1, 3], [1, 1, 2, 2]], mm: "#e6dac2", h: 100,
     d2(Q) { const S = "#e6dac2", R = "#4a5058"; Q.box(128, 32, 256, 64, 46, R, S); Q.box(32, 160, 64, 192, 46, R, S); Q.box(224, 160, 64, 192, 46, R, S); Q.poly([[80, 80], [176, 80], [176, 176], [80, 176]], 0, "rgba(168,208,232,.5)"); Q.line(80, 80, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(176, 80, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(80, 176, 0, 128, 128, 60, "#cfe6f2", 2); Q.line(176, 176, 0, 128, 128, 60, "#cfe6f2", 2); },
     d3(B) {
       const S = B.M("#e6dac2", { map: B.X.win("tall"), glow: "#ffd89a", emap: B.X.lit() }), R = "#4a5058";
       B.box(S, 128, 32, 256, 64, 46, 0, 0, 64); B.box(S, 32, 160, 64, 192, 46, 0, 0, 64); B.box(S, 224, 160, 64, 192, 46, 0, 0, 64);
       B.box(R, 128, 32, 248, 52, 12, 46); B.box(R, 32, 160, 52, 186, 12, 46); B.box(R, 224, 160, 52, 186, 12, 46); B.pyr(R, 128, 32, 46, 46, 30, 58);
-      B.pyr(B.M("#a8d0e8", { op: 0.5, glow: "#ffe9a8" }), 128, 128, 96, 96, 60, 0); B.add(B.K.PYR, B.M("#cfe6f2", { map: B.X.lat("#e8f4fa"), alpha: true }), 128, 30, 128).scale.set(97, 61, 97);
+      B.pyr(B.M("#a8d0e8", { op: 0.5, glow: "#ffe9a8" }), 128, 128, 96, 96, 60, 0);
+      const mona = B.M("#ffffff", { map: B.X.ct("mona", 200, 300, (g, w, h) => { g.fillStyle = "#c9a24a"; g.fillRect(0, 0, w, h); drawMona(g, w - 20, h - 20, 10, 10); }), glow: "#fff1c0" });
+      B.plane(mona, 64.8, 160, 28, 40, 3, Math.PI / 2); B.plane(mona, 191.2, 160, 28, 40, 3, -Math.PI / 2); B.add(B.K.PYR, B.M("#cfe6f2", { map: B.X.lat("#e8f4fa"), alpha: true }), 128, 30, 128).scale.set(97, 61, 97);
     } },
   negresco: { name: "Отель «Негреско»", info: "розовый купол на Английской набережной", fill: PLAZA_T(), solid: [[0, 0, 3, 2]], mm: "#f2f2f2", h: 130,
     d2(Q) { Q.box(96, 64, 190, 124, 52, "#e8e0d8", "#f2f2f2"); Q.cyl(170, 104, 22, 60, "#f2f2f2", "#e8e0d8"); Q.circ(170, 104, 24, 96, "#e86a7a"); Q.circ(170, 104, 4, 112, GOLD); },
@@ -2921,6 +2935,76 @@ function drawFilm() {
   c.addEventListener("pointermove", (e) => { if (FM && (FM.drag || e.pointerType === "mouse")) aim(e); });
   c.addEventListener("pointerup", () => { if (FM) FM.drag = false; });
 }
+/* Louvre: the Mona Lisa room */
+function drawMona(g, W, H, ox = 0, oy = 0) {
+  g.save(); g.translate(ox, oy); g.scale(W / 300, H / 450);
+  let gr = g.createLinearGradient(0, 0, 0, 450); gr.addColorStop(0, "#a9bba0"); gr.addColorStop(0.3, "#7a9278"); gr.addColorStop(0.62, "#5a6a48"); gr.addColorStop(1, "#2e2a1a"); g.fillStyle = gr; g.fillRect(0, 0, 300, 450);
+  g.fillStyle = "rgba(150,180,165,.75)"; g.beginPath(); g.moveTo(0, 160); g.quadraticCurveTo(30, 95, 70, 128); g.quadraticCurveTo(100, 92, 125, 140); g.lineTo(125, 240); g.lineTo(0, 240); g.closePath(); g.fill();
+  g.beginPath(); g.moveTo(300, 150); g.quadraticCurveTo(268, 88, 232, 120); g.quadraticCurveTo(200, 100, 178, 150); g.lineTo(178, 240); g.lineTo(300, 240); g.closePath(); g.fill();
+  g.fillStyle = "rgba(90,105,70,.85)"; g.fillRect(0, 210, 300, 60);
+  g.strokeStyle = "#b8965a"; g.lineWidth = 4; g.beginPath(); g.moveTo(8, 268); g.bezierCurveTo(40, 240, 30, 222, 70, 214); g.moveTo(292, 230); g.bezierCurveTo(262, 214, 270, 200, 236, 196); g.stroke();
+  g.strokeStyle = "rgba(170,200,190,.8)"; g.lineWidth = 3; g.beginPath(); g.moveTo(230, 178); g.quadraticCurveTo(262, 186, 290, 176); g.stroke();
+  // dress and sleeves
+  g.fillStyle = "#2a2214"; g.beginPath(); g.moveTo(30, 450); g.quadraticCurveTo(44, 300, 108, 262); g.lineTo(192, 262); g.quadraticCurveTo(256, 300, 270, 450); g.closePath(); g.fill();
+  g.fillStyle = "#6a4a1e"; g.beginPath(); g.ellipse(84, 370, 40, 58, 0.35, 0, TAU); g.fill(); g.beginPath(); g.ellipse(214, 362, 38, 54, -0.3, 0, TAU); g.fill();
+  g.strokeStyle = "rgba(40,28,10,.6)"; g.lineWidth = 2; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(60 + i * 8, 330 + i * 6); g.quadraticCurveTo(84, 360 + i * 4, 104 - i * 2, 410); g.stroke(); g.beginPath(); g.moveTo(236 - i * 8, 326 + i * 6); g.quadraticCurveTo(214, 356 + i * 4, 196 + i * 2, 404); g.stroke(); }
+  // neckline and neck
+  gr = g.createRadialGradient(150, 268, 6, 150, 268, 44); gr.addColorStop(0, "#e2bd80"); gr.addColorStop(1, "#a8824a"); g.fillStyle = gr; g.beginPath(); g.ellipse(150, 272, 44, 22, 0, Math.PI, 0); g.closePath(); g.fill();
+  g.fillStyle = "#c9a066"; g.fillRect(134, 212, 32, 52);
+  g.strokeStyle = "#8a6a2a"; g.lineWidth = 2; g.beginPath(); g.moveTo(108, 268); g.quadraticCurveTo(150, 290, 192, 268); g.stroke();
+  // hair behind the face
+  g.fillStyle = "#1e180e"; g.beginPath(); g.moveTo(104, 150); g.quadraticCurveTo(100, 250, 86, 300); g.lineTo(122, 300); g.quadraticCurveTo(116, 240, 120, 200); g.lineTo(180, 200); g.quadraticCurveTo(184, 240, 178, 300); g.lineTo(214, 300); g.quadraticCurveTo(200, 250, 196, 150); g.closePath(); g.fill();
+  // face
+  gr = g.createRadialGradient(140, 160, 8, 150, 172, 58); gr.addColorStop(0, "#f0cf92"); gr.addColorStop(0.7, "#cfa462"); gr.addColorStop(1, "#8a6632"); g.fillStyle = gr; g.beginPath(); g.ellipse(150, 170, 39, 52, 0, 0, TAU); g.fill();
+  g.fillStyle = "#1e180e"; g.beginPath(); g.moveTo(108, 190); g.quadraticCurveTo(102, 118, 150, 114); g.quadraticCurveTo(198, 118, 192, 190); g.quadraticCurveTo(186, 140, 150, 130); g.quadraticCurveTo(114, 140, 108, 190); g.fill();
+  g.fillStyle = "rgba(20,16,10,.28)"; g.beginPath(); g.ellipse(150, 124, 50, 16, 0, Math.PI, 0); g.closePath(); g.fill();
+  // eyes, nose, the smile
+  g.fillStyle = "#3a2a14"; for (const x of [134, 166]) { g.beginPath(); g.ellipse(x, 162, 8, 3.6, 0, 0, TAU); g.fill(); }
+  g.fillStyle = "#120c06"; for (const x of [135, 165]) { g.beginPath(); g.arc(x, 162, 2.4, 0, TAU); g.fill(); }
+  g.strokeStyle = "rgba(110,76,36,.55)"; g.lineWidth = 2; g.beginPath(); g.moveTo(152, 166); g.quadraticCurveTo(150, 186, 156, 192); g.stroke();
+  g.strokeStyle = "#7a4a2a"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(136, 204); g.quadraticCurveTo(150, 210, 166, 203); g.stroke();
+  g.strokeStyle = "rgba(122,74,42,.5)"; g.beginPath(); g.moveTo(134, 203); g.lineTo(130, 200); g.moveTo(167, 202); g.lineTo(171, 199); g.stroke();
+  // folded hands
+  gr = g.createLinearGradient(100, 380, 220, 420); gr.addColorStop(0, "#b88c50"); gr.addColorStop(1, "#e2bd80"); g.fillStyle = gr;
+  g.beginPath(); g.ellipse(132, 410, 46, 18, 0.12, 0, TAU); g.fill(); g.beginPath(); g.ellipse(176, 398, 42, 17, -0.15, 0, TAU); g.fill();
+  g.strokeStyle = "rgba(110,76,36,.5)"; g.lineWidth = 1.5; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(186 + i * 7, 388); g.lineTo(196 + i * 7, 404); g.stroke(); }
+  // old varnish and fine cracks
+  g.fillStyle = "rgba(120,90,30,.2)"; g.fillRect(0, 0, 300, 450);
+  g.strokeStyle = "rgba(30,20,8,.12)"; g.lineWidth = 0.8; for (let i = 0; i < 70; i++) { const x = hsh(i, 1, 4) * 300, y = hsh(i, 2, 4) * 450; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 8 - hsh(i, 3, 4) * 16, y + 8 - hsh(i, 4, 4) * 16); g.stroke(); }
+  gr = g.createRadialGradient(150, 225, 120, 150, 225, 300); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,.4)"); g.fillStyle = gr; g.fillRect(0, 0, 300, 450);
+  g.restore();
+}
+let ML = null;
+const monaArt = document.createElement("canvas"); monaArt.width = 150; monaArt.height = 225;
+function openMona() { if (!ML) drawMona(monaArt.getContext("2d"), 150, 225); ML = { t: 0, flash: [], selfie: 0, last: performance.now() }; showOv("museum"); requestAnimationFrame(tickMona); }
+function tickMona(t) {
+  if (state !== "museum" || !ML) return;
+  const dt = Math.min(0.05, (t - ML.last) / 1000); ML.last = t; ML.t += dt; drawMuseum(); requestAnimationFrame(tickMona);
+}
+function drawMuseum() {
+  const c = $("mlCam"), g = c.getContext("2d"), W = c.width, H = c.height, t = ML.t;
+  let gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#2c3a4c"); gr.addColorStop(1, "#1a222e"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#3a4a5e"; g.fillRect(70, 40, 220, 300);
+  gr = g.createRadialGradient(180, 60, 10, 180, 160, 200); gr.addColorStop(0, "rgba(255,240,200,.25)"); gr.addColorStop(1, "rgba(255,240,200,0)"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#8a6a20"; g.fillRect(118, 78, 124, 178); g.fillStyle = "#d9b44a"; g.fillRect(122, 82, 116, 170); g.fillStyle = "#6a4a12"; g.fillRect(128, 88, 104, 158);
+  g.drawImage(monaArt, 131, 91, 98, 152);
+  g.fillStyle = "rgba(220,240,255,.12)"; g.beginPath(); g.moveTo(131, 91); g.lineTo(180, 91); g.lineTo(140, 243); g.lineTo(131, 243); g.closePath(); g.fill();
+  g.fillStyle = "#4a3a2a"; g.fillRect(100, 268, 160, 16);
+  g.fillStyle = "#c8a040"; for (const x of [70, 180, 290]) g.fillRect(x - 3, 280, 6, 60); g.strokeStyle = "#a8203a"; g.lineWidth = 5; g.beginPath(); g.moveTo(70, 292); g.quadraticCurveTo(125, 312, 180, 292); g.quadraticCurveTo(235, 312, 290, 292); g.stroke();
+  g.fillStyle = "#3a3a44"; g.fillRect(0, 340, W, H - 340);
+  const cols = ["#e8433a", "#3d8bff", "#ffd23d", "#5fd35f", "#c77ae8", "#f2f2f2", "#ff7a3d"], hair = ["#2b1d14", "#c08a3e", "#111", "#7b3a2a", "#d9d2c5"];
+  for (let i = 0; i < 14; i++) {
+    const x = 18 + i * 25 + Math.sin(t * 1.3 + i) * 3, y = 400 + (i % 3) * 22, bob = Math.sin(t * 2 + i * 1.7) * 2;
+    g.fillStyle = cols[i % 7]; g.beginPath(); g.ellipse(x, y + 40, 16, 30, 0, 0, TAU); g.fill();
+    g.fillStyle = hair[i % 5]; g.beginPath(); g.arc(x, y + bob, 11, 0, TAU); g.fill();
+    if (i % 2 === 0) { const px = x + 8, py = y - 26 + bob; g.fillStyle = "#1a1a1a"; g.fillRect(px - 5, py - 9, 10, 17); g.fillStyle = "#4a9adf"; g.fillRect(px - 4, py - 8, 8, 13); g.strokeStyle = cols[(i + 2) % 7]; g.lineWidth = 3; g.beginPath(); g.moveTo(x + 4, y + 12); g.lineTo(px, py + 8); g.stroke(); }
+  }
+  if (Math.random() < 0.06) ML.flash.push({ x: 20 + Math.random() * 320, y: 350 + Math.random() * 60, t: 0.25 });
+  for (const f of ML.flash) { f.t -= 1 / 60; g.fillStyle = `rgba(255,255,255,${Math.max(0, f.t * 3)})`; g.beginPath(); g.arc(f.x, f.y, 18, 0, TAU); g.fill(); }
+  ML.flash = ML.flash.filter((f) => f.t > 0);
+  if (ML.selfie > 0) { ML.selfie -= 1 / 60; g.fillStyle = `rgba(255,255,255,${Math.min(1, ML.selfie * 2)})`; g.fillRect(0, 0, W, H); }
+  g.fillStyle = "rgba(255,255,255,.75)"; g.font = "bold 12px Manrope,sans-serif"; g.textAlign = "center"; g.fillText("LÉONARD DE VINCI · LA JOCONDE", 180, 300);
+}
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -3073,6 +3157,7 @@ function buy(sh, it) {
   writeSave(); if (state === "shop") renderShop(); updHud();
 }
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
+if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
 /* ================= V3 stadium: a match every day ================= */
@@ -3847,7 +3932,7 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
@@ -3904,8 +3989,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -4084,6 +4169,8 @@ $("phHome").addEventListener("click", resume);
 $("phone").addEventListener("click", (e) => { if (e.target.id === "phone") resume(); });
 $("kjOut").addEventListener("click", () => { finishCook(); KJ = null; resume(); });
 $("dtGo").addEventListener("click", dartsButton);
+$("mlOut").addEventListener("click", () => { ML = null; resume(); });
+$("mlSelfie").addEventListener("click", () => { if (!ML) return; ML.selfie = 0.6; tone(1200, 1200, 0.05, 0.08); noise(0.08, 0.2, 4000); toast("Селфи с Моной Лизой сохранено в телефоне", 2.2); });
 $("fmGo").addEventListener("click", filmButton);
 $("fmOut").addEventListener("click", () => { const done = FM && FM.done; if (FM && FM.on) toast("Запись прервана — вернись, когда будешь готов", 2.4); FM = null; resume(); });
 $("dtBoard").addEventListener("click", () => { if (DJ && DJ.on) dartsButton(); });
