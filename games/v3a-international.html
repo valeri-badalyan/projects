@@ -100,6 +100,29 @@ body.touch #homeBtn{display:none}
 #bPhone svg,#phoneBtn svg,#bBag svg,#bagBtn svg{width:22px;height:22px}
 #bBag{width:62px;height:62px;grid-column:1;grid-row:2;display:flex;flex-direction:column;gap:2px;align-items:center;justify-content:center;background:rgba(201,160,92,.5);font-size:8.5px;letter-spacing:.02em}
 body.touch #bagBtn{display:none}
+#passBtn{display:flex;align-items:center;justify-content:center;color:#ffd77a}
+#passBtn svg{width:21px;height:21px}
+.pass-card{width:min(100%,480px);background:#5a1424;border-color:#8a2a3a}
+.pass-card .who{color:#ffd77a}
+.pp{border-radius:12px;padding:14px;color:#2a2230;background:repeating-radial-gradient(circle at 30% 20%,#efe6d6 0 6px,#ebe0ce 6px 7px),#efe6d6;box-shadow:inset 0 0 0 1px rgba(90,20,36,.25);display:flex;flex-direction:column;gap:10px}
+.pp-head{display:flex;justify-content:space-between;align-items:center;font-family:var(--display);font-size:13px;letter-spacing:.06em;color:#5a1424}
+.pp-head b{font-size:20px}
+.pp-main{display:grid;grid-template-columns:112px 1fr;gap:12px}
+#ppPhoto{width:112px;height:140px;border-radius:6px;background:#cfd8e0;display:block}
+.pp-f{display:flex;flex-direction:column;gap:6px;min-width:0}
+.pp-f label{display:flex;flex-direction:column;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8a6a5a}
+.pp-f span,.pp-f input{font-size:14px;font-weight:800;color:#1e1a26;text-transform:none;letter-spacing:0}
+.pp-f input{border:0;border-bottom:1.5px dashed #b8a090;background:transparent;padding:2px 0;font-family:var(--body);width:100%}
+.pp-f input:focus{outline:none;border-bottom-color:#5a1424}
+.pp-sig{font-family:"Brush Script MT","Segoe Script",cursive;font-size:22px;color:#2a3a7a}
+.pp-mrz{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.08em;line-height:1.4;color:#1e1a26;word-break:break-all;background:rgba(255,255,255,.4);padding:6px;border-radius:6px}
+.pp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pp-stats div{background:rgba(255,255,255,.08);border-radius:10px;padding:8px;text-align:center;font-size:11px;font-weight:800;color:#e8c8cc}
+.pp-stats b{display:block;font-family:var(--display);font-size:22px;color:#fff;font-weight:400}
+.pp-stamps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;border-radius:12px;background:#efe6d6}
+.stamp{aspect-ratio:1;border:2.5px solid var(--sc);border-radius:50%;color:var(--sc);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:800;font-size:9px;line-height:1.15;padding:4px;transform:rotate(var(--rot));opacity:.9}
+.stamp i{font-style:normal;font-size:20px}
+.stamp.no{border-style:dashed;color:#b8a898;border-color:#c8b8a8;opacity:.6}
 #rainBtn{display:flex;align-items:center;justify-content:center;color:#9cc6ff}
 #rainBtn svg{width:20px;height:20px}
 #rainMenu{position:absolute;z-index:8;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:14px;background:rgba(16,18,28,.94);border:1px solid #9cc6ff;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:168px}
@@ -286,6 +309,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="rainBtn" aria-label="Дождь (R)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="currentColor"/><path d="M9.2 14.5a3 3 0 0 0 2.4 3" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
     <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
+    <button type="button" id="passBtn" aria-label="Паспорт V3 (J)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="8.5" y="15.5" width="7" height="1.8" rx=".9" fill="currentColor"/></svg></button>
     <button type="button" id="homeBtn" aria-label="Домой (H)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="6" fill="currentColor"/></svg></button>
   </div>
   <div id="mission" hidden><b id="mTitle"></b><span id="mText"></span><span id="mTimer"></span></div>
@@ -334,6 +358,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>Q</dt><dd>сменить оружие</dd>
         <dt>Окно дома</dt><dd>выбрать погоду: ясно, дождь, ливень, гроза или как в природе</dd>
         <dt>1 / 2 / 3 / 0</dt><dd>дома: каналы телевизора — WorldNews, Sport, YouTube Shorts, выключить</dd>
+        <dt>J</dt><dd>паспорт V3: фото, имя и штампы городов</dd>
         <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
@@ -438,6 +463,32 @@ button.ph-row:disabled{opacity:.45}
       <p class="prog">Леонардо да Винчи, «Джоконда», 1503–1519. Тополь, масло, 77 × 53 см. Самая знаменитая картина в мире висит за пуленепробиваемым стеклом, а перед ней всегда толпа.</p>
       <button type="button" class="btn" id="mlSelfie" style="flex:none;min-height:52px">Селфи с Джокондой</button>
       <button type="button" class="btn alt" id="mlOut" style="flex:none">Выйти из Лувра</button>
+    </div>
+  </div>
+
+  <div class="ov dim" id="passport" hidden>
+    <div class="card pass-card">
+      <span class="who">Республика V3 · Republic of V3</span>
+      <h3 style="color:#ffd77a">Паспорт V3</h3>
+      <div class="pp">
+        <div class="pp-head"><span>ПАСПОРТ · PASSPORT</span><b>V3</b></div>
+        <div class="pp-main">
+          <canvas id="ppPhoto" width="224" height="280" aria-label="Фото владельца"></canvas>
+          <div class="pp-f">
+            <label>Имя / Name<input id="ppName" maxlength="24" placeholder="Впиши своё имя" autocomplete="off"></label>
+            <label>Гражданство / Nationality<span>Республика V3</span></label>
+            <label>№ паспорта / No.<span id="ppNo"></span></label>
+            <label>Дата выдачи / Issued<span id="ppIssued"></span></label>
+            <label>Действителен до / Expires<span id="ppExp"></span></label>
+            <label>Подпись / Signature<span class="pp-sig" id="ppSig"></span></label>
+          </div>
+        </div>
+        <div class="pp-mrz" id="ppMrz"></div>
+      </div>
+      <div class="pp-stats" id="ppStats"></div>
+      <span class="who">Визы и штампы</span>
+      <div class="pp-stamps" id="ppStamps"></div>
+      <button type="button" class="btn alt" id="ppOut" style="flex:none">Закрыть паспорт</button>
     </div>
   </div>
 
@@ -1553,7 +1604,7 @@ function flyTo(c) {
   if (c.id === CITY.id || flying) return;
   flying = true;
   setTimeout(() => {
-    resume(); save.city = c.id; save.arrive = 1; writeSave();
+    resume(); save.city = c.id; save.arrive = 1; save.flights = (save.flights || 0) + 1; writeSave();
     big("ВЫЛЕТ ✈", CITY.name + " → " + c.flag + " " + c.name, "#5ad0ff", 3);
     tone(300, 900, 0.9, 0.08, "sine"); noise(1.6, 0.25, 700);
     setTimeout(() => { writeSave(); location.reload(); }, 1700);
@@ -3115,6 +3166,55 @@ function tubeTick(tm) {
   g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(W - 76, 6, 70, 16); g.fillStyle = "#fff"; g.font = "bold 10px Manrope,sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(`0:${String(Math.floor(TUBE.t)).padStart(2, "0")} / 0:${String(vd.len).padStart(2, "0")}`, W - 41, 14);
   requestAnimationFrame(tubeTick);
 }
+/* the V3 passport */
+function togglePassport() { if (state === "passport") { resume(); return; } if (state !== "play") return; renderPassport(); showOv("passport"); tone(400, 700, 0.12, 0.06, "triangle"); }
+function ruD(k) { const [y, m, d] = (k || dayKey()).split("-").map(Number); return String(d).padStart(2, "0") + "." + String(m).padStart(2, "0") + "." + y; }
+function drawPassPhoto() {
+  const c = $("ppPhoto"), g = c.getContext("2d"), W = c.width, H = c.height;
+  let gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, "#dfe8ee"); gr.addColorStop(1, "#bccad6"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  g.fillStyle = player.col; g.beginPath(); g.moveTo(22, H); g.quadraticCurveTo(28, 196, 62, 186); g.lineTo(162, 186); g.quadraticCurveTo(196, 196, 202, H); g.closePath(); g.fill();
+  g.fillStyle = shade(player.col, 0.85); g.beginPath(); g.ellipse(56, 200, 26, 20, 0, 0, TAU); g.fill(); g.beginPath(); g.ellipse(168, 200, 26, 20, 0, 0, TAU); g.fill();
+  g.fillStyle = "#c9966e"; g.fillRect(96, 160, 32, 32);
+  gr = g.createRadialGradient(104, 112, 10, 112, 122, 66); gr.addColorStop(0, "#f0c49a"); gr.addColorStop(1, "#c98e62"); g.fillStyle = gr; g.beginPath(); g.ellipse(112, 120, 50, 58, 0, 0, TAU); g.fill();
+  g.fillStyle = "#c98e62"; for (const x of [60, 164]) { g.beginPath(); g.ellipse(x, 124, 8, 14, 0, 0, TAU); g.fill(); }
+  g.fillStyle = "#222"; g.beginPath(); g.ellipse(112, 82, 56, 40, 0, Math.PI, 0); g.closePath(); g.fill(); g.fillStyle = "#0a0a0a"; g.fillRect(56, 76, 112, 14);
+  g.fillStyle = "#fff"; for (const x of [92, 132]) { g.beginPath(); g.ellipse(x, 116, 9, 7, 0, 0, TAU); g.fill(); } g.fillStyle = "#1a1a1a"; for (const x of [93, 133]) { g.beginPath(); g.arc(x, 117, 4.5, 0, TAU); g.fill(); }
+  g.fillStyle = "#222"; g.fillRect(82, 101, 20, 4); g.fillRect(122, 101, 20, 4);
+  g.fillStyle = "#b8805a"; g.fillRect(108, 120, 9, 20); g.strokeStyle = "#a8484a"; g.lineWidth = 4; g.beginPath(); g.moveTo(98, 152); g.lineTo(126, 152); g.stroke();
+  g.fillStyle = "rgba(90,20,36,.18)"; g.font = "bold 40px 'Russo One',sans-serif"; g.textAlign = "center"; g.fillText("V3", W - 34, H - 16);
+}
+const TRL = { А: "A", Б: "B", В: "V", Г: "G", Д: "D", Е: "E", Ё: "E", Ж: "ZH", З: "Z", И: "I", Й: "I", К: "K", Л: "L", М: "M", Н: "N", О: "O", П: "P", Р: "R", С: "S", Т: "T", У: "U", Ф: "F", Х: "KH", Ц: "TS", Ч: "CH", Ш: "SH", Щ: "SHCH", Ъ: "IE", Ы: "Y", Ь: "", Э: "E", Ю: "IU", Я: "IA" };
+let ppNo = "", ppId = "";
+function updMrz(no, id) {
+  if (no) { ppNo = no; ppId = id; }
+  const lat = [...(save.name || "GRAZHDANIN V3").toUpperCase()].map((ch) => (TRL[ch] != null ? TRL[ch] : /[A-Z0-9]/.test(ch) ? ch : "<")).join("");
+  $("ppMrz").textContent = ("P<V3A" + lat + "<".repeat(44)).slice(0, 44) + "\n" + (ppNo + "<V3A" + ppId.slice(2) + "<".repeat(44)).slice(0, 44);
+}
+function renderPassport() {
+  const id = (save.since || dayKey()).replace(/-/g, ""), no = "V3" + String((parseInt(id, 10) * 7919) % 9000000 + 1000000);
+  const nm = save.name || "";
+  $("ppName").value = nm; $("ppNo").textContent = no; $("ppIssued").textContent = ruD(save.since);
+  const [y, m, d] = (save.since || dayKey()).split("-"); $("ppExp").textContent = ruD(+y + 10 + "-" + m + "-" + d);
+  $("ppSig").textContent = nm || "—";
+  updMrz(no, id);
+  drawPassPhoto();
+  const vis = save.visited || {}, been = CITIES.filter((c) => vis[c.id]), countries = new Set(been.map((c) => c.country));
+  const st = $("ppStats"); st.innerHTML = "";
+  for (const [k, v] of [["Стран", countries.size], ["Городов", been.length + " / " + CITIES.length], ["Перелётов", save.flights || 0]]) { const dv = el("div", null, k); dv.prepend(el("b", null, String(v))); st.appendChild(dv); }
+  const box = $("ppStamps"); box.innerHTML = "";
+  const cols = ["#2a5ab0", "#a8203a", "#2f7a4a", "#6a3aa0", "#b8601a", "#1a7a8a"];
+  CITIES.forEach((c, i) => {
+    const on = !!vis[c.id], sp = el("div", "stamp" + (on ? "" : " no"));
+    sp.style.setProperty("--sc", cols[i % cols.length]); sp.style.setProperty("--rot", (on ? ((i * 37) % 30) - 15 : 0) + "deg");
+    sp.append(el("i", null, on ? c.flag : "?"), el("span", null, c.name), el("span", null, on ? ruD(vis[c.id]) : "не был"));
+    sp.title = c.name + ", " + c.country; box.appendChild(sp);
+  });
+}
+$("ppName").addEventListener("input", (e) => { save.name = e.target.value.slice(0, 24); $("ppSig").textContent = save.name || "—"; updMrz(); writeSave(); });
+$("ppName").addEventListener("change", renderPassport);
+$("ppName").addEventListener("keydown", (e) => e.stopPropagation());
+$("ppOut").addEventListener("click", resume);
+$("passBtn").addEventListener("click", () => { initAudio(); togglePassport(); });
 /* V BAR darts: three throws at a board, the sight drifts, tap to throw */
 const DARTS_FEE = 15, DART_SEG = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 let DJ = null;
@@ -4034,6 +4134,7 @@ function newWorld(fresh) {
   for (let i = 0; i < 50; i++) spawnPed();
   ownCars().slice(0, 4).forEach((o, i) => placeOwned(o, carSlots()[i]));
   barLock = true; shopLock = "guns"; player.boost = 0;
+  { const vis = save.visited || (save.visited = {}); if (!vis[CITY.id]) vis[CITY.id] = dayKey(); if (!save.since) save.since = dayKey(); }
   { const lt = localDayT(); if (lt != null) dayT = lt; }
   writeSave();
 }
@@ -4043,12 +4144,13 @@ const keys = {}, hit = {};
 addEventListener("keydown", (e) => {
   if (!keys[e.code]) hit[e.code] = true; keys[e.code] = true;
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) e.preventDefault();
-  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
+  if (e.code === "KeyP" || e.code === "Escape") { if (state === "play") pauseGame(); else if (state === "match") { if (MT && !MT.done) finishMatch(); else exitMatch(); } else if (state === "pause" || state === "shop" || state === "stadium" || state === "factory" || state === "phone" || state === "inv" || state === "home" || state === "darts" || state === "museum" || state === "passport") resume(); else if (state === "film") { if (FM && FM.on) FM = null; resume(); } else if (state === "kitchen") { finishCook(); KJ = null; resume(); } }
   if (e.code === "KeyM") toggleMute();
   if (e.code === "KeyV" && (state === "play" || state === "start")) setView(!mode3d);
   if (e.code === "KeyI" && (state === "play" || state === "inv")) toggleInv();
   if (e.code === "KeyR" && state === "play") toggleRainMenu();
   if (e.code === "KeyH") goHome();
+  if (e.code === "KeyJ" && (state === "play" || state === "passport") && document.activeElement !== $("ppName")) togglePassport();
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
@@ -4100,8 +4202,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
