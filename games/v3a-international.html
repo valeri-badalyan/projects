@@ -628,7 +628,7 @@ const CITIES = [
   { id: "osa", name: "Осака", country: "Япония", flag: "🇯🇵", lat: 34.69, lon: 135.5, seed: 12502, roofs: PAL.asia, tall: 1.25, rain: 0.55, walk: "#a8a6a8", water: "#2f5f7a", taxi: "#2b6b3f", slogan: "Кухня Японии, огни Дотонбори и каналы." },
   { id: "sha", name: "Шанхай", country: "Китай", flag: "🇨🇳", lat: 31.23, lon: 121.47, seed: 12601, roofs: PAL.asia, tall: 1.7, rain: 0.55, walk: "#a8a59f", water: "#3a5a5a", taxi: "#3d8bff", slogan: "Набережная Вайтань и лес небоскрёбов над рекой." },
   { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
-    dream: true, style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
+    dream: true, style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["kingpine", "dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
 const CITY = CITIES.find((c) => c.id === save.city) || CITIES[0];
 CITY.shuffle = CITY.id !== "nova";
@@ -1119,6 +1119,19 @@ const LMS = {
       B.box(gl, 128, 128, 100, 70, 200, 0, 0, 64); B.box(gl, 128, 128, 80, 60, 60, 200, 0, 64); B.box(gl, 128, 128, 60, 50, 40, 260, 0, 64);
       for (const [w, y, d] of [[100, 200, 70], [80, 260, 60], [60, 300, 50]]) { const v = B.add(new B.THREE.CylinderGeometry(w / 2, w / 2, d, 20, 1, false, -Math.PI / 2, Math.PI), crown, 128, y, 128); v.rotation.x = Math.PI / 2; v.scale.y = 1; v.scale.z = 0.35; }
       B.anim((t, night) => { crown.emissive.setHSL((t * 0.03) % 1, 1, 0.5); crown.emissiveIntensity = 0.15 + night; });
+    } },
+  kingpine: { name: "Король Сосна", info: "сосна высотой 30 метров, самое высокое дерево Страны снов, на макушке — корона", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#2f6a3a", base: "#3a5a2a", h: 380, nofog: true,
+    ground(g, b) { g.fillStyle = "rgba(60,30,20,.25)"; g.beginPath(); g.arc(b.x + 128, b.y + 128, 110, 0, TAU); g.fill(); g.fillStyle = "#6a3a20"; for (let i = 0; i < 14; i++) { const a = (i * TAU) / 14; g.beginPath(); g.ellipse(b.x + 128 + Math.cos(a) * 96, b.y + 128 + Math.sin(a) * 96, 5, 7, a, 0, TAU); g.fill(); } },
+    d2(Q) { Q.cyl(128, 128, 14, 60, "#6a4428", "#4a2e1a"); for (let i = 0; i < 7; i++) Q.circ(128, 128, 96 - i * 12, 70 + i * 40, i % 2 ? "#2f6a3a" : "#3a7a44"); Q.circ(128, 128, 12, 345, GOLD); for (let k = 0; k < 6; k++) { const a = (k * TAU) / 6; Q.circ(128 + Math.cos(a) * 12, 128 + Math.sin(a) * 12, 4, 352, "#fff07a"); } },
+    d3(B) {
+      const bark = B.M("#6a4428"), needles = [B.M("#2f6a3a", { glow: "#1a4a2a" }), B.M("#3a7a44", { glow: "#1a4a2a" })], gold = B.M(GOLD, { glow: "#ffcc55" });
+      B.cyl(bark, 128, 128, 7, 16, 335, 0, 12);
+      for (const a of [0, 1.6, 3.2, 4.8]) B.beam(bark, 128 + Math.cos(a) * 10, 6, 128 + Math.sin(a) * 10, 128 + Math.cos(a) * 30, 0, 128 + Math.sin(a) * 30, 6); // roots
+      for (let i = 0; i < 8; i++) { const y = 70 + i * 34, rr = 96 - i * 10; B.cone(needles[i % 2], 128, 128, rr, 78 - i * 3, y, 12); }
+      const cones = []; for (let i = 0; i < 26; i++) { const t = i / 26, a = i * 2.4, y = 80 + t * 240, rr = 90 - t * 72; cones.push([128 + Math.cos(a) * rr * 0.8, y, 128 + Math.sin(a) * rr * 0.8, 3.5, 5.5, 3.5]); } B.inst(B.M("#8a5a2a"), cones, B.K.SPH);
+      B.cyl(gold, 128, 128, 13, 11, 12, 335, 16, true); for (let k = 0; k < 6; k++) { const a = (k * TAU) / 6; B.cone(gold, 128 + Math.cos(a) * 12, 128 + Math.sin(a) * 12, 3, 12, 347, 6); B.sph(B.M(["#ff3dc8", "#7af0ff", "#fff07a"][k % 3], { neon: true }), 128 + Math.cos(a) * 12, 128 + Math.sin(a) * 12, 2.2, 361); }
+      B.sph(B.M("#ff3dc8", { neon: true }), 128, 128, 4, 342);
+      const pts = []; for (let i = 0; i < 360; i++) { const t = Math.random(), a = Math.random() * TAU, y = 70 + t * 265, rr = (96 - (y - 70) * 0.27) * (0.85 + Math.random() * 0.2); pts.push([128 + Math.cos(a) * rr, y - 8, 128 + Math.sin(a) * rr]); } B.sparkle(pts);
     } },
   dreampalace: { name: "Дворец Снов", info: "здесь живёт Королева Снов, башни светятся всю ночь", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#ff7ad8", h: 300, nofog: true,
     ground(g, b) { for (let i = 0; i < 40; i++) { g.fillStyle = ["#ff7ad8", "#7af0ff", "#fff07a"][i % 3]; g.beginPath(); g.arc(b.x + hsh(i, 1, 6) * 256, b.y + 200 + hsh(i, 2, 6) * 56, 2.5, 0, TAU); g.fill(); } },
