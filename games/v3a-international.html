@@ -2294,8 +2294,8 @@ const SHOPS = [
     ] },
   { id: "air", who: "Аэропорт V3A International", title: "Рейсы по всему миру", col: "#5ad0ff", hex: 0x5ad0ff, label: "✈", at: () => places.air, bonus: 0, open: () => openTerminal(),
     note: "Деньги, машины, оружие и сумка летят с тобой. В каждом городе — свои улицы, своя погода и свои такси.",
-    items: CITIES.map((c) => ({ id: "fly-" + c.id, name: c.flag + " " + c.name, info: c.country + " · " + flightInfo(c), price: flightPrice(c), quiet: true,
-      no: () => (c.id === CITY.id ? "Ты сейчас здесь" : flying ? "Посадка уже идёт" : ""), act: () => flyTo(c) })) },
+    items: (CITY.dream ? [{ id: "wake", name: "☀ Проснуться", info: "Вернуться из сна в " + ((CITIES.find((q) => q.id === save.dreamFrom) || CITIES[0]).name), price: 0, priceText: "проснуться", open: () => wakeUp() }] : []).concat(CITIES).map((c) => (c.id === "wake" ? c : { id: "fly-" + c.id, name: c.flag + " " + c.name, info: c.country + " · " + flightInfo(c), price: flightPrice(c), quiet: true,
+      no: () => (c.dream && !CITY.dream ? "Туда не летают — только во сне: усни в своей кровати" : CITY.dream && c.id !== CITY.id ? "Из сна не улететь — сначала проснись" : c.id === CITY.id ? "Ты сейчас здесь" : flying ? "Посадка уже идёт" : ""), act: () => flyTo(c) })) },
   { id: "home", col: "#2fd0a0", hex: 0x2fd0a0, label: "Д", at: () => places.home, open: () => openHome() },
   { id: "crab", who: "Ресторан Crusty Crab", title: "Меню", col: "#ff5a3d", hex: 0xff5a3d, label: "CC", at: () => places.crab, bonus: 0,
     note: "Можно заказать доставку в телефоне — приложение Crusty Crab. Морепродукты с набережной. Еда лечит, коктейль бодрит. Нужны деньги — встань к плите.",
@@ -2442,6 +2442,13 @@ function renderHome() {
     return;
   }
   if (hmView === "weather") { renderWeatherPick(box); return; }
+  if (hmView === "sleep") {
+    $("hmTitle").textContent = CITY.dream ? "Кровать в Стране снов" : "Кровать";
+    box.appendChild(el("p", "prog", CITY.dream ? "Ты и так спишь и видишь сон. Можно проснуться — и окажешься дома, в своей кровати." : "Выспаться до утра — или уснуть и попасть в Страну снов, в неоновый Сновстол. Туда не летают самолёты: туда попадают только во сне."));
+    const b1 = el("button", "btn", CITY.dream ? "☀ Проснуться" : "🌙 Уснуть и увидеть Страну снов"); b1.type = "button"; b1.id = "hmDream"; b1.addEventListener("click", () => (CITY.dream ? wakeUp() : fallAsleep())); box.appendChild(b1);
+    const b2 = el("button", "btn alt", CITY.dream ? "Поспать во сне (здоровье 100)" : "Просто выспаться до утра"); b2.type = "button"; b2.id = "hmSleep"; b2.addEventListener("click", () => { resume(); sleepHome(); }); box.appendChild(b2);
+    return;
+  }
   $("hmTitle").textContent = "Гардероб";
   {
     box.appendChild(el("p", "prog", "Выбери цвет куртки"));
@@ -2456,6 +2463,24 @@ function buyHome() {
   money -= HOME_PRICE - SHOP_BONUS; save.home = { since: dayKey() }; writeSave(); updHud(); sfx.win();
   big("НОВОСЕЛЬЕ!", "Квартира в ЖК «Нова» теперь твоя · бонус +" + fmt(SHOP_BONUS), "#2fd0a0", 2.6);
   return true;
+}
+/* the Land of Dreams: you only get there in your sleep */
+function dreamFade(text, sub, cb) {
+  const f = document.createElement("div"); f.style.cssText = "position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;opacity:0;transition:opacity 1.4s;background:radial-gradient(circle at 50% 40%,#ff7ad8,#6a2ab8 55%,#1a0630);color:#fff;font-family:var(--display);text-align:center;padding:20px";
+  f.innerHTML = `<div style="font-size:64px">🌙</div><div style="font-size:30px;letter-spacing:.06em">${text}</div><div style="font-family:var(--body);font-weight:800;font-size:16px;opacity:.85">${sub}</div>`;
+  document.body.appendChild(f); requestAnimationFrame(() => (f.style.opacity = "1"));
+  tone(523, 1046, 1.6, 0.06, "sine"); setTimeout(() => tone(659, 1318, 1.4, 0.05, "sine"), 400); setTimeout(() => tone(784, 1568, 1.2, 0.05, "sine"), 800);
+  setTimeout(cb, 2200);
+}
+function fallAsleep() {
+  if (CITY.dream || flying) return; flying = true; resume();
+  save.dreamFrom = CITY.id; save.city = "snv"; save.arrive = 1; save.dreamArrive = 1; player.hp = 100; writeSave();
+  dreamFade("ТЫ ЗАСЫПАЕШЬ…", "и попадаешь в Страну снов", () => { writeSave(); location.reload(); });
+}
+function wakeUp() {
+  if (!CITY.dream || flying) return; flying = true; resume();
+  save.city = save.dreamFrom || "nova"; save.arrive = 1; save.wakeHome = 1; writeSave();
+  dreamFade("ПРОСЫПАЕШЬСЯ…", "сон тает, ты снова дома", () => { writeSave(); location.reload(); });
 }
 function sleepHome() {
   player.hp = 100; dayT = 2 / 24; // 08:00
@@ -2853,7 +2878,7 @@ function leaveHome() {
 }
 function roomAct(sp) {
   if (sp.id === "door") return leaveHome();
-  if (sp.id === "bed") return sleepHome();
+  if (sp.id === "bed") { hmView = "sleep"; renderHome(); showOv("home"); return; }
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
   if (sp.id === "fridge") return toggleInv();
   if (sp.id === "window") { hmView = "weather"; renderHome(); showOv("home"); return; }
@@ -3377,7 +3402,8 @@ function renderTerminal() {
   const item = (id, name, info, price, onClick, dis) => { const b = el("button", "shop-item"); b.type = "button"; b.id = id; b.append(el("span", null, name), el("b", null, price), el("small", null, info)); b.disabled = !!dis; b.addEventListener("click", onClick); box.appendChild(b); };
   box.appendChild(el("p", "prog", "Наличные: " + fmt(money) + (TM.go ? " · идёт посадка…" : "")));
   if (TM.tab === "fly") {
-    for (const c of CITIES) { if (c.id === CITY.id) continue; const pr = flightPrice(c); item("tmf-" + c.id, c.flag + " " + c.name + " · " + flightNo(c), c.country + " · " + flightInfo(c) + " · бонус +" + fmt(SHOP_BONUS), fmt(pr), () => checkIn(c), money < pr || !!TM.go); }
+    if (CITY.dream) { item("tm-wake", "☀ Проснуться", "Ты в Стране снов. Самолёты отсюда не летают — проснись и окажешься дома, в городе " + ((CITIES.find((q) => q.id === save.dreamFrom) || CITIES[0]).name), "", () => wakeUp()); return; }
+    for (const c of CITIES) { if (c.id === CITY.id) continue; if (c.dream) { item("tmf-" + c.id, c.flag + " " + c.name, "Туда не летают: в Страну снов попадают, только когда спят. Усни в своей кровати дома.", "только во сне", () => {}, true); continue; } const pr = flightPrice(c); item("tmf-" + c.id, c.flag + " " + c.name + " · " + flightNo(c), c.country + " · " + flightInfo(c) + " · бонус +" + fmt(SHOP_BONUS), fmt(pr), () => checkIn(c), money < pr || !!TM.go); }
   } else if (TM.tab === "duty") {
     for (const [id, pr] of [["df_choc", 12], ["df_coffee", 8], ["df_sand", 15]]) { const it = ITEMS[id]; item("tmd-" + id, it.name, itemInfo(it) + " · в сумку", fmt(pr), () => { if (money < pr) return; money += SHOP_BONUS - pr; invAdd(id); sfx.cash(); writeSave(); updHud(); toast(it.name + " — в сумке · бонус +" + fmt(SHOP_BONUS), 1.8); renderTerminal(); }, money < pr); }
   } else {
@@ -5297,7 +5323,7 @@ function setView(on) {
     loadThree((ok) => {
       G3.loading = false;
       if (ok) { try { init3d(); } catch (e) { ok = false; console.warn(e); } }
-      if (!ok) { toast("3D не загрузилось — играем в 2D", 3); applyView(false); return; }
+      if (!ok) { G3.failed = true; toast("3D не загрузилось — играем в 2D", 3); applyView(false); return; }
       applyView(true);
     });
     return;
@@ -6063,6 +6089,12 @@ if (save.arrive) {
   resume(); writeSave();
   big(CITY.flag + " " + CITY.name.toUpperCase(), "Добро пожаловать · " + CITY.country, "#5ad0ff", 3.4);
   setTimeout(() => toast(CITY.slogan + (CITY.tz != null ? " Местное время " + localClock() + "." : ""), 5), 3500);
+  if (save.dreamArrive) { delete save.dreamArrive; dayT = 0.7; writeSave(); big("🌙 ТЫ ВО СНЕ", "Сновстол · Страна снов. Чтобы проснуться — кровать, аэропорт или «Рейсы» в телефоне", "#ff7ad8", 4.5); }
+  if (save.wakeHome) {
+    delete save.wakeHome; writeSave();
+    const home = () => { if (want3d && !G3.ready && !G3.failed) return setTimeout(home, 300); if (save.home) enterHome(); big("☀ ДОБРОЕ УТРО", save.home ? "Ты проснулся дома · " + CITY.name : "Ты проснулся · " + CITY.name, "#ffe08a", 3.5); };
+    setTimeout(home, 200);
+  }
 }
 if (want3d) setView(true); else applyView(false);
 requestAnimationFrame(frame);
