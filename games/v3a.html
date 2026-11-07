@@ -834,7 +834,7 @@ function updDash() {
     hudCache.dash = key;
     $("dGearRow").hidden = !gears; $("dash").querySelector(".dsh-top").style.display = gears ? "" : "none";
     $("dMode").textContent = c.manual ? "РУЧНАЯ" : "АВТО"; $("dMode").classList.toggle("on", !!c.manual);
-    $("dRadio").hidden = !radio; $("dRadio").textContent = "📻 " + (stn < 0 ? "Радио выкл" : STATIONS[stn]); $("dRadio").classList.toggle("off", stn < 0);
+    $("dRadio").hidden = !radio; $("dRadio").textContent = "📻 " + (stn < 0 ? "Радио выкл" : stn === 0 && !songBad ? "V3 FM · ♪ " + SONG_TITLE : STATIONS[stn]); $("dRadio").classList.toggle("off", stn < 0);
     $("dUp").disabled = !gears || c.gear >= c.t.gears; $("dDown").disabled = !gears || (c.gear || 1) <= 1;
   }
   if (gears) {
@@ -1909,18 +1909,31 @@ const STATIONS = ["V3 FM", "Lounge 101", "Neon Drive"];
 const LOUNGE = [[57, 60, 64, 67], [50, 53, 57, 60], [55, 59, 62, 65], [48, 52, 55, 59]];
 const DRIVE_BASS = [38, 38, 50, 38, 41, 41, 53, 41, 36, 36, 48, 36, 43, 43, 55, 43];
 const DRIVE_LEAD = [74, 0, 0, 77, 0, 0, 79, 0, 81, 0, 79, 0, 77, 0, 74, 0];
+/* V3 FM plays the song file on a loop; it keeps its place, so it carries on from where you left the car */
+const SONG_TITLE = "Montagem Crause Lipos";
+const radioSong = new Audio(); radioSong.loop = true; radioSong.preload = "auto"; radioSong.volume = 0.6;
+let songBad = false, songWant = false;
+radioSong.addEventListener("error", () => { songBad = true; });
+function updRadioSong() {
+  const stn = save.station == null ? 0 : save.station;
+  const want = !songBad && !muted && hasRadio() && stn === 0 && (state === "play" || state === "phone" || state === "inv");
+  if (want === songWant) return;
+  songWant = want;
+  if (want) { if (!radioSong.src) radioSong.src = "v3a-radio.mp3"; const pr = radioSong.play(); if (pr && pr.catch) pr.catch(() => { songWant = false; }); }
+  else radioSong.pause();
+}
 function hasRadio() { return !!player.inCar && (gadget("radio") || !!player.inCar.t.radio); }
 function radioNext() {
   if (!hasRadio()) return;
   const st = save.station == null ? 0 : save.station, nx = st >= STATIONS.length - 1 ? -1 : st + 1;
   save.station = nx; radioT = 0; radioStep = 0; writeSave(); hudCache.dash = null;
-  toast(nx < 0 ? "Радио выключено" : "Радио «" + STATIONS[nx] + "»", 1.4);
+  toast(nx < 0 ? "Радио выключено" : "Радио «" + STATIONS[nx] + "»" + (nx === 0 && !songBad ? " · ♪ " + SONG_TITLE : ""), 1.8);
 }
 const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 function tickGadgets(dt) {
   if (gadget("laptop")) { laptopT += dt; if (laptopT >= 60) { laptopT -= 60; money += 25; sfx.cash(); toast("Ноутбук: удалённая работа +$25", 1.6); } }
   const stn = save.station == null ? 0 : save.station;
-  if (!ac || muted || !hasRadio() || stn < 0) { radioT = 0; return; }
+  if (!ac || muted || !hasRadio() || stn < 0 || (stn === 0 && !songBad)) { radioT = 0; return; }
   radioT -= dt;
   if (stn === 1) {
     while (radioT <= 0) {
@@ -2371,8 +2384,8 @@ function takeCar(best) {
   if (player.lastCar && player.lastCar !== best && player.lastCar !== M.car && !player.lastCar.ownKey) player.lastCar.keep = false;
   player.inCar = best; player.lastCar = best;
   const stn = save.station == null ? 0 : save.station;
-  if (best.t.gears) toast(`${best.t.name}: ${best.manual ? "ручная коробка" : "автомат"}${stn >= 0 ? " · радио «" + STATIONS[stn] + "»" : ""}`, 2.2);
-  else if (gadget("radio") && stn >= 0) toast("Радио «" + STATIONS[stn] + "»", 1.4);
+  if (best.t.gears) toast(`${best.t.name}: ${best.manual ? "ручная коробка" : "автомат"}${stn >= 0 ? " · радио «" + STATIONS[stn] + "»" + (stn === 0 && !songBad ? " · ♪ " + SONG_TITLE : "") : ""}`, 2.4);
+  else if (gadget("radio") && stn >= 0) toast("Радио «" + STATIONS[stn] + "»" + (stn === 0 && !songBad ? " · ♪ " + SONG_TITLE : ""), 1.8);
 }
 function pullDriver(c, P, sd) {
   STATS.jacks++;
@@ -4331,6 +4344,7 @@ function frame(t) {
   if (state === "kitchen") updKitchen(dt);
   if (state === "darts") updDarts(dt);
   if (state === "film") updFilm(dt);
+  updRadioSong();
   if (mode3d && G3.ready) { if (!started) now = t / 1000; render3d(t / 1000); }
   else if (started) render(); else renderIdle(t / 1000);
   requestAnimationFrame(frame);
@@ -4340,7 +4354,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, get FM() { return FM; }, filmSubject };
+if (location.hash === "#debug") window.__v3a = { G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
