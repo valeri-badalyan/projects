@@ -542,6 +542,7 @@ applyTheme();
 const meProfile = () => st.people.get(st.me) || {};
 function nameOf(uid) {
   if (uid === "ai") return "Ayte AI";
+  const bk = st.contacts.find((x) => x.uid === uid && x.name); if (bk) return bk.name;
   const p = st.people.get(uid);
   return (p && p.nick) || st.names[uid] || (uid === st.me ? "Вы" : "Гость Ayte");
 }
@@ -664,7 +665,7 @@ function renderList() {
       <span class="row-bot">${prev}${u ? `<span class="badge${muted ? " quiet" : ""}">•</span>` : ""}</span></span></button></li>`;
   }).join("");
   const realCount = [...st.chats.values()].length;
-  if (st.phoneKnown && !st.myPhone && !q && st.folder === "all" && st.mode === "db") html = `<li class="list-note"><strong>Укажите свой номер</strong>Тогда друзья смогут найти вас в Ayte V3.<button class="btn sec" type="button" data-open="profile">Указать номер</button></li>` + html;
+  if (st.phoneKnown && !st.myPhone && !q && st.folder === "all" && st.mode === "db") html = `<li class="list-note"><strong>Укажите свой номер</strong>Тогда друзья смогут найти вас в Ayte V3.<button class="btn sec" type="button" data-open="phone">Указать номер</button></li>` + html;
   if (!q && st.folder !== "all" && !items.length) html += `<li class="list-note"><strong>${{ dm: "Личных чатов пока нет", group: "Групп пока нет", channel: "Каналов пока нет" }[st.folder]}</strong>${st.folder === "dm" ? "Найдите человека по номеру телефона." : st.folder === "group" ? "Создайте группу через «+» или найдите открытую." : "Создайте свой канал или подпишитесь на чужой."}<button class="btn sec" type="button" data-open="${st.folder === "dm" ? "people" : "discover"}">${st.folder === "dm" ? "Найти по номеру" : "Найти группы и каналы"}</button></li>`;
   else if (!q && st.folder === "all" && !realCount && st.mode === "db") html += `<li class="list-note"><strong>Здесь появятся ваши чаты</strong>Нажмите «+» и найдите друга по номеру телефона. Можно создать группу или канал.<button class="btn sec" type="button" data-open="people">Найти по номеру</button></li>`;
   else if (q && !items.length) html += `<li class="list-note">По запросу «${esc(st.q.trim())}» чатов нет.</li>`;
@@ -1116,19 +1117,158 @@ function readPhone(b, prefix) {
   const ci = Math.min(COUNTRIES.length - 1, Math.max(0, +b.querySelector("#" + prefix + "Code").value || 0)), num = b.querySelector("#" + prefix + "Num").value.replace(/\D/g, "");
   return { ci, code: COUNTRIES[ci][1], num, ok: num.length >= 6 && num.length <= 12 };
 }
-function saveContacts() { st.B.setPriv("contacts", { items: st.contacts.slice(-500) }).catch((e) => toast("Контакт не сохранён: " + errText(e))); }
+function saveContacts() { st.B.setPriv("contacts", { items: st.contacts.slice(-500), asked: !!st.contactsAsked }).catch((e) => toast("Контакт не сохранён: " + errText(e))); }
 function addContact(uid, label) {
   const i = st.contacts.findIndex((x) => x.uid === uid);
   if (uid === st.me || (i >= 0 && st.contacts[i].phone === label)) return;
   st.contacts = st.contacts.filter((x) => x.uid !== uid).concat([{ uid, phone: label, t: now() }]); saveContacts();
 }
 const contactPhone = (uid) => (st.contacts.find((x) => x.uid === uid) || {}).phone || "";
+/* ================= first launch: your number, then access to contacts ================= */
+// Saves (or clears) my number in the hashed directory. Returns "ok", "taken" or "busy".
+async function setMyPhone(ph) {
+  const oldD = st.myPhone ? phoneDigits(st.myPhone.code, st.myPhone.num) : "", newD = ph ? phoneDigits(ph.code, ph.num) : "";
+  if (newD === oldD && st.phoneDoc) return "ok";
+  if (newD && newD !== oldD) { const r = await st.B.claimPhone(phoneId(newD)); if (r !== "ok") return r; }
+  if (oldD && oldD !== newD) await st.B.releasePhone(phoneId(oldD));
+  st.myPhone = newD ? { ci: ph.ci, code: ph.code, num: ph.num } : null;
+  st.phoneDoc = st.myPhone ? Object.assign({}, st.myPhone) : { none: true, t: now() };
+  await st.B.setPriv("phone", st.phoneDoc);
+  return "ok";
+}
+// A phone-book number to international digits, using my country code when it has none.
+function normPhone(raw) {
+  const s = String(raw || "").trim(); let d = s.replace(/\D/g, "");
+  if (!d) return "";
+  if (s.startsWith("+")) return d;
+  if (d.startsWith("00")) return d.slice(2);
+  const my = st.myPhone ? st.myPhone.code.replace(/\D/g, "") : "374";
+  if (my === "7" && d.length === 11 && d[0] === "8") return "7" + d.slice(1);
+  if (d.length === 11 && d[0] === "7") return d;
+  if (d[0] === "0") d = d.slice(1);
+  if (d.startsWith(my) && d.length > my.length + 7) return d;
+  return my + d;
+}
+function parseVCF(text) {
+  const out = [];
+  String(text).replace(/\r\n[ \t]/g, "").split(/BEGIN:VCARD/i).slice(1).forEach((card) => {
+    const fn = (card.match(/^FN[^:\n]*:(.*)$/im) || [])[1] || "";
+    (card.match(/^(?:item\d+\.)?TEL[^:\n]*:(.*)$/gim) || []).forEach((line) => out.push({ name: fn.trim().slice(0, 40), tel: line.replace(/^[^:]*:/, "").trim() }));
+  });
+  return out;
+}
+function parseTyped(text) { return String(text || "").split(/[\n,;]+/).map((t) => ({ name: "", tel: t.trim() })).filter((x) => x.tel.replace(/\D/g, "").length >= 6); }
+// Checks numbers against the directory by their hashes; nothing about numbers not in Ayte is stored.
+async function matchContacts(entries, onProgress) {
+  const seen = new Set(), list = [];
+  entries.forEach((e) => { const d = normPhone(e.tel); if (d.length >= 8 && d.length <= 15 && !seen.has(d)) { seen.add(d); list.push({ d, name: e.name }); } });
+  const todo = list.slice(0, 400), found = [];
+  let i = 0, done = 0;
+  const worker = async () => {
+    while (i < todo.length) {
+      const it = todo[i++];
+      try { const uid = await st.B.lookupPhone(phoneId(it.d)); if (uid && uid !== st.me) found.push({ uid, name: it.name, phone: "+" + it.d }); } catch (e) { if (e && e.code === "resource_exhausted") await new Promise((r) => setTimeout(r, 1500)); }
+      done++; if (onProgress) onProgress(done, todo.length);
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  return { checked: todo.length, skipped: list.length - todo.length, found };
+}
+function mergeFound(found) {
+  const map = new Map(st.contacts.map((x) => [x.uid, x]));
+  found.forEach((f) => { const old = map.get(f.uid) || {}; map.set(f.uid, { uid: f.uid, phone: old.phone || f.phone, name: f.name || old.name || "", t: old.t || now() }); });
+  st.contacts = [...map.values()];
+}
+function saveContactsAsked() { st.contactsAsked = true; return st.B.setPriv("contacts", { items: st.contacts.slice(-500), asked: true }).catch((e) => toast("Контакты не сохранены: " + errText(e))); }
+const pickerOK = () => !!(navigator.contacts && typeof navigator.contacts.select === "function");
+
+function onbStepPhone(fromStart) {
+  openSheet("Ваш номер в Ayte", `
+    <div class="hero"><span class="av" style="--s:72px;--c:var(--accent)" aria-hidden="true"><span class="em">📱</span></span><h3>Разрешите Ayte использовать ваш номер</h3><p>По номеру вас найдут друзья. Сам номер никому не показывается: в общей базе хранится только его зашифрованный отпечаток.</p></div>
+    <div class="field"><span>Мой номер телефона</span>${phoneFields("ob", st.myPhone ? st.myPhone.ci : 0, st.myPhone ? st.myPhone.num : "")}</div>
+    <button class="btn" type="button" id="obGo">Разрешить и продолжить</button>
+    <button class="btn sec" type="button" id="obSkip">Не сейчас</button>
+    <p class="note">Номер не проверяется по SMS. Изменить или удалить его можно в профиле.</p>`, (b) => {
+    const next = () => { if (fromStart && !st.contactsAsked) onbStepContacts(true); else closeSheet(); };
+    b.querySelector("#obGo").addEventListener("click", async () => {
+      const ph = readPhone(b, "ob");
+      if (!ph.ok) { toast("Введите номер без кода страны: от 6 до 12 цифр"); b.querySelector("#obNum").focus(); return; }
+      const btn = b.querySelector("#obGo"); btn.disabled = true;
+      try {
+        const r = await setMyPhone(ph);
+        if (r === "taken") { toast("Этот номер уже указал другой человек"); btn.disabled = false; return; }
+        if (r === "busy") { toast("Номер сейчас проверяется, нажмите ещё раз через пару секунд"); btn.disabled = false; return; }
+        toast("Номер сохранён: " + fmtPhone(ph.code, ph.num)); renderListSoon(); next();
+      } catch (e) { btn.disabled = false; toast("Не сохранено: " + errText(e)); }
+    });
+    b.querySelector("#obSkip").addEventListener("click", async () => { if (!st.phoneDoc) { try { await setMyPhone(null); } catch (e) { /* asked again next time */ } } next(); });
+    b.querySelector("#obNum").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); b.querySelector("#obGo").click(); } });
+  }, () => { if (fromStart && !st.phoneDoc) setMyPhone(null).catch(() => {}); });
+}
+function onbStepContacts(fromStart) {
+  openSheet("Доступ к контактам", `
+    <div class="hero"><span class="av" style="--s:72px;--c:#2f7cf2" aria-hidden="true"><span class="em">👥</span></span><h3>Разрешите доступ к контактам</h3><p>Ayte проверит, кто из ваших знакомых уже здесь. Номера сверяются по отпечаткам и не сохраняются — в ваши контакты попадут только те, кто есть в Ayte.</p></div>
+    <div id="obArea" style="display:grid;gap:10px">
+      <button class="btn" type="button" id="obAllow">Разрешить доступ к контактам</button>
+      <button class="btn sec" type="button" id="obLater">Позже</button>
+    </div>`, (b) => {
+    const area = b.querySelector("#obArea");
+    const finish = async (res) => {
+      mergeFound(res.found); await saveContactsAsked(); renderListSoon();
+      const ids = [...new Set(res.found.map((f) => f.uid))];
+      area.innerHTML = `<p style="margin:0;font-weight:700">${ids.length ? `Нашли ${ids.length} ${plural(ids.length, "друга", "друзей", "друзей")} в Ayte` : "Пока никого из ваших контактов нет в Ayte"}</p>
+        <p class="note">Проверено номеров: ${res.checked}${res.skipped ? `, ещё ${res.skipped} пропущено (больше 400)` : ""}.</p>
+        ${ids.length ? `<ul class="people">${ids.map((u) => `<li><button class="person" type="button" data-dm="${esc(u)}">${personRow(u, `<span class="tag">Написать</span>`)}</button></li>`).join("")}</ul>` : `<p class="note">Отправьте друзьям ссылку на Ayte V3 — когда они укажут свой номер, вы увидите их в контактах.</p>`}
+        <button class="btn" type="button" data-close="1">Готово</button>`;
+    };
+    const run = async (entries) => {
+      if (!entries.length) { toast("Номеров не нашлось"); return; }
+      area.innerHTML = `<p class="note" id="obProg">Сверяем номера…</p>`;
+      const res = await matchContacts(entries, (d, n) => { const p = b.querySelector("#obProg"); if (p) p.textContent = `Сверяем номера: ${d} из ${n}`; });
+      finish(res);
+    };
+    const fallback = (why) => {
+      area.innerHTML = `<p class="note">${esc(why)} Можно загрузить файл контактов (.vcf) — его выгружают из приложения «Контакты» на телефоне — или вписать номера друзей.</p>
+        <button class="btn" type="button" id="obVcf">Загрузить файл контактов (.vcf)</button>
+        <label class="field"><span>Или номера через запятую или с новой строки</span><textarea class="input" id="obTyped" placeholder="+374 77 123456&#10;+7 912 345 67 89"></textarea></label>
+        <button class="btn sec" type="button" id="obCheck">Проверить номера</button>
+        <button class="btn sec" type="button" id="obLater2">Позже</button>
+        <input type="file" id="obFile" accept=".vcf,text/vcard,text/x-vcard" hidden>`;
+      area.querySelector("#obVcf").addEventListener("click", () => area.querySelector("#obFile").click());
+      area.querySelector("#obFile").addEventListener("change", async (e) => { const f = e.target.files[0]; if (!f) return; if (f.size > 8e6) { toast("Файл слишком большой"); return; } try { run(parseVCF(await f.text())); } catch (er) { toast("Не удалось прочитать файл"); } });
+      area.querySelector("#obCheck").addEventListener("click", () => run(parseTyped(area.querySelector("#obTyped").value)));
+      area.querySelector("#obLater2").addEventListener("click", async () => { await saveContactsAsked(); closeSheet(); });
+    };
+    b.querySelector("#obAllow").addEventListener("click", async () => {
+      if (!pickerOK()) { fallback("Этот браузер не даёт сайтам читать телефонную книгу напрямую."); return; }
+      try {
+        const picked = await navigator.contacts.select(["name", "tel"], { multiple: true });
+        const entries = []; (picked || []).forEach((c) => (c.tel || []).forEach((t) => entries.push({ name: ((c.name || [])[0] || "").slice(0, 40), tel: t })));
+        if (!entries.length) { fallback("Контакты не выбраны."); return; }
+        run(entries);
+      } catch (e) { fallback("Доступ к контактам не получен."); }
+    });
+    b.querySelector("#obLater").addEventListener("click", async () => { await saveContactsAsked(); closeSheet(); });
+    b.addEventListener("click", (e) => { const d = e.target.closest("[data-dm]"); if (d) { closeSheet(); openDM(d.dataset.dm); } });
+  }, () => { if (fromStart && !st.contactsAsked) saveContactsAsked(); });
+}
+// Runs once both private documents have been read: asks only what was never asked.
+function maybeOnboard() {
+  if (st.onbDone || !st.phoneLoaded || !st.contactsLoaded || (st.mode === "db" && !st.canWrite)) return;
+  st.onbDone = true;
+  setTimeout(() => {
+    if (!$("#sheetWrap").hidden) return;
+    if (!st.phoneDoc) onbStepPhone(true);
+    else if (!st.contactsAsked) onbStepContacts(true);
+  }, 600);
+}
 function openPeople() {
   openSheet("Найти по номеру", `
     <div class="field"><span>Номер телефона</span>${phoneFields("f", st.myPhone ? st.myPhone.ci : 0, "")}</div>
     <button class="btn" type="button" id="fGo">Найти</button>
     <div id="fRes" aria-live="polite"></div>
     ${!st.myPhone ? `<div class="note" style="display:grid;gap:6px;justify-items:start">Вас самого пока нельзя найти: укажите свой номер в профиле.<button class="btn sec" type="button" id="fMine">Указать мой номер</button></div>` : ""}
+    <button class="btn sec" type="button" id="fBook">Найти друзей из контактов телефона</button>
     <div class="field"><span>Контакты</span><ul class="people" id="fList"></ul></div>`, (b) => {
     const list = () => { const ids = contactIds(); b.querySelector("#fList").innerHTML = ids.length ? ids.map((u) => `<li><button class="person" type="button" data-dm="${esc(u)}">${personRow(u, contactPhone(u) ? `<small class="tag">${esc(contactPhone(u))}</small>` : "")}</button></li>`).join("") : `<li class="note">Контактов пока нет. Введите номер друга: если он есть в Ayte V3, вы сможете ему написать.</li>`; };
     list();
@@ -1148,7 +1288,8 @@ function openPeople() {
     b.querySelector("#fGo").addEventListener("click", go);
     b.querySelector("#fNum").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
     b.querySelector("#fNum").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/[^\d\s()-]/g, ""); });
-    const fm = b.querySelector("#fMine"); if (fm) fm.addEventListener("click", openProfile);
+    const fm = b.querySelector("#fMine"); if (fm) fm.addEventListener("click", () => onbStepPhone(false));
+    b.querySelector("#fBook").addEventListener("click", () => onbStepContacts(false));
     b.addEventListener("click", (e) => { const d = e.target.closest("[data-dm]"); if (d) { closeSheet(); openDM(d.dataset.dm); } });
     if (!isTouch()) b.querySelector("#fNum").focus();
   });
@@ -1351,17 +1492,9 @@ function openProfile() {
       const ph = readPhone(b, "pr"), rawNum = b.querySelector("#prNum").value.trim();
       if (rawNum && !ph.ok) { toast("Номер: от 6 до 12 цифр без кода страны"); b.querySelector("#prNum").focus(); return; }
       try {
-        const oldD = st.myPhone ? phoneDigits(st.myPhone.code, st.myPhone.num) : "", newD = rawNum ? phoneDigits(ph.code, ph.num) : "";
-        if (newD !== oldD) {
-          if (newD) {
-            const r = await st.B.claimPhone(phoneId(newD));
-            if (r === "taken") { toast("Этот номер уже указал другой человек"); return; }
-            if (r === "busy") { toast("Номер сейчас проверяется, попробуйте через пару секунд"); return; }
-          }
-          if (oldD) await st.B.releasePhone(phoneId(oldD));
-          st.myPhone = newD ? { ci: ph.ci, code: ph.code, num: ph.num } : null;
-          await st.B.setPriv("phone", st.myPhone ? Object.assign({}, st.myPhone) : { none: true });
-        }
+        const r = await setMyPhone(rawNum ? ph : null);
+        if (r === "taken") { toast("Этот номер уже указал другой человек"); return; }
+        if (r === "busy") { toast("Номер сейчас проверяется, попробуйте через пару секунд"); return; }
         await st.B.setProfile(d); st.people.set(st.me, d); closeSheet(); renderMe(); renderList(); toast("Профиль сохранён");
       } catch (e) { toast("Не сохранено: " + errText(e)); }
     });
@@ -1406,7 +1539,7 @@ function toast(text, cid) {
 /* ================= events ================= */
 listEl.addEventListener("click", (e) => {
   const r = e.target.closest("[data-cid]"); if (r) { openChat(r.dataset.cid); return; }
-  const o = e.target.closest("[data-open]"); if (o) ({ people: openPeople, discover: openDiscover, profile: openProfile })[o.dataset.open]();
+  const o = e.target.closest("[data-open]"); if (o) ({ people: openPeople, discover: openDiscover, profile: openProfile, phone: () => onbStepPhone(false) })[o.dataset.open]();
 });
 $("#folders").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; st.folder = b.dataset.f; renderList(); });
 $("#q").addEventListener("input", (e) => { st.q = e.target.value; renderList(); });
@@ -1550,8 +1683,8 @@ async function boot() {
   st.loadTimer = setTimeout(() => { if (!st.chatsReady && st.mode === "db") { st.netErr = "База Ayte отвечает медленно — список может быть неполным."; renderNet(); } }, 10000);
   st.B.watchChats(onChats, (e) => { st.netErr = "Чаты не загрузились: " + errText(e) + ". Откройте страницу заново."; renderNet(); });
   st.B.watchPeople(onPeople, () => {});
-  st.B.watchPriv("contacts", (d) => { st.contacts = d && Array.isArray(d.items) ? d.items.filter((x) => x && typeof x.uid === "string") : []; }, () => {});
-  st.B.watchPriv("phone", (d) => { st.myPhone = d && d.num && COUNTRIES[+d.ci] ? { ci: +d.ci, code: COUNTRIES[+d.ci][1], num: String(d.num) } : null; st.phoneKnown = true; renderListSoon(); }, () => {});
+  st.B.watchPriv("contacts", (d) => { st.contacts = d && Array.isArray(d.items) ? d.items.filter((x) => x && typeof x.uid === "string").map((x) => Object.assign({}, x, { name: typeof x.name === "string" ? x.name.slice(0, 40) : "" })) : []; st.contactsAsked = !!(d && d.asked); st.contactsLoaded = true; renderListSoon(); maybeOnboard(); }, () => {});
+  st.B.watchPriv("phone", (d) => { st.myPhone = d && d.num && COUNTRIES[+d.ci] ? { ci: +d.ci, code: COUNTRIES[+d.ci][1], num: String(d.num) } : null; st.phoneDoc = d || null; st.phoneKnown = true; st.phoneLoaded = true; renderListSoon(); maybeOnboard(); }, () => {});
   st.B.watchPriv("saved", (d) => { st.saved = d && Array.isArray(d.items) ? d.items : []; if (st.active === "saved") { st.msgs = st.saved; renderMsgs(); } renderListSoon(); }, () => {});
   st.B.watchPriv("ai", (d) => { if (st.aiBusy) return; st.ai = d && Array.isArray(d.items) ? d.items : []; if (st.active === "ai") { st.msgs = st.ai; renderMsgs(); } renderListSoon(); }, () => {});
   renderList();
