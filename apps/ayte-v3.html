@@ -384,6 +384,7 @@ const I = {
   bookmark: svg('<path d="M6 3h12v18l-6-4-6 4z"/>'),
   photo: svg('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>'),
   poll: svg('<path d="M5 20V10M12 20V4M19 20v-7"/>'),
+  brush: svg('<path d="M14.5 4.5l5 5L10 19l-5 1 1-5z"/><path d="M12.5 6.5l5 5"/>'),
   user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'),
   group: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14a6 6 0 013.5 6"/>'),
   channel: svg('<path d="M4 10v4l11 5V5z"/><path d="M15 9a3 3 0 010 6"/><path d="M7 15l1 5h3l-1-4"/>'),
@@ -464,6 +465,8 @@ function dbBackend(db, me) {
     patchMsg: (cid, id, d) => q("m/" + cid + "/" + id, () => db.doc("chats/" + cid + "/msgs/" + id).update(d)),
     delMsg: (cid, id) => q("m/" + cid + "/" + id, () => db.doc("chats/" + cid + "/msgs/" + id).delete()),
     setPriv: (k, d) => q("p/" + k, () => priv(k).set(d)),
+    getPriv: async (k) => { const s = await priv(k).get(); return s.exists ? s.data() : null; },
+    delPriv: (k) => q("p/" + k, () => priv(k).delete()),
     setProfile: (d) => q("me", () => db.doc("people/" + me).set(d)),
   };
 }
@@ -489,6 +492,7 @@ function localBackend(me) {
     setChat: (cid, d) => set("chats/" + cid, d), patchChat: (cid, d) => upd("chats/" + cid, d), delChat: (cid) => del("chats/" + cid),
     setMsg: (cid, id, d) => set("chats/" + cid + "/msgs/" + id, d), patchMsg: (cid, id, d) => upd("chats/" + cid + "/msgs/" + id, d), delMsg: (cid, id) => del("chats/" + cid + "/msgs/" + id),
     setPriv: (k, d) => set("priv/" + k, d), setProfile: (d) => set("people/" + me, d),
+    getPriv: async (k) => (D["priv/" + k] ? clone(D["priv/" + k]) : null), delPriv: (k) => del("priv/" + k),
   };
 }
 // This-device mode only: one example channel so the app has something to show. Never written to the shared base.
@@ -512,7 +516,7 @@ const st = {
   online: new Set(), typing: {}, peersRaw: [],
   active: null, preview: null, msgs: [], msgUnsub: null, fresh: null,
   folder: "all", q: "", reply: null, edit: null, find: "", panelTab: "emoji",
-  saved: [], ai: [], aiDraft: null, aiBusy: false,
+  saved: [], ai: [], aiDraft: null, aiBusy: false, pics: new Map(), picLoading: new Set(),
   lastSeen: {}, muted: ls.get("muted", {}), sound: ls.get("sound", true), theme: ls.get("theme", "system"),
 };
 const PSEUDO = { saved: { id: "saved", kind: "saved" }, ai: { id: "ai", kind: "ai" } };
@@ -576,6 +580,7 @@ function lastOf(m) {
   const o = { from: m.from, t: m.t };
   ["text", "sticker", "sys", "who", "title"].forEach((k) => { if (m[k] != null) o[k] = m[k]; });
   if (m.img) o.img = true;
+  if (m.pic) o.pic = true;
   if (m.poll) o.poll = { q: m.poll.q };
   return o;
 }
@@ -596,11 +601,12 @@ function pv(m) {
   if (!m) return "";
   if (m.sys) return sysText(m);
   if (m.sticker != null) return "Стикер · " + ((STK[m.sticker] || [])[0] || "");
+  if (m.pic) return "🎨 " + (m.text || "Картинка");
   if (m.img) return "📷 " + (m.text || "Фото");
   if (m.poll) return "📊 " + (m.poll.q || "Опрос");
   return m.text || "";
 }
-const unread = (c) => !!(c.last && c.last.from !== st.me && !c.last.sys && c.last.t > ((c.read || {})[st.me] || 0) && isMember(c));
+const unread = (c) => !PSEUDO[c.id] && !!(c.last && c.last.from !== st.me && !c.last.sys && c.last.t > ((c.read || {})[st.me] || 0) && isMember(c));
 
 /* ================= sidebar ================= */
 let listRaf = 0;
@@ -743,12 +749,13 @@ function renderMsgs(jump) {
     const showName = first && !mine && (c.kind === "group");
     const showAv = c.kind === "group" && !mine;
     const pa = personAv(m.from);
-    const kind = m.sticker != null ? " sticker" : m.img ? " photo" : "";
+    const kind = m.sticker != null ? " sticker" : m.img || m.pic ? " photo" : "";
     let body = "";
     if (m.fwd) body += `<div class="fwd">Переслано от ${esc(nameOf(m.fwd))}</div>`;
     if (m.reply) body += quoteHTML(m.reply);
     if (m.sticker != null) body += stickerSVG(m.sticker);
     else if (m.img && okImg(m.img)) body += `<img class="ph" src="${m.img}" alt="Фото" data-zoom="1" loading="lazy" style="aspect-ratio:${+m.w || 4}/${+m.h || 3}">`;
+    else if (m.pic) { const pc = st.pics.get(m.pic); body += pc && okImg(pc.src) ? `<img class="ph" src="${pc.src}" alt="Картинка от Ayte AI" data-zoom="1" style="aspect-ratio:${+m.w || 1}/${+m.h || 1}">` : `<div class="ph" style="aspect-ratio:${+m.w || 1}/${+m.h || 1};display:grid;place-items:center;color:var(--muted)">🎨</div>`; if (!pc) loadPic(m.pic); }
     if (m.poll) body += pollHTML(m, c);
     if (m.text) body += `<div class="text">${highlight(m.text)}</div>`;
     const rx = m.react && typeof m.react === "object" ? Object.keys(m.react).filter((e) => Array.isArray(m.react[e]) && m.react[e].length) : [];
@@ -769,8 +776,8 @@ function renderMsgs(jump) {
   if (jump || atBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 function aiIntro() {
-  return `<div class="m first"><div class="m-body"><div class="bubble"><div class="text">Привет! Я Ayte AI ✦ Помогу придумать ответ, название группы, текст для канала или просто поболтаю. Наш разговор видите только вы.</div></div></div></div>
-  <div class="chips">${["Придумай название для нашей группы", "Помоги вежливо отказаться от встречи", "Напиши пост для канала о новом проекте", "Расскажи короткий факт дня"].map((s) => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+  return `<div class="m first"><div class="m-body"><div class="bubble"><div class="text">Привет! Я Ayte AI ✦ Помогу придумать ответ, название группы, текст для канала — и умею рисовать картинки: просто напишите «нарисуй…». Наш разговор видите только вы.</div></div></div></div>
+  <div class="chips">${["Нарисуй кота-космонавта", "Нарисуй закат над горами", "Придумай название для нашей группы", "Напиши пост для канала о новом проекте"].map((s) => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
 }
 function renderCtx() {
   const ctx = $("#ctx"), r = st.reply || st.edit;
@@ -783,7 +790,7 @@ function renderComposer() {
   if (!c) return;
   if (canPost(c)) {
     row.hidden = false; alt.hidden = true;
-    $("#attachBtn").hidden = c.kind === "ai";
+    $("#attachBtn").hidden = false;
     input.placeholder = c.kind === "ai" ? "Спросите Ayte AI" : c.kind === "channel" ? "Пост для подписчиков" : "Сообщение";
     updateSend(); return;
   }
@@ -855,6 +862,10 @@ async function sendPayload(payload, cid = st.active) {
   } catch (e) { toast("Не отправлено: " + errText(e)); if (e && e.code === "invalid_argument" && !st.B.local) { /* could be a size issue; keep inputs */ } }
 }
 function trimSaved(items) { let out = items.slice(-300); while (out.length > 1 && JSON.stringify(out).length > 230000) out = out.slice(1); return out; }
+function loadPic(id) {
+  if (st.picLoading.has(id) || !st.B) return; st.picLoading.add(id);
+  st.B.getPriv("pic-" + String(id)).then((d) => { if (d && okImg(d.src)) { st.pics.set(id, { src: d.src, w: +d.w || 1, h: +d.h || 1 }); if (st.active === "ai") renderMsgs(); } }).catch(() => {});
+}
 function savePriv(k, items) { st.B.setPriv(k, { items }).catch((e) => toast("Не сохранено: " + errText(e))); }
 async function sendText() {
   const text = input.value.replace(/\s+$/, "").trim(); if (!text) return;
@@ -871,6 +882,44 @@ async function sendText() {
 }
 
 /* ================= Ayte AI (Claude via the sample capability) ================= */
+// Pictures: Claude draws them as SVG code inside a ```svg block; the page cleans it and turns it into a JPEG photo.
+const DRAW_RE = /(нарису|рисун|рисова|картин|изображ|иллюстрац|аватар|аватарк|логотип|эмблем|постер|обои|draw|picture|image|paint|sketch)/i;
+function cleanSVG(raw) {
+  const doc = new DOMParser().parseFromString(raw, "image/svg+xml");
+  const root = doc.documentElement;
+  if (!root || root.nodeName.toLowerCase() !== "svg" || doc.querySelector("parsererror")) throw new Error("bad svg");
+  root.querySelectorAll("script, foreignObject, iframe, image, use[href^='http'], a").forEach((n) => n.remove());
+  root.querySelectorAll("*").forEach((n) => [...n.attributes].forEach((a) => {
+    const nm = a.name.toLowerCase(), v = a.value.trim().toLowerCase();
+    if (nm.startsWith("on") || ((nm === "href" || nm === "xlink:href") && !v.startsWith("#"))) n.removeAttribute(a.name);
+  }));
+  root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  let vb = (root.getAttribute("viewBox") || "").trim().split(/[\s,]+/).map(Number);
+  if (vb.length !== 4 || vb.some((x) => !isFinite(x)) || vb[2] <= 0 || vb[3] <= 0) {
+    const w0 = parseFloat(root.getAttribute("width")) || 1024, h0 = parseFloat(root.getAttribute("height")) || 1024;
+    vb = [0, 0, w0, h0]; root.setAttribute("viewBox", vb.join(" "));
+  }
+  const k = 1024 / Math.max(vb[2], vb[3]), w = Math.max(64, Math.round(vb[2] * k)), h = Math.max(64, Math.round(vb[3] * k));
+  root.setAttribute("width", w); root.setAttribute("height", h);
+  return { text: new XMLSerializer().serializeToString(root), w, h };
+}
+async function rasterSVG(raw) {
+  const { text, w, h } = cleanSVG(raw);
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error("svg load")); i.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(text); });
+  const cv = document.createElement("canvas");
+  for (let scale = 1; scale > 0.2; scale *= 0.8) {
+    cv.width = Math.round(w * scale); cv.height = Math.round(h * scale);
+    const g = cv.getContext("2d"); g.fillStyle = "#ffffff"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, 0, 0, cv.width, cv.height);
+    for (let q = 0.86; q >= 0.5; q -= 0.12) { const out = cv.toDataURL("image/jpeg", q); if (out.length <= 170000) return { src: out, w: cv.width, h: cv.height }; }
+  }
+  throw new Error("too big");
+}
+function splitSVG(text) {
+  const m = text.match(/```(?:svg|xml|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/i) || text.match(/(<svg[\s\S]*?<\/svg>)/i);
+  if (!m) return { svg: null, rest: text };
+  return { svg: m[1], rest: text.replace(m[0], "").replace(/\n{3,}/g, "\n\n").trim() };
+}
+const draftView = (text) => { const i = text.search(/```\s*(svg|xml)|<svg/i); return i < 0 ? text : (text.slice(0, i).trim() + "\n\n🎨 Рисую…").trim(); };
 async function askAI(m) {
   if (st.aiBusy) return;
   const mine = Object.assign({ id: newId() }, m); delete mine.react;
@@ -878,23 +927,37 @@ async function askAI(m) {
   if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); }
   renderListSoon();
   if (st.sample === undefined) { try { st.sample = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { st.sample = null; } }
-  const reply = (text) => { st.ai = st.ai.concat([{ id: newId(), from: "ai", t: now(), text }]).slice(-80); savePriv("ai", st.ai); if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); } renderListSoon(); };
+  const reply = async (text, pic) => {
+    const msg = { id: newId(), from: "ai", t: now(), text };
+    if (pic) { const pid = newId(); st.pics.set(pid, pic); Object.assign(msg, { pic: pid, w: pic.w, h: pic.h }); try { await st.B.setPriv("pic-" + pid, pic); } catch (e) { toast("Картинка не сохранилась: " + errText(e)); } }
+    const all = st.ai.concat([msg]), keep = all.slice(-80);
+    all.slice(0, all.length - keep.length).forEach((x) => { if (x.pic) st.B.delPriv("pic-" + x.pic).catch(() => {}); });
+    st.ai = keep; savePriv("ai", st.ai); if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); } renderListSoon();
+  };
   if (!st.sample) { reply("Сейчас я не могу ответить: в этом окне нет доступа к Claude. Откройте Ayte V3 на claude.ai и разрешите странице обращаться к Claude."); return; }
-  st.aiBusy = true; st.aiDraft = null; renderHead(); renderMsgs(true); updateSend();
+  const drawing = DRAW_RE.test(m.text || "");
+  st.aiBusy = true; st.aiDraft = drawing ? "🎨 Рисую…" : null; renderHead(); renderMsgs(true); updateSend();
   const hist = [];
   st.ai.slice(-18).forEach((x) => {
     const role = x.from === "ai" ? "assistant" : "user";
-    const text = x.sticker != null ? `[стикер «${(STK[x.sticker] || [])[0] || ""}»]` : x.text || "";
+    let text = x.sticker != null ? `[стикер «${(STK[x.sticker] || [])[0] || ""}»]` : x.text || "";
+    if (x.img || x.pic) text = (text ? text + "\n" : "") + (role === "assistant" ? "[здесь была нарисованная мной картинка]" : "[фото]");
     if (!text) return;
     if (hist.length && hist[hist.length - 1].role === role) hist[hist.length - 1].content += "\n" + text; else hist.push({ role, content: text });
   });
   while (hist.length && hist[0].role !== "user") hist.shift();
-  if (!hist.length) { st.aiBusy = false; return; }
-  hist[0].content = "[Инструкция] Ты — Ayte AI, помощник в мессенджере Ayte V3. Пиши как в чате: коротко (обычно 1–4 предложения), дружелюбно, на языке собеседника, без markdown-заголовков и таблиц; эмодзи — в меру. Если просят текст сообщения или поста — дай готовый текст.\n\n" + hist[0].content;
+  if (!hist.length) { st.aiBusy = false; st.aiDraft = null; return; }
+  hist[0].content = "[Инструкция] Ты — Ayte AI, помощник в мессенджере Ayte V3. Пиши как в чате: коротко (обычно 1–4 предложения), дружелюбно, на языке собеседника, без markdown-заголовков и таблиц; эмодзи — в меру. Если просят текст сообщения или поста — дай готовый текст.\n" +
+    "Ты умеешь рисовать картинки. Когда просят нарисовать, сделать картинку, аватарку, логотип, открытку и т. п. — ответь одной короткой фразой и ОДНИМ блоком ```svg … ``` с полным SVG-кодом. Правила SVG: корневой <svg> с xmlns и viewBox (обычно 0 0 1024 1024, для обоев или баннера можно другие пропорции); без <script>, <foreignObject>, <image>, внешних ссылок и шрифтов (текст — только если просят, шрифт sans-serif). Рисуй красиво и подробно: залитый фон, градиенты (linearGradient/radialGradient), тени и блики через прозрачность, продуманная композиция и яркие гармоничные цвета, плавные кривые path. Не объясняй код и не показывай его словами.\n\n" + hist[0].content;
   try {
-    const r = await st.sample(hist, { cache: false, modelTier: "quick", onText: ({ text }) => { st.aiDraft = text; if (st.active === "ai") renderMsgs(); } });
+    const r = await st.sample(hist, { cache: false, modelTier: drawing ? "default" : "quick", onText: ({ text }) => { st.aiDraft = draftView(text) || (drawing ? "🎨 Рисую…" : ""); if (st.active === "ai") renderMsgs(); } });
+    const full = (r && r.text || "").trim();
+    const { svg: code, rest } = splitSVG(full);
+    let pic = null;
+    if (code) { try { pic = await rasterSVG(code); } catch (e) { pic = null; } }
     st.aiBusy = false; st.aiDraft = null;
-    reply((r && r.text || "").trim() || "…");
+    if (code && !pic) reply((rest ? rest + "\n\n" : "") + "Картинка не получилась — попробуйте попросить ещё раз или описать проще.");
+    else reply(rest || (pic ? "Готово 🎨" : "…"), pic);
   } catch (e) {
     st.aiBusy = false; st.aiDraft = null;
     const code = e && e.code;
@@ -942,10 +1005,10 @@ async function doAction(a, mid) {
   else if (a === "edit") { st.reply = null; st.edit = m; input.value = m.text; autoGrow(); renderCtx(); updateSend(); input.focus(); }
   else if (a === "del") ask("Удалить сообщение?", c.kind === "saved" || c.kind === "ai" ? "Оно исчезнет из этого чата." : "Сообщение удалится у всех участников чата.", "Удалить", () => deleteMsg(c, m));
 }
-function cleanCopy(m) { const o = {}; ["text", "img", "w", "h", "sticker"].forEach((k) => { if (m[k] != null) o[k] = m[k]; }); if (m.poll) o.text = "📊 " + m.poll.q + "\n" + (m.poll.opts || []).map((x) => "• " + x).join("\n"); return o; }
+function cleanCopy(m) { const o = {}; ["text", "img", "w", "h", "sticker"].forEach((k) => { if (m[k] != null) o[k] = m[k]; }); if (m.pic && st.pics.get(m.pic)) { const pc = st.pics.get(m.pic); o.img = pc.src; o.w = pc.w; o.h = pc.h; } if (m.poll) o.text = "📊 " + m.poll.q + "\n" + (m.poll.opts || []).map((x) => "• " + x).join("\n"); return o; }
 async function deleteMsg(c, m) {
   if (c.kind === "saved") { st.saved = st.saved.filter((x) => x.id !== m.id); st.msgs = st.saved; savePriv("saved", st.saved); renderMsgs(); renderListSoon(); return; }
-  if (c.kind === "ai") { st.ai = st.ai.filter((x) => x.id !== m.id); st.msgs = st.ai; savePriv("ai", st.ai); renderMsgs(); renderListSoon(); return; }
+  if (c.kind === "ai") { st.ai = st.ai.filter((x) => x.id !== m.id); st.msgs = st.ai; savePriv("ai", st.ai); if (m.pic) st.B.delPriv("pic-" + m.pic).catch(() => {}); renderMsgs(); renderListSoon(); return; }
   try {
     await st.B.delMsg(c.id, m.id);
     const patch = {};
@@ -1167,7 +1230,7 @@ function openInfo() {
       if (!it) return;
       const a = it.dataset.i;
       if (a === "mute") { st.muted[c.id] = !st.muted[c.id]; ls.set("muted", st.muted); closeSheet(); renderList(); renderComposer(); toast(st.muted[c.id] ? "Уведомления выключены" : "Уведомления включены"); }
-      if (a === "clearai") ask("Очистить разговор с Ayte AI?", "История удалится без возможности вернуть.", "Очистить", () => { st.ai = []; st.msgs = st.ai; savePriv("ai", []); renderMsgs(); renderList(); });
+      if (a === "clearai") ask("Очистить разговор с Ayte AI?", "История удалится без возможности вернуть.", "Очистить", () => { st.ai.forEach((x) => { if (x.pic) st.B.delPriv("pic-" + x.pic).catch(() => {}); }); st.ai = []; st.msgs = st.ai; savePriv("ai", []); renderMsgs(); renderList(); });
       if (a === "leave") ask(c.kind === "channel" ? "Отписаться от канала?" : "Выйти из группы?", "Вернуться можно, если чат открытый, или если вас снова добавят.", c.kind === "channel" ? "Отписаться" : "Выйти", () => leaveChat(c));
       if (a === "delete") ask(`Удалить «${c.title}»?`, "Чат и загруженные сообщения удалятся у всех участников.", "Удалить", () => deleteChat(c));
     });
@@ -1311,12 +1374,13 @@ composer.addEventListener("click", async (e) => {
   const em = e.target.closest("[data-emo]"); if (em) { input.setRangeText(em.dataset.emo, input.selectionStart, input.selectionEnd, "end"); autoGrow(); updateSend(); if (!isTouch()) input.focus(); return; }
   const sk = e.target.closest("[data-stk]"); if (sk) { closePops(); sendPayload({ sticker: +sk.dataset.stk }); return; }
   const tb = e.target.closest("#panelTabs [data-t]"); if (tb) { st.panelTab = tb.dataset.t; renderPanel(); return; }
-  const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else openPoll(); }
+  const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else if (am.dataset.am === "draw") { input.value = "Нарисуй "; autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length); } else openPoll(); }
 });
 $("#panelBtn").addEventListener("click", () => { const open = $("#panel").hidden; closePops(); if (open) { renderPanel(); $("#panel").hidden = false; $("#panelBtn").setAttribute("aria-expanded", "true"); } });
 $("#attachBtn").addEventListener("click", () => {
   const open = $("#attachMenu").hidden; closePops(); if (!open) return;
-  $("#attachMenu").innerHTML = `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
+  $("#attachMenu").innerHTML = st.active === "ai" ? `<button class="menu-item" type="button" data-am="draw">${I.brush}<span>Нарисовать картинку</span></button>`
+    : `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
   $("#attachMenu").hidden = false; $("#attachBtn").setAttribute("aria-expanded", "true");
 });
 $("#sendBtn").addEventListener("click", sendText);
