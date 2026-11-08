@@ -656,7 +656,7 @@ const CITIES = [
   { id: "sha", name: "Шанхай", country: "Китай", flag: "🇨🇳", lat: 31.23, lon: 121.47, seed: 12601, roofs: PAL.asia, tall: 1.7, rain: 0.55, walk: "#a8a59f", water: "#3a5a5a", taxi: "#3d8bff", slogan: "Набережная Вайтань и лес небоскрёбов над рекой." },
   { id: "nve", name: "Нова-Э", country: "Республика V3", flag: "🌾", lat: 43.9, lon: 35.6, seed: 12901, roofs: ["#7a3a2a", "#3f6a4a", "#4a5a7a", "#8a5a3a", "#6a2a2a", "#5a6a3a"], tall: 0.25, rain: 0.8, walk: "#a89a78", grass: "#6f9a4a", water: "#3f6a8a", taxi: "#e8e3d6", slogan: "Деревня с 1890 года: тишина, поля, маленький храм и магазинчик у дороги.",
     village: true, style: "village", sea: [], land: "#7a9a4a", bus: "#e8b923", lms: [], food: ["Парное молоко с пирожком", "МП"], traffic: ["compact", "van", "compact", "sedan"] },
-  { id: "tms", name: "Тумосиз", country: "Цифровая республика", flag: "💾", lat: 1.3, lon: 103.8, seed: 13001, roofs: ["#0c1828", "#10202e", "#081420", "#142438", "#0a1a30"], tall: 1.45, rain: 0.2, walk: "#132235", grass: "#0f2e2e", water: "#0a4a6a", taxi: "#3dd8ff", slogan: "Цифровой город: с неба падает код, а над улицами летают компьютеры.",
+  { id: "tms", name: "Тумосиз", country: "Цифровая республика", flag: "💾", lat: 1.3, lon: 103.8, seed: 13001, roofs: ["#0c1828", "#10202e", "#081420", "#142438", "#0a1a30"], tall: 1.45, rain: 0.2, walk: "#132235", grass: "#0f2e2e", water: "#0a4a6a", taxi: "#3dd8ff", slogan: "Цифровой город: с неба падает код, над улицами летают компьютеры, а жители — материнские платы.",
     digital: true, glowDay: true, via: "pc", style: "digital", lang: "en", river: "Поток данных", sea: [], land: "#0a1828", bus: "#3dd8ff", stadium: "Арена Байтов", ring: { col: "#0c1828", glow: "#3dd8ff" }, food: ["Байт-бургер с чипсетами", "BB"], lms: ["server", "cpu", "datacloud"], back: ["codefall", "flypcs"], tree: "pixel", sky: ["#14305a", "#2a1a5a", "#02060f"], traffic: ["sport", "sport", "compact", "ters", "sedan", "taxi", "van"] },
   { id: "hero", name: "Хиротаун", country: "Вселенная героев", flag: "🦸", lat: 37, lon: -55, seed: 12801, roofs: ["#e8433a", "#2a6fd6", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#3dd8ff", "#f2f2f2"], tall: 1.5, rain: 0.4, walk: "#c8c0d0", water: "#2a5aa8", taxi: "#ffd23d", slogan: "Город супергероев: над крышами летают герои, а на стенах — взрывы из комиксов.",
     lang: "en", style: "comic", river: "Река Героев", sea: ["s", "e"], land: "#6a8a5a", bus: "#e8433a", stadium: "Арена Героев", ring: { col: "#2a6fd6", glow: "#ffd23d" }, food: ["Супер-бургер героя", "SB"], lms: ["herotower", "heroplaza", "comicstreet", "meteor"], back: ["heroflyers"], tz: -4 },
@@ -5590,6 +5590,20 @@ function drawCar(c) {
   }
   ctx.restore();
 }
+function drawBoard2D(p, sw) {
+  // a motherboard citizen seen from above (already translated and rotated)
+  const cop = p.kind === "cop", gang = p.kind === "gang";
+  const col = cop ? "#1b3a8a" : gang ? "#8a1a24" : ["#1f6b3a", "#14532d", "#1d2a6b", "#1a1a1e", "#4a1f6b", "#0f5a5a"][(p.id || 0) % 6];
+  const led = cop ? "#4d93ff" : gang ? "#ff3d4d" : ["#3dd8ff", "#5fff8a", "#ff7ad8", "#ffd23d"][(p.id || 0) % 4];
+  ctx.fillStyle = "rgba(0,0,0,.3)"; ctx.fillRect(-1, -9, 8, 20);
+  ctx.fillStyle = "#9aa0aa"; ctx.fillRect(-2 + sw * 0.5, -12, 4, 3); ctx.fillRect(-2 - sw * 0.5, 9, 4, 3);
+  if (p.armed) { ctx.fillStyle = "#1a1a1a"; ctx.fillRect(4, 8, 8, 3); }
+  ctx.fillStyle = col; ctx.fillRect(-3, -10, 6, 20);
+  ctx.fillStyle = "#d9b24a"; ctx.fillRect(-3, -10, 6, 1); ctx.fillRect(-3, 9, 6, 1); ctx.fillRect(2, -6, 1.2, 12);
+  ctx.fillStyle = "#b8bcc6"; ctx.fillRect(-1.6, -2.4, 4.2, 4.8); ctx.fillStyle = "#141418"; ctx.fillRect(-1, -1.8, 3, 3.6);
+  ctx.fillStyle = led; ctx.fillRect(2.6, -1.4, 1.2, 1); ctx.fillRect(2.6, 0.4, 1.2, 1);
+  if (Math.sin(performance.now() / 160 + (p.id || 0)) > 0) ctx.fillRect(-2.4, 7, 1.4, 1.4);
+}
 function drawHuman(p, isPlayer) {
   ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a);
   if (p.dead || p.down > 0) {
@@ -5599,6 +5613,7 @@ function drawHuman(p, isPlayer) {
     ctx.restore(); return;
   }
   const sw = Math.sin(p.walk) * 4;
+  if (CITY.digital && !isPlayer && !p.human) { drawBoard2D(p, sw); ctx.restore(); return; }
   ctx.fillStyle = "rgba(0,0,0,.28)"; ctx.beginPath(); ctx.ellipse(2.5, 2.5, 7, 9.5, 0, 0, TAU); ctx.fill();
   const armed = isPlayer ? player.weapons[player.w] !== "fist" : p.armed;
   ctx.fillStyle = p.skin;
@@ -6254,7 +6269,47 @@ function init3d() {
     const beam = new THREE.Mesh(beamGeo, M3.beam); beam.position.set(L / 2, base + 4, 0); beam.rotation.z = -0.07; beam.visible = false; g.add(beam);
     return { g, paint, tails, red, blue, beam, doors, wrecked: !!c.wreck };
   }
+  function boardMesh(p) {
+    // a Tumosiz citizen: a walking motherboard with a CPU face, RAM, capacitors and ribbon-cable arms
+    const g = new THREE.Group(), cop = p.kind === "cop", gang = p.kind === "gang";
+    const pcbCol = cop ? "#1b3a8a" : gang ? "#8a1a24" : ["#1f6b3a", "#14532d", "#1d2a6b", "#1a1a1e", "#4a1f6b", "#0f5a5a"][(p.id || 0) % 6];
+    const pcb = mat(pcbCol), edge = mat(shade(pcbCol, 0.6)), gold = mat("#d9b24a"), silver = mat("#b8bcc6"), black = mat("#141418"), cable = mat("#9aa0aa");
+    const ledCol = cop ? 0x4d93ff : gang ? 0xff3d4d : [0x3dd8ff, 0x5fff8a, 0xff7ad8, 0xffd23d][(p.id || 0) % 4];
+    const led = G3.ledM || (G3.ledM = {}); const eye = led[ledCol] || (led[ledCol] = basic(ledCol));
+    const part = (m, sx, sy, sz, x, y, z, parent, sh = true) => { const o = new THREE.Mesh(BOX, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = sh; (parent || g).add(o); return o; };
+    const cyl = G3.pmCyl || (G3.pmCyl = new THREE.CylinderGeometry(1, 1, 1, 10));
+    const leg = (z) => { const piv = new THREE.Group(); piv.position.set(0, 7.4, z); g.add(piv); part(edge, 1.4, 6.4, 1.8, 0, -3.2, 0, piv); part(gold, 3.2, 1.2, 2.4, 0.5, -6.7, 0, piv); for (const dz of [-0.8, 0, 0.8]) part(gold, 0.3, 0.8, 0.3, 2.2, -6.3, dz, piv, false); return piv; };
+    const lL = leg(-2), lR = leg(2);
+    // the board itself, standing up, front faces +x
+    part(pcb, 0.9, 12.4, 9.6, 0, 13.6, 0);
+    part(edge, 1, 0.5, 9.8, 0, 19.9, 0, null, false); part(edge, 1, 0.5, 9.8, 0, 7.4, 0, null, false);
+    // CPU = the face
+    part(silver, 0.5, 4.2, 4.2, 0.6, 16.6, 0, null, false);
+    part(black, 0.5, 3.2, 3.2, 0.95, 16.6, 0, null, false);
+    for (const z of [-0.75, 0.75]) part(eye, 0.3, 0.7, 0.55, 1.25, 17.1, z, null, false);
+    part(eye, 0.3, 0.3, 1.4, 1.25, 15.7, 0, null, false);
+    // RAM sticks, capacitors, a PCIe slot, the chipset and gold traces
+    for (const z of [-3.3, -4.1]) { part(black, 0.6, 5.4, 0.45, 0.6, 15.6, z, null, false); part(mat(cop ? "#2a6aff" : "#2a8a3a"), 1.4, 4.6, 0.3, 1.1, 15.9, z, null, false); }
+    for (let i = 0; i < 4; i++) { const c = new THREE.Mesh(cyl, i % 2 ? silver : black); c.rotation.z = Math.PI / 2; c.scale.set(0.55, 1.6, 0.55); c.position.set(1.2, 18.6 - (i > 1 ? 1.4 : 0), 2.6 + (i % 2) * 1.2); g.add(c); }
+    part(black, 0.8, 0.8, 7, 0.75, 10.6, 0, null, false); part(gold, 0.3, 0.3, 6.4, 1.2, 10.6, 0, null, false);
+    part(silver, 0.6, 1.8, 1.8, 0.65, 12.8, 2.6, null, false); part(black, 0.6, 1.4, 2.4, 0.65, 12.8, -2.4, null, false);
+    for (const [y, z, w] of [[14.1, 0, 0.25], [13.7, 1.3, 0.25], [9.3, -1, 0.25]]) part(gold, 0.15, w, 3.6, 0.5, y, z, null, false);
+    part(eye, 0.3, 0.45, 0.45, 0.6, 19.1, -3.8, null, false);
+    // ribbon-cable arms with a connector hand
+    const arm = (z) => { const piv = new THREE.Group(); piv.position.set(0, 18.4, z); g.add(piv); part(cable, 1.6, 6.6, 0.4, 0, -3.2, 0, piv); part(black, 1.8, 1.4, 1.1, 0, -6.9, 0, piv); return piv; };
+    const aL = arm(-5.2), aR = arm(5.2);
+    const gun = new THREE.Mesh(BOX, M3.gun); gun.scale.set(1.4, 6, 1.6); gun.position.set(0.4, -8.6, 0); aR.add(gun);
+    let umb = null;
+    if (p.kind === "ped") {
+      umb = new THREE.Group(); umb.visible = false;
+      const pole = new THREE.Mesh(BOX, M3.gun); pole.scale.set(0.6, 12, 0.6); pole.position.set(2.5, 19, 5.2); umb.add(pole);
+      const can = new THREE.Mesh(new THREE.ConeGeometry(12, 5, 8, 1, true), new THREE.MeshLambertMaterial({ color: pcbCol, side: THREE.DoubleSide })); can.position.set(2.5, 26.5, 5.2); umb.add(can);
+      g.add(umb);
+    }
+    return { g, lL, lR, aL, aR, gun, umb };
+  }
   function personMesh(p, me) {
+    if (CITY.digital && !me && !p.human) return boardMesh(p);
     // a rounded little person: cap or hair, face with eyes, nose and mouth, puffy shoulders, short sleeves, belt, dark trousers, white trainers
     const g = new THREE.Group(), cop = p.kind === "cop";
     const pantsCol = cop ? "#1a2546" : me ? "#1f2a44" : ["#2c2f3d", "#3a4a6a", "#4a3e34", "#26262a", "#4a5a7a"][(p.id || 0) % 5];
