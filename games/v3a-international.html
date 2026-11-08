@@ -103,6 +103,18 @@ body.touch #homeBtn{display:none}
 body.touch #bagBtn{display:none}
 #whistleBtn{display:flex;align-items:center;justify-content:center;color:#ffd23d;background:#2a6fd6!important;border-color:#ffd23d!important}
 #whistleBtn[hidden]{display:none}
+#wishBtn{display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(180deg,#ff7ad8,#b25cff)!important;border-color:#ffd6f4!important;box-shadow:0 0 18px -2px #ff7ad8}
+#wishBtn[hidden]{display:none}
+#wishBtn svg{width:22px;height:22px}
+.wish-card{background:linear-gradient(180deg,#3a1450,#1e0c30)!important;border:1px solid #ff7ad8!important;box-shadow:0 0 40px -8px #ff7ad8,0 30px 70px -20px rgba(0,0,0,.8)!important}
+.wish-card .who{color:#ff9ae0!important}
+#wishIn{width:100%;box-sizing:border-box;min-height:48px;border-radius:12px;border:1px solid #ff7ad8;background:#14081f;color:#fff;font:600 16px var(--body,system-ui);padding:0 14px}
+#wishIn::placeholder{color:#b88ad0}
+.wish-chips{display:flex;flex-wrap:wrap;gap:8px}
+.wish-chips button{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,122,216,.5);background:rgba(255,122,216,.12);color:#ffd6f4;font:700 13px var(--body,system-ui);cursor:pointer}
+.wish-log{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:13px;color:#d8b8ff;max-height:120px;overflow:auto}
+#wishFlash{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 55%,rgba(255,214,244,.85),rgba(255,122,216,.35) 40%,rgba(178,92,255,0) 70%);opacity:0;transition:opacity .9s}
+#wishFlash.on{opacity:1;transition:opacity .08s}
 #whistleBtn svg{width:22px;height:22px}
 .hero-pick{display:grid;grid-template-columns:46px 1fr;gap:4px 12px;align-items:center;padding:12px;border-radius:14px;border:2px solid #111;background:#f4ecd8;color:#111;text-align:left;font-weight:800;font-size:15px;box-shadow:4px 4px 0 #111}
 .hero-pick i{grid-row:1/3;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:22px;color:#fff;border:3px solid #111;background:var(--hc)}
@@ -361,6 +373,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="rainBtn" aria-label="Дождь (R)" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C9 7 6 10.4 6 14.2a6 6 0 0 0 12 0C18 10.4 15 7 12 2.5z" fill="currentColor"/><path d="M9.2 14.5a3 3 0 0 0 2.4 3" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.6" stroke-linecap="round"/></svg></button>
     <button type="button" id="phoneBtn" aria-label="Телефон (T)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="10" y="17.5" width="4" height="1.6" rx=".8" fill="currentColor"/></svg></button>
     <button type="button" id="bagBtn" aria-label="Сумка (I)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V6a4 4 0 0 1 8 0v2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="8" width="16" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/></svg></button>
+    <button type="button" id="wishBtn" aria-label="Загадать желание (G)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.6 6.1 6.6.5-5 4.3 1.6 6.5L12 16.4 6.2 19.9l1.6-6.5-5-4.3 6.6-.5z" fill="currentColor"/></svg></button>
     <button type="button" id="whistleBtn" aria-label="Свист — позвать героя" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h10l7-3v8l-7-3H9a3 3 0 0 1-6 0z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6" cy="13" r="1.4" fill="currentColor"/><path d="M15 4l1-2M18 5l2-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
     <button type="button" id="passBtn" aria-label="Паспорт V3 (J)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="8.5" y="15.5" width="7" height="1.8" rx=".9" fill="currentColor"/></svg></button>
     <button type="button" id="homeBtn" aria-label="Домой (H)" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="14" width="4" height="6" fill="currentColor"/></svg></button>
@@ -416,6 +429,7 @@ button.ph-row:disabled{opacity:.45}
         <dt>1 / 2 / 3 / 0</dt><dd>дома: каналы телевизора — WorldNews, Sport, YouTube Shorts, выключить</dd>
         <dt>J</dt><dd>паспорт V3: фото, имя (игра придумывает его сама) и штампы городов</dd>
         <dt>H</dt><dd>домой — сразу в свою квартиру (после покупки)</dd>
+        <dt>G</dt><dd>в Сновстоле: загадать желание — оно сбудется (кнопка ★)</dd>
         <dt>R</dt><dd>включить или выключить дождь (кнопка с каплей)</dd>
         <dt>I</dt><dd>сумка: еда, аптечки, оружие, гаджеты, машины</dd>
         <dt>T</dt><dd>телефон: такси, карта, банк, матч каждую минуту, скорая, рейсы ✈</dd>
@@ -559,6 +573,21 @@ button.ph-row:disabled{opacity:.45}
       <button type="button" class="btn alt" id="tmOut" style="flex:none">Закрыть и вернуться в зал</button>
     </div>
   </div>
+
+  <div class="ov dim" id="wish" hidden>
+    <div class="card wish-card">
+      <span class="who">Сновстол · здесь все желания сбываются</span>
+      <h3>Загадай желание ✨</h3>
+      <form id="wishForm" style="display:flex;flex-direction:column;gap:10px;margin:0">
+        <input id="wishIn" type="text" maxlength="120" autocomplete="off" placeholder="Например: хочу миллион и спорткар" aria-label="Твоё желание">
+        <button type="submit" class="btn" id="wishGo" style="flex:none;background:linear-gradient(180deg,#ff9ae0,#b25cff);color:#fff">Загадать</button>
+      </form>
+      <div class="wish-chips" id="wishChips"></div>
+      <ul class="wish-log" id="wishLog"></ul>
+      <button type="button" class="btn alt" id="wishOut" style="flex:none">Закрыть</button>
+    </div>
+  </div>
+  <div id="wishFlash"></div>
 
   <div class="ov dim" id="whistle" hidden>
     <div class="card" style="background:#ffd23d;border:3px solid #111;color:#111;box-shadow:8px 8px 0 #111">
@@ -2048,6 +2077,7 @@ function dismissHero() {
 function tickSummon(dt) {
   if (sumCool > 0) sumCool -= dt;
   const wantBtn = CITY.id === "hero" || !!SUM; if (hudCache.whBtn !== wantBtn) { hudCache.whBtn = wantBtn; $("whistleBtn").hidden = !wantBtn; }
+  if (hudCache.wishBtn !== !!CITY.dream) { hudCache.wishBtn = !!CITY.dream; $("wishBtn").hidden = !CITY.dream; }
   // a hero who stayed with you comes along after a flight or a dream
   if (!SUM && save.hero != null && started && HEROES[save.hero]) { const sp = heroSpot(36); SUM = { i: save.hero, hr: HEROES[save.hero], t: 0, ph: "follow", x: sp.x, y: sp.y, z: 0, done: true }; }
   if (!SUM) return;
@@ -2093,6 +2123,61 @@ function drawSummon2D(ox = 0, oy = 0) {
   ctx.restore();
 }
 $("whistleBtn").addEventListener("click", () => { initAudio(); openWhistle(); });
+/* ===== Snovstol: every wish comes true ===== */
+const WISH_CHIPS = ["Хочу миллион долларов", "Хочу спорткар", "Хочу быть здоровым", "Хочу бегать быстрее всех", "Хочу оружие", "Хочу ночь и звёзды", "Хочу солнце", "Хочу гору еды", "Хочу квартиру", "Хочу к Королю-сосне"];
+function openWish() {
+  if (!CITY.dream || state !== "play") return;
+  const chips = $("wishChips"); chips.innerHTML = "";
+  for (const w of WISH_CHIPS) { const b = el("button", null, w); b.type = "button"; b.addEventListener("click", () => makeWish(w)); chips.appendChild(b); }
+  renderWishLog(); $("wishIn").value = ""; showOv("wish"); tone(988, 1318, 0.25, 0.04, "sine");
+  if (!touchMode) setTimeout(() => $("wishIn").focus(), 60);
+}
+function renderWishLog() { const ul = $("wishLog"); ul.innerHTML = ""; for (const w of (save.wishes || []).slice(-6).reverse()) ul.appendChild(el("li", null, "✨ " + w)); }
+function wishNumber(t) {
+  const m = t.replace(/\s+(?=\d{3}\b)/g, "").match(/(\d[\d.,]*)\s*(тыс|тысяч|к(?![а-яa-z])|млн|миллион|млрд|миллиард)?/);
+  if (!m) return 0; let n = parseFloat(m[1].replace(/[.,](?=\d{3}\b)/g, "").replace(",", ".")) || 0;
+  const u = m[2] || ""; if (/тыс|к/.test(u)) n *= 1e3; else if (/млрд|миллиард/.test(u)) n *= 1e9; else if (/млн|миллион/.test(u)) n *= 1e6;
+  return n;
+}
+function makeWish(raw) {
+  const text = String(raw || "").trim(); if (!text) return;
+  const t = text.toLowerCase().replace(/ё/g, "е"), done = [], P = player;
+  const has = (re) => re.test(t);
+  if (has(/денег|деньг|богат|миллион|миллиард|доллар|бабл|\$|кэш|налич|зарплат/)) {
+    let n = wishNumber(t); if (!n) n = has(/миллиард/) ? 1e9 : 1e6; n = Math.min(n, 1e9);
+    money += n; done.push("+" + fmt(n));
+  }
+  if (has(/здоров|выздоров|вылеч|жизн|не болеть|сил[ауы]?(?![а-яa-z])/)) { P.hp = 100; done.push("здоровье 100"); }
+  if (has(/брон|неуязв|бессмерт|защит/)) { P.armor = 100; P.hp = 100; done.push("броня 100"); }
+  if (has(/машин|тачк|авто(?!бус)|спорткар|ламбо|ферр|гонк|кабриолет/)) {
+    const type = has(/спорт|ламбо|ферр|гонк|быстр/) || !CT.sedan ? "sport" : "sedan", a = P.a || 0;
+    const spot = freeSpot(P.x + Math.cos(a) * 90, P.y + Math.sin(a) * 90) || freeSpot(P.x, P.y + 90);
+    if (spot && !P.inCar) { const c = mkCar(type, spot.x, spot.y, a + Math.PI / 2, pick(["#ff7ad8", "#b25cff", "#ffd6f4", "#3dd8ff"])); c.keep = true; done.push(CT[type].name.toLowerCase() + " рядом с тобой"); }
+  }
+  if (has(/оруж|пистолет|узи|автомат|пушк|ствол/)) { for (const w of ["pistol", "smg"]) if (!P.weapons.includes(w)) P.weapons.push(w); P.ammo.pistol += 120; P.ammo.smg += 300; done.push("оружие и патроны"); }
+  if (has(/быстр|скорост|бегать|бег(?![а-яa-z])|молни|ракет/)) { P.boost = 180; done.push("быстрый бег 3 минуты"); }
+  if (has(/дожд|ливен|гроз/)) { WX.manual = true; WX.target = has(/гроз/) ? 1 : 0.7; WX.storm = has(/гроз/); done.push(has(/гроз/) ? "гроза" : "дождь"); }
+  else if (has(/солнц|ясн|без дожд|тепл/)) { WX.manual = true; WX.target = 0; WX.storm = false; dayT = Math.min(dayT, 0.5); done.push("солнце"); }
+  if (has(/ноч|звезд|луна|темн/)) { dayT = 0.72; done.push("ночь и звёзды"); }
+  else if (has(/утр|рассвет/)) { dayT = 2 / 24; done.push("утро"); }
+  else if (has(/закат|вечер/)) { dayT = 0.42; done.push("закат"); }
+  else if (has(/(?<![а-яa-z])ден[ья](?![а-яa-z])|днем|светл/)) { dayT = 0.25; done.push("день"); }
+  if (has(/(?<![а-яa-z])ед[ауы]?(?![а-яa-z])|(?<![а-яa-z])есть(?![а-яa-z])|голод|пицц|бургер|шаурм|вкусн|сладк|торт|конфет/)) { invAdd("lunch", 3); invAdd("energy", 2); invAdd("neon", 2); done.push("гора еды в сумке"); }
+  if (has(/квартир|дом(?![а-яa-z])|жиль|домик/)) { if (!save.home) { save.home = { since: dayKey() }; done.push("своя фиолетовая квартира (жми H)"); } else done.push("квартира у тебя уже есть"); }
+  if (has(/полиц|розыск|копы|свобод/)) { setWanted(0); done.push("тебя никто не ищет"); }
+  if (has(/сосн|король|королю/)) { const l = (places.lms || []).find((q) => /сосн/i.test(q.name)); if (l && !P.inCar) { P.x = l.x; P.y = l.y; cam3.init = false; done.push("ты у Короля-сосны"); } }
+  else { const l = (places.lms || []).find((q) => q.name && t.includes(q.name.toLowerCase().split(" ")[0]) && q.name.length > 3); if (l && /хочу (к|на|в)|перенес|телепорт|окажусь/.test(t) && !P.inCar) { P.x = l.x; P.y = l.y; cam3.init = false; done.push("ты у места «" + l.name + "»"); } }
+  if (!done.length) { const gift = 100000; money += gift; P.hp = 100; done.push("сон исполнил по-своему: +" + fmt(gift) + " и здоровье 100"); }
+  save.wishes = (save.wishes || []).concat(text).slice(-20);
+  writeSave(); updHud(); resume();
+  const fl = $("wishFlash"); fl.classList.add("on"); setTimeout(() => fl.classList.remove("on"), 140);
+  [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => tone(f, f * 1.5, 0.35, 0.05, "sine"), i * 110));
+  for (let k = 0; k < 40; k++) { const a = rand(0, TAU), sp = rand(40, 180); addPart({ x: P.x, y: P.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1.1, max: 1.1, size: rand(4, 9), col: pick(["#ff7ad8", "#ffd6f4", "#b25cff", "#fff2a8"]), type: "fire" }); }
+  big("✨ ЖЕЛАНИЕ СБЫЛОСЬ", done.join(" · "), "#ff9ae0", 3.6);
+}
+$("wishBtn").addEventListener("click", () => { initAudio(); openWish(); });
+$("wishOut").addEventListener("click", resume);
+$("wishForm").addEventListener("submit", (e) => { e.preventDefault(); makeWish($("wishIn").value); });
 $("wsOut").addEventListener("click", resume);
 /* the lift inside the Founder statue */
 let LIFT = null, liftZoom = 0;
@@ -5426,6 +5511,7 @@ addEventListener("keydown", (e) => {
   if (e.code === "KeyR" && state === "play") toggleRainMenu();
   if (e.code === "KeyH") goHome();
   if (e.code === "KeyJ" && (state === "play" || state === "passport")) togglePassport();
+  if (e.code === "KeyG" && CITY.dream && state === "play" && !player.inCar) { e.preventDefault(); openWish(); }
   if (e.code === "KeyT" && (state === "play" || state === "phone")) togglePhone();
 });
 addEventListener("keyup", (e) => { keys[e.code] = false; });
@@ -5477,8 +5563,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); stopMenuMusic(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); stopMenuMusic(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
