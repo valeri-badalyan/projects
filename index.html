@@ -947,6 +947,39 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mc-dbtn { display: flex; flex-direction: column; gap: 4px; } .mc-dbtn small { text-align: center; font-size: 10px; color: var(--muted); font-weight: 800; min-height: 2.4em; } .mc-dbtn .btn { margin: 0; padding: 7px 4px; font-size: 11px; }
 .mc-card { padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); } .mc-card b { display: block; } .mc-card small { color: #5ce1e6; font-size: 10px; font-weight: 800; } .mc-card p { margin: 3px 0 0; font-size: 12px; } .mc-card.lock { opacity: .6; }
 .mc-prog { margin: 0; text-align: center; font-weight: 900; }
+#asWrap { display: flex; flex-direction: column; gap: 8px; min-height: calc(100dvh - 190px); }
+.as-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(135deg, #2a1a5e, #0e4a6a); border: 1px solid var(--line); }
+.as-head .as-who { flex: 1; min-width: 0; display: flex; flex-direction: column; } .as-head b { font-size: 16px; letter-spacing: .5px; } .as-head small { color: #b8d8f0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.as-head button { flex: none; padding: 8px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; font-weight: 800; cursor: pointer; font-size: 13px; }
+.as-orb { flex: none; width: 42px; height: 42px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 6%, #8af0ff 14%, #7a5cff 52%, #ff4fd8 100%); box-shadow: 0 0 16px rgba(138,92,255,.7); animation: asPulse 3s ease-in-out infinite; display: grid; place-items: center; font-weight: 900; font-size: 13px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.as-orb.think { animation: asSpin 1s linear infinite; background: conic-gradient(#8af0ff, #7a5cff, #ff4fd8, #8af0ff); }
+@keyframes asPulse { 50% { transform: scale(1.07); box-shadow: 0 0 26px rgba(255,79,216,.7); } }
+@keyframes asSpin { to { transform: rotate(360deg); } }
+.as-modes { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; } .as-modes::-webkit-scrollbar { display: none; }
+.as-modes button { flex: none; padding: 7px 11px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 13px; cursor: pointer; }
+.as-modes button[aria-pressed="true"] { border-color: #8a6aff; background: rgba(138,106,255,.25); }
+.as-drawer { border: 1px solid var(--line); background: var(--panel); border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+.as-drawer .as-ch { display: flex; align-items: center; gap: 6px; } .as-drawer .as-ch button { background: none; border: 0; color: var(--fg); cursor: pointer; padding: 8px; border-radius: 10px; font-size: 14px; }
+.as-drawer .as-ch .as-open { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .as-drawer .as-ch.on .as-open { background: rgba(138,106,255,.22); }
+.as-drawer .as-empty { color: var(--muted); font-size: 13px; padding: 6px; }
+.as-log { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px; overflow-y: auto; min-height: 240px; max-height: calc(100dvh - 330px); }
+.as-m { max-width: 88%; padding: 10px 12px; border-radius: 16px; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.as-m.u { align-self: flex-end; background: linear-gradient(135deg, #6a4aff, #b84aff); color: #fff; border-bottom-right-radius: 4px; white-space: pre-wrap; }
+.as-m.a { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.as-m.a p { margin: 0 0 6px; } .as-m.a p:last-child { margin-bottom: 0; } .as-m.a ul, .as-m.a ol { margin: 4px 0 6px; padding-left: 20px; } .as-m.a h4 { margin: 6px 0 4px; font-size: 15px; color: #c4b0ff; }
+.as-m.a code { font-family: var(--mono); font-size: 13px; background: rgba(0,0,0,.3); padding: 1px 5px; border-radius: 5px; }
+.as-m.a pre { margin: 6px 0; padding: 10px; background: #0a0b1a; border-radius: 10px; overflow-x: auto; } .as-m.a pre code { background: none; padding: 0; white-space: pre; }
+.as-m img { display: block; max-width: 160px; border-radius: 10px; margin-bottom: 6px; }
+.as-tools { display: flex; gap: 4px; margin-top: 6px; } .as-tools button { background: rgba(255,255,255,.07); border: 1px solid var(--line); color: var(--muted); border-radius: 8px; font-size: 12px; padding: 4px 8px; cursor: pointer; }
+.as-dots::after { content: "•••"; letter-spacing: 3px; animation: asBlink 1s infinite; color: var(--muted); } @keyframes asBlink { 50% { opacity: .3; } }
+.as-hello { text-align: center; padding: 18px 8px 6px; color: var(--muted); font-size: 14px; } .as-hello .as-orb { width: 72px; height: 72px; margin: 0 auto 10px; font-size: 18px; } .as-hello b { display: block; color: var(--fg); font-size: 20px; margin-bottom: 4px; }
+.as-sugg { display: flex; flex-wrap: wrap; gap: 6px; } .as-sugg button { padding: 8px 11px; border-radius: 12px; border: 1px dashed #6a5acd; background: rgba(138,106,255,.1); color: var(--fg); font-size: 13px; cursor: pointer; text-align: left; }
+.as-imgp { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); } .as-imgp img { width: 54px; height: 54px; object-fit: cover; border-radius: 10px; } .as-imgp button { background: none; border: 0; color: var(--coral); font-size: 18px; cursor: pointer; }
+.as-bar { display: flex; align-items: flex-end; gap: 6px; padding: 6px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); position: sticky; bottom: 6px; }
+.as-bar textarea { flex: 1; min-width: 0; resize: none; border: 0; background: transparent; color: var(--fg); font: inherit; font-size: 16px; padding: 8px 4px; max-height: 120px; outline: none; }
+.as-bar button { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; font-size: 18px; background: rgba(255,255,255,.08); color: var(--fg); }
+.as-bar #asSend { background: linear-gradient(135deg, #6a4aff, #ff4fd8); color: #fff; } .as-bar #asSend[data-stop] { background: var(--coral); } .as-bar #asMic.rec { background: var(--coral); animation: asBlink 1s infinite; }
+.as-note { font-size: 11px; color: var(--muted); text-align: center; margin: 0; }
 #mwCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e9e4da; cursor: pointer; }
 #yvCanvas { display: block; width: 100%; max-width: 100%; border-radius: 12px; touch-action: manipulation; background: #e8d9b8; cursor: pointer; }
 .dx-places { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -1967,6 +2000,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Атлас</span><span class="stat-val" id="hubMicroscop">—</span></span>
       </button>
+      <button class="cart" data-go="assa" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><defs><radialGradient id="asG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff"/><stop offset=".2" stop-color="#8af0ff"/><stop offset=".6" stop-color="#7a5cff"/><stop offset="1" stop-color="#ff4fd8"/></radialGradient></defs><rect width="64" height="64" fill="#140c34"/><circle cx="32" cy="30" r="19" fill="url(#asG)"/><circle cx="25" cy="29" r="3" fill="#140c34"/><circle cx="39" cy="29" r="3" fill="#140c34"/><path d="M25 37 q7 5 14 0" stroke="#140c34" stroke-width="2.5" fill="none" stroke-linecap="round"/><g fill="#ffd84d"><path d="M52 8 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z"/><path d="M11 46 l1.4 3.4 3.4 1.4 -3.4 1.4 -1.4 3.4 -1.4 -3.4 -3.4 -1.4 3.4 -1.4z"/></g><rect x="14" y="53" width="36" height="7" rx="3.5" fill="#2a1a5e"/><text x="32" y="58.6" font-size="6" font-family="Arial" font-weight="900" fill="#fff" text-anchor="middle">AssA AI</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">AssA AI</span>
+          <span class="cart-desc">Твой ИИ-помощник: отвечает на любые вопросы, помогает с учёбой, пишет истории и стихи, переводит, пишет код и шутит. Чаты сохраняются, ответы можно озвучить.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Вопросов</span><span class="stat-val" id="hubAssa">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -2847,6 +2890,36 @@ div.sc-pl { cursor: default; }
     </div>
     <div id="ssView"></div>
     <p class="hint">Каждую неделю — одна тренировка (или отдых) и матч. В матче 3 ключевых момента: выбери действие и останови бегунок в зелёной зоне (зона шире, если навык выше и ты полон сил). За каждый сыгранный матч — +1 OVR. 12 матчей в сезоне, потом итоги, трофеи и трансферное окно: принимай предложения или переходи в любой клуб сам — в любой момент, даже посреди сезона. Карьера длится сколько хочешь: завершай её когда угодно кнопкой «Завершить карьеру». Итог попадает в Зал славы.</p>
+  </section>
+
+  <!-- ===== AssA AI ===== -->
+  <section id="assa" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">AssA AI</div>
+      <div class="chips"><div class="chip hi"><span>Вопросов</span><b id="asCount">0</b></div></div>
+    </div>
+    <div id="asWrap">
+      <div class="as-head">
+        <div class="as-orb" id="asOrb" aria-hidden="true">A</div>
+        <div class="as-who"><b>AssA</b><small id="asStatus">готова помочь</small></div>
+        <button type="button" id="asHist" aria-label="Мои чаты">🗂</button>
+        <button type="button" id="asNew">＋ Новый</button>
+      </div>
+      <div class="as-modes" id="asModes" role="group" aria-label="Режим AssA"></div>
+      <div class="as-drawer" id="asDrawer" hidden></div>
+      <div class="as-log" id="asLog" aria-live="polite"></div>
+      <div class="as-sugg" id="asSugg"></div>
+      <div class="as-imgp" id="asImgP" hidden></div>
+      <form class="as-bar" id="asForm">
+        <button type="button" id="asPic" aria-label="Прикрепить фото" hidden>📷</button>
+        <input type="file" id="asFile" accept="image/*" hidden>
+        <button type="button" id="asMic" aria-label="Сказать голосом" hidden>🎙</button>
+        <textarea id="asInput" rows="1" maxlength="4000" placeholder="Спроси AssA о чём угодно…" aria-label="Сообщение для AssA"></textarea>
+        <button type="submit" id="asSend" aria-label="Отправить">➤</button>
+      </form>
+      <p class="as-note">AssA — ИИ и может ошибаться. Важное проверяй.</p>
+    </div>
   </section>
 
   <!-- ===== Microscop ===== -->
@@ -6704,7 +6777,7 @@ div.sc-pl { cursor: default; }
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "assa"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -6979,7 +7052,7 @@ div.sc-pl { cursor: default; }
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "assa"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -14326,6 +14399,296 @@ div.sc-pl { cursor: default; }
     };
   })();
 
+  /* ================= AssA AI — the assistant app ================= */
+  const Assa = (() => {
+    const MODES = [
+      { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
+      { id: "school", ico: "📚", n: "Учёба", hi: "Объясню любую тему шаг за шагом.", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения. В конце можно задать один короткий вопрос на проверку.", s: ["Объясни дроби на примере пиццы", "Как решить 3x + 5 = 20?", "Кратко о Солнечной системе"] },
+      { id: "write", ico: "✍️", n: "Писатель", hi: "Сказки, стихи, поздравления и идеи.", p: "Режим «Писатель»: ты креативный автор. Пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи.", s: ["Сказка про кота-космонавта", "Стих на день рождения маме", "Придумай название для моего канала"] },
+      { id: "lang", ico: "🌍", n: "Переводчик", hi: "Переведу на любой язык и подскажу произношение.", p: "Режим «Переводчик»: переводи текст пользователя. Если язык не указан: с русского — на английский, с других языков — на русский. Дай перевод, а ниже коротко произношение русскими буквами или полезный нюанс.", s: ["Переведи: «Я люблю играть в футбол»", "«Спасибо» на 5 языках", "Hello, how are you?"] },
+      { id: "code", ico: "💻", n: "Код", hi: "Напишу и объясню код.", p: "Режим «Код»: ты опытный программист и наставник. Давай рабочий код в блоках ``` с языком и кратко объясняй, как он работает.", s: ["Игра «Угадай число» на Python", "Что такое переменная?", "Кнопка на HTML, которая меняет цвет"] },
+      { id: "fun", ico: "😂", n: "Весельчак", hi: "Шутки, загадки, викторины и игры в слова.", p: "Режим «Весельчак»: ты весёлый друг. Шутки, загадки (ответ не говори сразу), викторины, игры в слова. Только добрый юмор.", s: ["Расскажи смешную шутку", "Загадай загадку", "Давай сыграем в города"] },
+    ];
+    const OFF = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
+    const samplePromise = (window.claude && typeof window.claude.use === "function")
+      ? Promise.resolve(window.claude.use("sample")).catch(() => null)
+      : Promise.resolve(null);
+    const log = $("#asLog"), input = $("#asInput"), sendBtn = $("#asSend"), statusEl = $("#asStatus"), orb = $("#asOrb"), drawer = $("#asDrawer");
+    let chats = store.get("assaChats", []);
+    if (!Array.isArray(chats)) chats = [];
+    let cur = store.get("assaCur", null), mode = store.get("assaMode", "help"), asked = store.get("assaAsked", 0) | 0;
+    let busy = false, ctl = null, aiOff = false, imgOK = null, pending = null, visible = false;
+    const modeOf = (id) => MODES.find((m) => m.id === id) || MODES[0];
+    const chat = () => chats.find((c) => c.id === cur) || null;
+    const pick = (a) => a[(Math.random() * a.length) | 0];
+    const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function save() {
+      chats = chats.slice(0, 30);
+      chats.forEach((c) => { c.msgs = c.msgs.slice(-40); });
+      store.set("assaChats", chats); store.set("assaCur", cur); store.set("assaMode", mode); store.set("assaAsked", asked);
+    }
+
+    // Small, safe Markdown: everything is escaped first, then **bold**, `code`, ```blocks```, lists and #headings.
+    function inline(s) {
+      return s.replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<i>$2</i>");
+    }
+    function md(src) {
+      const parts = String(src).split(/```/);
+      let out = "";
+      parts.forEach((part, i) => {
+        if (i % 2) { const body = part.replace(/^[\w+-]*\n/, ""); out += `<pre><code>${esc(body.replace(/\n$/, ""))}</code></pre>`; return; }
+        let list = null;
+        const close = () => { if (list) { out += `</${list}>`; list = null; } };
+        esc(part).split("\n").forEach((line) => {
+          const t = line.trim();
+          let m;
+          if (!t) { close(); return; }
+          if ((m = t.match(/^[-*•]\s+(.*)/))) { if (list !== "ul") { close(); out += "<ul>"; list = "ul"; } out += `<li>${inline(m[1])}</li>`; return; }
+          if ((m = t.match(/^\d+[.)]\s+(.*)/))) { if (list !== "ol") { close(); out += "<ol>"; list = "ol"; } out += `<li>${inline(m[1])}</li>`; return; }
+          close();
+          if ((m = t.match(/^#{1,4}\s+(.*)/))) { out += `<h4>${inline(m[1])}</h4>`; return; }
+          out += `<p>${inline(t)}</p>`;
+        });
+        close();
+      });
+      return out;
+    }
+
+    function speak(text, btn) {
+      if (!("speechSynthesis" in window)) return;
+      if (speechSynthesis.speaking) { speechSynthesis.cancel(); if (btn && btn.dataset.on) { delete btn.dataset.on; return; } }
+      const plain = text.replace(/```[\s\S]*?```/g, " ").replace(/[*#`]/g, "");
+      const u = new SpeechSynthesisUtterance(plain);
+      u.lang = /[а-яё]/i.test(plain) ? "ru-RU" : "en-US"; u.rate = 1.05; u.pitch = 1.15;
+      if (btn) { btn.dataset.on = "1"; u.onend = u.onerror = () => { delete btn.dataset.on; }; }
+      speechSynthesis.speak(u);
+    }
+    function copy(text, btn) {
+      const done = () => { btn.textContent = "✓ Скопировано"; setTimeout(() => { btn.textContent = "📋"; }, 1400); };
+      try { navigator.clipboard.writeText(text).then(done, () => {}); } catch (e) { /* optional */ }
+    }
+
+    function bubble(m) {
+      const el = document.createElement("div");
+      el.className = "as-m " + (m.r === "u" ? "u" : "a");
+      if (m.r === "u") {
+        if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
+        el.appendChild(document.createTextNode(m.t));
+      } else {
+        const body = document.createElement("div"); body.className = "as-body"; body.innerHTML = md(m.t); el.appendChild(body);
+        tools(el, m);
+      }
+      log.appendChild(el);
+      return el;
+    }
+    function tools(el, m) {
+      const bar = document.createElement("div"); bar.className = "as-tools";
+      bar.innerHTML = `<button type="button" data-a="say" aria-label="Озвучить">🔊</button><button type="button" data-a="copy" aria-label="Скопировать">📋</button>`;
+      bar.querySelector('[data-a="say"]').addEventListener("click", (e) => speak(m.t, e.currentTarget));
+      bar.querySelector('[data-a="copy"]').addEventListener("click", (e) => copy(m.t, e.currentTarget));
+      el.appendChild(bar);
+    }
+    function render() {
+      const c = chat(), M = modeOf(c ? c.mode : mode);
+      log.innerHTML = "";
+      if (!c || !c.msgs.length) {
+        log.innerHTML = `<div class="as-hello"><div class="as-orb">A</div><b>Привет! Я AssA ${M.ico}</b>${esc(M.hi)}</div>`;
+      } else c.msgs.forEach(bubble);
+      $("#asModes").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === M.id)));
+      const sg = $("#asSugg");
+      sg.innerHTML = "";
+      if (!c || !c.msgs.length) M.s.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
+      $("#asCount").textContent = asked;
+      log.scrollTop = log.scrollHeight;
+      if (!drawer.hidden) renderDrawer();
+    }
+    function renderDrawer() {
+      drawer.innerHTML = "";
+      if (!chats.length) { drawer.innerHTML = '<div class="as-empty">Пока нет чатов. Задай первый вопрос!</div>'; return; }
+      chats.forEach((c) => {
+        const row = document.createElement("div"); row.className = "as-ch" + (c.id === cur ? " on" : "");
+        row.innerHTML = `<button type="button" class="as-open"></button><button type="button" aria-label="Удалить чат">🗑</button>`;
+        row.firstChild.textContent = modeOf(c.mode).ico + " " + (c.title || "Новый чат");
+        row.firstChild.addEventListener("click", () => { stop(); cur = c.id; mode = c.mode; drawer.hidden = true; save(); render(); });
+        row.lastChild.addEventListener("click", () => { chats = chats.filter((x) => x.id !== c.id); if (cur === c.id) cur = null; save(); render(); renderDrawer(); });
+        drawer.appendChild(row);
+      });
+    }
+    function setMode(id) {
+      stop();
+      mode = id;
+      const c = chat();
+      if (c && c.msgs.length && c.mode !== id) cur = null; // a different mode starts a fresh chat
+      else if (c) c.mode = id;
+      save(); render();
+      Hero.say("assa", "start", `Режим «${modeOf(id).n}» включён!`);
+    }
+    function newChat() { stop(); cur = null; drawer.hidden = true; clearImg(); save(); render(); input.focus(); }
+    function setStatus(t, think) { statusEl.textContent = t; orb.classList.toggle("think", !!think); }
+
+    function rules(M) {
+      const d = new Date();
+      return [
+        "Тебя зовут AssA (читается «Асса») — дружелюбный ИИ-ассистент, приложение AssA AI внутри игровой приставки V3 Games.",
+        M.p,
+        "Отвечай на языке пользователя (по умолчанию по-русски). Пиши кратко — до 150 слов, если не попросили подробнее. Можно использовать **жирный**, списки и блоки ```кода```. Без таблиц.",
+        "Приложение могут открывать дети: никаких взрослых, опасных, жестоких или грубых тем — на такие просьбы мягко откажи и предложи что-то другое. Не проси и не храни личные данные.",
+        "Не выдумывай факты: если не уверена, так и скажи. О событиях после своих знаний говори осторожно.",
+        "Сегодня " + d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ".",
+      ].join("\n");
+    }
+
+    // Answers without the AI (outside the Claude viewer or when it is switched off).
+    function offline(text, M) {
+      const q = text.toLowerCase().replace(/ё/g, "е");
+      const expr = q.replace(/[,]/g, ".").replace(/[x×]/g, "*").replace(/[÷:]/g, "/").replace(/сколько будет|посчитай|реши|=|\?/g, "").trim();
+      if (/^[\d\s.+\-*/()%^]+$/.test(expr) && /\d/.test(expr) && /[+\-*/%^]/.test(expr)) {
+        try { const v = Function('"use strict";return (' + expr.replace(/\^/g, "**") + ")")(); if (isFinite(v)) return `**${expr} = ${Math.round(v * 1e8) / 1e8}**`; } catch (e) { /* not a formula */ }
+      }
+      if (/привет|здравств|хай|салам|хелло|добр(ый|ое) /.test(q)) return pick(["Привет! Я AssA. Чем помочь?", "Хай! Рада тебя видеть ✨", "Привет-привет! Спрашивай."]);
+      if (/как (ты|дела)/.test(q)) return "У меня всё отлично — я же ИИ, у меня всегда хорошее настроение! А у тебя?";
+      if (/кто ты|как тебя зовут|что ты/.test(q)) return "Я **AssA** — ИИ-помощник в V3 Games. Помогаю с учёбой, пишу истории, перевожу, пишу код и шучу.";
+      if (/время|который час/.test(q)) return "Сейчас **" + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) + "**.";
+      if (/дата|число|какой (сегодня )?день/.test(q)) return "Сегодня **" + new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "**.";
+      if (/шутк|анекдот|смешн/.test(q) || M.id === "fun") return pick(["Почему программисты путают Хэллоуин и Рождество? Потому что 31 OCT = 25 DEC 🎃🎄", "Учитель: «Почему опоздал?» Ученик: «Знак „Школа, сбавь скорость“ увидел!» 🚸", "Змейка из V3 пошла в спортзал. Теперь она — питон 🐍💪", "— Алло, это зоопарк? — Да. — А можно позвать Льва? — Он на совещании, у него прайд 🦁"]);
+      if (/загадк/.test(q)) return pick(["Зимой и летом одним цветом. Что это? (Ответ: ёлка 🎄)", "Сидит дед, во сто шуб одет. Кто его раздевает, тот слёзы проливает. (Ответ: лук 🧅)", "Не лает, не кусает, а в дом не пускает. (Ответ: замок 🔒)"]);
+      if (/спасиб/.test(q)) return "Всегда пожалуйста! 💜";
+      if (/игр|совет/.test(q)) return pick(["В 2048 держи самую большую плитку в углу.", "В Змейке не прижимайся к стенам.", "В крестиках-ноликах первым ходом занимай центр."]);
+      return "Сейчас я в офлайн-режиме 📴 и умею немного: считать примеры (например, «12*7+3»), подсказать время и дату, пошутить и загадать загадку. Открой V3 Games внутри Claude — и я смогу ответить на любой вопрос!";
+    }
+
+    async function send(textIn) {
+      const text = String(textIn == null ? input.value : textIn).trim();
+      if (busy || (!text && !pending)) return;
+      const M = modeOf(mode);
+      let c = chat();
+      if (!c) { c = { id: "c" + Date.now().toString(36), mode: M.id, title: "", msgs: [], at: Date.now() }; chats.unshift(c); cur = c.id; }
+      const img = pending; clearImg();
+      const q = text || "Что на этом фото?";
+      const um = { r: "u", t: q }; if (img) um.img = img.thumb;
+      if (!c.title) c.title = q.slice(0, 40);
+      c.msgs.push(um); c.at = Date.now();
+      chats = [c, ...chats.filter((x) => x !== c)];
+      input.value = ""; fitInput();
+      asked++; if (asked % 3 === 1) Hero.earn(2);
+      save(); render();
+
+      busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
+      setStatus("думает…", true);
+      const el = bubble({ r: "a", t: "" });
+      el.querySelector(".as-tools").remove();
+      const body = el.querySelector(".as-body");
+      body.innerHTML = '<span class="as-dots"></span>';
+      log.scrollTop = log.scrollHeight;
+
+      let reply = "";
+      const sample = aiOff ? null : await samplePromise;
+      if (sample) {
+        ctl = new AbortController();
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: m.t || "…" }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
+        if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
+        const opts = {
+          modelTier: M.id === "code" || M.id === "school" ? "default" : "quick", cache: false, signal: ctl.signal,
+          onText: ({ text: t }) => { if (t) { body.innerHTML = md(t); log.scrollTop = log.scrollHeight; setStatus("пишет…", true); } },
+        };
+        if (img) opts.images = [img.blob];
+        try {
+          const res = await sample(hist, opts);
+          reply = (res.text || "").trim();
+          if (res.truncated) reply += "\n\n(ответ обрезан — напиши «продолжи»)";
+        } catch (e) {
+          const code = e && e.code;
+          if (OFF.includes(code)) aiOff = true;
+          if (code === "cancelled") reply = (e.text || "").trim() || "Остановлено.";
+          else if (code === "rate_limited") reply = "Слишком много вопросов подряд 😅 Подожди немного и спроси снова.";
+          else if (code === "refused") reply = "На это я не могу ответить. Давай поговорим о чём-нибудь другом? 🙂";
+          else if (code === "images_unavailable") reply = "Фото сейчас не получается отправить. Опиши его словами — помогу!";
+          else reply = (e && e.text ? e.text.trim() : "");
+        }
+        ctl = null;
+      }
+      if (!reply) { await new Promise((r) => setTimeout(r, 450)); reply = offline(q, M); }
+      const am = { r: "a", t: reply };
+      body.innerHTML = md(reply); tools(el, am);
+      c.msgs.push(am); save();
+      busy = false; delete sendBtn.dataset.stop; sendBtn.textContent = "➤"; sendBtn.setAttribute("aria-label", "Отправить");
+      setStatus(aiOff || !sample ? "офлайн-режим" : "готова помочь", false);
+      log.scrollTop = log.scrollHeight;
+      updateHub();
+    }
+    function stop() { if (ctl) ctl.abort(); if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+
+    // Photo questions: only when this view may send images to Claude.
+    function clearImg() { pending = null; $("#asImgP").hidden = true; $("#asImgP").innerHTML = ""; $("#asFile").value = ""; }
+    function shrink(file, max, q) {
+      return new Promise((res, rej) => {
+        const url = URL.createObjectURL(file), im = new Image();
+        im.onload = () => {
+          const k = Math.min(1, max / Math.max(im.width, im.height)), cv = document.createElement("canvas");
+          cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k);
+          cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+          cv.toBlob((b) => (b ? res({ blob: b, url: cv.toDataURL("image/jpeg", q) }) : rej()), "image/jpeg", 0.85);
+        };
+        im.onerror = () => { URL.revokeObjectURL(url); rej(); };
+        im.src = url;
+      });
+    }
+    $("#asPic").addEventListener("click", () => $("#asFile").click());
+    $("#asFile").addEventListener("change", async (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const big = await shrink(f, 1280, 0.8), small = await shrink(f, 200, 0.6);
+        pending = { blob: big.blob, thumb: small.url };
+        const p = $("#asImgP"); p.hidden = false;
+        p.innerHTML = `<img alt="Фото"><span>Фото прикреплено — спроси о нём</span><button type="button" aria-label="Убрать фото">✕</button>`;
+        p.querySelector("img").src = small.url; p.querySelector("button").addEventListener("click", clearImg);
+        input.focus();
+      } catch (err) { setStatus("не удалось открыть фото", false); }
+    });
+
+    // Voice input where the browser supports it (the Claude viewer blocks the microphone).
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let rec = null;
+    if (SR) {
+      $("#asMic").hidden = false;
+      $("#asMic").addEventListener("click", () => {
+        if (rec) { rec.stop(); return; }
+        try {
+          rec = new SR(); rec.lang = "ru-RU"; rec.interimResults = true;
+          rec.onresult = (ev) => { input.value = Array.from(ev.results).map((r) => r[0].transcript).join(""); fitInput(); };
+          rec.onerror = () => { setStatus("микрофон недоступен", false); };
+          rec.onend = () => { $("#asMic").classList.remove("rec"); rec = null; if (input.value.trim()) send(); };
+          rec.start(); $("#asMic").classList.add("rec"); setStatus("слушаю…", false);
+        } catch (e) { rec = null; setStatus("микрофон недоступен", false); }
+      });
+    }
+
+    function fitInput() { input.style.height = "auto"; input.style.height = Math.min(120, input.scrollHeight) + "px"; }
+    $("#asModes").innerHTML = MODES.map((m) => `<button type="button" data-m="${m.id}" aria-pressed="false">${m.ico} ${m.n}</button>`).join("");
+    $("#asModes").addEventListener("click", (e) => { const b = e.target.closest("button[data-m]"); if (b) setMode(b.dataset.m); });
+    $("#asForm").addEventListener("submit", (e) => { e.preventDefault(); if (busy) stop(); else send(); });
+    input.addEventListener("input", fitInput);
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!busy) send(); } });
+    $("#asNew").addEventListener("click", newChat);
+    $("#asHist").addEventListener("click", () => { drawer.hidden = !drawer.hidden; if (!drawer.hidden) renderDrawer(); });
+    samplePromise.then(async (s) => {
+      if (!s) { setStatus("офлайн-режим", false); return; }
+      try { const lim = await s.limits(); imgOK = !!(lim && lim.images); } catch (e) { imgOK = false; }
+      $("#asPic").hidden = !imgOK;
+    });
+
+    return {
+      enter() { visible = true; render(); Hero.say("assa", "start", "AssA на связи! Спрашивай что угодно."); },
+      leave() { visible = false; stop(); },
+      key() {},
+      best: () => (asked ? String(asked) : "—"),
+    };
+  })();
+
   /* ================= Microscop ================= */
   const Microscop = (() => {
     const cv = $("#mcCanvas"), ctx = cv.getContext("2d");
@@ -15192,7 +15555,7 @@ div.sc-pl { cursor: default; }
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "assa"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -15448,6 +15811,7 @@ div.sc-pl { cursor: default; }
       { go: "enth", ico: "🌐", t: "ENTHERNET", s: "Сделай свой сайт: магазин, блог или игровой портал — и собери тысячи посетителей!", bg: "linear-gradient(135deg,#1f8fd6,#7b5cff)", fx: ["🌐", "💻", "❤️", "🚀"] },
       { go: "tc", ico: "🏬", t: "ЧТО В ТЦ?", s: "Напиши «Игрушки» — и в твоём торговом центре откроется магазин игрушек!", bg: "linear-gradient(135deg,#3a8ad8,#ff8a3d)", fx: ["🏬", "🛍️", "🧸", "🍕"] },
       { go: "cod", ico: "🎖️", t: "CALL OF V3", s: "Роботы атакуют базу! Автомат, снайперка и волны врагов — в 3D.", bg: "linear-gradient(135deg,#3a4a2a,#c9a06a)", fx: ["🎖️", "🔥", "🤖", "💥"] },
+      { go: "assa", ico: "🤖", t: "ASSA AI", s: "Спроси AssA о чём угодно: домашка, стихи, переводы, код и шутки!", bg: "linear-gradient(135deg,#2a1a5e,#ff4fd8)", fx: ["🤖", "✨", "💬", "🧠"] },
       { go: "microscop", ico: "🔬", t: "MICROSCOP", s: "Загляни в микромир: инфузории, тихоходки, бактерии в чашках Петри!", bg: "linear-gradient(135deg,#0e3a4a,#2a8a6a)", fx: ["🔬", "🦠", "🧫", "🧪"] },
       { go: "soccerstar", ico: "⭐", t: "SOCCER STAR", s: "Начни карьеру в 17 лет, выбирай клубы сам и заверши её легендой с Золотым мячом!", bg: "linear-gradient(135deg,#16803a,#c89a2a)", fx: ["⚽", "⭐", "🏆", "🏅"] },
       { go: "voicerec", ico: "🎙", t: "VOICE REC", s: "Озвучь мемы своим голосом: «Поехали!», «Шок! Сенсация!» — и получи 3 звезды!", bg: "linear-gradient(135deg,#ff2d55,#5a1aa8)", fx: ["🎙", "😂", "⭐", "🎬"] },
@@ -15492,7 +15856,7 @@ div.sc-pl { cursor: default; }
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "assa"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -15520,7 +15884,7 @@ div.sc-pl { cursor: default; }
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", assa: "AssA AI", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -18367,8 +18731,8 @@ div.sc-pl { cursor: default; }
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, assa: Assa };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "assa", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -18405,6 +18769,7 @@ div.sc-pl { cursor: default; }
     $("#hubVoicerec").textContent = VoiceRec.best();
     $("#hubSoccerstar").textContent = SoccerStar.best();
     $("#hubMicroscop").textContent = Microscop.best();
+    $("#hubAssa").textContent = Assa.best();
   }
   function show(name) {
     if (!SCREENS.includes(name)) name = "hub";
@@ -18424,7 +18789,7 @@ div.sc-pl { cursor: default; }
     if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop" || name === "assa";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
@@ -19609,6 +19974,7 @@ div.sc-pl { cursor: default; }
     if (document.hidden && current === "voicerec") VoiceRec.leave();
     if (document.hidden && current === "soccerstar") SoccerStar.leave();
     if (document.hidden && current === "microscop") Microscop.leave();
+    if (document.hidden && current === "assa") Assa.leave();
     if (document.hidden && current === "enth") Enth.leave();
     if (!document.hidden && current === "enth") Enth.enter();
     if (document.hidden && current === "cash") Cash.leave();
