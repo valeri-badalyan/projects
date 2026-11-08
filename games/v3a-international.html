@@ -2050,9 +2050,11 @@ let SUM = null, sumCool = 0;
 function openWhistle() {
   if (state !== "play") return;
   if (SUM && (SUM.ph === "follow" || SUM.ph === "stand")) { dismissHero(); return; } // the second whistle sends the hero home
+  if (SUM && SUM.ph !== "down") { if (SUM.g) G3.scene.remove(SUM.g); SUM = null; } // heroes never rest: the next one can come while the last is still flying off
+  sumCool = 0;
   if (SUM || CITY.id !== "hero") return;
   const box = $("wsBody"); box.innerHTML = "";
-  box.appendChild(Object.assign(el("p", "prog", ""), { style: "color:#3a2a10" })).textContent = sumCool > 0 ? `Герои отдыхают ещё ${Math.ceil(sumCool)} с.` : "Свистни — и герой спустится с неба и останется с тобой: будет ходить за тобой, ездить, летать в другие города и даже спать рядом. Свистни ещё раз — и он улетит.";
+  box.appendChild(Object.assign(el("p", "prog", ""), { style: "color:#3a2a10" })).textContent = "Герои Хиротауна никогда не отдыхают — зови сколько хочешь. " + "Свистни — и герой спустится с неба и останется с тобой: будет ходить за тобой, ездить, летать в другие города и даже спать рядом. Свистни ещё раз — и он улетит.";
   HEROES.forEach((hr, i) => {
     const b = el("button", "hero-pick"); b.type = "button"; b.id = "hero-" + i; b.style.setProperty("--hc", hr.suit);
     const ic = el("i", null, hr.mark); b.append(ic, el("span", null, hr.name), el("small", null, POWERS[i].info));
@@ -2105,7 +2107,7 @@ function tickSummon(dt) {
     }
   } else { // flying away
     S2.z = 520 * (S2.t / 1.8) ** 2;
-    if (S2.t > 1.8) { if (S2.g) G3.scene.remove(S2.g); SUM = null; sumCool = 20; return; }
+    if (S2.t > 1.8) { if (S2.g) G3.scene.remove(S2.g); SUM = null; sumCool = 0; return; }
   }
   if (S2.g) {
     S2.g.visible = true; const bob = S2.ph === "follow" && !lying ? Math.abs(Math.sin((S2.walk || 0))) * 1.2 : 0;
