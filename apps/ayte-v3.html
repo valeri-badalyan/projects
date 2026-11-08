@@ -247,6 +247,7 @@ textarea.input { resize: vertical; min-height: 64px; }
 .person small { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .person small.on { color: var(--green); }
 .person input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+.person > .tag { flex: 0 0 auto; display: inline-block; }
 .tag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
 .hero { display: grid; justify-items: center; gap: 6px; text-align: center; }
 .hero h3 { margin: 6px 0 0; font-size: 19px; text-wrap: balance; }
@@ -468,6 +469,15 @@ function dbBackend(db, me) {
     getPriv: async (k) => { const s = await priv(k).get(); return s.exists ? s.data() : null; },
     delPriv: (k) => q("p/" + k, () => priv(k).delete()),
     setProfile: (d) => q("me", () => db.doc("people/" + me).set(d)),
+    lookupPhone: async (id) => { const s = await db.doc("phones/" + id).get(); const d = s.exists ? s.data() : null; return d && typeof d.uid === "string" ? d.uid : null; },
+    claimPhone: (id) => q("ph/" + id, async () => {
+      const ref = db.doc("phones/" + id), r = await ref.acquire({ holder: me, ttlMs: 5000 });
+      if (!r.acquired) return "busy";
+      const s = await ref.get(), d = s.exists ? s.data() : null;
+      if (d && d.uid && d.uid !== me) return "taken";
+      await ref.set({ uid: me, t: Date.now() }); return "ok";
+    }),
+    releasePhone: (id) => q("ph/" + id, async () => { const ref = db.doc("phones/" + id), s = await ref.get(); if (s.exists && (s.data() || {}).uid === me) await ref.delete(); }),
   };
 }
 function localBackend(me) {
@@ -493,6 +503,9 @@ function localBackend(me) {
     setMsg: (cid, id, d) => set("chats/" + cid + "/msgs/" + id, d), patchMsg: (cid, id, d) => upd("chats/" + cid + "/msgs/" + id, d), delMsg: (cid, id) => del("chats/" + cid + "/msgs/" + id),
     setPriv: (k, d) => set("priv/" + k, d), setProfile: (d) => set("people/" + me, d),
     getPriv: async (k) => (D["priv/" + k] ? clone(D["priv/" + k]) : null), delPriv: (k) => del("priv/" + k),
+    lookupPhone: async (id) => (D["phones/" + id] ? D["phones/" + id].uid : null),
+    claimPhone: async (id) => { const d = D["phones/" + id]; if (d && d.uid !== me) return "taken"; await set("phones/" + id, { uid: me, t: Date.now() }); return "ok"; },
+    releasePhone: async (id) => { const d = D["phones/" + id]; if (d && d.uid === me) await del("phones/" + id); },
   };
 }
 // This-device mode only: one example channel so the app has something to show. Never written to the shared base.
@@ -516,7 +529,7 @@ const st = {
   online: new Set(), typing: {}, peersRaw: [],
   active: null, preview: null, msgs: [], msgUnsub: null, fresh: null,
   folder: "all", q: "", reply: null, edit: null, find: "", panelTab: "emoji",
-  saved: [], ai: [], aiDraft: null, aiBusy: false, pics: new Map(), picLoading: new Set(),
+  saved: [], ai: [], aiDraft: null, aiBusy: false, pics: new Map(), picLoading: new Set(), myPhone: null, contacts: [],
   lastSeen: {}, muted: ls.get("muted", {}), sound: ls.get("sound", true), theme: ls.get("theme", "system"),
 };
 const PSEUDO = { saved: { id: "saved", kind: "saved" }, ai: { id: "ai", kind: "ai" } };
@@ -651,8 +664,9 @@ function renderList() {
       <span class="row-bot">${prev}${u ? `<span class="badge${muted ? " quiet" : ""}">•</span>` : ""}</span></span></button></li>`;
   }).join("");
   const realCount = [...st.chats.values()].length;
-  if (!q && st.folder !== "all" && !items.length) html += `<li class="list-note"><strong>${{ dm: "Личных чатов пока нет", group: "Групп пока нет", channel: "Каналов пока нет" }[st.folder]}</strong>${st.folder === "dm" ? "Нажмите «+» и выберите человека." : st.folder === "group" ? "Создайте группу через «+» или найдите открытую." : "Создайте свой канал или подпишитесь на чужой."}<button class="btn sec" type="button" data-open="${st.folder === "dm" ? "people" : "discover"}">${st.folder === "dm" ? "Выбрать человека" : "Найти группы и каналы"}</button></li>`;
-  else if (!q && st.folder === "all" && !realCount && st.mode === "db") html += `<li class="list-note"><strong>Здесь появятся ваши чаты</strong>Нажмите «+»: в списке все, кто уже открывал Ayte V3. Можно создать группу или канал.<button class="btn sec" type="button" data-open="people">Найти людей</button></li>`;
+  if (st.phoneKnown && !st.myPhone && !q && st.folder === "all" && st.mode === "db") html = `<li class="list-note"><strong>Укажите свой номер</strong>Тогда друзья смогут найти вас в Ayte V3.<button class="btn sec" type="button" data-open="profile">Указать номер</button></li>` + html;
+  if (!q && st.folder !== "all" && !items.length) html += `<li class="list-note"><strong>${{ dm: "Личных чатов пока нет", group: "Групп пока нет", channel: "Каналов пока нет" }[st.folder]}</strong>${st.folder === "dm" ? "Найдите человека по номеру телефона." : st.folder === "group" ? "Создайте группу через «+» или найдите открытую." : "Создайте свой канал или подпишитесь на чужой."}<button class="btn sec" type="button" data-open="${st.folder === "dm" ? "people" : "discover"}">${st.folder === "dm" ? "Найти по номеру" : "Найти группы и каналы"}</button></li>`;
+  else if (!q && st.folder === "all" && !realCount && st.mode === "db") html += `<li class="list-note"><strong>Здесь появятся ваши чаты</strong>Нажмите «+» и найдите друга по номеру телефона. Можно создать группу или канал.<button class="btn sec" type="button" data-open="people">Найти по номеру</button></li>`;
   else if (q && !items.length) html += `<li class="list-note">По запросу «${esc(st.q.trim())}» чатов нет.</li>`;
   if (st.folder === "channel" || st.folder === "group") { if (items.length) html += `<li class="list-note"><button class="btn sec" type="button" data-open="discover">Найти открытые группы и каналы</button></li>`; }
   listEl.innerHTML = html;
@@ -1077,29 +1091,77 @@ function personRow(uid, extra = "", tag = "") {
   const on = st.online.has(uid) && uid !== st.me, p = st.people.get(uid) || {};
   return `${avHTML(personAv(uid), 42, on)}<span><b>${esc(nameOf(uid))}${uid === st.me ? " (вы)" : ""}</b><small class="${on ? "on" : ""}">${esc(on ? "в сети" : p.bio ? p.bio : seenText(p.seen))}</small></span>${tag}${extra}`;
 }
-const othersSorted = () => [...st.people.keys()].filter((u) => u !== st.me).sort((a, b) => (st.online.has(b) - st.online.has(a)) || (((st.people.get(b) || {}).seen || 0) - ((st.people.get(a) || {}).seen || 0)));
-
+/* contacts: people found by phone number plus everyone you already chat with */
+const contactIds = () => {
+  const ids = new Set(st.contacts.map((x) => x.uid));
+  st.chats.forEach((c) => { if (c.kind === "dm") { const o = other(c); if (o !== st.me) ids.add(o); } });
+  ids.delete(st.me);
+  return [...ids].sort((a, b) => (st.online.has(b) - st.online.has(a)) || nameOf(a).localeCompare(nameOf(b), "ru"));
+};
+const othersSorted = contactIds;
+const COUNTRIES = [["🇦🇲", "+374"], ["🇷🇺", "+7"], ["🇰🇿", "+7"], ["🇺🇦", "+380"], ["🇧🇾", "+375"], ["🇬🇪", "+995"], ["🇦🇿", "+994"], ["🇺🇿", "+998"], ["🇰🇬", "+996"], ["🇹🇯", "+992"], ["🇦🇪", "+971"], ["🇹🇷", "+90"], ["🇩🇪", "+49"], ["🇫🇷", "+33"], ["🇬🇧", "+44"], ["🇺🇸", "+1"]];
+const phoneDigits = (code, num) => (code + String(num || "")).replace(/\D/g, "");
+// the directory stores only a hash of the number, never the number itself
+const phoneId = (digits) => "p-" + hash53("ayte-phone:" + digits) + hash53("v3:" + digits).slice(0, 4);
+function fmtPhone(code, num) {
+  const d = String(num || "").replace(/\D/g, "");
+  // 8 digits and fewer: "77 123 456"; longer: "912 345 67 89"
+  const parts = d.length <= 8 ? [d.slice(0, d.length - 6), d.slice(-6, -3), d.slice(-3)] : [d.slice(0, d.length - 7), d.slice(-7, -4), d.slice(-4, -2), d.slice(-2)];
+  return code + " " + parts.filter(Boolean).join(" ");
+}
+function phoneFields(prefix, ci, num) {
+  return `<div style="display:flex;gap:6px"><select class="input" id="${prefix}Code" aria-label="Код страны" style="width:auto;flex-shrink:0">${COUNTRIES.map(([f, c], i) => `<option value="${i}" ${+ci === i ? "selected" : ""}>${f} ${c}</option>`).join("")}</select><input class="input" id="${prefix}Num" type="tel" inputmode="tel" maxlength="16" value="${esc(num || "")}" placeholder="Номер без кода страны" autocomplete="off" aria-label="Номер телефона" style="flex:1;min-width:0"></div>`;
+}
+function readPhone(b, prefix) {
+  const ci = Math.min(COUNTRIES.length - 1, Math.max(0, +b.querySelector("#" + prefix + "Code").value || 0)), num = b.querySelector("#" + prefix + "Num").value.replace(/\D/g, "");
+  return { ci, code: COUNTRIES[ci][1], num, ok: num.length >= 6 && num.length <= 12 };
+}
+function saveContacts() { st.B.setPriv("contacts", { items: st.contacts.slice(-500) }).catch((e) => toast("Контакт не сохранён: " + errText(e))); }
+function addContact(uid, label) {
+  const i = st.contacts.findIndex((x) => x.uid === uid);
+  if (uid === st.me || (i >= 0 && st.contacts[i].phone === label)) return;
+  st.contacts = st.contacts.filter((x) => x.uid !== uid).concat([{ uid, phone: label, t: now() }]); saveContacts();
+}
+const contactPhone = (uid) => (st.contacts.find((x) => x.uid === uid) || {}).phone || "";
+function openPeople() {
+  openSheet("Найти по номеру", `
+    <div class="field"><span>Номер телефона</span>${phoneFields("f", st.myPhone ? st.myPhone.ci : 0, "")}</div>
+    <button class="btn" type="button" id="fGo">Найти</button>
+    <div id="fRes" aria-live="polite"></div>
+    ${!st.myPhone ? `<div class="note" style="display:grid;gap:6px;justify-items:start">Вас самого пока нельзя найти: укажите свой номер в профиле.<button class="btn sec" type="button" id="fMine">Указать мой номер</button></div>` : ""}
+    <div class="field"><span>Контакты</span><ul class="people" id="fList"></ul></div>`, (b) => {
+    const list = () => { const ids = contactIds(); b.querySelector("#fList").innerHTML = ids.length ? ids.map((u) => `<li><button class="person" type="button" data-dm="${esc(u)}">${personRow(u, contactPhone(u) ? `<small class="tag">${esc(contactPhone(u))}</small>` : "")}</button></li>`).join("") : `<li class="note">Контактов пока нет. Введите номер друга: если он есть в Ayte V3, вы сможете ему написать.</li>`; };
+    list();
+    const go = async () => {
+      const ph = readPhone(b, "f"), res = b.querySelector("#fRes");
+      if (!ph.ok) { res.innerHTML = `<p class="note">Введите номер без кода страны: от 6 до 12 цифр.</p>`; b.querySelector("#fNum").focus(); return; }
+      const label = fmtPhone(ph.code, ph.num);
+      res.innerHTML = `<p class="note">Ищем ${esc(label)}…</p>`;
+      let uid = null;
+      try { uid = await st.B.lookupPhone(phoneId(phoneDigits(ph.code, ph.num))); } catch (e) { res.innerHTML = `<p class="note">Не удалось проверить номер: ${esc(errText(e))}.</p>`; return; }
+      if (uid === st.me) { res.innerHTML = `<p class="note">Это ваш номер.</p>`; return; }
+      if (!uid) { res.innerHTML = `<p class="note"><b style="color:var(--ink)">${esc(label)}</b> нет в Ayte V3. Отправьте человеку ссылку на Ayte: когда он укажет этот номер в профиле, вы его найдёте.</p>`; return; }
+      addContact(uid, label);
+      res.innerHTML = `<ul class="people"><li><button class="person" type="button" data-dm="${esc(uid)}">${personRow(uid, `<span class="tag">Написать</span>`)}</button></li></ul>`;
+      list();
+    };
+    b.querySelector("#fGo").addEventListener("click", go);
+    b.querySelector("#fNum").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
+    b.querySelector("#fNum").addEventListener("input", (e) => { e.target.value = e.target.value.replace(/[^\d\s()-]/g, ""); });
+    const fm = b.querySelector("#fMine"); if (fm) fm.addEventListener("click", openProfile);
+    b.addEventListener("click", (e) => { const d = e.target.closest("[data-dm]"); if (d) { closeSheet(); openDM(d.dataset.dm); } });
+    if (!isTouch()) b.querySelector("#fNum").focus();
+  });
+}
 function openNew() {
   openSheet("Новый чат", `
     <div class="people">
-      <button class="person" type="button" data-n="people"><span class="av" style="--s:42px;--c:#2f7cf2" aria-hidden="true">${I.user}</span><span><b>Написать человеку</b><small>Личный чат с тем, кто открывал Ayte</small></span></button>
+      <button class="person" type="button" data-n="people"><span class="av" style="--s:42px;--c:#2f7cf2" aria-hidden="true">${I.user}</span><span><b>Найти по номеру</b><small>Личный чат с человеком по номеру телефона</small></span></button>
       <button class="person" type="button" data-n="group"><span class="av" style="--s:42px;--c:#18995c" aria-hidden="true">${I.group}</span><span><b>Создать группу</b><small>Общий чат на несколько человек</small></span></button>
       <button class="person" type="button" data-n="channel"><span class="av" style="--s:42px;--c:#ec5a2a" aria-hidden="true">${I.channel}</span><span><b>Создать канал</b><small>Пишете вы, остальные читают и ставят реакции</small></span></button>
       <button class="person" type="button" data-n="discover"><span class="av" style="--s:42px;--c:#7b5cf0" aria-hidden="true">${I.globe}</span><span><b>Найти группы и каналы</b><small>Открытые чаты, куда можно вступить</small></span></button>
     </div>${st.mode === "local" ? `<p class="note">Сейчас Ayte работает в режиме устройства: чаты видите только вы. Общение с другими людьми работает на опубликованной странице Ayte V3.</p>` : ""}`,
   (b) => b.addEventListener("click", (e) => { const n = e.target.closest("[data-n]"); if (!n) return; ({ people: openPeople, group: () => openCreate("group"), channel: () => openCreate("channel"), discover: openDiscover })[n.dataset.n](); }));
-}
-function openPeople() {
-  const draw = (b, q) => {
-    const list = othersSorted().filter((u) => !q || nameOf(u).toLowerCase().includes(q));
-    b.querySelector("#pl").innerHTML = list.length ? list.map((u) => `<li><button class="person" type="button" data-dm="${esc(u)}">${personRow(u)}</button></li>`).join("")
-      : `<li class="note">${q ? "Никого не нашли." : st.mode === "local" ? "В режиме устройства других людей нет. Откройте опубликованную страницу Ayte V3, чтобы писать друзьям." : "Пока здесь только вы. Поделитесь ссылкой на Ayte V3 — каждый, кто откроет страницу, появится в этом списке."}</li>`;
-  };
-  openSheet("Написать человеку", `<input class="input" id="pq" type="search" placeholder="Поиск по имени" autocomplete="off" aria-label="Поиск людей"><ul class="people" id="pl"></ul>`, (b) => {
-    draw(b, "");
-    b.querySelector("#pq").addEventListener("input", (e) => draw(b, e.target.value.trim().toLowerCase()));
-    b.addEventListener("click", (e) => { const d = e.target.closest("[data-dm]"); if (d) { closeSheet(); openDM(d.dataset.dm); } });
-  });
 }
 const dmId = (u) => "d-" + hash53([st.me, u].sort().join("|"));
 async function openDM(u) {
@@ -1124,7 +1186,7 @@ function openCreate(kind) {
     <div class="field"><span>Значок</span><div class="emopick" id="cEmo">${["👥", "📣", "🎮", "⚽", "📚", "🎵", "🍕", "🚀", "💼", "🎨", "🔥", "✈️"].map((e) => `<button type="button" data-e="${e}" aria-pressed="${e === emoji}">${e}</button>`).join("")}</div></div>
     <div class="field"><span>Цвет</span><div class="swatches" id="cCol">${COLORS.map((c) => `<button type="button" data-c="${c}" style="--c:${c}" aria-pressed="${c === color}" aria-label="Цвет ${c}"></button>`).join("")}</div></div>
     <label class="check"><input type="checkbox" id="cOpen" ${isG ? "" : "checked"}><span>${isG ? "Открытая группа — её можно найти и вступить" : "Открытый канал — его можно найти и подписаться"}</span></label>
-    ${isG ? `<div class="field"><span>Участники</span><ul class="people" id="cPeople">${othersSorted().map((u) => `<li><label class="person">${personRow(u, `<input type="checkbox" data-pick="${esc(u)}">`)}</label></li>`).join("") || `<li class="note">Других людей пока нет — группу можно создать и позвать участников позже.</li>`}</ul></div>` : ""}
+    ${isG ? `<div class="field"><span>Участники</span><ul class="people" id="cPeople">${othersSorted().map((u) => `<li><label class="person">${personRow(u, `<input type="checkbox" data-pick="${esc(u)}">`)}</label></li>`).join("") || `<li class="note">Контактов пока нет. Найдите друзей по номеру телефона — потом их можно добавить в группу.</li>`}</ul></div>` : ""}
     <button class="btn" type="button" id="cGo">${isG ? "Создать группу" : "Создать канал"}</button>`, (b) => {
     b.querySelector("#cEmo").addEventListener("click", (e) => { const x = e.target.closest("[data-e]"); if (!x) return; emoji = x.dataset.e; b.querySelectorAll("#cEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
     b.querySelector("#cCol").addEventListener("click", (e) => { const x = e.target.closest("[data-c]"); if (!x) return; color = x.dataset.c; b.querySelectorAll("#cCol button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
@@ -1197,6 +1259,7 @@ function openInfo() {
   let html = `<div class="hero">${avHTML(chatAv(c), 84, false)}<h3>${esc(chatTitle(c))}</h3><p>${esc(sub.t)}</p></div>`;
   if (c.kind === "dm") {
     const p = st.people.get(other(c)) || {};
+    if (contactPhone(other(c))) html += `<div class="field"><span>Телефон</span><p style="margin:0;font-variant-numeric:tabular-nums">${esc(contactPhone(other(c)))}</p></div>`;
     if (p.bio) html += `<div class="field"><span>О себе</span><p style="margin:0">${esc(p.bio)}</p></div>`;
   }
   if (c.kind === "group" || c.kind === "channel") {
@@ -1266,6 +1329,7 @@ function openProfile() {
   openSheet("Мой профиль", `
     <div class="hero"><div id="prAv"></div><div class="btn-row"><button class="btn sec" type="button" id="prPhoto">Загрузить фото</button>${photo ? `<button class="btn sec" type="button" id="prNoPhoto">Убрать фото</button>` : ""}</div></div>
     <label class="field"><span>Имя в Ayte</span><input class="input" id="prNick" maxlength="24" value="${esc(p.nick || "")}" placeholder="${esc(st.names[st.me] || "Как вас называть")}" autocomplete="off"></label>
+    <div class="field"><span>Мой номер телефона</span>${phoneFields("pr", st.myPhone ? st.myPhone.ci : 0, st.myPhone ? st.myPhone.num : "")}<small class="note">По номеру вас находят друзья. Сам номер никому не показывается.</small></div>
     <label class="field"><span>О себе</span><input class="input" id="prBio" maxlength="80" value="${esc(p.bio || "")}" placeholder="Пара слов о себе" autocomplete="off"></label>
     <div class="field"><span>Аватар-эмодзи</span><div class="emopick" id="prEmo">${AV_EMOJI.map((e) => `<button type="button" data-e="${e}" aria-pressed="${e === emoji}" aria-label="${e || "Без эмодзи"}">${e || "Аа"}</button>`).join("")}</div></div>
     <div class="field"><span>Цвет</span><div class="swatches" id="prCol">${COLORS.map((c) => `<button type="button" data-c="${c}" style="--c:${c}" aria-pressed="${c === color}" aria-label="Цвет ${c}"></button>`).join("")}</div></div>
@@ -1284,7 +1348,22 @@ function openProfile() {
     $("#avatarIn").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const r = await compress(f, 192, 24000, true); photo = r.src; emoji = ""; b.querySelectorAll("#prEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y.dataset.e === ""))); preview(); } catch (er) { toast("Не удалось открыть фото"); } };
     b.querySelector("#prSave").addEventListener("click", async () => {
       const d = { nick: b.querySelector("#prNick").value.replace(/\s+/g, " ").trim().slice(0, 24), bio: b.querySelector("#prBio").value.trim().slice(0, 80), color, emoji, photo, seen: now() };
-      try { await st.B.setProfile(d); st.people.set(st.me, d); closeSheet(); renderMe(); renderList(); toast("Профиль сохранён"); } catch (e) { toast("Не сохранено: " + errText(e)); }
+      const ph = readPhone(b, "pr"), rawNum = b.querySelector("#prNum").value.trim();
+      if (rawNum && !ph.ok) { toast("Номер: от 6 до 12 цифр без кода страны"); b.querySelector("#prNum").focus(); return; }
+      try {
+        const oldD = st.myPhone ? phoneDigits(st.myPhone.code, st.myPhone.num) : "", newD = rawNum ? phoneDigits(ph.code, ph.num) : "";
+        if (newD !== oldD) {
+          if (newD) {
+            const r = await st.B.claimPhone(phoneId(newD));
+            if (r === "taken") { toast("Этот номер уже указал другой человек"); return; }
+            if (r === "busy") { toast("Номер сейчас проверяется, попробуйте через пару секунд"); return; }
+          }
+          if (oldD) await st.B.releasePhone(phoneId(oldD));
+          st.myPhone = newD ? { ci: ph.ci, code: ph.code, num: ph.num } : null;
+          await st.B.setPriv("phone", st.myPhone ? Object.assign({}, st.myPhone) : { none: true });
+        }
+        await st.B.setProfile(d); st.people.set(st.me, d); closeSheet(); renderMe(); renderList(); toast("Профиль сохранён");
+      } catch (e) { toast("Не сохранено: " + errText(e)); }
     });
   });
 }
@@ -1327,7 +1406,7 @@ function toast(text, cid) {
 /* ================= events ================= */
 listEl.addEventListener("click", (e) => {
   const r = e.target.closest("[data-cid]"); if (r) { openChat(r.dataset.cid); return; }
-  const o = e.target.closest("[data-open]"); if (o) (o.dataset.open === "people" ? openPeople : openDiscover)();
+  const o = e.target.closest("[data-open]"); if (o) ({ people: openPeople, discover: openDiscover, profile: openProfile })[o.dataset.open]();
 });
 $("#folders").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; st.folder = b.dataset.f; renderList(); });
 $("#q").addEventListener("input", (e) => { st.q = e.target.value; renderList(); });
@@ -1471,6 +1550,8 @@ async function boot() {
   st.loadTimer = setTimeout(() => { if (!st.chatsReady && st.mode === "db") { st.netErr = "База Ayte отвечает медленно — список может быть неполным."; renderNet(); } }, 10000);
   st.B.watchChats(onChats, (e) => { st.netErr = "Чаты не загрузились: " + errText(e) + ". Откройте страницу заново."; renderNet(); });
   st.B.watchPeople(onPeople, () => {});
+  st.B.watchPriv("contacts", (d) => { st.contacts = d && Array.isArray(d.items) ? d.items.filter((x) => x && typeof x.uid === "string") : []; }, () => {});
+  st.B.watchPriv("phone", (d) => { st.myPhone = d && d.num && COUNTRIES[+d.ci] ? { ci: +d.ci, code: COUNTRIES[+d.ci][1], num: String(d.num) } : null; st.phoneKnown = true; renderListSoon(); }, () => {});
   st.B.watchPriv("saved", (d) => { st.saved = d && Array.isArray(d.items) ? d.items : []; if (st.active === "saved") { st.msgs = st.saved; renderMsgs(); } renderListSoon(); }, () => {});
   st.B.watchPriv("ai", (d) => { if (st.aiBusy) return; st.ai = d && Array.isArray(d.items) ? d.items : []; if (st.active === "ai") { st.msgs = st.ai; renderMsgs(); } renderListSoon(); }, () => {});
   renderList();
