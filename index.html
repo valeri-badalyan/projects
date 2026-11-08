@@ -3568,6 +3568,7 @@ div.sc-pl { cursor: default; }
     { id: "maremed",   name: "Маремед",   tier: "paid",  skin: "#8d5a3b", hair: "buzz",  hairC: "#16121a", shirt: "#ff8a3d", accent: "#ffa45c", bg: ["#ffc27a", "#6b2f12"], acc: ["beard", "earring"], motto: "Работаем чётко." },
     { id: "khabich",   name: "Хабич",     tier: "ultra", skin: "#e2b48f", hair: "slick", hairC: "#121014", shirt: "#1d1a2b", accent: "#ffd36b", bg: ["#ffe08a", "#b8741a", "#2a1a06"], acc: ["chain", "crown", "shades"], motto: "Король поля на месте." },
     { id: "emir",      name: "Эмир",      tier: "ultra", skin: "#c8916b", hair: "flame", hairC: "#ff5ad1", shirt: "#2d1b5e", accent: "#ff5ad1", bg: ["#7cf8ff", "#7a3cff", "#12062e"], acc: ["jacket", "glow"], motto: "Горю на максимум!" },
+    { id: "titan",     name: "Титан",     tier: "giga",  skin: "#b8bcc8", hair: "buzz",  hairC: "#8a8e9c", shirt: "#6a6e7c", accent: "#e05cff", bg: ["#5a1fa0", "#1c0838", "#000"], acc: [], motto: "Стальная мощь V3. Ядро заряжено!" },
     { id: "valeriy",   name: "Валерий",   tier: "giga",  skin: "#141419", hair: "buzz",  hairC: "#141419", shirt: "#141419", accent: "#c77dff", bg: ["#3a0f6e", "#12062e", "#000"], acc: [], motto: "V3 — моя система." },
   ];
   const SLOTS = { head: "Голова", eyes: "Глаза", neck: "Шея", fx: "Эффекты" };
@@ -3668,7 +3669,58 @@ div.sc-pl { cursor: default; }
     if (cl.head) d.push(`<path d="M24 30 C26 6 74 6 76 30Z" fill="${cl.head.col}" opacity=".9"/>`);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Валерий">${d.join("")}</svg>`;
   }
+  // Титан (Гига Ультра): a silver knight-helmet robot with glowing violet eyes and a lightning core in the chest
+  function titanSVG(u, cl) {
+    cl = cl || {};
+    const d = [];
+    d.push(`<defs>
+      <radialGradient id="${u}tb" cx=".5" cy=".55" r=".8"><stop offset="0" stop-color="#7a2ad0"/><stop offset=".5" stop-color="#2a0a5a"/><stop offset="1" stop-color="#05010f"/></radialGradient>
+      <linearGradient id="${u}tm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f4fa"/><stop offset=".35" stop-color="#b8bcc8"/><stop offset=".7" stop-color="#7a7e8c"/><stop offset="1" stop-color="#3a3c46"/></linearGradient>
+      <linearGradient id="${u}td" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a5e6a"/><stop offset=".5" stop-color="#c8ccd8"/><stop offset="1" stop-color="#4a4c58"/></linearGradient>
+      <radialGradient id="${u}tc" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff"/><stop offset=".3" stop-color="#ff9cff"/><stop offset=".65" stop-color="#d23cff"/><stop offset="1" stop-color="#5a0fa0" stop-opacity="0"/></radialGradient>
+      <filter id="${u}tg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>
+    </defs>`);
+    d.push(`<rect width="100" height="100" fill="url(#${u}tb)"/>`);
+    // violet smoke and lightning in the background
+    d.push(`<g filter="url(#${u}tg)" opacity=".5"><ellipse cx="18" cy="20" rx="20" ry="9" fill="#9b3dff"/><ellipse cx="84" cy="26" rx="18" ry="8" fill="#9b3dff"/></g>`);
+    d.push(`<g fill="none" stroke="#e8a8ff" stroke-width="1.1" stroke-linejoin="round" opacity=".85"><path d="M6 30 L12 38 L8 42 L15 52"><animate attributeName="opacity" values="1;0;1;.2;1" dur="1.7s" repeatCount="indefinite"/></path><path d="M94 34 L88 42 L93 46 L85 58"><animate attributeName="opacity" values=".2;1;0;1;.2" dur="2.1s" repeatCount="indefinite"/></path></g>`);
+    // crystals at the bottom corners
+    d.push(`<g opacity=".8"><path d="M0 100 L4 84 L9 100Z M7 100 L12 88 L16 100Z" fill="#8a4ad8" stroke="#e0b0ff" stroke-width=".5"/><path d="M100 100 L95 82 L90 100Z M92 100 L87 90 L83 100Z" fill="#8a4ad8" stroke="#e0b0ff" stroke-width=".5"/></g>`);
+    // big round shoulder pads with rivets
+    [[17, 1], [83, -1]].forEach(([x, k]) => {
+      d.push(`<ellipse cx="${x}" cy="88" rx="17" ry="15" fill="url(#${u}tm)" stroke="#2a2c34" stroke-width=".8"/><path d="M${x - 15} 86 Q${x} 78 ${x + 15} 86" fill="none" stroke="#3a3c46" stroke-width="1"/><ellipse cx="${x - k * 5}" cy="80" rx="6" ry="2.6" fill="#fff" opacity=".45"/>`);
+      d.push(`<g fill="#3a3c46"><circle cx="${x - 8}" cy="90" r=".9"/><circle cx="${x}" cy="92" r=".9"/><circle cx="${x + 8}" cy="90" r=".9"/></g>`);
+    });
+    // chest plate with the glowing energy core
+    d.push(`<path d="M30 100 L32 82 Q50 74 68 82 L70 100Z" fill="url(#${u}tm)" stroke="#2a2c34" stroke-width=".8"/>`);
+    d.push(`<circle cx="50" cy="93" r="10" fill="url(#${u}tc)"><animate attributeName="r" values="9;11;9" dur="1.4s" repeatCount="indefinite"/></circle>`);
+    d.push(`<circle cx="50" cy="93" r="5" fill="none" stroke="#fff" stroke-width=".8" opacity=".9"/><circle cx="50" cy="93" r="2.3" fill="#fff"/>`);
+    d.push(`<g fill="none" stroke="#f0b8ff" stroke-width=".8"><path d="M42 90 L37 86 L39 84 L33 80"><animate attributeName="opacity" values="1;0;1" dur=".9s" repeatCount="indefinite"/></path><path d="M58 90 L63 87 L61 84 L67 81"><animate attributeName="opacity" values="0;1;0" dur="1.1s" repeatCount="indefinite"/></path></g>`);
+    if (cl.body) d.push(`<path d="M30 100 L32 82 Q50 74 68 82 L70 100Z" fill="${cl.body.col}" opacity=".55"/>`);
+    // neck
+    d.push(`<rect x="41" y="72" width="18" height="9" rx="2" fill="#4a4c58"/><path d="M42 75 h16 M42 78 h16" stroke="#2a2c34" stroke-width=".8"/>`);
+    if (cl.neck) d.push(`<path d="M38 74 Q50 82 62 74 L63 80 Q50 88 37 80Z" fill="${cl.neck.col}"/>`);
+    // knight helmet: rounded dome, split down the middle
+    d.push(`<path d="M27 52 Q27 16 50 13 Q73 16 73 52 L71 70 Q50 78 29 70Z" fill="url(#${u}tm)" stroke="#2a2c34" stroke-width="1"/>`);
+    d.push(`<path d="M50 13 V43" stroke="#3a3c46" stroke-width="1.6"/><path d="M50 13 V43" stroke="#e8e8f0" stroke-width=".5" transform="translate(.9 0)"/>`);
+    d.push(`<ellipse cx="38" cy="24" rx="7" ry="4" fill="#fff" opacity=".5"/><ellipse cx="64" cy="32" rx="2.5" ry="6" fill="#fff" opacity=".18"/>`);
+    // visor band with glowing violet eyes
+    d.push(`<path d="M28 43 H72 V53 Q50 56 28 53Z" fill="#14141a" stroke="#2a2c34" stroke-width=".8"/>`);
+    d.push(`<g filter="url(#${u}tg)"><rect x="33" y="46" width="13" height="4.4" rx="2" fill="#e05cff"/><rect x="54" y="46" width="13" height="4.4" rx="2" fill="#e05cff"/></g>`);
+    d.push(`<g><rect x="34" y="46.8" width="11" height="2.8" rx="1.4" fill="#ffd6ff"/><rect x="55" y="46.8" width="11" height="2.8" rx="1.4" fill="#ffd6ff"/><animate attributeName="opacity" values="1;.55;1" dur="2s" repeatCount="indefinite"/></g>`);
+    if (cl.eyes) d.push(`<rect x="31" y="44.5" width="38" height="7.5" rx="3.5" fill="${cl.eyes.col}" opacity=".85"/>`);
+    // face plate with two vent grilles
+    d.push(`<path d="M50 54 V74" stroke="#3a3c46" stroke-width="1.2"/>`);
+    let vents = ""; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { vents += `<rect x="${36 + c * 2.6}" y="${60 + r * 2.8}" width="1.6" height="1.6" rx=".3"/><rect x="${54 + c * 2.6}" y="${60 + r * 2.8}" width="1.6" height="1.6" rx=".3"/>`; }
+    d.push(`<g fill="#1a1a22">${vents}</g>`);
+    d.push(`<path d="M30 58 Q32 68 40 72 M70 58 Q68 68 60 72" fill="none" stroke="#3a3c46" stroke-width=".8"/>`);
+    if (cl.head) d.push(`<path d="M27 36 Q27 14 50 12 Q73 14 73 36Z" fill="${cl.head.col}" opacity=".85"/>`);
+    // V3 badge on the forehead
+    d.push(`<path d="M44 33 L50 30 L56 33 V38 L50 41 L44 38Z" fill="#2a0a4a" stroke="#e05cff" stroke-width=".8"/><text x="50" y="37.6" font-family="Arial Black, Arial" font-weight="900" font-size="5" text-anchor="middle" fill="#e8b8ff">V3</text>`);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Титан">${d.join("")}</svg>`;
+  }
   function avatarSVG(c, gear, build) {
+    if (c.id === "titan") return titanSVG("av" + (avUid++), window.__clothes && window.__clothes.titan);
     if (c.id === "valeriy") return valeriySVG("av" + (avUid++), window.__clothes && window.__clothes.valeriy);
     gear = gear || {};
     build = build || (window.__builds && window.__builds[c.id]) || "normal";
@@ -19237,6 +19289,7 @@ div.sc-pl { cursor: default; }
       alexander: { p: "вежливый тактик-интеллектуал в очках, любит план и порядок", lines: ["Позволь предложить тактику.", "Всё идёт по плану.", "Тактика важнее силы.", "Интересный ход. Обдумаю.", "Сначала план, потом действие."] },
       maremed:   { p: "спокойный и чёткий, говорит мало и по делу", lines: ["Работаем чётко.", "Принял.", "Без лишних слов.", "Сделаем.", "Чётко и спокойно."] },
       khabich:   { p: "пафосный король поля (ультра-персонаж), иногда говорит о себе в третьем лице", lines: ["Король поля на месте.", "Хабич не проигрывает. Хабич побеждает.", "Склонись перед короной.", "Это было по-королевски.", "Лучший? Очевидно, Хабич."] },
+      titan:     { p: "огромный серебряный Гига Ультра робот в рыцарском шлеме с фиолетовыми глазами и энергетическим ядром в груди; говорит гулко и уверенно, про мощь, броню и заряд ядра", lines: ["Стальная мощь V3. Ядро заряжено!", "Броня выдержит всё.", "Заряд 100%. Начинаем.", "Мои сенсоры видят победу.", "Бзззт! Молния в груди — к удаче.", "Титан не отступает."] },
       valeriy:   { p: "загадочный Гига Ультра робот в чёрном шлеме с короной из стальных кубиков и фиолетовой энергией в глазах; создатель системы V3, говорит спокойно, мощно и немного таинственно", lines: ["Фиолетовая энергия заряжена.", "V3 — моя система. Я всё вижу.", "Гига Ультра на связи.", "Кубики на короне не для красоты.", "Спокойно. Всё под контролем V3."] },
       emir:      { p: "огненный и очень энергичный ультра-персонаж, всё «горит» и «на максимум»", lines: ["Горю на максимум!", "Это было огненно!", "Включаю режим пламени!", "Жара пошла!", "Огонь, огонь, огонь!"] },
     };
