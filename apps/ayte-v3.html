@@ -291,12 +291,12 @@ textarea.input { resize: vertical; min-height: 64px; }
     <footer class="composer" id="composer" hidden>
       <div class="attach-menu" id="attachMenu" hidden></div>
       <div class="panel" id="panel" hidden>
-        <div class="tabs" id="panelTabs"><button type="button" data-t="emoji" aria-pressed="true">Эмодзи</button><button type="button" data-t="stk" aria-pressed="false">Стикеры Айтика</button></div>
+        <div class="tabs" id="panelTabs"><button type="button" data-t="emoji" aria-pressed="true">Эмодзи</button><button type="button" data-t="stk" aria-pressed="false">Стикеры Айтика</button><button type="button" data-t="poll" id="pollTab" aria-pressed="false">📊 Опрос</button></div>
         <div class="grid" id="panelGrid"></div>
       </div>
       <div class="ctx" id="ctx" hidden></div>
       <div class="c-row" id="cRow">
-        <button class="ghost" id="attachBtn" type="button" aria-label="Прикрепить" aria-expanded="false"></button>
+        <button class="ghost" id="attachBtn" type="button" aria-label="Выбрать фото из галереи"></button>
         <textarea id="input" rows="1" placeholder="Сообщение" aria-label="Сообщение" maxlength="4000"></textarea>
         <button class="ghost" id="panelBtn" type="button" aria-label="Эмодзи и стикеры" aria-expanded="false"></button>
         <button class="send" id="sendBtn" type="button" aria-label="Отправить"></button>
@@ -310,7 +310,7 @@ textarea.input { resize: vertical; min-height: 64px; }
 <div class="scrim" id="actWrap" hidden><div class="actions" id="acts" role="menu"></div></div>
 <div class="viewer" id="viewer" hidden><img id="viewImg" alt="Фото из чата"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
-<input type="file" id="photoIn" accept="image/*" hidden>
+<input type="file" id="photoIn" accept="image/*" multiple hidden>
 <input type="file" id="avatarIn" accept="image/*" hidden>
 
 <script>
@@ -1063,15 +1063,44 @@ async function compress(file, max, budget, square) {
   }
   return { src: out, w: cv.width, h: cv.height };
 }
+// Gallery: pick up to 10 photos, preview them with a caption, then send each as its own message.
+let gallery = [];
 $("#photoIn").addEventListener("change", async (e) => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  if (!/^image\//.test(f.type)) { toast("Можно отправить только картинку"); return; }
-  try {
-    const r = await compress(f, 1280, 170000);
-    const caption = input.value.trim().slice(0, 1000); input.value = ""; autoGrow(); updateSend();
-    await sendPayload(Object.assign({ img: r.src, w: r.w, h: r.h }, caption ? { text: caption } : {}));
-  } catch (er) { toast("Не удалось открыть фото"); }
+  const files = [...e.target.files].filter((f) => /^image\//.test(f.type)); const skipped = e.target.files.length - files.length; e.target.value = "";
+  if (skipped) toast("Можно отправить только фото и картинки");
+  if (!files.length) return;
+  const cid = st.active, room = 10 - gallery.length;
+  if (files.length > room) toast("За раз можно отправить до 10 фото");
+  const fresh = [];
+  for (const f of files.slice(0, Math.max(0, room))) { try { fresh.push(await compress(f, 1280, 170000)); } catch (er) { toast("Не удалось открыть " + f.name); } }
+  if (!fresh.length && !gallery.length) return;
+  gallery = gallery.concat(fresh);
+  openGallerySheet(cid);
 });
+function openGallerySheet(cid) {
+  const c = getChat(cid); if (!c) { gallery = []; return; }
+  if (!$("#sheetWrap").hidden) sheetClose = null; // re-opening this sheet must keep the picked photos
+  const n = gallery.length;
+  openSheet(`${n} ${plural(n, "фото", "фото", "фото")} · ${chatTitle(c)}`, `
+    <div style="display:grid;grid-template-columns:repeat(${n === 1 ? 1 : 3},minmax(0,1fr));gap:6px">${gallery.map((g, i) => `<div style="position:relative"><img src="${g.src}" alt="Фото ${i + 1}" style="display:block;width:100%;${n === 1 ? "max-height:320px;object-fit:contain" : "aspect-ratio:1;object-fit:cover"};border-radius:12px;background:var(--raise)"><button class="ghost" type="button" data-rm="${i}" aria-label="Убрать фото ${i + 1}" style="position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;background:var(--panel);color:var(--ink)">${I.x}</button></div>`).join("")}</div>
+    ${n < 10 ? `<button class="btn sec" type="button" id="gMore">${I.plus.replace('class="ico"', 'class="ico" style="display:inline;vertical-align:-4px;width:18px;height:18px"')} Добавить ещё из галереи</button>` : ""}
+    <label class="field"><span>Подпись</span><textarea class="input" id="gCap" maxlength="1000" placeholder="Добавьте подпись">${esc(input.value.trim())}</textarea></label>
+    <button class="btn" type="button" id="gSend">Отправить ${n > 1 ? n + " фото" : "фото"}</button>`, (b) => {
+    b.addEventListener("click", (e) => {
+      const rm = e.target.closest("[data-rm]");
+      if (rm) { gallery.splice(+rm.dataset.rm, 1); if (gallery.length) openGallerySheet(cid); else closeSheet(); }
+    });
+    const more = b.querySelector("#gMore"); if (more) more.addEventListener("click", () => $("#photoIn").click());
+    b.querySelector("#gSend").addEventListener("click", async () => {
+      const caption = b.querySelector("#gCap").value.trim().slice(0, 1000), items = gallery.slice();
+      gallery = []; sheetClose = null; closeSheet();
+      if (caption && st.active === cid) { input.value = ""; autoGrow(); updateSend(); ls.set("draft:" + cid, ""); }
+      for (let i = 0; i < items.length; i++) {
+        await sendPayload(Object.assign({ img: items[i].src, w: items[i].w, h: items[i].h }, i === items.length - 1 && caption ? { text: caption } : {}), cid);
+      }
+    });
+  }, () => { gallery = []; });
+}
 
 /* ================= sheets ================= */
 let sheetClose = null, lastFocus = null;
@@ -1504,6 +1533,7 @@ function renderMe() { $("#meBtn").innerHTML = avHTML(personAv(st.me), 40, false)
 
 /* ================= emoji & sticker panel ================= */
 function renderPanel() {
+  $("#pollTab").hidden = st.active === "ai";
   document.querySelectorAll("#panelTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.t === st.panelTab)));
   const g = $("#panelGrid"); g.className = "grid" + (st.panelTab === "stk" ? " stks" : "");
   g.innerHTML = st.panelTab === "stk" ? STK.map((s, i) => `<button type="button" data-stk="${i}" aria-label="Стикер ${esc(s[0])}">${stickerSVG(i)}</button>`).join("") : EMOJI.map((e) => `<button type="button" data-emo="${e}" aria-label="${e}">${e}</button>`).join("");
@@ -1585,11 +1615,12 @@ composer.addEventListener("click", async (e) => {
   const mb = e.target.closest("[data-mutebtn]"); if (mb) { st.muted[st.active] = !st.muted[st.active]; ls.set("muted", st.muted); renderComposer(); renderList(); return; }
   const em = e.target.closest("[data-emo]"); if (em) { input.setRangeText(em.dataset.emo, input.selectionStart, input.selectionEnd, "end"); autoGrow(); updateSend(); if (!isTouch()) input.focus(); return; }
   const sk = e.target.closest("[data-stk]"); if (sk) { closePops(); sendPayload({ sticker: +sk.dataset.stk }); return; }
-  const tb = e.target.closest("#panelTabs [data-t]"); if (tb) { st.panelTab = tb.dataset.t; renderPanel(); return; }
+  const tb = e.target.closest("#panelTabs [data-t]"); if (tb) { if (tb.dataset.t === "poll") { closePops(); openPoll(); return; } st.panelTab = tb.dataset.t; renderPanel(); return; }
   const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else if (am.dataset.am === "draw") { input.value = "Нарисуй "; autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length); } else openPoll(); }
 });
 $("#panelBtn").addEventListener("click", () => { const open = $("#panel").hidden; closePops(); if (open) { renderPanel(); $("#panel").hidden = false; $("#panelBtn").setAttribute("aria-expanded", "true"); } });
 $("#attachBtn").addEventListener("click", () => {
+  if (st.active !== "ai") { closePops(); $("#photoIn").click(); return; }
   const open = $("#attachMenu").hidden; closePops(); if (!open) return;
   $("#attachMenu").innerHTML = st.active === "ai" ? `<button class="menu-item" type="button" data-am="draw">${I.brush}<span>Нарисовать картинку</span></button>`
     : `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
