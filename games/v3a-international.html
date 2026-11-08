@@ -3217,15 +3217,23 @@ const SHOPS = [
     items: [["compact", 800, "Маленький и юркий"], ["sedan", 1500, "Надёжная городская машина"], ["van", 2000, "Большой и крепкий"], ["taxi", 1800, "Жёлтое такси с шашечками"], ["sport", 5000, "Самый быстрый в городе"], ["ters", 12000, "Элитная модель: 6 передач (автомат или ручная), встроенное радио"]].map(([type, price, info]) => ({
       id: type, name: CT[type].name, info, price, no: () => (ownCars().length >= 4 ? "Стоянка заполнена — 4 машины" : ""),
       act: () => { buyCar(type); toast(CT[type].name + " ждёт тебя на стоянке", 2.6); }, quiet: true })) },
-  { id: "food", who: CITY.village ? "Магазинчик «У дороги» · с 1890 года" : "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
-    note: "Еда лечит, энергетик даёт быстрый бег на 30 секунд.",
-    items: [
+  { id: "food", who: CITY.digital ? "Продуктовый «Байт» · только компьютерные части" : CITY.village ? "Магазинчик «У дороги» · с 1890 года" : "Продукты «24 часа»", title: "Магазин продуктов", col: "#8be38a", hex: 0x8be38a, label: "П", at: () => places.food, bonus: 0,
+    note: CITY.digital ? "В Тумосизе не едят — здесь апгрейдятся. Железо чинит здоровье, видеокарта разгоняет бег." : "Еда лечит, энергетик даёт быстрый бег на 30 секунд.",
+    items: (CITY.digital ? [
+      { id: "pc_cable", name: "Кабель USB-C", info: "+10 здоровья", price: 5, heal: 10 },
+      { id: "pc_ram", name: "Планка оперативки DDR5", info: "+35 здоровья", price: 15, heal: 35 },
+      { id: "pc_ssd", name: "SSD на 2 ТБ", info: "+50 здоровья", price: 22, heal: 50 },
+      { id: "pc_fan", name: "Кулер с RGB-подсветкой", info: "+60 здоровья", price: 18, heal: 60 },
+      { id: "pc_cpu", name: "Процессор V3 Core i9", info: "Полное здоровье", price: 40, heal: 100 },
+      { id: "pc_gpu", name: "Видеокарта RTX-V", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
+      { id: "pc_mb", name: "Материнская плата", info: "Полное здоровье и быстрый бег 20 с", price: 55, act: () => { player.hp = 100; player.boost = Math.max(player.boost || 0, 20); } },
+    ] : [
       { id: "water", name: "Вода", info: "+10 здоровья", price: 5, heal: 10 },
       { id: "shawarma", name: "Шаурма", info: "+35 здоровья", price: 15, heal: 35 },
       { id: "lunch", name: "Бизнес-ланч", info: "Полное здоровье", price: 40, heal: 100 },
       { id: "energy", name: "Энергетик", info: "Бег в полтора раза быстрее, 30 с", price: 25, act: () => { player.boost = 30; } },
       ...(CITY.food ? [{ id: "sp_" + CITY.id, name: CITY.food[0], info: "Местное блюдо: +60 здоровья", price: 18, heal: 60 }] : []),
-    ].map((it) => (it.heal ? Object.assign(it, { act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
+    ]).map((it) => (it.heal ? Object.assign(it, { act: () => { player.hp = Math.min(100, player.hp + it.heal); } }) : it)) },
   { id: "electro", who: "Электроника «Вольт»", title: "Магазин электроники", col: "#c77ae8", hex: 0xc77ae8, label: "Э", at: () => places.electro, bonus: 0,
     note: "Гаджеты покупаются один раз и остаются навсегда. Их делают на заводе электроники на юге.",
     items: [
@@ -3281,6 +3289,12 @@ const ITEMS = {
   milkshake: { name: "Молочный коктейль", col: "#f7d6e6", g: "МК", heal: 30 }, neon: { name: "Коктейль «Неон»", col: "#ff3d7f", g: "Н", heal: 50, boost: 20 }, medkit: { name: "Аптечка", col: "#ffffff", g: "+", heal: 100 },
 };
 for (const c of CITIES) if (c.food) ITEMS["sp_" + c.id] = { name: c.food[0], col: "#ffb347", g: c.food[1], heal: 60 };
+Object.assign(ITEMS, {
+  pc_cable: { name: "Кабель USB-C", col: "#e8e8f0", g: "USB", heal: 10 }, pc_ram: { name: "Оперативка DDR5", col: "#3dd8ff", g: "RAM", heal: 35 },
+  pc_ssd: { name: "SSD 2 ТБ", col: "#9aa0aa", g: "SSD", heal: 50 }, pc_fan: { name: "RGB-кулер", col: "#ff7ad8", g: "FAN", heal: 60 },
+  pc_cpu: { name: "Процессор V3 i9", col: "#c0c4cc", g: "CPU", heal: 100 }, pc_gpu: { name: "Видеокарта RTX-V", col: "#5fff8a", g: "GPU", boost: 30 },
+  pc_mb: { name: "Материнская плата", col: "#1f6b3a", g: "MB", heal: 100, boost: 20 },
+});
 Object.assign(ITEMS, { df_choc: { name: "Шоколад Duty Free", col: "#8a5a3a", g: "DF", heal: 25 }, df_coffee: { name: "Кофе в дорогу", col: "#6a4a2a", g: "☕", boost: 25 }, df_sand: { name: "Сэндвич из терминала", col: "#e8c95d", g: "СВ", heal: 40 } });
 const inv = () => save.inv || (save.inv = {});
 function invAdd(id, n = 1) { inv()[id] = (inv()[id] || 0) + n; }
