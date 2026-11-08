@@ -721,7 +721,7 @@ const REAL = {
   msk: { lang: "ru", style: "soviet", river: "Москва-река", sea: [], land: "#7f8a5c", tz: 3, bus: "#2e9e4f", stadium: "Лужники", food: ["Блины с икрой", "БЛ"], lms: ["kremlin", "basil", "mcity", "mgu"] },
   spb: { lang: "ru", style: "euro", river: "Нева", sea: ["w"], land: "#7a8a60", tz: 3, bus: "#2a7de1", stadium: "Газпром Арена", food: ["Пышки", "П"], lms: ["isaac", "winter", "peter"] },
   kzn: { lang: "ru", style: "soviet", river: "Казанка", sea: [], land: "#7f8a5c", tz: 3, bus: "#2a7de1", stadium: "Ак Барс Арена", food: ["Эчпочмак", "Э"], lms: ["kazkremlin", "chasha"] },
-  evn: { lang: "hy", style: "tuff", sea: [], land: "#a8996a", tz: 4, bus: "#f2c200", stadium: "Республиканский стадион", food: ["Хоровац", "Х"], lms: ["cascade", "republic", "motherarm"], back: ["ararat"] },
+  evn: { lang: "hy", style: "tuff", sea: [], land: "#a8996a", tz: 4, bus: "#f2c200", stadium: "Республиканский стадион", food: ["Хоровац", "Х"], lms: ["cascade", "republic", "motherarm", "olymp"], back: ["ararat"] },
   tbs: { lang: "ka", style: "med", river: "Кура", sea: [], land: "#6f8a4a", tz: 4, bus: "#2a7de1", stadium: "Динамо Арена", food: ["Хачапури по-аджарски", "ХЧ"], lms: ["narikala", "sameba"], bridge: "peacebridge", back: ["tbhills"] },
   ala: { lang: "kk", style: "soviet", sea: [], land: "#7f8f55", tz: 5, bus: "#e8b923", stadium: "Центральный стадион", food: ["Бешбармак", "БШ"], lms: ["koktobe", "hotelkz"], back: ["alatau"], tree: "apple" },
   ist: { lang: "tr", style: "med", river: "Золотой Рог", sea: ["s", "e"], land: "#8a8a5c", tz: 3, bus: "#2a7de1", stadium: "Стадион Ататюрка", food: ["Дёнер-кебаб", "К"], lms: ["sophia", "bluemosque", "galata"] },
@@ -898,6 +898,38 @@ const LMS = {
       B.box(t, 128, 32, 30, 30, 110, 0, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#d99a82") }), 128, 32, 31, 31, 16, 84); B.box("#c98a72", 128, 32, 20, 20, 14, 110); B.pyr("#b8735a", 128, 32, 20, 20, 12, 124);
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
+    } },
+  olymp: { name: "Висячие сады «Олимпия»", info: "коридор в воздухе, обвитый листьями: поднимись на лифте и пройди по нему", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
+    gen(o) { places.olympDoor = { x: (o.x0 + 3) * T, y: (o.y0 + 5.4) * T }; },
+    ground(g, b) { g.fillStyle = "rgba(79,174,90,.35)"; for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse(b.x + 60 + i * 28, b.y + 128 + (i % 2 ? 40 : -40), 16, 10, 0, 0, TAU); g.fill(); } },
+    d2(Q) {
+      const tuff = "#d99a82";
+      Q.box(32, 128, 50, 50, 150, tuff, "#b8735a"); Q.box(224, 128, 50, 50, 150, tuff, "#b8735a");
+      Q.box(128, 128, 200, 30, 146, "#e8e0d0", "#4fae5a", 118);
+      for (let i = 0; i < 12; i++) Q.circ(40 + i * 16, 128 + (i % 2 ? 12 : -12), 9, 148, i % 3 ? "#3f8f4a" : "#5fbf5a");
+      for (let i = 0; i < 6; i++) Q.circ(52 + i * 30, 112 + (i % 2) * 32, 3, 150, "#ff8fc0");
+    },
+    d3(B) {
+      const THREE = B.THREE, tuff = B.M("#d99a82", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() });
+      // two lift towers of pink tuff
+      for (const x of [32, 224]) { B.box(tuff, x, 128, 50, 50, 150, 0, 0, 64); B.box("#b8735a", x, 128, 54, 54, 4, 150); B.box(B.M("#9fd8f0", { glow: "#bfe8ff" }), x, 128 + 25.2, 14, 1, 24, 0); }
+      B.plane(B.M("#ffffff", { map: B.X.txt("ОЛИМПИЯ · ЛИФТ", "#1f4a26", "#e8f6e0", 512, 64, 38) }), 32, 154, 46, 7, 28, 0);
+      // the hanging corridor: a deck, a frame of arches, all woven with leaves
+      const Y = 118, L = B.M("#3f8f4a"), L2 = B.M("#5fbf5a"), L3 = B.M("#2f6f3a");
+      B.box("#e8e0d0", 128, 128, 196, 32, 4, Y); B.box("#8a6a48", 128, 128, 196, 30, 1, Y + 4);
+      const leaves = [[], [], []], fl = [];
+      for (let x = 30; x <= 226; x += 10) {
+        B.torus("#6a5a4a", x, 128, 16, 0.8, Y + 4, 0, Math.PI / 2, Math.PI, 10).scale.y = 1.6;
+        for (let k = 0; k <= 8; k++) { const a = (k / 8) * Math.PI, j = hsh(x, k, 3); leaves[(x + k) % 3].push([x + (j - 0.5) * 6, Y + 4 + Math.sin(a) * 26 + (j - 0.5) * 4, 128 + Math.cos(a) * 16, 4 + j * 3, 3 + j * 2, 4 + j * 2]); if (j > 0.72) fl.push([x, Y + 4 + Math.sin(a) * 26, 128 + Math.cos(a) * 17.5, 1.6, 1.6, 1.6]); }
+      }
+      // vines hanging under the deck
+      for (let x = 36; x < 222; x += 9) { const j = hsh(x, 7, 5), len = 10 + j * 26, z = 128 + (j > 0.5 ? 13 : -13); B.box(L3, x, z, 0.8, 0.8, len, Y - len); for (let y = Y - len; y < Y; y += 5) leaves[(x + y) % 3 | 0].push([x + (hsh(x, y, 1) - 0.5) * 3, y, z + (hsh(y, x, 2) - 0.5) * 3, 2.4, 2, 2.4]); }
+      B.inst(L, leaves[0], B.K.SPH); B.inst(L2, leaves[1], B.K.SPH); B.inst(L3, leaves[2], B.K.SPH);
+      B.inst(B.M("#ff8fc0"), fl.filter((_, i) => i % 2), B.K.SPH); B.inst(B.M("#fff2a8"), fl.filter((_, i) => !(i % 2)), B.K.SPH);
+      // steel cables to the tower tops and planters below
+      for (const z of [114, 142]) { B.beam("#4a4a52", 32, 150, 128, 128, Y + 1, z, 0.6); B.beam("#4a4a52", 224, 150, 128, 128, Y + 1, z, 0.6); }
+      for (const [x, z] of [[80, 70], [128, 70], [176, 70], [80, 186], [128, 186], [176, 186]]) { B.box("#b8735a", x, z, 22, 14, 8); B.sph(L2, x, z, 8, 12, 1.3, 0.8, 0.9); }
+      const glow = B.M("#c8ffb8", { neon: true, op: 0.5 }); for (let x = 40; x < 222; x += 30) { const l = B.sph(glow, x, 128, 1.4, Y + 30); B.anim((t) => l.scale.setScalar(1.2 + Math.sin(t * 2 + x) * 0.3)); }
     } },
   motherarm: { name: "Мать Армения", info: "статуя с мечом над городом, 51 м", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#5a5a5a", h: 240,
     d2(Q) { Q.box(128, 128, 60, 60, 70, "#6f6a64"); Q.box(128, 128, 36, 36, 130, "#6f6a64"); Q.line(128, 128, 130, 128, 128, 205, "#4a4a48", 10); Q.line(84, 128, 178, 172, 128, 178, "#8a8a88", 3); },
@@ -1850,7 +1882,7 @@ function cityExtras3d(K) {
   const THREE = K.THREE;
   // land around the city instead of the sea (fields, villages, trees)
   const landM = new THREE.MeshLambertMaterial({ color: CITY.land });
-  for (const [a, b2, w, h] of LAND) { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), landM); p.rotation.x = -Math.PI / 2; p.position.set(a + w / 2, -0.4, b2 + h / 2); p.receiveShadow = true; K.scene.add(p); }
+  for (const [a, b2, w, h] of LAND) { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), landM); p.rotation.x = -Math.PI / 2; p.position.set(a + w / 2, -0.4, b2 + h / 2); p.receiveShadow = true; K.scene.add(p); (G3.outer || (G3.outer = [])).push(p); }
   if (LAND.length) {
     const n = 700, im = new THREE.InstancedMesh(K.BOX, new THREE.MeshLambertMaterial(), n), tm = new THREE.InstancedMesh(K.CROWN, new THREE.MeshLambertMaterial({ color: 0x3f6a35 }), n), mt = new THREE.Matrix4(), q = new THREE.Quaternion(), col = new THREE.Color();
     let k = 0, kt = 0;
@@ -1860,7 +1892,7 @@ function cityExtras3d(K) {
       if (hsh(i, 3, 7) < 0.55 && k < n) { const s = 26 + hsh(i, 4, 7) * 40, hh = (16 + hsh(i, 5, 7) * 70) * (CITY.tall || 1); mt.compose(new THREE.Vector3(x, hh / 2, z), q, new THREE.Vector3(s, hh, s * 0.8)); im.setMatrixAt(k, mt); im.setColorAt(k, col.set(CITY.roofs[(hsh(i, 6, 7) * CITY.roofs.length) | 0])); k++; }
       else if (kt < n) { const r = 12 + hsh(i, 8, 7) * 12; mt.compose(new THREE.Vector3(x, r + 8, z), q, new THREE.Vector3(r, r * 1.2, r)); tm.setMatrixAt(kt, mt); kt++; }
     }
-    im.count = k; tm.count = kt; K.scene.add(im, tm);
+    im.count = k; tm.count = kt; K.scene.add(im, tm); (G3.outer || (G3.outer = [])).push(im, tm);
   }
   // bridge railings and piers on the river
   if (CITY.river) for (const br of places.bridges) { for (const dx of [-T, T]) { const r = new THREE.Mesh(K.BOX, K.mat("#9a9a9a")); r.scale.set(4, 7, 2 * T); r.position.set(br.x + dx + (dx < 0 ? 2 : -2), 3.5, br.y); K.scene.add(r); } const p = new THREE.Mesh(K.BOX, K.mat("#7a7670")); p.scale.set(2 * T - 10, 12, 2 * T); p.position.set(br.x, -6.5, br.y); K.scene.add(p); }
@@ -2132,9 +2164,102 @@ const TERM_ROOM = { RW: TW, RH: TH, OX: WORLD + 2600, OZ: WORLD / 2 + 1400,
     { id: "cafe", x: 92, y: 290, r: 28, label: "КАФЕ", text: "Кафе — кофе и сэндвичи" },
     { id: "gate", x: 34, y: 155, r: 32, label: "ВЫЛЕТ", text: "Выход на посадку" },
   ] };
+/* ===== hanging gardens «Olympia» (Yerevan): a corridor in the air, woven with leaves ===== */
+const GW = 720, GH = 96;
+const OLYMP_ROOM = { RW: GW, RH: GH, OX: WORLD + 2600, OZ: WORLD / 2 + 2600,
+  solids: [[120, 0, 44, 12], [300, 0, 44, 12], [480, 0, 44, 12], [210, 84, 44, 12], [390, 84, 44, 12], [570, 84, 44, 12]],
+  spots: [
+    { id: "door", x: 30, y: GH / 2, r: 30, label: "ЛИФТ", text: "Спуститься на лифте на улицу" },
+    { id: "bench", x: 360, y: 74, r: 26, label: "СЕСТЬ", text: "Посидеть на скамейке среди листьев" },
+    { id: "view", x: GW - 30, y: GH / 2, r: 34, label: "ВИД", text: "Смотровая площадка" },
+  ] };
+// the land around the city sits at floor height: hide it while you are up in the air
+function outerLand(v) { if (G3.outer) for (const m of G3.outer) m.visible = v; }
+function enterGarden() {
+  useRoom("olymp");
+  player.umbOn = false; if (player.inCar) exitCar(true);
+  if (TV.on) tvSet(-1);
+  indoor = true; player.couch = false; setLocal(64, GH / 2); player.a = 0;
+  cam3.yaw = 0; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.add("indoor"); sfx.doorOpen(); toast("Лифт поднял тебя в висячие сады «Олимпия». Пройди по коридору до смотровой", 3);
+  setTimeout(() => tone(523, 523, 0.2, 0.05, "sine"), 200); setTimeout(() => tone(784, 784, 0.3, 0.05, "sine"), 420);
+  if (G3.ready && !G3.garden) buildGarden();
+  if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; outerLand(false);
+}
+function gardenAct(sp) {
+  if (sp.id === "door") return leaveHome();
+  if (sp.id === "bench") { toast("Ты сидишь на скамейке. Шелестят листья, внизу шумит Ереван", 3); tone(660, 990, 0.4, 0.03, "sine"); return; }
+  if (sp.id === "view") { big("АРАРАТ", "Вид с висячих садов «Олимпия» · Ереван", "#9fe08a", 3.2); tone(523, 1046, 0.6, 0.04, "sine"); }
+}
+function buildGarden() {
+  const K = G3.K, THREE = K.THREE, B = mk3d(K, OLYMP_ROOM.OX, OLYMP_ROOM.OZ, {}), g = B.g;
+  // wooden deck with a glass edge
+  const deck = B.X.ct("olympDeck", 64, 64, (c) => { c.fillStyle = "#a07850"; c.fillRect(0, 0, 64, 64); c.fillStyle = "rgba(0,0,0,.18)"; for (let y = 0; y < 64; y += 8) c.fillRect(0, y, 64, 1.2); c.fillStyle = "rgba(255,255,255,.06)"; for (let y = 0; y < 64; y += 16) c.fillRect((y * 5) % 40, y + 2, 24, 3); });
+  deck.wrapS = deck.wrapT = THREE.RepeatWrapping; deck.repeat.set(GW / 64, GH / 64);
+  B.floor(B.M("#ffffff", { map: deck }), GW / 2, GH / 2, GW, GH, 0.3);
+  B.box("#e8e0d0", GW / 2, GH / 2, GW + 8, GH + 8, 6, -6);
+  for (const z of [1, GH - 1]) { B.box(B.M("#cfe8f0", { op: 0.25 }), GW / 2, z, GW, 1, 22, 0); B.box("#8a6a48", GW / 2, z, GW, 2.4, 1.6, 22); }
+  for (const x of [0, GW]) B.box("#e8e0d0", x, GH / 2, 3, GH, 4, 0);
+  // arches every 40 units, woven with leaves; vines hang between them
+  const leaves = [[], [], []], fl = [], vines = [];
+  for (let x = 8; x <= GW - 8; x += 40) {
+    const a = B.torus("#6a5a4a", x, GH / 2, GH / 2, 1.4, 0, 0, Math.PI / 2, Math.PI, 18); a.scale.y = 1.45;
+    for (let k = 0; k <= 22; k++) {
+      const t = (k / 22) * Math.PI, j = hsh(x, k, 9), y = Math.sin(t) * (GH / 2) * 1.45, z = GH / 2 + Math.cos(t) * (GH / 2 - 1);
+      leaves[k % 3].push([x + (j - 0.5) * 12, y + (j - 0.5) * 5, z, 5 + j * 4, 3.5 + j * 2.5, 5 + j * 3]);
+      if (j > 0.7) fl.push([x + (j - 0.5) * 8, y, z + (z < GH / 2 ? 2 : -2), 2, 2, 2]);
+    }
+    // a band of leaves along the roof between this arch and the next
+    if (x + 40 <= GW) for (let s = 6; s < 40; s += 7) { const j = hsh(x, s, 4); leaves[(s / 7) % 3 | 0].push([x + s, (GH / 2) * 1.45 - 1, GH / 2 + (j - 0.5) * 50, 6 + j * 4, 3, 6 + j * 3]); }
+    // hedge along the railings, with gaps to look down
+    for (const z of [4, GH - 4]) if ((x / 40) % 3 !== 1) for (let s = 0; s < 40; s += 8) { const j = hsh(x + s, z, 6); leaves[(s / 8) % 3 | 0].push([x + s, 6 + j * 10, z, 6, 7 + j * 6, 4]); }
+    if (x + 20 < GW) for (const z of [18, GH - 18]) { const len = 14 + hsh(x, z, 2) * 26, top = (GH / 2) * 1.45 * 0.92; vines.push([x + 20, top - len / 2, z, 0.6, len, 0.6]); for (let y = top - len; y < top; y += 4) leaves[(y | 0) % 3].push([x + 20 + (hsh(y, x, 1) - 0.5) * 3, y, z, 2.2, 1.8, 2.2]); }
+  }
+  B.inst("#3f8f4a", leaves[0], K.SPH); B.inst("#5fbf5a", leaves[1], K.SPH); B.inst("#2f6f3a", leaves[2], K.SPH); B.inst("#2f5a2a", vines);
+  B.inst("#ff8fc0", fl.filter((_, i) => i % 3 === 0), K.SPH); B.inst("#fff2a8", fl.filter((_, i) => i % 3 === 1), K.SPH); B.inst("#c08fff", fl.filter((_, i) => i % 3 === 2), K.SPH);
+  // planters, benches and lamps
+  for (const [x, z, w, d] of OLYMP_ROOM.solids) { B.box("#b8735a", x + w / 2, z + d / 2, w, d, 10); for (let i = 0; i < 4; i++) B.sph(i % 2 ? "#5fbf5a" : "#3f8f4a", x + 6 + i * 11, z + d / 2, 6, 13, 1, 0.8, 1); B.sph("#ff8fc0", x + w / 2, z + d / 2, 2.2, 19); }
+  B.box("#6a4a30", 360, 88, 40, 8, 6, 0); B.box("#8a6a48", 360, 92, 40, 2, 10, 6);
+  const lampM = B.M("#fff4c8", { neon: true });
+  for (let x = 48; x < GW; x += 80) { const l = B.sph(lampM, x, GH / 2, 2, (GH / 2) * 1.45 - 8); B.anim((t) => l.scale.setScalar(1.8 + Math.sin(t * 1.5 + x) * 0.25)); }
+  B.plane(B.M("#ffffff", { map: B.X.txt("СМОТРОВАЯ · АРАРАТ →", "#1f4a26", "#e8f6e0", 512, 64, 36) }), GW - 70, 2.5, 60, 8, 26, 0);
+  B.plane(B.M("#ffffff", { map: B.X.txt("ВИСЯЧИЕ САДЫ «ОЛИМПИЯ»", "#1f4a26", "#e8f6e0", 512, 64, 32) }), 70, 2.5, 70, 8, 26, 0);
+  // the city far below and Ararat on the horizon (no fog, so the drop reads clearly)
+  const far = mk3d(K, OLYMP_ROOM.OX, OLYMP_ROOM.OZ, { nofog: true });
+  const DROP = -330, cityT = B.X.ct("olympCity", 256, 256, (c) => { c.fillStyle = "#7a6a5a"; c.fillRect(0, 0, 256, 256); c.fillStyle = "#c98a72"; for (let y = 0; y < 256; y += 64) for (let x = 0; x < 256; x += 64) c.fillRect(x + 8, y + 8, 48, 48); c.fillStyle = "#7f9a52"; c.fillRect(72, 72, 48, 48); });
+  cityT.wrapS = cityT.wrapT = THREE.RepeatWrapping; cityT.repeat.set(40, 40);
+  far.floor(far.M("#ffffff", { map: cityT }), GW / 2, GH / 2, 5200, 5200, DROP);
+  const blds = [[], [], []];
+  for (let i = -18; i <= 30; i++) for (let j = -18; j <= 18; j++) { const h = hsh(i, j, 21); if (h < 0.35 || (Math.abs(j) < 2 && i > -2 && i < 13)) continue; const ht = 40 + h * 140; blds[(i + j + 60) % 3].push([i * 64 + 32, DROP + ht / 2, GH / 2 + j * 64, 44, ht, 44]); }
+  far.inst("#d99a82", blds[0]); far.inst("#c98a72", blds[1]); far.inst("#e4c0a8", blds[2]);
+  far.cone("#8a8a9a", GW + 3200, GH / 2 - 300, 1400, 1250, DROP, 24); far.cone("#ffffff", GW + 3200, GH / 2 - 300, 440, 393, DROP + 857, 24);
+  far.cone("#9a9aa8", GW + 2600, GH / 2 + 900, 700, 620, DROP, 20); far.cone("#ffffff", GW + 2600, GH / 2 + 900, 190, 170, DROP + 450, 20);
+  const l1 = new THREE.PointLight(0xfff4e0, 0.5, 300, 1.4); l1.position.set(GW / 2, 50, GH / 2); g.add(l1);
+  const subs = [g, far.g];
+  G3.garden = { g: { set visible(v) { subs.forEach((q) => (q.visible = v)); } }, tick: () => {} };
+  G3.garden.g.visible = indoor && INT === "olymp"; if (indoor && INT === "olymp") outerLand(false);
+}
+function drawGarden2D(dpr, W, H) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#3e4650"; ctx.fillRect(0, 0, W, H);
+  // the city far below, seen through the air
+  ctx.fillStyle = "rgba(217,154,130,.4)"; for (let y = 0; y < H; y += 48) for (let x = (y / 48) % 2 ? 24 : 0; x < W; x += 48) ctx.fillRect(x + 6, y + 6, 30, 30);
+  const top = W < 640 ? 196 : 150, k = Math.min((W - 32) / (GW + 16), 2.2), ox = (W - GW * k) / 2, oy = Math.max(top, (H - GH * k) / 2);
+  ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
+  ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.fillRect(6, 10, GW, GH);
+  ctx.fillStyle = "#a07850"; ctx.fillRect(0, 0, GW, GH); ctx.fillStyle = "rgba(0,0,0,.15)"; for (let x = 0; x < GW; x += 10) ctx.fillRect(x, 0, 1, GH);
+  for (let x = 8; x <= GW - 8; x += 40) { ctx.fillStyle = "#6a5a4a"; ctx.fillRect(x - 1.5, 0, 3, GH); }
+  for (let x = 0; x < GW; x += 8) for (const y of [3, GH - 3]) { const j = hsh(x, y, 3); ctx.fillStyle = j > 0.66 ? "#5fbf5a" : j > 0.33 ? "#3f8f4a" : "#2f6f3a"; ctx.beginPath(); ctx.arc(x + 4, y, 5 + j * 2, 0, TAU); ctx.fill(); if (j > 0.8) { ctx.fillStyle = "#ff8fc0"; ctx.beginPath(); ctx.arc(x + 4, y, 1.8, 0, TAU); ctx.fill(); } }
+  for (const [x, y, w, h] of OLYMP_ROOM.solids) { ctx.fillStyle = "#b8735a"; ctx.fillRect(x, y, w, h); ctx.fillStyle = "#5fbf5a"; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(x + 6 + i * 11, y + h / 2, 5, 0, TAU); ctx.fill(); } }
+  ctx.fillStyle = "#6a4a30"; ctx.fillRect(340, 84, 40, 8);
+  ctx.fillStyle = "#1f4a26"; ctx.font = "bold 10px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = "#e8f6e0"; ctx.fillText("ЛИФТ", 30, 20); ctx.fillText("АРАРАТ →", GW - 40, 20); ctx.fillText("СКАМЕЙКА", 360, 64);
+  const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
+  if (SUM) drawSummon2D(OX, OZ);
+  const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
+}
 function useRoom(kind) {
   if (!HOME_ROOM.solids) { HOME_ROOM.solids = ROOM_SOLIDS; HOME_ROOM.spots = ROOM_SPOTS; }
-  const R = kind === "air" ? TERM_ROOM : HOME_ROOM; INT = kind;
+  const R = kind === "air" ? TERM_ROOM : kind === "olymp" ? OLYMP_ROOM : HOME_ROOM; INT = kind;
   RW = R.RW; RH = R.RH; OX = R.OX; OZ = R.OZ; ROOM_SOLIDS = R.solids; ROOM_SPOTS = R.spots;
 }
 function enterTerminal() {
@@ -2146,7 +2271,7 @@ function enterTerminal() {
   $("game").classList.add("indoor"); sfx.doorOpen(); toast(CITY.village ? "Автостанция Нова-Э" : "Терминал аэропорта · " + CITY.name, 1.8);
   setTimeout(() => tone(660, 660, 0.25, 0.06, "sine"), 300); setTimeout(() => tone(880, 880, 0.35, 0.06, "sine"), 560);
   if (G3.ready && !G3.term) buildTerm();
-  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false;
+  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.garden) G3.garden.g.visible = false; outerLand(true);
 }
 function termAct(sp) {
   if (sp.id === "door") return leaveHome();
@@ -3560,19 +3685,22 @@ function enterHome() {
   if (G3.ready && !G3.room) G3.buildRoom();
   if (G3.room) G3.room.g.visible = true;
   if (G3.term) G3.term.g.visible = false;
+  if (G3.garden) G3.garden.g.visible = false; outerLand(true);
 }
 function leaveHome() {
   commHush();
   indoor = false; player.couch = false;
-  const q = INT === "air" ? places.air : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : "home";
+  const q = INT === "air" ? places.air : INT === "olymp" ? places.olympDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "olymp" ? "olymp" : "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
   if (G3.room) G3.room.g.visible = false;
   if (G3.term) G3.term.g.visible = false;
+  if (G3.garden) G3.garden.g.visible = false; outerLand(true);
 }
 function roomAct(sp) {
   if (INT === "air") return termAct(sp);
+  if (INT === "olymp") return gardenAct(sp);
   if (sp.id === "door") return leaveHome();
   if (sp.id === "bed") { hmView = "sleep"; renderHome(); showOv("home"); return; }
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
@@ -3615,6 +3743,7 @@ function updIndoor(dt) {
 }
 function drawIndoor2D(dpr, W, H) {
   if (INT === "air") return drawTerm2D(dpr, W, H);
+  if (INT === "olymp") return drawGarden2D(dpr, W, H);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
   let top = W < 640 ? 196 : 150; // clear the button column on phones
   if (TV.on) {
@@ -4330,6 +4459,7 @@ function buy(sh, it) {
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
+if (places.olympDoor) SHOPS.push({ id: "olymp", col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => places.olympDoor, open: () => enterGarden() });
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
@@ -6095,7 +6225,7 @@ function init3d() {
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(WORLD, WORLD), lam(0xffffff, { map: gt })); G3.groundMat = ground.material;
   ground.rotation.x = -Math.PI / 2; ground.position.set(WORLD / 2, 0, WORLD / 2); ground.receiveShadow = true; scene.add(ground);
   const quay = new THREE.Mesh(BOX, lam(0x6e675e)); quay.scale.set(WORLD + 18, 6, WORLD + 18); quay.position.set(WORLD / 2, -3.6, WORLD / 2); scene.add(quay);
-  const water = new THREE.Mesh(new THREE.PlaneGeometry(WORLD * 5, WORLD * 5), lam(CITY.water)); water.rotation.x = -Math.PI / 2; water.position.set(WORLD / 2, -5, WORLD / 2); scene.add(water);
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(WORLD * 5, WORLD * 5), lam(CITY.water)); water.rotation.x = -Math.PI / 2; water.position.set(WORLD / 2, -5, WORLD / 2); scene.add(water); (G3.outer || (G3.outer = [])).push(water);
 
   // buildings with window textures that light up at night
   const tex = (n, f) => { const c = document.createElement("canvas"); c.width = c.height = n; f(c.getContext("2d")); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; };
@@ -6757,7 +6887,7 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (indoor && (INT === "air" ? G3.term : G3.room)) {
+  if (indoor && (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : G3.room)) {
     const L = toLocal(), cam = G3.camera;
     cam3.dragT = Math.max(0, cam3.dragT - dt);
     if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; } if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
@@ -6770,7 +6900,7 @@ function render3d(t) {
     if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
     const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
     cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
-    (INT === "air" ? G3.term : G3.room).tick(dt);
+    (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : G3.room).tick(dt);
   } else if (state === "lift" && LIFT && places.statue) {
     const S = places.statue, a = Math.atan2(WORLD / 2 - S.y, WORLD / 2 - S.x) + Math.sin(LIFT.ang) * 1.3, h = 30 + LIFT.h * 7.4, d = 300 + LIFT.h * 7;
     cam.position.set(S.x + Math.cos(a) * 60, h, S.y + Math.sin(a) * 60); cam.lookAt(S.x + Math.cos(a) * d, 10, S.y + Math.sin(a) * d);
@@ -6857,7 +6987,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
