@@ -899,12 +899,12 @@ const LMS = {
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
     } },
-  olymp: { name: "Отель «Олимпия» и висячие сады", info: "отель с коридором в воздухе, обвитым листьями: поднимись на лифте, сними номер и пройди по саду", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
-    gen(o) { places.olympDoor = { x: (o.x0 + 3) * T, y: (o.y0 + 5.4) * T }; },
+  olymp: { name: "Отель «Олимпия» и висячие сады", info: "вход — стеклянные двери у любой из двух башен: лифт поднимет в коридор-сад в воздухе, там ресепшн и номера", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
+    gen(o) { places.olympDoors = [32, 224].map((x) => ({ x: o.ix * T + x, y: o.iy * T + 212 })); places.olympDoor = places.olympDoors[0]; },
     ground(g, b) { g.fillStyle = "rgba(79,174,90,.35)"; for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse(b.x + 60 + i * 28, b.y + 128 + (i % 2 ? 40 : -40), 16, 10, 0, 0, TAU); g.fill(); } },
     d2(Q) {
       const tuff = "#d99a82";
-      Q.box(32, 128, 50, 50, 150, tuff, "#b8735a"); Q.box(224, 128, 50, 50, 150, tuff, "#b8735a");
+      Q.box(32, 128, 58, 126, 150, tuff, "#b8735a"); Q.box(224, 128, 58, 126, 150, tuff, "#b8735a");
       Q.box(128, 128, 200, 30, 146, "#e8e0d0", "#4fae5a", 118);
       for (let i = 0; i < 12; i++) Q.circ(40 + i * 16, 128 + (i % 2 ? 12 : -12), 9, 148, i % 3 ? "#3f8f4a" : "#5fbf5a");
       for (let i = 0; i < 6; i++) Q.circ(52 + i * 30, 112 + (i % 2) * 32, 3, 150, "#ff8fc0");
@@ -912,9 +912,13 @@ const LMS = {
     d3(B) {
       const THREE = B.THREE, tuff = B.M("#d99a82", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() });
       // two lift towers of pink tuff
-      for (const x of [32, 224]) { B.box(tuff, x, 128, 50, 50, 150, 0, 0, 64); B.box("#b8735a", x, 128, 54, 54, 4, 150); B.box(B.M("#9fd8f0", { glow: "#bfe8ff" }), x, 128 + 25.2, 14, 1, 24, 0); }
-      B.plane(B.M("#ffffff", { map: B.X.txt("ОЛИМПИЯ · ЛИФТ", "#1f4a26", "#e8f6e0", 512, 64, 38) }), 32, 154, 46, 7, 28, 0);
-      for (const x of [32, 224]) B.plane(B.M("#ffffff", { map: B.X.txt("HOTEL «OLYMPIA» ★★★★★", "#ffd23d", "#1f2a26", 512, 64, 30) }), x, 154, 48, 8, 132, 0);
+      for (const x of [32, 224]) {
+        B.box(tuff, x, 128, 58, 126, 150, 0, 0, 64); B.box("#b8735a", x, 128, 62, 130, 4, 150);
+        B.box("#b8735a", x, 192, 30, 2, 34, 0); B.box(B.M("#9fd8f0", { glow: "#bfe8ff" }), x, 193.4, 22, 1, 28, 0); B.box("#c9a14a", x, 194.1, 0.8, 0.6, 24, 2); B.box("#f2ece0", x, 196, 34, 10, 1.5, 32);
+        B.plane(B.M("#ffffff", { map: B.X.txt("ВХОД · ОТЕЛЬ", "#ffd23d", "#1f2a26", 256, 64, 34) }), x, 193.2, 26, 6, 35, 0);
+      }
+      
+      for (const x of [32, 224]) B.plane(B.M("#ffffff", { map: B.X.txt("HOTEL «OLYMPIA» ★★★★★", "#ffd23d", "#1f2a26", 512, 64, 30) }), x, 191.6, 54, 9, 132, 0);
       // the hanging corridor: a deck, a frame of arches, all woven with leaves
       const Y = 118, L = B.M("#3f8f4a"), L2 = B.M("#5fbf5a"), L3 = B.M("#2f6f3a");
       B.box("#e8e0d0", 128, 128, 196, 32, 4, Y); B.box("#8a6a48", 128, 128, 196, 30, 1, Y + 4);
@@ -3752,7 +3756,7 @@ function enterHome() {
 function leaveHome() {
   commHush();
   indoor = false; player.couch = false;
-  const q = INT === "air" ? places.air : INT === "olymp" ? places.olympDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "olymp" ? "olymp" : "home";
+  const q = INT === "air" ? places.air : INT === "olymp" ? places.olympDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "olymp" ? "olymp" + Math.max(0, (places.olympDoors || []).indexOf(places.olympDoor)) : "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
@@ -4521,7 +4525,7 @@ function buy(sh, it) {
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
-if (places.olympDoor) SHOPS.push({ id: "olymp", col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => places.olympDoor, open: () => enterGarden() });
+if (places.olympDoors) places.olympDoors.forEach((d, i) => SHOPS.push({ id: "olymp" + i, col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => d, open: () => { places.olympDoor = d; enterGarden(); } }));
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
 function openShop(sh) { shopNow = sh; renderShop(); showOv("shop"); }
