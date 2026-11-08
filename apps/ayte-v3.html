@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=JetBrains+Mono:wght@400;600&family=Onest:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: two panes (chats | conversation); below 820px one pane at a time. Sheets slide up from the bottom. */
 :root {
@@ -13,19 +13,21 @@
   --shadow: 0 18px 50px rgba(15, 30, 25, .18);
   --display: "Dela Gothic One", "Arial Black", Impact, sans-serif;
   --body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --code-bg: #f3f5f8; --code-line: #dfe4ea; --code-ink: #1f2a37; --hl-kw: #b42a5c; --hl-str: #1d7a46; --hl-num: #a2580a; --hl-com: #7a8794; --hl-fn: #2a5fc1; --hl-type: #7b3fc4;
   --gl: max(16px, env(safe-area-inset-left, 0px)); --gr: max(16px, env(safe-area-inset-right, 0px));
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0b1110; --side: #101817; --panel: #131d1b; --raise: #1a2624; --line: #24322e;
   --ink: #e5eeea; --muted: #8a9b95; --accent: #ff7247; --accent-ink: #1a0a04; --accent-soft: #3a1c12;
   --in: #172320; --in-line: #22312d; --out: #5b2513; --out-ink: #ffeee6; --out-meta: #f2a88c;
-  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6);
+  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6); --code-bg: #0e1513; --code-line: #24322e; --code-ink: #dbe7e2; --hl-kw: #ff8fb0; --hl-str: #8fe0a8; --hl-num: #ffc477; --hl-com: #7f918a; --hl-fn: #8fb8ff; --hl-type: #d1a8ff;
   --shadow: 0 18px 50px rgba(0, 0, 0, .55); color-scheme: dark; } }
 :root[data-theme="dark"] {
   --bg: #0b1110; --side: #101817; --panel: #131d1b; --raise: #1a2624; --line: #24322e;
   --ink: #e5eeea; --muted: #8a9b95; --accent: #ff7247; --accent-ink: #1a0a04; --accent-soft: #3a1c12;
   --in: #172320; --in-line: #22312d; --out: #5b2513; --out-ink: #ffeee6; --out-meta: #f2a88c;
-  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6);
+  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6); --code-bg: #0e1513; --code-line: #24322e; --code-ink: #dbe7e2; --hl-kw: #ff8fb0; --hl-str: #8fe0a8; --hl-num: #ffc477; --hl-com: #7f918a; --hl-fn: #8fb8ff; --hl-type: #d1a8ff;
   --shadow: 0 18px 50px rgba(0, 0, 0, .55); color-scheme: dark; }
 :root[data-theme="light"] { color-scheme: light; }
 
@@ -143,6 +145,26 @@ label.btn { display: flex; justify-content: center; align-items: center; gap: 6p
 @keyframes pop { from { transform: translateY(6px) scale(.97); opacity: .4; } to { transform: none; opacity: 1; } }
 .sender { font-size: 12.5px; font-weight: 700; color: var(--c, var(--accent)); }
 .text { white-space: pre-wrap; }
+.m-body.wide { max-width: min(100%, 760px); width: 100%; }
+.m-body.wide .bubble { width: 100%; }
+.codebox { margin: 6px 0; border: 1px solid var(--code-line); border-radius: 12px; background: var(--code-bg); color: var(--code-ink); overflow: hidden; white-space: normal; }
+.code-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 6px 5px 10px; border-bottom: 1px solid var(--code-line); font: 600 11.5px var(--body); color: var(--hl-com); text-transform: lowercase; }
+.code-acts { display: flex; gap: 4px; }
+.code-acts button { border: 1px solid var(--code-line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 3px 8px; font: 600 12px var(--body); text-transform: none; }
+.code-acts button[data-run] { border-color: var(--accent); color: var(--accent); }
+.codebox pre { margin: 0; padding: 10px 12px; overflow-x: auto; font: 12.5px/1.55 var(--mono); tab-size: 2; white-space: pre; }
+.codebox code { font: inherit; background: none; padding: 0; }
+.ic { font: 0.9em var(--mono); padding: 1px 5px; border-radius: 5px; background: var(--code-bg); border: 1px solid var(--code-line); color: var(--code-ink); }
+.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-built_in, .hljs-meta .hljs-keyword { color: var(--hl-kw); }
+.hljs-string, .hljs-regexp, .hljs-attr + .hljs-string, .hljs-addition, .hljs-template-tag { color: var(--hl-str); }
+.hljs-number, .hljs-symbol, .hljs-bullet, .hljs-variable.constant_ { color: var(--hl-num); }
+.hljs-comment, .hljs-quote, .hljs-meta { color: var(--hl-com); font-style: italic; }
+.hljs-title, .hljs-title.function_, .hljs-section, .hljs-name { color: var(--hl-fn); }
+.hljs-type, .hljs-title.class_, .hljs-attr, .hljs-attribute, .hljs-selector-class, .hljs-selector-id, .hljs-tag { color: var(--hl-type); }
+.hljs-deletion { color: var(--red); }
+.console { max-height: 260px; overflow: auto; border: 1px solid var(--code-line); border-radius: 12px; background: var(--code-bg); padding: 8px 10px; font: 12.5px/1.5 var(--mono); color: var(--code-ink); display: grid; gap: 2px; }
+.console > div { white-space: pre-wrap; overflow-wrap: anywhere; }
+.console .c-err { color: var(--red); } .console .c-warn { color: var(--hl-num); } .console .c-muted { color: var(--hl-com); font-family: var(--body); }
 .text mark { background: var(--accent); color: var(--accent-ink); border-radius: 3px; }
 .fwd { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 2px; }
 .me .fwd { color: var(--out-meta); }
@@ -300,7 +322,7 @@ textarea.input { resize: vertical; min-height: 64px; }
       <div class="ctx" id="ctx" hidden></div>
       <div class="c-row" id="cRow">
         <label class="ghost" id="attachBtn" for="photoIn" role="button" tabindex="0" aria-label="Выбрать фото из галереи"></label>
-        <textarea id="input" rows="1" placeholder="Сообщение" aria-label="Сообщение" maxlength="4000"></textarea>
+        <textarea id="input" rows="1" placeholder="Сообщение" aria-label="Сообщение" maxlength="20000"></textarea>
         <button class="ghost" id="panelBtn" type="button" aria-label="Эмодзи и стикеры" aria-expanded="false"></button>
         <button class="send" id="sendBtn" type="button" aria-label="Отправить"></button>
       </div>
@@ -314,8 +336,10 @@ textarea.input { resize: vertical; min-height: 64px; }
 <div class="viewer" id="viewer" hidden><img id="viewImg" alt="Фото из чата"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <input type="file" id="photoIn" class="vh" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+<input type="file" id="codeIn" class="vh" accept=".js,.mjs,.jsx,.ts,.tsx,.py,.html,.htm,.css,.json,.java,.c,.h,.cpp,.cc,.hpp,.cs,.go,.rs,.php,.rb,.swift,.kt,.sql,.sh,.md,.xml,.svg,.yml,.yaml,.lua,.dart,.vue,.txt,text/*" tabindex="-1" aria-hidden="true">
 <input type="file" id="avatarIn" class="vh" accept="image/*" tabindex="-1" aria-hidden="true">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
 (() => {
 "use strict";
@@ -387,6 +411,7 @@ const I = {
   trash: svg('<path d="M4 7h16"/><path d="M18 7l-1 13H7L6 7"/><path d="M10 11v6M14 11v6"/><path d="M9 7V4h6v3"/>'),
   bookmark: svg('<path d="M6 3h12v18l-6-4-6 4z"/>'),
   photo: svg('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>'),
+  code: svg('<path d="M8 8l-5 4 5 4M16 8l5 4-5 4M14 5l-4 14"/>'),
   poll: svg('<path d="M5 20V10M12 20V4M19 20v-7"/>'),
   brush: svg('<path d="M14.5 4.5l5 5L10 19l-5 1 1-5z"/><path d="M12.5 6.5l5 5"/>'),
   user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'),
@@ -621,7 +646,7 @@ function pv(m) {
   if (m.pic) return "🎨 " + (m.text || "Картинка");
   if (m.img) return "📷 " + (m.text || "Фото");
   if (m.poll) return "📊 " + (m.poll.q || "Опрос");
-  return m.text || "";
+  return String(m.text || "").replace(/```[\s\S]*?(```|$)/g, " 💻 код ").replace(/`/g, "").replace(/\s+/g, " ").trim();
 }
 const unread = (c) => !PSEUDO[c.id] && !!(c.last && c.last.from !== st.me && !c.last.sys && c.last.t > ((c.read || {})[st.me] || 0) && isMember(c));
 
@@ -727,6 +752,106 @@ function quoteHTML(r) {
   if (!r) return "";
   return `<button class="quote" type="button" data-goto="${esc(r.id)}"><b>${esc(nameOf(r.from))}</b><span>${esc(r.text || "Сообщение")}</span></button>`;
 }
+/* ================= code: ``` blocks with highlighting, copy and run ================= */
+const codeStore = new Map(), hlCache = new Map();
+const LANG_ALIAS = { js: "javascript", jsx: "javascript", ts: "typescript", py: "python", sh: "bash", shell: "bash", zsh: "bash", "c++": "cpp", "c#": "csharp", cs: "csharp", htm: "html", yml: "yaml", kt: "kotlin", rs: "rust", rb: "ruby", md: "markdown", svg: "xml" };
+const RUNNABLE = /^(html|xml|svg|javascript|js)$/i;
+function hl(code, lang) {
+  const key = lang + "\u0000" + code;
+  if (hlCache.has(key)) return hlCache.get(key);
+  let out = esc(code);
+  const H = window.hljs;
+  if (H && code.length < 60000) {
+    try {
+      const l = LANG_ALIAS[lang] || lang;
+      if (l && H.getLanguage(l)) out = H.highlight(code, { language: l, ignoreIllegals: true }).value;
+      else if (!l && code.length < 8000) out = H.highlightAuto(code).value;
+    } catch (e) { out = esc(code); }
+  }
+  if (hlCache.size > 300) hlCache.clear();
+  hlCache.set(key, out);
+  return out;
+}
+function inlineMd(text) {
+  // `code` and **bold** in ordinary text; the rest keeps the search highlight
+  return String(text).split(/(`[^`\n]{1,200}`)/g).map((part, i) => {
+    if (i % 2) return `<code class="ic">${esc(part.slice(1, -1))}</code>`;
+    return highlight(part).replace(/\*\*([^*\n]{1,200})\*\*/g, "<b>$1</b>");
+  }).join("");
+}
+function richText(text) {
+  text = String(text || "");
+  if (!text.includes("`")) return { html: highlight(text), code: false };
+  let html = "", last = 0, any = false;
+  const re = /```[ \t]*([\w#+.-]*)[^\n]*\n([\s\S]*?)(?:```|$)/g;
+  let m;
+  while ((m = re.exec(text))) {
+    any = true;
+    html += inlineMd(text.slice(last, m.index).replace(/\n+$/, ""));
+    const lang = (m[1] || "").toLowerCase(), code = m[2].replace(/\n$/, "");
+    const id = "c" + hash53(lang + code);
+    codeStore.set(id, { lang, code });
+    const label = lang || "код", lines = code.split("\n").length;
+    html += `<div class="codebox"><div class="code-head"><span>${esc(label)} · ${lines} ${plural(lines, "строка", "строки", "строк")}</span><span class="code-acts">${RUNNABLE.test(lang) || (!lang && /^\s*<(!doctype|html|div|body|svg|canvas|style|script)/i.test(code)) ? `<button type="button" data-run="${id}">▶ Запустить</button>` : ""}<button type="button" data-copy="${id}">Копировать</button></span></div><pre><code class="hljs">${hl(code, lang)}</code></pre></div>`;
+    last = re.lastIndex;
+  }
+  html += inlineMd(text.slice(last).replace(/^\n+/, ""));
+  return { html, code: any };
+}
+async function copyCode(id) {
+  const c = codeStore.get(id); if (!c) return;
+  try { await navigator.clipboard.writeText(c.code); toast("Код скопирован"); }
+  catch (e) {
+    const pre = document.querySelector(`[data-copy="${CSS.escape(id)}"]`)?.closest(".codebox")?.querySelector("pre");
+    if (pre) { const r = document.createRange(); r.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+    toast("Код выделен — скопируйте его вручную");
+  }
+}
+// Runs HTML or JavaScript in a sandboxed frame with no access to the messenger, its data or the viewer's account.
+let runToken = "", runFrame = null;
+function runCode(id) {
+  const c = codeStore.get(id); if (!c) return;
+  const isHtml = /^(html|xml|svg)$/i.test(c.lang) || (!c.lang && /^\s*</.test(c.code));
+  runToken = rid(12);
+  const hook = `<script>(function(){var T=${JSON.stringify(runToken)};function f(x){try{return typeof x==="string"?x:(x instanceof Error?x.name+": "+x.message:JSON.stringify(x))}catch(e){return String(x)}}function s(t,a){parent.postMessage({ayteRun:T,t:t,a:[].map.call(a,f).join(" ")},"*")}["log","info","warn","error"].forEach(function(k){var o=console[k];console[k]=function(){s(k,arguments);o&&o.apply(console,arguments)}});window.alert=function(m){s("log",["alert: "+m])};window.onerror=function(m,u,l){s("error",[m+(l?" (строка "+l+")":"")]);};window.addEventListener("unhandledrejection",function(e){s("error",["Promise: "+f(e.reason)])});})();<\/script>`;
+  const safe = (x) => x.replace(/<\/script/gi, "<\\/script");
+  const doc = isHtml
+    ? (/<head[^>]*>/i.test(c.code) ? c.code.replace(/<head[^>]*>/i, (h) => h + hook) : hook + c.code)
+    : `<!doctype html><meta charset="utf-8"><body style="margin:0">${hook}<script>${safe(c.code)}\n<\/script><script>parent.postMessage({ayteRun:${JSON.stringify(runToken)},t:"done",a:""},"*")<\/script></body>`;
+  openSheet(isHtml ? "Результат" : "Консоль JavaScript", `
+    ${isHtml ? `<iframe id="runFrame" title="Результат кода" sandbox="allow-scripts" style="width:100%;height:min(60vh,460px);border:1px solid var(--line);border-radius:12px;background:#fff"></iframe>` : `<iframe id="runFrame" title="Выполнение кода" sandbox="allow-scripts" style="display:none"></iframe>`}
+    <div class="field"><span>${isHtml ? "Консоль" : "Вывод"}</span><div class="console" id="runOut"><div class="c-muted">${isHtml ? "Сообщения console.log появятся здесь." : "Выполняем…"}</div></div></div>
+    <p class="note">Код работает в изолированном окне: у него нет доступа к Ayte, вашим чатам и аккаунту.</p>
+    <button class="btn sec" type="button" id="runAgain">Запустить ещё раз</button>`, (b) => {
+    runFrame = b.querySelector("#runFrame");
+    runFrame.srcdoc = doc;
+    b.querySelector("#runAgain").addEventListener("click", () => runCode(id));
+    if (!isHtml) setTimeout(() => { const out = $("#runOut"); if (out && out.querySelector(".c-muted") && runFrame) out.innerHTML = `<div class="c-muted">Код ничего не вывел за 4 секунды. Если в нём нет console.log — так и должно быть; иначе запуск кода может быть недоступен в этом окне.</div>`; }, 4000);
+  }, () => { if (runFrame) runFrame.srcdoc = ""; runFrame = null; runToken = ""; });
+}
+window.addEventListener("message", (e) => {
+  const d = e.data;
+  if (!runFrame || !d || d.ayteRun !== runToken || e.source !== runFrame.contentWindow) return;
+  const out = $("#runOut"); if (!out) return;
+  if (out.querySelector(".c-muted")) out.innerHTML = "";
+  if (d.t === "done") { if (!out.children.length) out.innerHTML = `<div class="c-muted">Готово, вывода нет.</div>`; return; }
+  if (out.children.length > 300) return;
+  const line = document.createElement("div"); line.className = "c-" + (d.t === "error" ? "err" : d.t === "warn" ? "warn" : "log");
+  line.textContent = String(d.a).slice(0, 4000); out.appendChild(line);
+});
+// Attach a code file to the Ayte AI chat: it goes into the input as a ``` block.
+const EXT_LANG = { js: "javascript", mjs: "javascript", cjs: "javascript", jsx: "javascript", ts: "typescript", tsx: "typescript", py: "python", html: "html", htm: "html", css: "css", json: "json", java: "java", c: "c", h: "c", cpp: "cpp", cc: "cpp", hpp: "cpp", cs: "csharp", go: "go", rs: "rust", php: "php", rb: "ruby", swift: "swift", kt: "kotlin", sql: "sql", sh: "bash", md: "markdown", xml: "xml", svg: "xml", yml: "yaml", yaml: "yaml", lua: "lua", dart: "dart", vue: "html", txt: "" };
+async function attachCodeFile(f) {
+  if (!f) return;
+  if (f.size > 400000) { toast("Файл больше 400 КБ — выберите поменьше"); return; }
+  let text = ""; try { text = await f.text(); } catch (e) { toast("Не удалось прочитать файл"); return; }
+  if (/\u0000/.test(text.slice(0, 2000))) { toast("Это не текстовый файл с кодом"); return; }
+  const ext = (f.name.split(".").pop() || "").toLowerCase(), lang = EXT_LANG[ext] != null ? EXT_LANG[ext] : ext.replace(/[^a-z0-9]/g, "");
+  const room = 19000 - input.value.length;
+  if (text.length > room) { text = text.slice(0, Math.max(0, room - 80)); toast("Файл длинный — в сообщение вошло начало"); }
+  input.value = (input.value ? input.value.replace(/\s+$/, "") + "\n" : "") + "Файл " + f.name + ":\n```" + lang + "\n" + text.replace(/\s+$/, "") + "\n```\n";
+  autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length);
+}
 function highlight(text) {
   const t = esc(text); if (!st.find) return t;
   const f = esc(st.find).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -775,18 +900,19 @@ function renderMsgs(jump) {
     else if (m.img && okImg(m.img)) body += `<img class="ph" src="${m.img}" alt="Фото" data-zoom="1" loading="lazy" style="aspect-ratio:${+m.w || 4}/${+m.h || 3}">`;
     else if (m.pic) { const pc = st.pics.get(m.pic); body += pc && okImg(pc.src) ? `<img class="ph" src="${pc.src}" alt="Картинка от Ayte AI" data-zoom="1" style="aspect-ratio:${+m.w || 1}/${+m.h || 1}">` : `<div class="ph" style="aspect-ratio:${+m.w || 1}/${+m.h || 1};display:grid;place-items:center;color:var(--muted)">🎨</div>`; if (!pc) loadPic(m.pic); }
     if (m.poll) body += pollHTML(m, c);
-    if (m.text) body += `<div class="text">${highlight(m.text)}</div>`;
+    let wide = false;
+    if (m.text) { const rt = richText(m.text); wide = rt.code; body += `<div class="text">${rt.html}</div>`; }
     const rx = m.react && typeof m.react === "object" ? Object.keys(m.react).filter((e) => Array.isArray(m.react[e]) && m.react[e].length) : [];
     const ticks = mine && (c.kind === "dm" || c.kind === "group") ? `<span class="ticks" aria-label="${maxRead >= m.t ? "Прочитано" : "Отправлено"}" style="color:${maxRead >= m.t ? "var(--accent)" : "inherit"}">${maxRead >= m.t ? "✓✓" : "✓"}</span>` : "";
     const meta = `<div class="meta">${m.edited ? "<span>изменено</span>" : ""}<span>${hm(m.t)}</span>${ticks}</div>`;
     html += `<div class="m${mine && c.kind !== "channel" ? " me" : ""}${first ? " first" : ""}" data-mid="${esc(m.id)}">
       ${showAv ? `<div class="m-av">${first ? avHTML(pa, 32, false) : ""}</div>` : ""}
-      <div class="m-body">${showName ? `<span class="sender" style="--c:${okColor(pa.color)}">${esc(nameOf(m.from))}</span>` : ""}
+      <div class="m-body${wide ? " wide" : ""}">${showName ? `<span class="sender" style="--c:${okColor(pa.color)}">${esc(nameOf(m.from))}</span>` : ""}
         <div class="bubble${kind}${m.id === st.fresh ? " new" : ""}" data-bubble="${esc(m.id)}" tabindex="0">${body}${meta}</div>
         ${rx.length ? `<div class="rxs">${rx.map((e) => `<button class="rx${m.react[e].includes(st.me) ? " mine" : ""}" type="button" data-rx="${esc(e)}" data-rxm="${esc(m.id)}">${esc(e)} ${m.react[e].length}</button>`).join("")}</div>` : ""}
       </div></div>`;
   }
-  if (c.kind === "ai" && st.aiDraft != null) html += `<div class="m first" data-mid="draft"><div class="m-body"><div class="bubble"><div class="text">${esc(st.aiDraft || "…")}</div></div></div></div>`;
+  if (c.kind === "ai" && st.aiDraft != null) { const rt = richText(st.aiDraft || "…"); html += `<div class="m first" data-mid="draft"><div class="m-body${rt.code ? " wide" : ""}"><div class="bubble"><div class="text">${rt.html}</div></div></div></div>`; }
   const ty = typingIn(c.id);
   if ((ty.length && c.kind !== "channel") || (c.kind === "ai" && st.aiBusy && st.aiDraft == null)) html += `<div class="typing-row"><span class="dots"><i></i><i></i><i></i></span>${c.kind === "group" ? esc(ty.map(nameOf).join(", ")) : ""}</div>`;
   msgsEl.innerHTML = html;
@@ -794,8 +920,8 @@ function renderMsgs(jump) {
   if (jump || atBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
 }
 function aiIntro() {
-  return `<div class="m first"><div class="m-body"><div class="bubble"><div class="text">Привет! Я Ayte AI ✦ Помогу придумать ответ, название группы, текст для канала — и умею рисовать картинки: просто напишите «нарисуй…». Наш разговор видите только вы.</div></div></div></div>
-  <div class="chips">${["Нарисуй кота-космонавта", "Нарисуй закат над горами", "Придумай название для нашей группы", "Напиши пост для канала о новом проекте"].map((s) => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+  return `<div class="m first"><div class="m-body"><div class="bubble"><div class="text">Привет! Я Ayte AI ✦ Помогу придумать ответ, название группы, текст для канала — умею рисовать картинки («нарисуй…») и работать с кодом: пишу, объясняю и исправляю программы, а HTML и JavaScript можно сразу запустить кнопкой ▶. Наш разговор видите только вы.</div></div></div></div>
+  <div class="chips">${["Нарисуй кота-космонавта", "Напиши игру «Змейка» на HTML", "Объясни, что такое рекурсия, с примером на Python", "Придумай название для нашей группы"].map((s) => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
 }
 function renderCtx() {
   const ctx = $("#ctx"), r = st.reply || st.edit;
@@ -896,11 +1022,12 @@ async function sendText() {
     return;
   }
   input.value = ""; autoGrow(); updateSend(); ls.set("draft:" + st.active, ""); stopTyping();
-  await sendPayload({ text: text.slice(0, 4000) });
+  await sendPayload({ text: text.slice(0, 20000) });
 }
 
 /* ================= Ayte AI (Claude via the sample capability) ================= */
 // Pictures: Claude draws them as SVG code inside a ```svg block; the page cleans it and turns it into a JPEG photo.
+const CODE_RE = /(```|\bкод|code|функци|скрипт|программ|алгоритм|python|питон|javascript|\bjs\b|typescript|html|css|java\b|c\+\+|c#|kotlin|swift|golang|\bgo\b|rust|php|sql|regex|регуляр|баг|ошибк|отлад|debug|api\b|json|react|node|компил|массив|цикл|класс|переменн)/i;
 const DRAW_RE = /(нарису|рисун|рисова|картин|изображ|иллюстрац|аватар|аватарк|логотип|эмблем|постер|обои|draw|picture|image|paint|sketch)/i;
 function cleanSVG(raw) {
   const doc = new DOMParser().parseFromString(raw, "image/svg+xml");
@@ -933,27 +1060,28 @@ async function rasterSVG(raw) {
   throw new Error("too big");
 }
 function splitSVG(text) {
-  const m = text.match(/```(?:svg|xml|html)?\s*(<svg[\s\S]*?<\/svg>)\s*```/i) || text.match(/(<svg[\s\S]*?<\/svg>)/i);
+  const m = text.match(/```(?:svg|xml)?[ \t]*\n?\s*(<svg[\s\S]*?<\/svg>)\s*```/i) || (!text.includes("```") ? text.match(/(<svg[\s\S]*?<\/svg>)/i) : null);
   if (!m) return { svg: null, rest: text };
   return { svg: m[1], rest: text.replace(m[0], "").replace(/\n{3,}/g, "\n\n").trim() };
 }
-const draftView = (text) => { const i = text.search(/```\s*(svg|xml)|<svg/i); return i < 0 ? text : (text.slice(0, i).trim() + "\n\n🎨 Рисую…").trim(); };
+const draftView = (text, drawing) => { if (!drawing) return text; const i = text.search(/```\s*(svg|xml)|<svg/i); return i < 0 ? text : (text.slice(0, i).trim() + "\n\n🎨 Рисую…").trim(); };
 async function askAI(m) {
   if (st.aiBusy) return;
   const mine = Object.assign({ id: newId() }, m); delete mine.react;
-  st.ai = st.ai.concat([mine]).slice(-80); st.fresh = mine.id; savePriv("ai", st.ai);
+  st.ai = trimSaved(st.ai.concat([mine]).slice(-80)); st.fresh = mine.id; savePriv("ai", st.ai);
   if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); }
   renderListSoon();
   if (st.sample === undefined) { try { st.sample = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { st.sample = null; } }
   const reply = async (text, pic) => {
     const msg = { id: newId(), from: "ai", t: now(), text };
     if (pic) { const pid = newId(); st.pics.set(pid, pic); Object.assign(msg, { pic: pid, w: pic.w, h: pic.h }); try { await st.B.setPriv("pic-" + pid, pic); } catch (e) { toast("Картинка не сохранилась: " + errText(e)); } }
-    const all = st.ai.concat([msg]), keep = all.slice(-80);
+    const all = st.ai.concat([msg]), keep = trimSaved(all.slice(-80));
     all.slice(0, all.length - keep.length).forEach((x) => { if (x.pic) st.B.delPriv("pic-" + x.pic).catch(() => {}); });
     st.ai = keep; savePriv("ai", st.ai); if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); } renderListSoon();
   };
   if (!st.sample) { reply("Сейчас я не могу ответить: в этом окне нет доступа к Claude. Откройте Ayte V3 на claude.ai и разрешите странице обращаться к Claude."); return; }
-  const drawing = DRAW_RE.test(m.text || "");
+  const coding = CODE_RE.test(m.text || "");
+  const drawing = DRAW_RE.test(m.text || "") && !(coding && !/нарису/i.test(m.text || ""));
   st.aiBusy = true; st.aiDraft = drawing ? "🎨 Рисую…" : null; renderHead(); renderMsgs(true); updateSend();
   const hist = [];
   st.ai.slice(-18).forEach((x) => {
@@ -966,11 +1094,12 @@ async function askAI(m) {
   while (hist.length && hist[0].role !== "user") hist.shift();
   if (!hist.length) { st.aiBusy = false; st.aiDraft = null; return; }
   hist[0].content = "[Инструкция] Ты — Ayte AI, помощник в мессенджере Ayte V3. Пиши как в чате: коротко (обычно 1–4 предложения), дружелюбно, на языке собеседника, без markdown-заголовков и таблиц; эмодзи — в меру. Если просят текст сообщения или поста — дай готовый текст.\n" +
+    "Ты умеешь работать с кодом на любом языке: писать, объяснять, находить и исправлять ошибки, переводить с языка на язык, ревьюить файлы, которые присылают. Для таких вопросов отвечай столько, сколько нужно: код целиком в блоке ```язык (javascript, python, html, css…), затем 1–3 предложения, что он делает или что исправлено. Веб-примеры давай одним самодостаточным HTML-файлом (CSS и JS внутри) — в чате есть кнопка ▶ Запустить для html и javascript. Если исправляешь присланный код — покажи исправленную версию целиком.\n" +
     "Ты умеешь рисовать картинки. Когда просят нарисовать, сделать картинку, аватарку, логотип, открытку и т. п. — ответь одной короткой фразой и ОДНИМ блоком ```svg … ``` с полным SVG-кодом. Правила SVG: корневой <svg> с xmlns и viewBox (обычно 0 0 1024 1024, для обоев или баннера можно другие пропорции); без <script>, <foreignObject>, <image>, внешних ссылок и шрифтов (текст — только если просят, шрифт sans-serif). Рисуй красиво и подробно: залитый фон, градиенты (linearGradient/radialGradient), тени и блики через прозрачность, продуманная композиция и яркие гармоничные цвета, плавные кривые path. Не объясняй код и не показывай его словами.\n\n" + hist[0].content;
   try {
-    const r = await st.sample(hist, { cache: false, modelTier: drawing ? "default" : "quick", onText: ({ text }) => { st.aiDraft = draftView(text) || (drawing ? "🎨 Рисую…" : ""); if (st.active === "ai") renderMsgs(); } });
+    const r = await st.sample(hist, { cache: false, modelTier: drawing || coding ? "default" : "quick", onText: ({ text }) => { st.aiDraft = draftView(text, drawing) || (drawing ? "🎨 Рисую…" : ""); if (st.active === "ai") renderMsgs(); } });
     const full = (r && r.text || "").trim();
-    const { svg: code, rest } = splitSVG(full);
+    const { svg: code, rest } = drawing ? splitSVG(full) : { svg: null, rest: full };
     let pic = null;
     if (code) { try { pic = await rasterSVG(code); } catch (e) { pic = null; } }
     st.aiBusy = false; st.aiDraft = null;
@@ -1593,6 +1722,9 @@ $("#pinbar").addEventListener("click", async (e) => {
 let tapT = 0, tapId = null, tapTimer = 0;
 msgsEl.addEventListener("click", (e) => {
   const v = e.target.closest("[data-vote]"); if (v) { const m = v.closest("[data-mid]"); vote(m.dataset.mid, +v.dataset.vote); return; }
+  const cp = e.target.closest("[data-copy]"); if (cp) { copyCode(cp.dataset.copy); return; }
+  const rn = e.target.closest("[data-run]"); if (rn) { runCode(rn.dataset.run); return; }
+  if (e.target.closest("pre")) return;
   const rx = e.target.closest("[data-rx]"); if (rx) { toggleReact(rx.dataset.rxm, rx.dataset.rx); return; }
   const g = e.target.closest("[data-goto]"); if (g) { gotoMsg(g.dataset.goto); return; }
   const ask2 = e.target.closest("[data-ask]"); if (ask2) { sendPayload({ text: ask2.dataset.ask }); return; }
@@ -1619,7 +1751,7 @@ composer.addEventListener("click", async (e) => {
   const em = e.target.closest("[data-emo]"); if (em) { input.setRangeText(em.dataset.emo, input.selectionStart, input.selectionEnd, "end"); autoGrow(); updateSend(); if (!isTouch()) input.focus(); return; }
   const sk = e.target.closest("[data-stk]"); if (sk) { closePops(); sendPayload({ sticker: +sk.dataset.stk }); return; }
   const tb = e.target.closest("#panelTabs [data-t]"); if (tb) { if (tb.dataset.t === "poll") { closePops(); openPoll(); return; } st.panelTab = tb.dataset.t; renderPanel(); return; }
-  const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else if (am.dataset.am === "draw") { input.value = "Нарисуй "; autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length); } else openPoll(); }
+  const am = e.target.closest("[data-am]"); if (am && am.dataset.am === "code") { setTimeout(closePops, 0); return; } if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else if (am.dataset.am === "draw") { input.value = "Нарисуй "; autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length); } else openPoll(); }
 });
 $("#panelBtn").addEventListener("click", () => { const open = $("#panel").hidden; closePops(); if (open) { renderPanel(); $("#panel").hidden = false; $("#panelBtn").setAttribute("aria-expanded", "true"); } });
 // The paperclip is a <label> for the file input: the tap itself opens the gallery, which in-app browsers allow.
@@ -1628,11 +1760,12 @@ $("#attachBtn").addEventListener("click", (e) => {
   if (st.active !== "ai") { closePops(); return; }
   e.preventDefault();
   const open = $("#attachMenu").hidden; closePops(); if (!open) return;
-  $("#attachMenu").innerHTML = st.active === "ai" ? `<button class="menu-item" type="button" data-am="draw">${I.brush}<span>Нарисовать картинку</span></button>`
+  $("#attachMenu").innerHTML = st.active === "ai" ? `<button class="menu-item" type="button" data-am="draw">${I.brush}<span>Нарисовать картинку</span></button><label class="menu-item" for="codeIn" role="button" tabindex="0" data-am="code">${I.code}<span>Прикрепить файл с кодом</span></label>`
     : `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
   $("#attachMenu").hidden = false; $("#attachBtn").setAttribute("aria-expanded", "true");
 });
 $("#sendBtn").addEventListener("click", sendText);
+$("#codeIn").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; attachCodeFile(f); });
 input.addEventListener("input", () => { autoGrow(); updateSend(); if (st.active) ls.set("draft:" + st.active, input.value.slice(0, 2000)); if (input.value.trim()) onTyping(); });
 input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !isTouch()) { e.preventDefault(); sendText(); } if (e.key === "ArrowUp" && !input.value && st.active) { const mine = [...st.msgs].reverse().find((m) => m.from === st.me && m.text && !m.poll); if (mine && (st.active === "saved" || (!PSEUDO[st.active] && st.canWrite))) { e.preventDefault(); doAction("edit", mine.id); } } });
 input.addEventListener("blur", stopTyping);
