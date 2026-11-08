@@ -1,0 +1,1428 @@
+<title>Ayte V3</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: two panes (chats | conversation); below 820px one pane at a time. Sheets slide up from the bottom. */
+:root {
+  --bg: #e9eeec; --side: #f7f9f8; --panel: #ffffff; --raise: #eef2f0; --line: #dbe2df;
+  --ink: #14211d; --muted: #63736d; --accent: #ec5a2a; --accent-ink: #ffffff; --accent-soft: #fde5da;
+  --in: #ffffff; --in-line: #e2e8e5; --out: #ffd9c8; --out-ink: #3b1406; --out-meta: #9a4b2d;
+  --wall: rgba(20, 33, 29, .055); --green: #18995c; --red: #d23b3b; --scrim: rgba(12, 20, 18, .45);
+  --shadow: 0 18px 50px rgba(15, 30, 25, .18);
+  --display: "Dela Gothic One", "Arial Black", Impact, sans-serif;
+  --body: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --gl: max(16px, env(safe-area-inset-left, 0px)); --gr: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0b1110; --side: #101817; --panel: #131d1b; --raise: #1a2624; --line: #24322e;
+  --ink: #e5eeea; --muted: #8a9b95; --accent: #ff7247; --accent-ink: #1a0a04; --accent-soft: #3a1c12;
+  --in: #172320; --in-line: #22312d; --out: #5b2513; --out-ink: #ffeee6; --out-meta: #f2a88c;
+  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6);
+  --shadow: 0 18px 50px rgba(0, 0, 0, .55); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0b1110; --side: #101817; --panel: #131d1b; --raise: #1a2624; --line: #24322e;
+  --ink: #e5eeea; --muted: #8a9b95; --accent: #ff7247; --accent-ink: #1a0a04; --accent-soft: #3a1c12;
+  --in: #172320; --in-line: #22312d; --out: #5b2513; --out-ink: #ffeee6; --out-meta: #f2a88c;
+  --wall: rgba(229, 238, 234, .045); --green: #3ccf86; --red: #ff6b6b; --scrim: rgba(0, 0, 0, .6);
+  --shadow: 0 18px 50px rgba(0, 0, 0, .55); color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--body); -webkit-font-smoothing: antialiased; overflow: hidden; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg { display: block; }
+.ico { width: 20px; height: 20px; }
+
+.app { height: 100%; display: grid; grid-template-columns: 340px minmax(0, 1fr); background: var(--panel); overflow: hidden; position: relative; }
+@media (min-width: 821px) {
+  body { padding: 16px var(--gr) 16px var(--gl); }
+  .app { max-width: 1240px; margin: 0 auto; border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); }
+  .side, .chat-head, .msgs, .composer, .pinbar, .find { --gl: 16px; --gr: 16px; }
+}
+@media (max-width: 820px) {
+  .app { grid-template-columns: 1fr; }
+  .app[data-view="list"] .chat { display: none; }
+  .app[data-view="chat"] .side { display: none; }
+}
+
+/* ---------- sidebar ---------- */
+.side { display: flex; flex-direction: column; min-height: 0; background: var(--side); border-right: 1px solid var(--line); }
+.side-head { display: flex; align-items: center; gap: 12px; padding: 14px var(--gr) 10px var(--gl); }
+.logo { flex: 1; font: 22px/1 var(--display); letter-spacing: -.01em; display: flex; align-items: baseline; gap: 6px; }
+.logo b { font-weight: 400; color: var(--accent); margin-left: -6px; }
+.logo span { font: 700 11px/1 var(--body); letter-spacing: .12em; padding: 4px 6px; border-radius: 6px; background: var(--ink); color: var(--side); transform: translateY(-3px); }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; color: var(--ink); flex-shrink: 0; }
+.icon-btn:hover { background: var(--raise); }
+.icon-btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.me-btn { border: 0; background: none; padding: 0; border-radius: 50%; flex-shrink: 0; }
+.search { margin: 0 var(--gr) 10px var(--gl); display: flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 12px; background: var(--raise); color: var(--muted); border: 1px solid transparent; }
+.search:focus-within { border-color: var(--accent); }
+.search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; padding: 10px 0; color: var(--ink); }
+.search .ico { width: 17px; height: 17px; }
+.folders { display: flex; gap: 6px; padding: 0 var(--gr) 10px var(--gl); overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
+.folders button { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; font-weight: 600; color: var(--muted); white-space: nowrap; display: inline-flex; gap: 6px; align-items: center; }
+.folders button[aria-pressed="true"] { background: var(--ink); color: var(--side); border-color: var(--ink); }
+.folders i { font-style: normal; font-size: 11px; min-width: 18px; padding: 1px 5px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); }
+.list { list-style: none; margin: 0; padding: 4px 0; overflow-y: auto; flex: 1; min-height: 0; scrollbar-width: thin; }
+.row { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px var(--gr) 9px var(--gl); border: 0; background: none; text-align: left; }
+.row:hover { background: var(--raise); }
+.row[aria-current="true"] { background: var(--accent-soft); }
+.row-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.row-top, .row-bot { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.row-name { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+.row-name .ico { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+.row time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.row-prev { flex: 1; min-width: 0; font-size: 13.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-prev b { font-weight: 600; color: var(--ink); }
+.row-prev.typing { color: var(--accent); }
+.badge { min-width: 22px; height: 22px; padding: 0 7px; border-radius: 11px; background: var(--accent); color: var(--accent-ink); font-size: 12px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0; }
+.badge.quiet { background: var(--line); color: var(--muted); }
+.list-note { padding: 18px var(--gr) 18px var(--gl); color: var(--muted); font-size: 13.5px; display: grid; gap: 10px; justify-items: start; }
+.list-note strong { color: var(--ink); font-size: 15px; }
+.side-foot { padding: 10px var(--gr) calc(10px + env(safe-area-inset-bottom, 0px)) var(--gl); border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.side-foot .led { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex-shrink: 0; }
+.side-foot .led.on { background: var(--green); }
+
+/* ---------- avatars ---------- */
+.av { --s: 44px; position: relative; width: var(--s); height: var(--s); border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; background: var(--c, var(--accent)); color: #fff; font-weight: 700; font-size: calc(var(--s) * .38); line-height: 1; }
+.av img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.av .em { font-size: calc(var(--s) * .52); }
+.av .dot { position: absolute; right: 0; bottom: 0; width: calc(var(--s) * .28); height: calc(var(--s) * .28); min-width: 10px; min-height: 10px; border-radius: 50%; background: var(--green); border: 2px solid var(--side); }
+
+/* ---------- conversation ---------- */
+.chat { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--panel); position: relative; }
+.empty { margin: auto; padding: 24px; max-width: 360px; text-align: center; display: grid; gap: 10px; justify-items: center; color: var(--muted); }
+.empty .mark { font: 54px/1 var(--display); color: var(--ink); }
+.empty .mark b { color: var(--accent); font-weight: 400; }
+.chat-head { display: flex; align-items: center; gap: 10px; padding: 10px var(--gr) 10px var(--gl); border-bottom: 1px solid var(--line); background: var(--panel); --ring: var(--panel); }
+.chat-head .av .dot { border-color: var(--panel); }
+.who { flex: 1; min-width: 0; border: 0; background: none; padding: 0; text-align: left; }
+.who-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who-sub { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.who-sub.on { color: var(--green); }
+.who-sub.typing { color: var(--accent); }
+.ghost { border: 0; background: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex-shrink: 0; }
+.ghost:hover { background: var(--raise); color: var(--ink); }
+.back { display: none; margin-left: -8px; }
+@media (max-width: 820px) { .back { display: grid; } }
+.pinbar { display: flex; align-items: center; gap: 10px; padding: 8px var(--gr) 8px var(--gl); border-bottom: 1px solid var(--line); background: var(--side); font-size: 13.5px; }
+.pinbar button.go { flex: 1; min-width: 0; border: 0; background: none; text-align: left; padding: 0; display: grid; }
+.pinbar small { color: var(--accent); font-weight: 700; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
+.pinbar span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.find { display: flex; gap: 8px; align-items: center; padding: 8px var(--gr) 8px var(--gl); border-bottom: 1px solid var(--line); }
+.find input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); padding: 8px 10px; }
+.find small { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 10px var(--gr) 14px var(--gl); display: flex; flex-direction: column; gap: 2px; scrollbar-width: thin;
+  background-color: var(--panel); background-image: radial-gradient(var(--wall) 1.2px, transparent 1.4px), radial-gradient(var(--wall) 1.2px, transparent 1.4px); background-size: 26px 26px; background-position: 0 0, 13px 13px; }
+.day { align-self: center; margin: 12px 0 6px; padding: 3px 12px; border-radius: 999px; background: var(--raise); font-size: 12px; font-weight: 600; color: var(--muted); }
+.sys { align-self: center; margin: 6px 0; padding: 5px 12px; border-radius: 12px; background: var(--raise); color: var(--muted); font-size: 12.5px; text-align: center; max-width: 90%; }
+.m { display: flex; gap: 8px; align-items: flex-end; }
+.m.me { justify-content: flex-end; }
+.m.first { margin-top: 8px; }
+.m-av { width: 32px; flex-shrink: 0; }
+.m-body { max-width: min(78%, 540px); min-width: 0; display: grid; gap: 3px; }
+.me .m-body { justify-items: end; }
+.bubble { position: relative; background: var(--in); border: 1px solid var(--in-line); border-radius: 18px; padding: 7px 11px 5px; overflow-wrap: anywhere; min-width: 64px; cursor: default; user-select: text; }
+.m.first .bubble { border-top-left-radius: 6px; }
+.me .bubble { background: var(--out); border-color: transparent; color: var(--out-ink); }
+.m.me.first .bubble { border-top-left-radius: 18px; border-top-right-radius: 6px; }
+.bubble.sticker { background: none; border: 0; padding: 0; }
+.bubble.photo { padding: 4px 4px 5px; }
+.bubble.flash { animation: flash 1.2s ease-out; }
+@keyframes flash { 0%, 40% { box-shadow: 0 0 0 4px var(--accent); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.bubble.new { animation: pop .18s ease-out; }
+@keyframes pop { from { transform: translateY(6px) scale(.97); opacity: .4; } to { transform: none; opacity: 1; } }
+.sender { font-size: 12.5px; font-weight: 700; color: var(--c, var(--accent)); }
+.text { white-space: pre-wrap; }
+.text mark { background: var(--accent); color: var(--accent-ink); border-radius: 3px; }
+.fwd { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 2px; }
+.me .fwd { color: var(--out-meta); }
+.quote { display: block; width: 100%; border: 0; text-align: left; margin: 2px 0 4px; padding: 4px 8px; border-left: 3px solid var(--accent); border-radius: 6px; background: var(--raise); font-size: 13px; }
+.me .quote { background: rgba(255, 255, 255, .28); border-left-color: var(--out-meta); color: inherit; }
+.quote b { display: block; font-size: 12px; color: var(--accent); }
+.me .quote b { color: var(--out-meta); }
+.quote span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.me .quote span { color: inherit; opacity: .8; }
+.ph { display: block; width: 100%; max-width: 320px; max-height: 360px; object-fit: cover; border-radius: 14px; cursor: zoom-in; background: var(--raise); }
+.bubble.photo .text { padding: 4px 7px 0; }
+.meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 1px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.me .meta { color: var(--out-meta); }
+.bubble.sticker .meta { padding: 2px 8px; border-radius: 10px; background: var(--raise); color: var(--muted); justify-self: end; width: max-content; margin-left: auto; }
+.ticks { letter-spacing: -3px; padding-right: 3px; }
+.stk { width: 140px; height: 140px; }
+.rxs { display: flex; flex-wrap: wrap; gap: 4px; }
+.rx { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 2px 8px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.rx.mine { border-color: var(--accent); background: var(--accent-soft); }
+.poll { display: grid; gap: 6px; min-width: min(260px, 60vw); padding: 2px 0 2px; }
+.poll h4 { margin: 0; font-size: 15px; }
+.poll small { color: var(--muted); font-size: 12px; }
+.me .poll small { color: var(--out-meta); }
+.opt { position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; background: var(--panel); text-align: left; color: var(--ink); }
+.opt .bar { position: absolute; inset: 0 auto 0 0; background: var(--accent-soft); z-index: 0; transition: width .3s; }
+.opt span, .opt b { position: relative; z-index: 1; }
+.opt b { font-variant-numeric: tabular-nums; font-size: 13px; }
+.opt.mine { border-color: var(--accent); }
+.typing-row { display: flex; gap: 8px; align-items: center; margin-top: 8px; color: var(--muted); font-size: 13px; }
+.dots { display: inline-flex; gap: 4px; padding: 10px 12px; border-radius: 16px; background: var(--in); border: 1px solid var(--in-line); }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.dots i:nth-child(2) { animation-delay: .2s; } .dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0 40px; }
+.chips button { border: 1px solid var(--accent); color: var(--accent); background: var(--panel); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; font-weight: 600; }
+
+/* ---------- composer ---------- */
+.composer { position: relative; padding: 8px var(--gr) calc(8px + env(safe-area-inset-bottom, 0px)) var(--gl); border-top: 1px solid var(--line); background: var(--panel); }
+.ctx { display: flex; align-items: center; gap: 10px; padding: 4px 0 8px; font-size: 13px; }
+.ctx > div { flex: 1; min-width: 0; border-left: 3px solid var(--accent); padding-left: 8px; }
+.ctx b { display: block; color: var(--accent); font-size: 12.5px; }
+.ctx span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--muted); }
+.c-row { display: flex; align-items: flex-end; gap: 4px; }
+#input { flex: 1; min-width: 0; resize: none; max-height: 140px; border: 1px solid var(--line); background: var(--raise); border-radius: 20px; padding: 9px 14px; line-height: 1.4; outline: none; }
+#input:focus { border-color: var(--accent); }
+#input::placeholder { color: var(--muted); }
+.send { width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex-shrink: 0; transition: transform .12s; }
+.send:active { transform: scale(.92); }
+.send:disabled { opacity: .45; cursor: default; }
+.c-alt { display: flex; gap: 8px; justify-content: center; align-items: center; color: var(--muted); font-size: 13.5px; text-align: center; min-height: 42px; flex-wrap: wrap; }
+.panel { position: absolute; left: var(--gl); right: var(--gr); bottom: calc(100% + 8px); z-index: 20; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 8px; max-width: 420px; display: grid; gap: 8px; }
+.tabs { display: flex; gap: 4px; }
+.tabs button { flex: 1; border: 0; border-radius: 10px; padding: 7px; background: none; font-weight: 600; color: var(--muted); }
+.tabs button[aria-pressed="true"] { background: var(--raise); color: var(--ink); }
+.grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; max-height: 260px; overflow-y: auto; }
+.grid.stks { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.grid button { border: 0; background: none; border-radius: 10px; aspect-ratio: 1; font-size: 24px; display: grid; place-items: center; padding: 2px; }
+.grid button:hover { background: var(--raise); }
+.grid .stk { width: 100%; height: auto; }
+.attach-menu { position: absolute; left: var(--gl); bottom: calc(100% + 8px); z-index: 20; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 6px; display: grid; min-width: 190px; }
+
+/* ---------- menus, sheets, overlays ---------- */
+.menu-item { display: flex; align-items: center; gap: 12px; border: 0; background: none; border-radius: 10px; padding: 10px 12px; text-align: left; font-size: 14.5px; color: var(--ink); width: 100%; }
+.menu-item:hover { background: var(--raise); }
+.menu-item .ico { color: var(--muted); }
+.menu-item.danger, .menu-item.danger .ico { color: var(--red); }
+.scrim { position: fixed; inset: 0; z-index: 100; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; padding: 16px var(--gr) 0 var(--gl); }
+@media (min-width: 821px) { .scrim { align-items: center; padding-bottom: 16px; } }
+.sheet { width: min(460px, 100%); max-height: min(86vh, 760px); display: flex; flex-direction: column; background: var(--panel); border-radius: 22px 22px 0 0; box-shadow: var(--shadow); animation: up .2s ease-out; padding-bottom: env(safe-area-inset-bottom, 0px); }
+@media (min-width: 821px) { .sheet { border-radius: 22px; } }
+@keyframes up { from { transform: translateY(24px); opacity: .5; } to { transform: none; opacity: 1; } }
+.sheet-head { display: flex; align-items: center; gap: 8px; padding: 14px 12px 10px 18px; border-bottom: 1px solid var(--line); }
+.sheet-head h2 { flex: 1; margin: 0; font-size: 17px; text-wrap: balance; }
+.sheet-body { overflow-y: auto; padding: 14px 18px 18px; display: grid; gap: 14px; align-content: start; }
+.actions { width: min(340px, 100%); background: var(--panel); border-radius: 20px; box-shadow: var(--shadow); padding: 8px; margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 2px; animation: up .16s ease-out; }
+.rx-row { display: flex; justify-content: space-between; padding: 4px 4px 8px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.rx-row button { border: 0; background: none; font-size: 26px; width: 44px; height: 44px; border-radius: 50%; }
+.rx-row button:hover, .rx-row button.mine { background: var(--accent-soft); }
+.field { display: grid; gap: 6px; }
+.field > span { font-size: 12.5px; font-weight: 600; color: var(--muted); letter-spacing: .02em; }
+.input { width: 100%; border: 1px solid var(--line); background: var(--raise); border-radius: 12px; padding: 10px 12px; outline: none; color: var(--ink); }
+.input:focus { border-color: var(--accent); }
+textarea.input { resize: vertical; min-height: 64px; }
+.btn { border: 0; border-radius: 12px; padding: 10px 16px; font-weight: 700; background: var(--accent); color: var(--accent-ink); }
+.btn.sec { background: var(--raise); color: var(--ink); border: 1px solid var(--line); }
+.btn.danger { background: var(--red); color: #fff; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1; }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatches button { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; background: var(--c); }
+.swatches button[aria-pressed="true"] { border-color: var(--ink); }
+.emopick { display: flex; gap: 4px; flex-wrap: wrap; }
+.emopick button { width: 40px; height: 40px; border-radius: 10px; border: 1px solid transparent; background: var(--raise); font-size: 20px; }
+.emopick button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.seg button { flex: 1; border: 0; background: none; padding: 8px; font-weight: 600; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.people { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.person { display: flex; align-items: center; gap: 12px; width: 100%; border: 0; background: none; border-radius: 12px; padding: 7px 8px; text-align: left; }
+.person:hover { background: var(--raise); }
+.person .av .dot { border-color: var(--panel); }
+.person > span:not(.av) { flex: 1; min-width: 0; display: grid; }
+.person b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.person small { color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.person small.on { color: var(--green); }
+.person input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--accent); }
+.tag { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
+.hero { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.hero h3 { margin: 6px 0 0; font-size: 19px; text-wrap: balance; }
+.hero p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.note { margin: 0; font-size: 12.5px; color: var(--muted); }
+.check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.opts { display: grid; gap: 6px; }
+.viewer { position: fixed; inset: 0; z-index: 150; background: rgba(0, 0, 0, .88); display: grid; place-items: center; padding: 16px var(--gr) 16px var(--gl); cursor: zoom-out; }
+.viewer img { max-width: 100%; max-height: 100%; border-radius: 10px; }
+.toasts { position: fixed; z-index: 200; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; width: min(380px, calc(100% - 32px)); pointer-events: none; }
+.toast { pointer-events: auto; display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: var(--ink); color: var(--panel); box-shadow: var(--shadow); font-size: 14px; border: 0; text-align: left; animation: up .2s ease-out; }
+.toast span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="app" id="app" data-view="list">
+  <aside class="side" aria-label="Чаты">
+    <header class="side-head">
+      <button class="me-btn" id="meBtn" type="button" aria-label="Мой профиль и настройки"></button>
+      <div class="logo" aria-label="Ayte V3">ayte<b>.</b><span>V3</span></div>
+      <button class="icon-btn accent" id="newBtn" type="button" aria-label="Новый чат"></button>
+    </header>
+    <label class="search" for="q"><span id="qIco"></span><input id="q" type="search" placeholder="Поиск чатов и сообщений" autocomplete="off"></label>
+    <nav class="folders" id="folders" aria-label="Папки">
+      <button type="button" data-f="all" aria-pressed="true">Все</button>
+      <button type="button" data-f="dm" aria-pressed="false">Личные</button>
+      <button type="button" data-f="group" aria-pressed="false">Группы</button>
+      <button type="button" data-f="channel" aria-pressed="false">Каналы</button>
+    </nav>
+    <ul class="list" id="list"><li class="list-note">Подключаемся к Ayte…</li></ul>
+    <footer class="side-foot" id="net"><i class="led"></i><span>Подключение…</span></footer>
+  </aside>
+
+  <main class="chat" id="chat">
+    <div class="empty" id="empty"><div class="mark">ayte<b>.</b></div><p>Выберите чат слева или нажмите «+», чтобы написать человеку, создать группу или канал.</p></div>
+    <header class="chat-head" id="head" hidden></header>
+    <div class="pinbar" id="pinbar" hidden></div>
+    <div class="find" id="find" hidden><input id="findIn" type="search" placeholder="Поиск в этом чате" autocomplete="off" aria-label="Поиск в чате"><small id="findN"></small><button class="ghost" id="findX" type="button" aria-label="Закрыть поиск"></button></div>
+    <div class="msgs" id="msgs" role="log" aria-live="polite" hidden></div>
+    <footer class="composer" id="composer" hidden>
+      <div class="attach-menu" id="attachMenu" hidden></div>
+      <div class="panel" id="panel" hidden>
+        <div class="tabs" id="panelTabs"><button type="button" data-t="emoji" aria-pressed="true">Эмодзи</button><button type="button" data-t="stk" aria-pressed="false">Стикеры Айтика</button></div>
+        <div class="grid" id="panelGrid"></div>
+      </div>
+      <div class="ctx" id="ctx" hidden></div>
+      <div class="c-row" id="cRow">
+        <button class="ghost" id="attachBtn" type="button" aria-label="Прикрепить" aria-expanded="false"></button>
+        <textarea id="input" rows="1" placeholder="Сообщение" aria-label="Сообщение" maxlength="4000"></textarea>
+        <button class="ghost" id="panelBtn" type="button" aria-label="Эмодзи и стикеры" aria-expanded="false"></button>
+        <button class="send" id="sendBtn" type="button" aria-label="Отправить"></button>
+      </div>
+      <div class="c-alt" id="cAlt" hidden></div>
+    </footer>
+  </main>
+</div>
+
+<div class="scrim" id="sheetWrap" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
+<div class="scrim" id="actWrap" hidden><div class="actions" id="acts" role="menu"></div></div>
+<div class="viewer" id="viewer" hidden><img id="viewImg" alt="Фото из чата"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<input type="file" id="photoIn" accept="image/*" hidden>
+<input type="file" id="avatarIn" accept="image/*" hidden>
+
+<script>
+(() => {
+"use strict";
+/* ================= helpers ================= */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ls = {
+  get(k, d) { try { const v = localStorage.getItem("ayte3:" + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ayte3:" + k, JSON.stringify(v)); } catch (e) { /* storage full or blocked */ } },
+};
+const rid = (n = 8) => { let s = ""; while (s.length < n) s += Math.random().toString(36).slice(2); return s.slice(0, n); };
+const now = () => Date.now();
+const clone = (o) => (o == null ? o : JSON.parse(JSON.stringify(o)));
+const isWide = () => matchMedia("(min-width: 821px)").matches;
+const isTouch = () => matchMedia("(pointer: coarse)").matches;
+const plural = (n, a, b, c) => { const x = n % 10, y = n % 100; return x === 1 && y !== 11 ? a : x >= 2 && x <= 4 && (y < 12 || y > 14) ? b : c; };
+const okColor = (c) => (/^#[0-9a-f]{6}$/i.test(c || "") ? c : "#8a9b95");
+const okImg = (s) => typeof s === "string" && /^data:image\/(jpeg|png|webp|gif);base64,/.test(s);
+function hash53(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+const pad = (n) => String(n).padStart(2, "0");
+const hm = (t) => { const d = new Date(t); return pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const dayKey = (t) => { const d = new Date(t); return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); };
+function dayLabel(t) {
+  const k = dayKey(t);
+  if (k === dayKey(now())) return "Сегодня";
+  if (k === dayKey(now() - 864e5)) return "Вчера";
+  return new Date(t).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: new Date(t).getFullYear() === new Date().getFullYear() ? undefined : "numeric" });
+}
+function listTime(t) {
+  if (!t) return "";
+  if (dayKey(t) === dayKey(now())) return hm(t);
+  if (dayKey(t) === dayKey(now() - 864e5)) return "вчера";
+  if (now() - t < 6 * 864e5) return new Date(t).toLocaleDateString("ru-RU", { weekday: "short" });
+  const d = new Date(t); return pad(d.getDate()) + "." + pad(d.getMonth() + 1);
+}
+function seenText(t) {
+  if (!t) return "не в сети";
+  const m = Math.round((now() - t) / 60000);
+  if (m < 2) return "был(а) только что";
+  if (m < 60) return `был(а) ${m} ${plural(m, "минуту", "минуты", "минут")} назад`;
+  if (dayKey(t) === dayKey(now())) return "был(а) сегодня в " + hm(t);
+  if (dayKey(t) === dayKey(now() - 864e5)) return "был(а) вчера в " + hm(t);
+  return "был(а) " + new Date(t).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+}
+
+/* ================= icons ================= */
+const svg = (p, w = 2) => `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const I = {
+  plus: svg('<path d="M12 5v14M5 12h14"/>', 2.4),
+  search: svg('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
+  send: svg('<path d="M4 12l16-8-6 16-2.5-6.5z"/><path d="M11.5 13.5L20 4"/>'),
+  check: svg('<path d="M5 12l5 5 9-10"/>', 2.4),
+  clip: svg('<path d="M21 11.5l-8.6 8.6a5.3 5.3 0 01-7.5-7.5l8.8-8.8a3.5 3.5 0 015 5l-8.8 8.8a1.7 1.7 0 01-2.4-2.4l8-8"/>'),
+  smile: svg('<circle cx="12" cy="12" r="9"/><path d="M8 14.5s1.5 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/>'),
+  back: svg('<path d="M15 5l-7 7 7 7"/>', 2.4),
+  info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+  x: svg('<path d="M6 6l12 12M18 6L6 18"/>'),
+  reply: svg('<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 016 6v4"/>'),
+  copy: svg('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/>'),
+  fwd: svg('<path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 00-6 6v4"/>'),
+  pin: svg('<path d="M12 17v5"/><path d="M8 3h8l-1 6 3 3v2H6v-2l3-3z"/>'),
+  edit: svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>'),
+  trash: svg('<path d="M4 7h16"/><path d="M18 7l-1 13H7L6 7"/><path d="M10 11v6M14 11v6"/><path d="M9 7V4h6v3"/>'),
+  bookmark: svg('<path d="M6 3h12v18l-6-4-6 4z"/>'),
+  photo: svg('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 8"/>'),
+  poll: svg('<path d="M5 20V10M12 20V4M19 20v-7"/>'),
+  user: svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/>'),
+  group: svg('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14a6 6 0 013.5 6"/>'),
+  channel: svg('<path d="M4 10v4l11 5V5z"/><path d="M15 9a3 3 0 010 6"/><path d="M7 15l1 5h3l-1-4"/>'),
+  globe: svg('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>'),
+  mute: svg('<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M22 9l-6 6M16 9l6 6"/>'),
+  bell: svg('<path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/>'),
+  exit: svg('<path d="M15 4h4a1 1 0 011 1v14a1 1 0 01-1 1h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/>'),
+};
+
+/* ================= stickers: "Айтик", the Ayte mascot ================= */
+const STK = [
+  ["Привет!", "#ff8a5b", "dot", "smile", "👋"], ["Ха-ха", "#ffbf3a", "happy", "open", "💦"], ["Люблю", "#ff6b8e", "heart", "smile", "💕"],
+  ["Ок", "#3fbf86", "dot", "smile", "👌"], ["Спасибо", "#5aa9ff", "happy", "smile", "🌷"], ["Хм…", "#9b8cff", "side", "flat", "💭"],
+  ["Жду", "#36c2c2", "wide", "o", "⏰"], ["Огонь", "#ff5a36", "happy", "open", "🔥"], ["Сплю", "#7a8cff", "closed", "o", "💤"],
+  ["Упс", "#ffab2e", "wide", "o", "💧"], ["GG", "#2fbf71", "happy", "open", "👑"], ["Пока", "#ff7aa8", "closed", "smile", "👋"],
+];
+function stickerSVG(i) {
+  const s = STK[i]; if (!s) return "";
+  const [cap, col, eye, mouth, extra] = s, k = "#1b1b1b";
+  const eyes = {
+    dot: `<circle cx="46" cy="52" r="5.5" fill="${k}"/><circle cx="74" cy="52" r="5.5" fill="${k}"/><circle cx="48" cy="50" r="1.8" fill="#fff"/><circle cx="76" cy="50" r="1.8" fill="#fff"/>`,
+    happy: `<path d="M39 55q7-10 14 0M67 55q7-10 14 0" stroke="${k}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    heart: `<path d="M46 60l-8-8a4.6 4.6 0 018-5 4.6 4.6 0 018 5z" fill="#e11d48"/><path d="M74 60l-8-8a4.6 4.6 0 018-5 4.6 4.6 0 018 5z" fill="#e11d48"/>`,
+    side: `<circle cx="46" cy="52" r="8" fill="#fff"/><circle cx="74" cy="52" r="8" fill="#fff"/><circle cx="50" cy="51" r="4" fill="${k}"/><circle cx="78" cy="51" r="4" fill="${k}"/>`,
+    closed: `<path d="M39 53h14M67 53h14" stroke="${k}" stroke-width="4.5" stroke-linecap="round"/>`,
+    wide: `<circle cx="46" cy="51" r="9" fill="#fff"/><circle cx="74" cy="51" r="9" fill="#fff"/><circle cx="46" cy="52" r="4.5" fill="${k}"/><circle cx="74" cy="52" r="4.5" fill="${k}"/>`,
+  }[eye];
+  const mouths = {
+    smile: `<path d="M50 70q10 10 20 0" stroke="${k}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    open: `<path d="M47 68h26q-1 15-13 15t-13-15z" fill="#5b1220"/><path d="M53 78q7-5 14 0q-3 4-7 4t-7-4z" fill="#ff7a8a"/>`,
+    o: `<ellipse cx="60" cy="74" rx="5.5" ry="6.5" fill="#5b1220"/>`,
+    flat: `<path d="M51 74h18" stroke="${k}" stroke-width="4.5" stroke-linecap="round"/>`,
+  }[mouth];
+  return `<svg class="stk" viewBox="0 0 120 130" role="img" aria-label="Стикер: ${esc(cap)}">
+    <ellipse cx="60" cy="118" rx="30" ry="5" fill="rgba(0,0,0,.14)"/>
+    <path d="M60 14c27 0 44 18 44 45 0 30-17 52-44 52S16 89 16 59c0-27 17-45 44-45z" fill="${col}" stroke="${k}" stroke-width="3"/>
+    <path d="M60 14c-6-8-2-12 3-12" stroke="${k}" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="64" cy="3.5" r="3.5" fill="${col}" stroke="${k}" stroke-width="2.5"/>
+    <ellipse cx="44" cy="32" rx="10" ry="6" fill="rgba(255,255,255,.35)" transform="rotate(-25 44 32)"/>
+    <ellipse cx="36" cy="66" rx="6" ry="4" fill="rgba(255,90,120,.35)"/><ellipse cx="84" cy="66" rx="6" ry="4" fill="rgba(255,90,120,.35)"/>
+    ${eyes}${mouths}
+    <text x="100" y="34" font-size="26" text-anchor="middle">${extra}</text>
+    <text x="60" y="124" text-anchor="middle" font-family="Dela Gothic One, Arial Black, sans-serif" font-size="17" fill="#fff" stroke="${k}" stroke-width="5" paint-order="stroke" stroke-linejoin="round">${esc(cap)}</text>
+  </svg>`;
+}
+const EMOJI = "😀 😂 🥹 😊 😍 🥰 😘 😎 🤔 🙃 😅 😭 😡 🤯 😴 🤝 👍 👎 👏 🙌 🙏 💪 👀 🔥 ✨ 🎉 ❤️ 🧡 💚 💙 💔 ✅ ❌ ⚡ 🌙 ☀️ 🍕 ☕ 🎮 ⚽ 🎧 📸 🚀 ✈️ 🎁 💡 📌 🤷".split(" ");
+const QUICK = ["👍", "❤️", "😂", "😮", "😢", "🔥"];
+const COLORS = ["#ec5a2a", "#18995c", "#2f7cf2", "#b0469e", "#7b5cf0", "#0f9a9a", "#d6456f", "#c98a00"];
+const AV_EMOJI = ["", "🦊", "🐼", "🐸", "🦁", "🐙", "🦄", "🐧", "🌵", "🍉", "🚀", "⚡", "🎧", "👾", "🌸", "🔥"];
+
+/* ================= storage backends (same interface: shared db or this device only) ================= */
+function makeQueue() {
+  const tails = new Map();
+  return (key, fn) => {
+    const p = (tails.get(key) || Promise.resolve()).then(() => {}, () => {}).then(fn);
+    tails.set(key, p);
+    const clean = () => { if (tails.get(key) === p) tails.delete(key); };
+    p.then(clean, clean);
+    return p;
+  };
+}
+function dbBackend(db, me) {
+  const q = makeQueue();
+  const rows = (s) => s.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+  const cached = (s) => !!(s.metadata && s.metadata.fromCache);
+  const priv = (k) => db.doc("data/users/" + me + "/" + k);
+  return {
+    local: false,
+    watchChats: (cb, err) => db.collection("chats").where("members", "array-contains", me).onSnapshot((s) => cb(rows(s), cached(s)), err),
+    watchOpen: (cb, err) => db.collection("chats").where("open", "==", true).limit(300).onSnapshot((s) => cb(rows(s)), err),
+    watchPeople: (cb, err) => db.collection("people").limit(1000).onSnapshot((s) => cb(rows(s), cached(s)), err),
+    watchMsgs: (cid, cb, err) => db.collection("chats/" + cid + "/msgs").orderBy("t", "desc").limit(250).onSnapshot((s) => cb(rows(s).reverse()), err),
+    watchPriv: (k, cb, err) => priv(k).onSnapshot((s) => cb(s.exists ? s.data() : null), err),
+    getChat: async (cid) => { const s = await db.doc("chats/" + cid).get(); return s.exists ? Object.assign({ id: cid }, s.data()) : null; },
+    setChat: (cid, d) => q("c/" + cid, () => db.doc("chats/" + cid).set(d)),
+    patchChat: (cid, d) => q("c/" + cid, () => db.doc("chats/" + cid).update(d)),
+    delChat: (cid) => q("c/" + cid, () => db.doc("chats/" + cid).delete()),
+    setMsg: (cid, id, d) => q("m/" + cid + "/" + id, () => db.doc("chats/" + cid + "/msgs/" + id).set(d)),
+    patchMsg: (cid, id, d) => q("m/" + cid + "/" + id, () => db.doc("chats/" + cid + "/msgs/" + id).update(d)),
+    delMsg: (cid, id) => q("m/" + cid + "/" + id, () => db.doc("chats/" + cid + "/msgs/" + id).delete()),
+    setPriv: (k, d) => q("p/" + k, () => priv(k).set(d)),
+    setProfile: (d) => q("me", () => db.doc("people/" + me).set(d)),
+  };
+}
+function localBackend(me) {
+  let D = ls.get("local-db", null);
+  if (!D || typeof D !== "object") D = seedLocal(me);
+  const subs = new Set();
+  const fire = () => { ls.set("local-db", D); subs.forEach((f) => { try { f(); } catch (e) { console.error(e); } }); };
+  const listOf = (coll) => Object.keys(D).filter((p) => p.startsWith(coll + "/") && !p.slice(coll.length + 1).includes("/")).map((p) => Object.assign({ id: p.slice(coll.length + 1) }, clone(D[p])));
+  const watch = (fn) => { subs.add(fn); setTimeout(() => { if (subs.has(fn)) fn(); }, 0); return () => subs.delete(fn); };
+  const merge = (a, b) => { const o = Object.assign({}, a); Object.keys(b).forEach((k) => { const v = b[k]; o[k] = v && typeof v === "object" && !Array.isArray(v) && a[k] && typeof a[k] === "object" && !Array.isArray(a[k]) ? merge(a[k], v) : v; }); return o; };
+  const set = (p, d) => { D[p] = clone(d); fire(); return Promise.resolve(); };
+  const upd = (p, d) => { if (!D[p]) return Promise.reject({ code: "invalid_argument" }); D[p] = merge(D[p], clone(d)); fire(); return Promise.resolve(); };
+  const del = (p) => { delete D[p]; fire(); return Promise.resolve(); };
+  return {
+    local: true,
+    watchChats: (cb) => watch(() => cb(listOf("chats").filter((c) => (c.members || []).includes(me)), false)),
+    watchOpen: (cb) => watch(() => cb(listOf("chats").filter((c) => c.open))),
+    watchPeople: (cb) => watch(() => cb(listOf("people"), false)),
+    watchMsgs: (cid, cb) => watch(() => cb(listOf("chats/" + cid + "/msgs").sort((a, b) => a.t - b.t).slice(-250))),
+    watchPriv: (k, cb) => watch(() => cb(D["priv/" + k] ? clone(D["priv/" + k]) : null)),
+    getChat: async (cid) => (D["chats/" + cid] ? Object.assign({ id: cid }, clone(D["chats/" + cid])) : null),
+    setChat: (cid, d) => set("chats/" + cid, d), patchChat: (cid, d) => upd("chats/" + cid, d), delChat: (cid) => del("chats/" + cid),
+    setMsg: (cid, id, d) => set("chats/" + cid + "/msgs/" + id, d), patchMsg: (cid, id, d) => upd("chats/" + cid + "/msgs/" + id, d), delMsg: (cid, id) => del("chats/" + cid + "/msgs/" + id),
+    setPriv: (k, d) => set("priv/" + k, d), setProfile: (d) => set("people/" + me, d),
+  };
+}
+// This-device mode only: one example channel so the app has something to show. Never written to the shared base.
+function seedLocal(me) {
+  const t = now(), team = "ayte-team", D = {};
+  D["people/" + team] = { nick: "Ayte V3", emoji: "✈️", color: "#ec5a2a", bio: "Пример канала", seen: t };
+  D["chats/k-welcome"] = { kind: "channel", title: "Ayte V3 · пример канала", about: "Так выглядит канал. Это пример, он хранится только на этом устройстве.", emoji: "✈️", color: "#ec5a2a", members: [team, me], admins: [team], owner: team, open: true, t: t - 60000, created: t - 3 * 36e5, read: {}, last: { from: team, t: t - 60000, text: "Нажмите на сообщение, чтобы поставить реакцию 👇" } };
+  const posts = [
+    [3 * 36e5, "Добро пожаловать в Ayte V3 ✈️ Личные чаты, группы и каналы в одном окне."],
+    [2 * 36e5, "Что умеет Ayte: ответы и пересылка, реакции, опросы, фото, стикеры Айтика, закреп, поиск, Избранное и помощник Ayte AI."],
+    [60000, "Нажмите на сообщение, чтобы поставить реакцию 👇"],
+  ];
+  posts.forEach(([ago, text], i) => { D["chats/k-welcome/msgs/w" + i] = { from: team, t: t - ago, text, react: i === 1 ? { "🔥": [team] } : {} }; });
+  return D;
+}
+
+/* ================= state ================= */
+const st = {
+  mode: "boot", me: null, user: null, B: null, room: null, sample: undefined, canWrite: true, owner: false,
+  chats: new Map(), open: new Map(), people: new Map(), names: {}, profileLoaded: false,
+  online: new Set(), typing: {}, peersRaw: [],
+  active: null, preview: null, msgs: [], msgUnsub: null, fresh: null,
+  folder: "all", q: "", reply: null, edit: null, find: "", panelTab: "emoji",
+  saved: [], ai: [], aiDraft: null, aiBusy: false,
+  lastSeen: {}, muted: ls.get("muted", {}), sound: ls.get("sound", true), theme: ls.get("theme", "system"),
+};
+const PSEUDO = { saved: { id: "saved", kind: "saved" }, ai: { id: "ai", kind: "ai" } };
+const app = $("#app"), listEl = $("#list"), headEl = $("#head"), msgsEl = $("#msgs"), input = $("#input"), composer = $("#composer");
+
+function applyTheme() { if (st.theme === "system") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", st.theme); }
+applyTheme();
+
+/* ================= people & chats ================= */
+const meProfile = () => st.people.get(st.me) || {};
+function nameOf(uid) {
+  if (uid === "ai") return "Ayte AI";
+  const p = st.people.get(uid);
+  return (p && p.nick) || st.names[uid] || (uid === st.me ? "Вы" : "Гость Ayte");
+}
+function personAv(uid) {
+  if (uid === "ai") return { emoji: "✦", color: "#ec5a2a" };
+  const p = st.people.get(uid) || {}, n = nameOf(uid);
+  return { photo: okImg(p.photo) ? p.photo : "", emoji: p.emoji || "", initials: n.split(/\s+/).map((w) => w[0] || "").join("").slice(0, 2).toUpperCase() || "?", color: okColor(p.color || COLORS[parseInt(hash53(uid).slice(-2), 36) % COLORS.length]) };
+}
+function avHTML(a, size, dot) {
+  const inner = a.photo ? `<img src="${a.photo}" alt="">` : a.emoji ? `<span class="em">${esc(a.emoji)}</span>` : esc(a.initials || "?");
+  return `<span class="av" style="--s:${size}px;--c:${okColor(a.color)}" aria-hidden="true">${inner}${dot ? '<i class="dot"></i>' : ""}</span>`;
+}
+const other = (c) => (c.members || []).find((u) => u !== st.me) || st.me;
+const getChat = (cid) => PSEUDO[cid] || st.chats.get(cid) || st.open.get(cid) || (st.preview && st.preview.id === cid ? st.preview : null);
+const isMember = (c) => c.kind === "saved" || c.kind === "ai" || (c.members || []).includes(st.me);
+const isAdmin = (c) => c.kind === "saved" || c.kind === "ai" || c.kind === "dm" || (c.admins || []).includes(st.me) || c.owner === st.me;
+function canPost(c) {
+  if (!c) return false;
+  if (c.kind === "saved" || c.kind === "ai") return true;
+  if (!st.canWrite || !isMember(c)) return false;
+  return c.kind !== "channel" || isAdmin(c);
+}
+function chatTitle(c) {
+  if (c.kind === "saved") return "Избранное";
+  if (c.kind === "ai") return "Ayte AI";
+  if (c.kind === "dm") { const o = other(c); return o === st.me ? "Заметки" : nameOf(o); }
+  return c.title || "Без названия";
+}
+function chatAv(c) {
+  if (c.kind === "saved") return { emoji: "🔖", color: "#2f7cf2" };
+  if (c.kind === "ai") return { emoji: "✦", color: "#ec5a2a" };
+  if (c.kind === "dm") return personAv(other(c));
+  return { emoji: c.emoji || (c.kind === "channel" ? "📣" : "👥"), color: okColor(c.color) };
+}
+const typingIn = (cid) => [...(st.typing[cid] || [])].filter((u) => u !== st.me);
+function chatSub(c) {
+  const ty = typingIn(c.id);
+  if (c.id === "ai" && (st.aiBusy)) return { t: "печатает…", cls: "typing" };
+  if (ty.length) return { t: c.kind === "dm" ? "печатает…" : ty.map(nameOf).slice(0, 2).join(", ") + (ty.length > 1 ? " печатают…" : " печатает…"), cls: "typing" };
+  if (c.kind === "saved") return { t: "Видно только вам" };
+  if (c.kind === "ai") return { t: "Помощник Ayte · отвечает Claude" };
+  if (c.kind === "dm") { const o = other(c); if (st.online.has(o)) return { t: "в сети", cls: "on" }; return { t: seenText((st.people.get(o) || {}).seen) }; }
+  const n = (c.members || []).length, on = (c.members || []).filter((u) => st.online.has(u) || u === st.me).length;
+  if (c.kind === "channel") return { t: `${n} ${plural(n, "подписчик", "подписчика", "подписчиков")}` };
+  return { t: `${n} ${plural(n, "участник", "участника", "участников")}` + (st.room ? `, ${on} в сети` : "") };
+}
+function lastOf(m) {
+  if (!m) return null;
+  const o = { from: m.from, t: m.t };
+  ["text", "sticker", "sys", "who", "title"].forEach((k) => { if (m[k] != null) o[k] = m[k]; });
+  if (m.img) o.img = true;
+  if (m.poll) o.poll = { q: m.poll.q };
+  return o;
+}
+function sysText(m) {
+  const who = nameOf(m.from), list = (Array.isArray(m.who) ? m.who : []).map(nameOf).join(", ");
+  switch (m.sys) {
+    case "group": return `${who} создает группу «${m.title || ""}»`;
+    case "channel": return `${who} создает канал «${m.title || ""}»`;
+    case "join": return `${who} присоединяется`;
+    case "leave": return `${who} выходит`;
+    case "add": return `${who} добавляет: ${list}`;
+    case "remove": return `${who} исключает: ${list}`;
+    case "rename": return `${who} переименовывает чат в «${m.title || ""}»`;
+    default: return "Событие в чате";
+  }
+}
+function pv(m) {
+  if (!m) return "";
+  if (m.sys) return sysText(m);
+  if (m.sticker != null) return "Стикер · " + ((STK[m.sticker] || [])[0] || "");
+  if (m.img) return "📷 " + (m.text || "Фото");
+  if (m.poll) return "📊 " + (m.poll.q || "Опрос");
+  return m.text || "";
+}
+const unread = (c) => !!(c.last && c.last.from !== st.me && !c.last.sys && c.last.t > ((c.read || {})[st.me] || 0) && isMember(c));
+
+/* ================= sidebar ================= */
+let listRaf = 0;
+const renderListSoon = () => { if (!listRaf) listRaf = requestAnimationFrame(() => { listRaf = 0; renderList(); }); };
+function allChats() {
+  const arr = [...st.chats.values()].filter((c) => c.kind === "dm" || c.kind === "group" || c.kind === "channel");
+  const savedT = st.saved.length ? st.saved[st.saved.length - 1].t : 0, aiT = st.ai.length ? st.ai[st.ai.length - 1].t : 0;
+  return [Object.assign({}, PSEUDO.ai, { t: aiT || 1, last: st.ai.length ? lastOf(st.ai[st.ai.length - 1]) : null }), Object.assign({}, PSEUDO.saved, { t: savedT || 0, last: st.saved.length ? lastOf(st.saved[st.saved.length - 1]) : null })]
+    .concat(arr).sort((a, b) => ((b.pinTop ? 1 : 0) - (a.pinTop ? 1 : 0)) || (b.t || 0) - (a.t || 0));
+}
+function renderFolders() {
+  const counts = { all: 0, dm: 0, group: 0, channel: 0 };
+  st.chats.forEach((c) => { if (unread(c) && !st.muted[c.id]) { counts.all++; if (counts[c.kind] != null) counts[c.kind]++; } });
+  document.querySelectorAll("#folders button").forEach((b) => {
+    const f = b.dataset.f, n = counts[f];
+    b.setAttribute("aria-pressed", String(st.folder === f));
+    b.innerHTML = esc({ all: "Все", dm: "Личные", group: "Группы", channel: "Каналы" }[f]) + (n ? `<i>${n}</i>` : "");
+  });
+}
+function renderList() {
+  renderFolders();
+  if (st.mode === "boot") return;
+  const q = st.q.trim().toLowerCase();
+  let items = allChats().filter((c) => st.folder === "all" || c.kind === st.folder);
+  if (q) items = items.filter((c) => chatTitle(c).toLowerCase().includes(q) || (c.last && pv(c.last).toLowerCase().includes(q)));
+  let html = items.map((c) => {
+    const ty = typingIn(c.id), u = unread(c), muted = st.muted[c.id];
+    const isDmOnline = c.kind === "dm" && st.online.has(other(c));
+    let prev;
+    if (ty.length) prev = `<span class="row-prev typing">${esc(c.kind === "dm" ? "печатает…" : nameOf(ty[0]) + " печатает…")}</span>`;
+    else if (c.id === "ai" && !c.last) prev = `<span class="row-prev">Спросите что угодно</span>`;
+    else if (c.id === "saved" && !c.last) prev = `<span class="row-prev">Сохраняйте сюда сообщения и заметки</span>`;
+    else if (!c.last) prev = `<span class="row-prev">${c.kind === "dm" ? "Напишите первым" : "Нет сообщений"}</span>`;
+    else {
+      const l = c.last, who = l.sys ? "" : l.from === st.me ? "Вы: " : (c.kind === "group" ? nameOf(l.from) + ": " : "");
+      prev = `<span class="row-prev">${who ? `<b>${esc(who)}</b>` : ""}${esc(pv(l))}</span>`;
+    }
+    const kindIco = c.kind === "group" ? I.group : c.kind === "channel" ? I.channel : "";
+    return `<li><button class="row" type="button" data-cid="${esc(c.id)}" aria-current="${st.active === c.id && (isWide() || app.dataset.view === "chat")}">
+      ${avHTML(chatAv(c), 50, isDmOnline)}
+      <span class="row-main"><span class="row-top"><span class="row-name">${kindIco}<span>${esc(chatTitle(c))}</span>${muted ? I.mute : ""}</span><time>${c.last ? listTime(c.last.t) : ""}</time></span>
+      <span class="row-bot">${prev}${u ? `<span class="badge${muted ? " quiet" : ""}">•</span>` : ""}</span></span></button></li>`;
+  }).join("");
+  const realCount = [...st.chats.values()].length;
+  if (!q && st.folder !== "all" && !items.length) html += `<li class="list-note"><strong>${{ dm: "Личных чатов пока нет", group: "Групп пока нет", channel: "Каналов пока нет" }[st.folder]}</strong>${st.folder === "dm" ? "Нажмите «+» и выберите человека." : st.folder === "group" ? "Создайте группу через «+» или найдите открытую." : "Создайте свой канал или подпишитесь на чужой."}<button class="btn sec" type="button" data-open="${st.folder === "dm" ? "people" : "discover"}">${st.folder === "dm" ? "Выбрать человека" : "Найти группы и каналы"}</button></li>`;
+  else if (!q && st.folder === "all" && !realCount && st.mode === "db") html += `<li class="list-note"><strong>Здесь появятся ваши чаты</strong>Нажмите «+»: в списке все, кто уже открывал Ayte V3. Можно создать группу или канал.<button class="btn sec" type="button" data-open="people">Найти людей</button></li>`;
+  else if (q && !items.length) html += `<li class="list-note">По запросу «${esc(st.q.trim())}» чатов нет.</li>`;
+  if (st.folder === "channel" || st.folder === "group") { if (items.length) html += `<li class="list-note"><button class="btn sec" type="button" data-open="discover">Найти открытые группы и каналы</button></li>`; }
+  listEl.innerHTML = html;
+}
+function renderNet() {
+  const el = $("#net");
+  if (st.mode === "boot") return;
+  if (st.mode === "local") { el.innerHTML = `<i class="led"></i><span>Режим устройства: чаты хранятся только здесь. Общая база доступна на опубликованной странице.</span>`; return; }
+  if (st.netErr) { el.innerHTML = `<i class="led"></i><span>${esc(st.netErr)}</span>`; return; }
+  if (!st.canWrite) { el.innerHTML = `<i class="led on"></i><span>Только чтение: попросите владельца дать доступ «Участник», чтобы писать.</span>`; return; }
+  const n = st.online.size;
+  el.innerHTML = `<i class="led${st.room ? " on" : ""}"></i><span>${st.room ? `В сети · ${n} ${plural(n, "человек", "человека", "человек")} онлайн` : "Подключено к общей базе Ayte"}</span>`;
+}
+
+/* ================= conversation ================= */
+function openChat(cid, opts = {}) {
+  const c = getChat(cid); if (!c) return;
+  if (st.active !== cid) {
+    if (st.msgUnsub) { st.msgUnsub(); st.msgUnsub = null; }
+    st.active = cid; st.msgs = []; st.reply = null; st.edit = null; st.find = ""; $("#find").hidden = true; $("#findIn").value = "";
+    input.value = ls.get("draft:" + cid, "") || ""; autoGrow();
+    if (cid === "saved") st.msgs = st.saved;
+    else if (cid === "ai") st.msgs = st.ai;
+    else st.msgUnsub = st.B.watchMsgs(cid, (list) => { if (st.active !== cid) return; const was = st.msgs.length; st.msgs = list; if (list.length > was && was) st.fresh = list[list.length - 1].id; renderMsgs(); markRead(); }, (e) => { if (st.active === cid) toast("Не удалось загрузить сообщения: " + errText(e)); });
+  }
+  app.dataset.view = "chat";
+  closePops();
+  $("#empty").hidden = true; headEl.hidden = msgsEl.hidden = composer.hidden = false;
+  renderHead(); renderPin(); renderCtx(); renderComposer(); renderMsgs(true); renderList();
+  if (!isTouch() && !opts.noFocus && canPost(c)) input.focus();
+}
+function closeChat() {
+  if (st.msgUnsub) { st.msgUnsub(); st.msgUnsub = null; }
+  st.active = null; st.preview = null; app.dataset.view = "list"; closePops();
+  $("#empty").hidden = false; headEl.hidden = msgsEl.hidden = composer.hidden = true; $("#pinbar").hidden = true; $("#find").hidden = true;
+  renderList();
+}
+function renderHead() {
+  const c = getChat(st.active); if (!c) return;
+  const sub = chatSub(c), dot = c.kind === "dm" && st.online.has(other(c));
+  headEl.innerHTML = `<button class="ghost back" type="button" data-act="back" aria-label="Назад к чатам">${I.back}</button>
+    ${avHTML(chatAv(c), 42, dot)}
+    <button class="who" type="button" data-act="info"><div class="who-name">${esc(chatTitle(c))}</div><div class="who-sub ${sub.cls || ""}">${esc(sub.t)}</div></button>
+    <button class="ghost" type="button" data-act="find" aria-label="Поиск в чате">${I.search}</button>
+    <button class="ghost" type="button" data-act="info" aria-label="Информация о чате">${I.info}</button>`;
+}
+function renderPin() {
+  const c = getChat(st.active), bar = $("#pinbar");
+  if (!c || !c.pinned || !c.pinned.id) { bar.hidden = true; return; }
+  bar.hidden = false;
+  bar.innerHTML = `<span style="color:var(--accent)">${I.pin}</span><button class="go" type="button" data-goto="${esc(c.pinned.id)}"><small>Закреплено</small><span>${esc(c.pinned.text || "Сообщение")}</span></button>${isAdmin(c) && canPost(c) || (c.kind === "dm" && canPost(c)) ? `<button class="ghost" type="button" data-unpin="1" aria-label="Открепить">${I.x}</button>` : ""}`;
+}
+function quoteHTML(r) {
+  if (!r) return "";
+  return `<button class="quote" type="button" data-goto="${esc(r.id)}"><b>${esc(nameOf(r.from))}</b><span>${esc(r.text || "Сообщение")}</span></button>`;
+}
+function highlight(text) {
+  const t = esc(text); if (!st.find) return t;
+  const f = esc(st.find).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return t.replace(new RegExp(f, "gi"), (x) => `<mark>${x}</mark>`);
+}
+function pollHTML(m, c) {
+  const p = m.poll, votes = p.votes || {}, opts = Array.isArray(p.opts) ? p.opts : [];
+  const counts = opts.map(() => 0); let total = 0;
+  Object.keys(votes).forEach((u) => { const v = votes[u]; if (Number.isInteger(v) && v >= 0 && v < opts.length) { counts[v]++; total++; } });
+  const mine = votes[st.me], voted = Number.isInteger(mine) && mine >= 0;
+  return `<div class="poll"><h4>${esc(p.q)}</h4><small>Опрос · ${total} ${plural(total, "голос", "голоса", "голосов")}</small>
+    ${opts.map((o, i) => { const pct = total ? Math.round(counts[i] / total * 100) : 0; return `<button class="opt${mine === i ? " mine" : ""}" type="button" data-vote="${i}" ${canVote(c) ? "" : "disabled"}><i class="bar" style="width:${voted ? pct : 0}%"></i><span>${mine === i ? "✓ " : ""}${esc(o)}</span>${voted ? `<b>${pct}%</b>` : ""}</button>`; }).join("")}</div>`;
+}
+const canVote = (c) => c.kind === "saved" || (st.canWrite && isMember(c));
+function renderMsgs(jump) {
+  const c = getChat(st.active); if (!c) return;
+  const atBottom = msgsEl.scrollHeight - msgsEl.scrollTop - msgsEl.clientHeight < 80;
+  let list = st.msgs;
+  const f = st.find.trim().toLowerCase();
+  if (f) list = list.filter((m) => String(m.text || "").toLowerCase().includes(f) || (m.poll && String(m.poll.q || "").toLowerCase().includes(f)));
+  $("#findN").textContent = f ? `${list.length} ${plural(list.length, "совпадение", "совпадения", "совпадений")}` : "";
+  const readers = c.read || {};
+  const othersRead = Object.keys(readers).filter((u) => u !== st.me).map((u) => readers[u] || 0);
+  const maxRead = othersRead.length ? Math.max.apply(null, othersRead) : 0;
+  let html = "", prevDay = "", prevFrom = null, prevT = 0;
+  if (!list.length && !f) {
+    if (c.kind === "ai") html = aiIntro();
+    else if (c.kind === "saved") html = `<div class="sys">Избранное видно только вам. Сохраняйте сюда сообщения из чатов (через меню сообщения) или пишите заметки.</div>`;
+    else if (st.active && c.kind !== "ai") html = `<div class="sys">${c.kind === "dm" ? "Сообщений пока нет. Скажите «привет» или отправьте стикер 👋" : "Сообщений пока нет."}</div>`;
+  }
+  if (!list.length && f) html = `<div class="sys">В этом чате нет сообщений с «${esc(st.find)}».</div>`;
+  for (const m of list) {
+    if (dayKey(m.t) !== prevDay) { prevDay = dayKey(m.t); html += `<div class="day">${esc(dayLabel(m.t))}</div>`; prevFrom = null; }
+    if (m.sys) { html += `<div class="sys">${esc(sysText(m))}</div>`; prevFrom = null; continue; }
+    const mine = m.from === st.me;
+    const first = m.from !== prevFrom || m.t - prevT > 5 * 60000;
+    prevFrom = m.from; prevT = m.t;
+    const showName = first && !mine && (c.kind === "group");
+    const showAv = c.kind === "group" && !mine;
+    const pa = personAv(m.from);
+    const kind = m.sticker != null ? " sticker" : m.img ? " photo" : "";
+    let body = "";
+    if (m.fwd) body += `<div class="fwd">Переслано от ${esc(nameOf(m.fwd))}</div>`;
+    if (m.reply) body += quoteHTML(m.reply);
+    if (m.sticker != null) body += stickerSVG(m.sticker);
+    else if (m.img && okImg(m.img)) body += `<img class="ph" src="${m.img}" alt="Фото" data-zoom="1" loading="lazy" style="aspect-ratio:${+m.w || 4}/${+m.h || 3}">`;
+    if (m.poll) body += pollHTML(m, c);
+    if (m.text) body += `<div class="text">${highlight(m.text)}</div>`;
+    const rx = m.react && typeof m.react === "object" ? Object.keys(m.react).filter((e) => Array.isArray(m.react[e]) && m.react[e].length) : [];
+    const ticks = mine && (c.kind === "dm" || c.kind === "group") ? `<span class="ticks" aria-label="${maxRead >= m.t ? "Прочитано" : "Отправлено"}" style="color:${maxRead >= m.t ? "var(--accent)" : "inherit"}">${maxRead >= m.t ? "✓✓" : "✓"}</span>` : "";
+    const meta = `<div class="meta">${m.edited ? "<span>изменено</span>" : ""}<span>${hm(m.t)}</span>${ticks}</div>`;
+    html += `<div class="m${mine && c.kind !== "channel" ? " me" : ""}${first ? " first" : ""}" data-mid="${esc(m.id)}">
+      ${showAv ? `<div class="m-av">${first ? avHTML(pa, 32, false) : ""}</div>` : ""}
+      <div class="m-body">${showName ? `<span class="sender" style="--c:${okColor(pa.color)}">${esc(nameOf(m.from))}</span>` : ""}
+        <div class="bubble${kind}${m.id === st.fresh ? " new" : ""}" data-bubble="${esc(m.id)}" tabindex="0">${body}${meta}</div>
+        ${rx.length ? `<div class="rxs">${rx.map((e) => `<button class="rx${m.react[e].includes(st.me) ? " mine" : ""}" type="button" data-rx="${esc(e)}" data-rxm="${esc(m.id)}">${esc(e)} ${m.react[e].length}</button>`).join("")}</div>` : ""}
+      </div></div>`;
+  }
+  if (c.kind === "ai" && st.aiDraft != null) html += `<div class="m first" data-mid="draft"><div class="m-body"><div class="bubble"><div class="text">${esc(st.aiDraft || "…")}</div></div></div></div>`;
+  const ty = typingIn(c.id);
+  if ((ty.length && c.kind !== "channel") || (c.kind === "ai" && st.aiBusy && st.aiDraft == null)) html += `<div class="typing-row"><span class="dots"><i></i><i></i><i></i></span>${c.kind === "group" ? esc(ty.map(nameOf).join(", ")) : ""}</div>`;
+  msgsEl.innerHTML = html;
+  st.fresh = null;
+  if (jump || atBottom) msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+function aiIntro() {
+  return `<div class="m first"><div class="m-body"><div class="bubble"><div class="text">Привет! Я Ayte AI ✦ Помогу придумать ответ, название группы, текст для канала или просто поболтаю. Наш разговор видите только вы.</div></div></div></div>
+  <div class="chips">${["Придумай название для нашей группы", "Помоги вежливо отказаться от встречи", "Напиши пост для канала о новом проекте", "Расскажи короткий факт дня"].map((s) => `<button type="button" data-ask="${esc(s)}">${esc(s)}</button>`).join("")}</div>`;
+}
+function renderCtx() {
+  const ctx = $("#ctx"), r = st.reply || st.edit;
+  if (!r) { ctx.hidden = true; return; }
+  ctx.hidden = false;
+  ctx.innerHTML = `<span style="color:var(--accent)">${st.edit ? I.edit : I.reply}</span><div><b>${st.edit ? "Редактирование" : "Ответ " + esc(nameOf(r.from))}</b><span>${esc(pv(r))}</span></div><button class="ghost" type="button" id="ctxX" aria-label="Отменить">${I.x}</button>`;
+}
+function renderComposer() {
+  const c = getChat(st.active), row = $("#cRow"), alt = $("#cAlt");
+  if (!c) return;
+  if (canPost(c)) {
+    row.hidden = false; alt.hidden = true;
+    $("#attachBtn").hidden = c.kind === "ai";
+    input.placeholder = c.kind === "ai" ? "Спросите Ayte AI" : c.kind === "channel" ? "Пост для подписчиков" : "Сообщение";
+    updateSend(); return;
+  }
+  row.hidden = true; alt.hidden = false; $("#ctx").hidden = true;
+  if (st.mode === "db" && !st.canWrite) alt.innerHTML = `<span>Писать могут участники с доступом «Участник» или выше.</span>`;
+  else if (!isMember(c) && c.open) alt.innerHTML = `<button class="btn" type="button" data-join="1">${c.kind === "channel" ? "Подписаться" : "Вступить в группу"}</button>`;
+  else if (c.kind === "channel") alt.innerHTML = `<button class="btn sec" type="button" data-mutebtn="1">${st.muted[c.id] ? "Включить уведомления" : "Без звука"}</button>`;
+  else alt.innerHTML = `<span>Вы больше не участник этого чата.</span>`;
+}
+function updateSend() {
+  const has = input.value.trim().length > 0;
+  $("#sendBtn").disabled = !has || (st.active === "ai" && st.aiBusy);
+  $("#sendBtn").innerHTML = st.edit ? I.check : I.send;
+}
+function autoGrow() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight + 2, 140) + "px"; }
+
+/* ================= read marks, presence ================= */
+function markRead() {
+  const c = getChat(st.active);
+  if (!c || !c.id || PSEUDO[c.id] || !isMember(c) || !st.canWrite || document.hidden) return;
+  if (!isWide() && app.dataset.view !== "chat") return;
+  const lastOther = [...st.msgs].reverse().find((m) => m.from !== st.me);
+  const t = Math.max(lastOther ? lastOther.t : 0, c.last && c.last.from !== st.me ? c.last.t : 0);
+  if (t && t > ((c.read || {})[st.me] || 0)) st.B.patchChat(c.id, { read: { [st.me]: t } }).catch(() => {});
+}
+let tyTimer = 0, tyLast = 0, tyCid = null;
+function presence(ty) { if (st.room) st.room.presence({ ty: ty || null, at: now() }).catch(() => {}); }
+function onTyping() {
+  if (!st.room || !st.active || PSEUDO[st.active]) return;
+  if (tyCid !== st.active || now() - tyLast > 2500) { tyCid = st.active; tyLast = now(); presence(st.active); }
+  clearTimeout(tyTimer); tyTimer = setTimeout(stopTyping, 4000);
+}
+function stopTyping() { clearTimeout(tyTimer); if (tyCid) { tyCid = null; presence(null); } }
+function recomputePeers() {
+  const on = new Set(), ty = {};
+  st.peersRaw.forEach((p) => {
+    if (!p || p.kind === "agent" || !p.by) return;
+    on.add(p.by);
+    const ps = p.presence || {};
+    if (!p.isMe && typeof ps.ty === "string" && now() - (+ps.at || 0) < 7000) (ty[ps.ty] = ty[ps.ty] || new Set()).add(p.by);
+  });
+  if (st.me) on.add(st.me);
+  const changed = on.size !== st.online.size || [...on].some((u) => !st.online.has(u)) || JSON.stringify(Object.keys(ty).map((k) => [k, [...ty[k]]])) !== JSON.stringify(Object.keys(st.typing).map((k) => [k, [...st.typing[k]]]));
+  st.online = on; st.typing = ty;
+  if (changed) { renderListSoon(); renderNet(); if (st.active) { renderHead(); const c = getChat(st.active); if (c && c.kind !== "ai") renderMsgs(); } }
+}
+
+/* ================= sending ================= */
+function errText(e) {
+  const c = e && e.code;
+  if (c === "quota_exceeded") return "общая база Ayte заполнена — удалите старые чаты";
+  if (c === "invalid_argument") return "нет прав на запись или сообщение слишком большое";
+  if (c === "resource_exhausted") return "слишком часто — подождите пару секунд";
+  if (c === "revoked") return "доступ к странице изменился";
+  return "нет связи с базой, попробуйте ещё раз";
+}
+const newId = () => now().toString(36) + rid(5);
+async function sendPayload(payload, cid = st.active) {
+  const c = getChat(cid); if (!c || !canPost(c)) return;
+  const m = Object.assign({ from: st.me, t: now(), react: {} }, payload);
+  if (st.reply && cid === st.active) { const r = st.reply; m.reply = { id: r.id, from: r.from, text: pv(r).slice(0, 120) }; st.reply = null; renderCtx(); }
+  if (cid === "saved") { const id = newId(); st.saved = trimSaved(st.saved.concat([Object.assign({ id }, m)])); st.fresh = id; savePriv("saved", st.saved); if (st.active === "saved") { st.msgs = st.saved; renderMsgs(true); } renderListSoon(); return; }
+  if (cid === "ai") { return askAI(m); }
+  const id = newId();
+  st.fresh = id;
+  try {
+    await st.B.setMsg(cid, id, m);
+    await st.B.patchChat(cid, { t: m.t, last: lastOf(m), read: { [st.me]: m.t } });
+  } catch (e) { toast("Не отправлено: " + errText(e)); if (e && e.code === "invalid_argument" && !st.B.local) { /* could be a size issue; keep inputs */ } }
+}
+function trimSaved(items) { let out = items.slice(-300); while (out.length > 1 && JSON.stringify(out).length > 230000) out = out.slice(1); return out; }
+function savePriv(k, items) { st.B.setPriv(k, { items }).catch((e) => toast("Не сохранено: " + errText(e))); }
+async function sendText() {
+  const text = input.value.replace(/\s+$/, "").trim(); if (!text) return;
+  const c = getChat(st.active); if (!c) return;
+  if (st.edit) {
+    const e = st.edit; st.edit = null; renderCtx();
+    input.value = ""; autoGrow(); updateSend(); ls.set("draft:" + st.active, "");
+    if (st.active === "saved") { st.saved = st.saved.map((m) => (m.id === e.id ? Object.assign({}, m, { text, edited: true }) : m)); st.msgs = st.saved; savePriv("saved", st.saved); renderMsgs(); return; }
+    try { await st.B.patchMsg(st.active, e.id, { text, edited: true }); if (c.last && c.last.t === e.t && c.last.from === e.from) await st.B.patchChat(st.active, { last: Object.assign({}, c.last, { text }) }); } catch (er) { toast("Не изменено: " + errText(er)); }
+    return;
+  }
+  input.value = ""; autoGrow(); updateSend(); ls.set("draft:" + st.active, ""); stopTyping();
+  await sendPayload({ text: text.slice(0, 4000) });
+}
+
+/* ================= Ayte AI (Claude via the sample capability) ================= */
+async function askAI(m) {
+  if (st.aiBusy) return;
+  const mine = Object.assign({ id: newId() }, m); delete mine.react;
+  st.ai = st.ai.concat([mine]).slice(-80); st.fresh = mine.id; savePriv("ai", st.ai);
+  if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); }
+  renderListSoon();
+  if (st.sample === undefined) { try { st.sample = window.claude && typeof window.claude.use === "function" ? await window.claude.use("sample") : null; } catch (e) { st.sample = null; } }
+  const reply = (text) => { st.ai = st.ai.concat([{ id: newId(), from: "ai", t: now(), text }]).slice(-80); savePriv("ai", st.ai); if (st.active === "ai") { st.msgs = st.ai; renderMsgs(true); } renderListSoon(); };
+  if (!st.sample) { reply("Сейчас я не могу ответить: в этом окне нет доступа к Claude. Откройте Ayte V3 на claude.ai и разрешите странице обращаться к Claude."); return; }
+  st.aiBusy = true; st.aiDraft = null; renderHead(); renderMsgs(true); updateSend();
+  const hist = [];
+  st.ai.slice(-18).forEach((x) => {
+    const role = x.from === "ai" ? "assistant" : "user";
+    const text = x.sticker != null ? `[стикер «${(STK[x.sticker] || [])[0] || ""}»]` : x.text || "";
+    if (!text) return;
+    if (hist.length && hist[hist.length - 1].role === role) hist[hist.length - 1].content += "\n" + text; else hist.push({ role, content: text });
+  });
+  while (hist.length && hist[0].role !== "user") hist.shift();
+  if (!hist.length) { st.aiBusy = false; return; }
+  hist[0].content = "[Инструкция] Ты — Ayte AI, помощник в мессенджере Ayte V3. Пиши как в чате: коротко (обычно 1–4 предложения), дружелюбно, на языке собеседника, без markdown-заголовков и таблиц; эмодзи — в меру. Если просят текст сообщения или поста — дай готовый текст.\n\n" + hist[0].content;
+  try {
+    const r = await st.sample(hist, { cache: false, modelTier: "quick", onText: ({ text }) => { st.aiDraft = text; if (st.active === "ai") renderMsgs(); } });
+    st.aiBusy = false; st.aiDraft = null;
+    reply((r && r.text || "").trim() || "…");
+  } catch (e) {
+    st.aiBusy = false; st.aiDraft = null;
+    const code = e && e.code;
+    reply(code === "rate_limited" ? "Слишком много вопросов подряд. Давайте через минуту продолжим." : code === "not_granted" ? "Доступ к Claude не разрешён для этой страницы, поэтому ответить не получится." : "Не получилось ответить. Попробуйте ещё раз.");
+  }
+  renderHead(); updateSend();
+}
+
+/* ================= message actions ================= */
+const findMsg = (id) => st.msgs.find((m) => m.id === id);
+function openActions(mid) {
+  const c = getChat(st.active), m = findMsg(mid); if (!c || !m || m.sys) return;
+  const mine = m.from === st.me, pseudo = !!PSEUDO[c.id];
+  const canReact = !pseudo && st.canWrite && isMember(c);
+  const canDel = c.kind === "saved" || (!pseudo && st.canWrite && (mine || (isAdmin(c) && c.kind !== "dm") || st.owner)) || (c.kind === "ai" && true);
+  const canPin = !pseudo && canPost(c) && (c.kind === "dm" || isAdmin(c));
+  const items = [];
+  if (canPost(c) && c.kind !== "ai") items.push(["reply", I.reply, "Ответить"]);
+  if (m.text) items.push(["copy", I.copy, "Копировать текст"]);
+  if (c.kind !== "ai" || m.text) items.push(["fwd", I.fwd, "Переслать"]);
+  if (c.kind !== "saved") items.push(["save", I.bookmark, "В Избранное"]);
+  if (canPin) items.push(["pin", I.pin, c.pinned && c.pinned.id === m.id ? "Открепить" : "Закрепить"]);
+  if (mine && m.text && !m.poll && (c.kind === "saved" || (!pseudo && st.canWrite))) items.push(["edit", I.edit, "Изменить"]);
+  if (canDel) items.push(["del", I.trash, "Удалить", "danger"]);
+  $("#acts").innerHTML = (canReact ? `<div class="rx-row">${QUICK.map((e) => `<button type="button" data-qrx="${e}" class="${(m.react && Array.isArray(m.react[e]) && m.react[e].includes(st.me)) ? "mine" : ""}" aria-label="Реакция ${e}">${e}</button>`).join("")}</div>` : "") +
+    items.map(([a, ico, t, cls]) => `<button class="menu-item ${cls || ""}" type="button" role="menuitem" data-a="${a}">${ico}<span>${t}</span></button>`).join("");
+  $("#acts").dataset.mid = mid;
+  $("#actWrap").hidden = false;
+  const fb = $("#acts button"); if (fb && !isTouch()) fb.focus();
+}
+const closeActions = () => { $("#actWrap").hidden = true; };
+async function toggleReact(mid, e) {
+  const c = getChat(st.active), m = findMsg(mid); if (!c || !m || PSEUDO[c.id] || !st.canWrite || !isMember(c)) return;
+  const cur = (m.react && Array.isArray(m.react[e])) ? m.react[e].slice() : [];
+  const i = cur.indexOf(st.me); if (i >= 0) cur.splice(i, 1); else cur.push(st.me);
+  try { await st.B.patchMsg(c.id, mid, { react: { [e]: cur } }); } catch (er) { toast("Реакция не поставлена: " + errText(er)); }
+}
+async function doAction(a, mid) {
+  const c = getChat(st.active), m = findMsg(mid); closeActions(); if (!c || !m) return;
+  if (a === "reply") { st.edit = null; st.reply = m; renderCtx(); input.focus(); }
+  else if (a === "copy") { try { await navigator.clipboard.writeText(m.text); toast("Текст скопирован"); } catch (e) { toast("Не удалось скопировать — выделите текст вручную"); } }
+  else if (a === "fwd") openForward(m);
+  else if (a === "save") { const copy = cleanCopy(m); st.saved = trimSaved(st.saved.concat([Object.assign({ id: newId(), t: now(), from: st.me, react: {} }, copy, { fwd: m.fwd || m.from })])); savePriv("saved", st.saved); renderListSoon(); toast("Сохранено в Избранное"); }
+  else if (a === "pin") { const un = c.pinned && c.pinned.id === m.id; try { await st.B.patchChat(c.id, { pinned: un ? null : { id: m.id, text: pv(m).slice(0, 140) } }); toast(un ? "Откреплено" : "Сообщение закреплено"); } catch (e) { toast("Не получилось: " + errText(e)); } }
+  else if (a === "edit") { st.reply = null; st.edit = m; input.value = m.text; autoGrow(); renderCtx(); updateSend(); input.focus(); }
+  else if (a === "del") ask("Удалить сообщение?", c.kind === "saved" || c.kind === "ai" ? "Оно исчезнет из этого чата." : "Сообщение удалится у всех участников чата.", "Удалить", () => deleteMsg(c, m));
+}
+function cleanCopy(m) { const o = {}; ["text", "img", "w", "h", "sticker"].forEach((k) => { if (m[k] != null) o[k] = m[k]; }); if (m.poll) o.text = "📊 " + m.poll.q + "\n" + (m.poll.opts || []).map((x) => "• " + x).join("\n"); return o; }
+async function deleteMsg(c, m) {
+  if (c.kind === "saved") { st.saved = st.saved.filter((x) => x.id !== m.id); st.msgs = st.saved; savePriv("saved", st.saved); renderMsgs(); renderListSoon(); return; }
+  if (c.kind === "ai") { st.ai = st.ai.filter((x) => x.id !== m.id); st.msgs = st.ai; savePriv("ai", st.ai); renderMsgs(); renderListSoon(); return; }
+  try {
+    await st.B.delMsg(c.id, m.id);
+    const patch = {};
+    if (c.last && c.last.t === m.t && c.last.from === m.from) { const rest = st.msgs.filter((x) => x.id !== m.id); patch.last = lastOf(rest[rest.length - 1]) || null; }
+    if (c.pinned && c.pinned.id === m.id) patch.pinned = null;
+    if (Object.keys(patch).length) await st.B.patchChat(c.id, patch);
+    toast("Сообщение удалено");
+  } catch (e) { toast("Не удалено: " + errText(e)); }
+}
+async function vote(mid, i) {
+  const c = getChat(st.active), m = findMsg(mid); if (!c || !m || !m.poll || !canVote(c)) return;
+  const cur = (m.poll.votes || {})[st.me], v = cur === i ? -1 : i;
+  if (c.kind === "saved") { st.saved = st.saved.map((x) => (x.id === mid ? Object.assign({}, x, { poll: Object.assign({}, x.poll, { votes: Object.assign({}, x.poll.votes, { [st.me]: v }) }) }) : x)); st.msgs = st.saved; savePriv("saved", st.saved); renderMsgs(); return; }
+  try { await st.B.patchMsg(c.id, mid, { poll: { votes: { [st.me]: v } } }); } catch (e) { toast("Голос не принят: " + errText(e)); }
+}
+function gotoMsg(id) {
+  const el = msgsEl.querySelector(`[data-bubble="${CSS.escape(id)}"]`);
+  if (!el) { toast("Это сообщение уже не загружено"); return; }
+  el.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
+
+/* ================= photos ================= */
+function loadImage(file) {
+  return new Promise((res, rej) => { const url = URL.createObjectURL(file), img = new Image(); img.onload = () => { URL.revokeObjectURL(url); res(img); }; img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("bad image")); }; img.src = url; });
+}
+async function compress(file, max, budget, square) {
+  const img = await loadImage(file);
+  let w = img.naturalWidth, h = img.naturalHeight, sx = 0, sy = 0, sw = w, sh = h;
+  if (square) { const s = Math.min(w, h); sx = (w - s) / 2; sy = (h - s) / 2; sw = sh = s; w = h = s; }
+  const k = Math.min(1, max / Math.max(w, h)); w = Math.round(w * k); h = Math.round(h * k);
+  const cv = document.createElement("canvas"); let out = "";
+  for (let scale = 1; scale > 0.15; scale *= 0.8) {
+    cv.width = Math.max(1, Math.round(w * scale)); cv.height = Math.max(1, Math.round(h * scale));
+    const g = cv.getContext("2d"); g.fillStyle = "#ffffff"; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+    for (let q = 0.82; q >= 0.46; q -= 0.12) { out = cv.toDataURL("image/jpeg", q); if (out.length <= budget) return { src: out, w: cv.width, h: cv.height }; }
+  }
+  return { src: out, w: cv.width, h: cv.height };
+}
+$("#photoIn").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  if (!/^image\//.test(f.type)) { toast("Можно отправить только картинку"); return; }
+  try {
+    const r = await compress(f, 1280, 170000);
+    const caption = input.value.trim().slice(0, 1000); input.value = ""; autoGrow(); updateSend();
+    await sendPayload(Object.assign({ img: r.src, w: r.w, h: r.h }, caption ? { text: caption } : {}));
+  } catch (er) { toast("Не удалось открыть фото"); }
+});
+
+/* ================= sheets ================= */
+let sheetClose = null, lastFocus = null;
+function openSheet(title, html, mount, onClose) {
+  if (!$("#sheetWrap").hidden && sheetClose) sheetClose();
+  lastFocus = document.activeElement;
+  $("#sheet").innerHTML = `<div class="sheet-head"><h2 id="sheetTitle">${esc(title)}</h2><button class="ghost" type="button" data-close="1" aria-label="Закрыть">${I.x}</button></div><div class="sheet-body" id="sheetBody">${html}</div>`;
+  $("#sheetWrap").hidden = false;
+  sheetClose = onClose || null;
+  if (mount) mount($("#sheetBody"));
+  const f = $("#sheet").querySelector("input:not([type=checkbox]), textarea, button[data-close]"); if (f && !isTouch()) f.focus();
+}
+function closeSheet() { $("#sheetWrap").hidden = true; if (sheetClose) { const f = sheetClose; sheetClose = null; f(); } if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+function ask(title, text, ok, fn) {
+  openSheet(title, `<p class="note" style="font-size:14px">${esc(text)}</p><div class="btn-row"><button class="btn sec" type="button" data-close="1">Отмена</button><button class="btn danger" type="button" id="askOk">${esc(ok)}</button></div>`, (b) => { b.querySelector("#askOk").addEventListener("click", () => { closeSheet(); fn(); }); });
+}
+function personRow(uid, extra = "", tag = "") {
+  const on = st.online.has(uid) && uid !== st.me, p = st.people.get(uid) || {};
+  return `${avHTML(personAv(uid), 42, on)}<span><b>${esc(nameOf(uid))}${uid === st.me ? " (вы)" : ""}</b><small class="${on ? "on" : ""}">${esc(on ? "в сети" : p.bio ? p.bio : seenText(p.seen))}</small></span>${tag}${extra}`;
+}
+const othersSorted = () => [...st.people.keys()].filter((u) => u !== st.me).sort((a, b) => (st.online.has(b) - st.online.has(a)) || (((st.people.get(b) || {}).seen || 0) - ((st.people.get(a) || {}).seen || 0)));
+
+function openNew() {
+  openSheet("Новый чат", `
+    <div class="people">
+      <button class="person" type="button" data-n="people"><span class="av" style="--s:42px;--c:#2f7cf2" aria-hidden="true">${I.user}</span><span><b>Написать человеку</b><small>Личный чат с тем, кто открывал Ayte</small></span></button>
+      <button class="person" type="button" data-n="group"><span class="av" style="--s:42px;--c:#18995c" aria-hidden="true">${I.group}</span><span><b>Создать группу</b><small>Общий чат на несколько человек</small></span></button>
+      <button class="person" type="button" data-n="channel"><span class="av" style="--s:42px;--c:#ec5a2a" aria-hidden="true">${I.channel}</span><span><b>Создать канал</b><small>Пишете вы, остальные читают и ставят реакции</small></span></button>
+      <button class="person" type="button" data-n="discover"><span class="av" style="--s:42px;--c:#7b5cf0" aria-hidden="true">${I.globe}</span><span><b>Найти группы и каналы</b><small>Открытые чаты, куда можно вступить</small></span></button>
+    </div>${st.mode === "local" ? `<p class="note">Сейчас Ayte работает в режиме устройства: чаты видите только вы. Общение с другими людьми работает на опубликованной странице Ayte V3.</p>` : ""}`,
+  (b) => b.addEventListener("click", (e) => { const n = e.target.closest("[data-n]"); if (!n) return; ({ people: openPeople, group: () => openCreate("group"), channel: () => openCreate("channel"), discover: openDiscover })[n.dataset.n](); }));
+}
+function openPeople() {
+  const draw = (b, q) => {
+    const list = othersSorted().filter((u) => !q || nameOf(u).toLowerCase().includes(q));
+    b.querySelector("#pl").innerHTML = list.length ? list.map((u) => `<li><button class="person" type="button" data-dm="${esc(u)}">${personRow(u)}</button></li>`).join("")
+      : `<li class="note">${q ? "Никого не нашли." : st.mode === "local" ? "В режиме устройства других людей нет. Откройте опубликованную страницу Ayte V3, чтобы писать друзьям." : "Пока здесь только вы. Поделитесь ссылкой на Ayte V3 — каждый, кто откроет страницу, появится в этом списке."}</li>`;
+  };
+  openSheet("Написать человеку", `<input class="input" id="pq" type="search" placeholder="Поиск по имени" autocomplete="off" aria-label="Поиск людей"><ul class="people" id="pl"></ul>`, (b) => {
+    draw(b, "");
+    b.querySelector("#pq").addEventListener("input", (e) => draw(b, e.target.value.trim().toLowerCase()));
+    b.addEventListener("click", (e) => { const d = e.target.closest("[data-dm]"); if (d) { closeSheet(); openDM(d.dataset.dm); } });
+  });
+}
+const dmId = (u) => "d-" + hash53([st.me, u].sort().join("|"));
+async function openDM(u) {
+  const cid = dmId(u);
+  if (!st.chats.has(cid)) {
+    if (!st.canWrite) { toast("Писать могут только участники с доступом «Участник»"); return; }
+    try {
+      const ex = await st.B.getChat(cid);
+      if (!ex) await st.B.setChat(cid, { kind: "dm", members: [st.me, u].sort(), t: now(), created: now(), read: {}, last: null, pinned: null });
+      else if (!st.chats.has(cid)) st.chats.set(cid, ex);
+      if (!st.chats.has(cid)) st.chats.set(cid, { id: cid, kind: "dm", members: [st.me, u].sort(), t: now(), read: {}, last: null });
+    } catch (e) { toast("Чат не создан: " + errText(e)); return; }
+  }
+  openChat(cid);
+}
+function openCreate(kind) {
+  const isG = kind === "group"; let color = COLORS[isG ? 1 : 0], emoji = isG ? "👥" : "📣";
+  const picks = new Set();
+  openSheet(isG ? "Новая группа" : "Новый канал", `
+    <label class="field"><span>Название</span><input class="input" id="cTitle" maxlength="48" placeholder="${isG ? "Например, Класс 7Б" : "Например, Новости V3"}" autocomplete="off"></label>
+    <label class="field"><span>Описание</span><textarea class="input" id="cAbout" maxlength="240" placeholder="${isG ? "О чём эта группа" : "О чём пишет канал"}"></textarea></label>
+    <div class="field"><span>Значок</span><div class="emopick" id="cEmo">${["👥", "📣", "🎮", "⚽", "📚", "🎵", "🍕", "🚀", "💼", "🎨", "🔥", "✈️"].map((e) => `<button type="button" data-e="${e}" aria-pressed="${e === emoji}">${e}</button>`).join("")}</div></div>
+    <div class="field"><span>Цвет</span><div class="swatches" id="cCol">${COLORS.map((c) => `<button type="button" data-c="${c}" style="--c:${c}" aria-pressed="${c === color}" aria-label="Цвет ${c}"></button>`).join("")}</div></div>
+    <label class="check"><input type="checkbox" id="cOpen" ${isG ? "" : "checked"}><span>${isG ? "Открытая группа — её можно найти и вступить" : "Открытый канал — его можно найти и подписаться"}</span></label>
+    ${isG ? `<div class="field"><span>Участники</span><ul class="people" id="cPeople">${othersSorted().map((u) => `<li><label class="person">${personRow(u, `<input type="checkbox" data-pick="${esc(u)}">`)}</label></li>`).join("") || `<li class="note">Других людей пока нет — группу можно создать и позвать участников позже.</li>`}</ul></div>` : ""}
+    <button class="btn" type="button" id="cGo">${isG ? "Создать группу" : "Создать канал"}</button>`, (b) => {
+    b.querySelector("#cEmo").addEventListener("click", (e) => { const x = e.target.closest("[data-e]"); if (!x) return; emoji = x.dataset.e; b.querySelectorAll("#cEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
+    b.querySelector("#cCol").addEventListener("click", (e) => { const x = e.target.closest("[data-c]"); if (!x) return; color = x.dataset.c; b.querySelectorAll("#cCol button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
+    b.addEventListener("change", (e) => { const p = e.target.closest("[data-pick]"); if (p) { if (p.checked) picks.add(p.dataset.pick); else picks.delete(p.dataset.pick); } });
+    b.querySelector("#cGo").addEventListener("click", async () => {
+      const title = b.querySelector("#cTitle").value.replace(/\s+/g, " ").trim().slice(0, 48);
+      if (!title) { b.querySelector("#cTitle").focus(); toast("Введите название"); return; }
+      if (!st.canWrite) { toast("Создавать чаты могут только участники с доступом «Участник»"); return; }
+      const cid = (isG ? "g-" : "k-") + rid(10), t = now();
+      const data = { kind, title, about: b.querySelector("#cAbout").value.trim().slice(0, 240), emoji, color, members: [st.me].concat([...picks]), admins: [st.me], owner: st.me, open: b.querySelector("#cOpen").checked, t, created: t, read: { [st.me]: t }, pinned: null, last: { from: st.me, t, sys: kind, title } };
+      try {
+        b.querySelector("#cGo").disabled = true;
+        await st.B.setChat(cid, data);
+        await st.B.setMsg(cid, newId(), { from: st.me, t, sys: kind, title });
+        if (picks.size) await st.B.setMsg(cid, newId(), { from: st.me, t: t + 1, sys: "add", who: [...picks] });
+        st.chats.set(cid, Object.assign({ id: cid }, data));
+        closeSheet(); openChat(cid); toast(isG ? "Группа создана" : "Канал создан");
+      } catch (e) { b.querySelector("#cGo").disabled = false; toast("Не создано: " + errText(e)); }
+    });
+  });
+}
+let openUnsub = null;
+function openDiscover() {
+  let q = "";
+  const draw = () => {
+    const b = $("#sheetBody"); if (!b || !b.querySelector("#dl")) return;
+    const list = [...st.open.values()].filter((c) => (c.kind === "group" || c.kind === "channel") && (!q || (c.title || "").toLowerCase().includes(q))).sort((a, b2) => (b2.members || []).length - (a.members || []).length);
+    b.querySelector("#dl").innerHTML = list.length ? list.map((c) => { const n = (c.members || []).length; return `<li><button class="person" type="button" data-see="${esc(c.id)}">${avHTML(chatAv(c), 42, false)}<span><b>${esc(c.title)}</b><small>${c.kind === "channel" ? "Канал" : "Группа"} · ${n} ${plural(n, c.kind === "channel" ? "подписчик" : "участник", c.kind === "channel" ? "подписчика" : "участника", c.kind === "channel" ? "подписчиков" : "участников")}${c.about ? " · " + esc(c.about) : ""}</small></span>${isMember(c) ? `<span class="tag">вы здесь</span>` : ""}</button></li>`; }).join("")
+      : `<li class="note">${q ? "Ничего не нашли." : "Открытых групп и каналов пока нет. Создайте первый!"}</li>`;
+  };
+  openSheet("Группы и каналы", `<input class="input" id="dq" type="search" placeholder="Поиск по названию" autocomplete="off" aria-label="Поиск групп и каналов"><ul class="people" id="dl"><li class="note">Загружаем…</li></ul>`, (b) => {
+    if (openUnsub) openUnsub();
+    openUnsub = st.B.watchOpen((list) => { st.open = new Map(list.map((c) => [c.id, c])); draw(); }, () => { const x = $("#dl"); if (x) x.innerHTML = `<li class="note">Не удалось загрузить список.</li>`; });
+    b.querySelector("#dq").addEventListener("input", (e) => { q = e.target.value.trim().toLowerCase(); draw(); });
+    b.addEventListener("click", (e) => { const s = e.target.closest("[data-see]"); if (!s) return; const c = st.open.get(s.dataset.see); if (!c) return; st.preview = c; closeSheet(); openChat(c.id); });
+  }, () => { if (openUnsub) { openUnsub(); openUnsub = null; } });
+}
+async function joinChat(c) {
+  if (!st.canWrite) { toast("Нужен доступ «Участник»"); return; }
+  try {
+    const fresh = (await st.B.getChat(c.id)) || c;
+    const members = [...new Set((fresh.members || []).concat([st.me]))];
+    await st.B.patchChat(c.id, { members, read: { [st.me]: now() } });
+    if (c.kind === "group") await st.B.setMsg(c.id, newId(), { from: st.me, t: now(), sys: "join" });
+    st.chats.set(c.id, Object.assign({}, fresh, { id: c.id, members }));
+    st.preview = null; renderComposer(); renderHead(); renderList();
+    toast(c.kind === "channel" ? "Вы подписались" : "Вы в группе");
+  } catch (e) { toast("Не получилось: " + errText(e)); }
+}
+async function leaveChat(c) {
+  try {
+    const fresh = (await st.B.getChat(c.id)) || c;
+    const members = (fresh.members || []).filter((u) => u !== st.me), admins = (fresh.admins || []).filter((u) => u !== st.me);
+    if (c.kind === "group") await st.B.setMsg(c.id, newId(), { from: st.me, t: now(), sys: "leave" });
+    await st.B.patchChat(c.id, { members, admins: admins.length ? admins : members.slice(0, 1) });
+    st.chats.delete(c.id); closeChat(); toast(c.kind === "channel" ? "Вы отписались" : "Вы вышли из группы");
+  } catch (e) { toast("Не получилось: " + errText(e)); }
+}
+async function deleteChat(c) {
+  try {
+    const ids = st.active === c.id ? st.msgs.map((m) => m.id) : [];
+    for (const id of ids) await st.B.delMsg(c.id, id);
+    await st.B.delChat(c.id);
+    st.chats.delete(c.id); closeChat(); toast("Чат удалён");
+  } catch (e) { toast("Не удалено: " + errText(e)); }
+}
+function openInfo() {
+  const c = getChat(st.active); if (!c) return;
+  const sub = chatSub(c), admin = isAdmin(c) && st.canWrite && isMember(c);
+  let html = `<div class="hero">${avHTML(chatAv(c), 84, false)}<h3>${esc(chatTitle(c))}</h3><p>${esc(sub.t)}</p></div>`;
+  if (c.kind === "dm") {
+    const p = st.people.get(other(c)) || {};
+    if (p.bio) html += `<div class="field"><span>О себе</span><p style="margin:0">${esc(p.bio)}</p></div>`;
+  }
+  if (c.kind === "group" || c.kind === "channel") {
+    if (c.about) html += `<div class="field"><span>Описание</span><p style="margin:0;white-space:pre-wrap">${esc(c.about)}</p></div>`;
+    if (admin) html += `<details><summary style="cursor:pointer;font-weight:600">Изменить название и описание</summary><div style="display:grid;gap:10px;margin-top:10px"><input class="input" id="eTitle" maxlength="48" value="${esc(c.title || "")}" aria-label="Название"><textarea class="input" id="eAbout" maxlength="240" aria-label="Описание">${esc(c.about || "")}</textarea><label class="check"><input type="checkbox" id="eOpen" ${c.open ? "checked" : ""}><span>Открытый — можно найти и вступить</span></label><button class="btn" type="button" id="eSave">Сохранить</button></div></details>`;
+    const mem = (c.members || []).slice().sort((a, b) => (b === c.owner) - (a === c.owner) || st.online.has(b) - st.online.has(a));
+    const addable = othersSorted().filter((u) => !(c.members || []).includes(u));
+    html += `<div class="field"><span>${c.kind === "channel" ? "Подписчики" : "Участники"} · ${mem.length}</span><ul class="people">${mem.map((u) => {
+      const tag = u === c.owner ? `<span class="tag">создатель</span>` : (c.admins || []).includes(u) ? `<span class="tag">админ</span>` : "";
+      const kick = admin && u !== st.me && u !== c.owner ? `<button class="ghost" type="button" data-kick="${esc(u)}" aria-label="Исключить">${I.x}</button>` : "";
+      return `<li><div class="person">${personRow(u, kick, tag)}</div></li>`; }).join("")}</ul></div>`;
+    if (admin && addable.length) html += `<div class="field"><span>Добавить</span><ul class="people">${addable.map((u) => `<li><button class="person" type="button" data-add="${esc(u)}">${personRow(u, `<span style="color:var(--accent)">${I.plus}</span>`)}</button></li>`).join("")}</ul></div>`;
+  }
+  const btns = [];
+  if (!PSEUDO[c.id]) btns.push(`<button class="menu-item" type="button" data-i="mute">${st.muted[c.id] ? I.bell : I.mute}<span>${st.muted[c.id] ? "Включить уведомления" : "Без звука"}</span></button>`);
+  if (c.kind === "ai" && st.ai.length) btns.push(`<button class="menu-item danger" type="button" data-i="clearai">${I.trash}<span>Очистить разговор</span></button>`);
+  if ((c.kind === "group" || c.kind === "channel") && isMember(c) && c.owner !== st.me) btns.push(`<button class="menu-item danger" type="button" data-i="leave">${I.exit}<span>${c.kind === "channel" ? "Отписаться" : "Выйти из группы"}</span></button>`);
+  if ((c.kind === "group" || c.kind === "channel") && (c.owner === st.me || st.owner) && st.canWrite) btns.push(`<button class="menu-item danger" type="button" data-i="delete">${I.trash}<span>Удалить ${c.kind === "channel" ? "канал" : "группу"} у всех</span></button>`);
+  if (btns.length) html += `<div style="display:grid">${btns.join("")}</div>`;
+  if (c.kind === "dm" || c.kind === "group") html += `<p class="note">Сообщения хранятся в общей базе этой страницы Ayte V3. Не пересылайте здесь пароли и коды.</p>`;
+  openSheet(c.kind === "dm" ? "Профиль" : c.kind === "channel" ? "Канал" : c.kind === "group" ? "Группа" : chatTitle(c), html, (b) => {
+    const save = b.querySelector("#eSave");
+    if (save) save.addEventListener("click", async () => {
+      const title = b.querySelector("#eTitle").value.replace(/\s+/g, " ").trim().slice(0, 48); if (!title) return;
+      try { await st.B.patchChat(c.id, { title, about: b.querySelector("#eAbout").value.trim().slice(0, 240), open: b.querySelector("#eOpen").checked }); if (title !== c.title) await st.B.setMsg(c.id, newId(), { from: st.me, t: now(), sys: "rename", title }); closeSheet(); toast("Сохранено"); } catch (e) { toast("Не сохранено: " + errText(e)); }
+    });
+    b.addEventListener("click", async (e) => {
+      const add = e.target.closest("[data-add]"), kick = e.target.closest("[data-kick]"), it = e.target.closest("[data-i]");
+      if (add) { const u = add.dataset.add; try { const fresh = (await st.B.getChat(c.id)) || c; await st.B.patchChat(c.id, { members: [...new Set((fresh.members || []).concat([u]))] }); await st.B.setMsg(c.id, newId(), { from: st.me, t: now(), sys: "add", who: [u] }); closeSheet(); toast(nameOf(u) + " добавлен(а)"); } catch (er) { toast("Не добавлено: " + errText(er)); } }
+      if (kick) { const u = kick.dataset.kick; ask("Исключить " + nameOf(u) + "?", "Человек перестанет видеть этот чат в своём списке.", "Исключить", async () => { try { const fresh = (await st.B.getChat(c.id)) || c; await st.B.patchChat(c.id, { members: (fresh.members || []).filter((x) => x !== u), admins: (fresh.admins || []).filter((x) => x !== u) }); await st.B.setMsg(c.id, newId(), { from: st.me, t: now(), sys: "remove", who: [u] }); } catch (er) { toast("Не получилось: " + errText(er)); } }); }
+      if (!it) return;
+      const a = it.dataset.i;
+      if (a === "mute") { st.muted[c.id] = !st.muted[c.id]; ls.set("muted", st.muted); closeSheet(); renderList(); renderComposer(); toast(st.muted[c.id] ? "Уведомления выключены" : "Уведомления включены"); }
+      if (a === "clearai") ask("Очистить разговор с Ayte AI?", "История удалится без возможности вернуть.", "Очистить", () => { st.ai = []; st.msgs = st.ai; savePriv("ai", []); renderMsgs(); renderList(); });
+      if (a === "leave") ask(c.kind === "channel" ? "Отписаться от канала?" : "Выйти из группы?", "Вернуться можно, если чат открытый, или если вас снова добавят.", c.kind === "channel" ? "Отписаться" : "Выйти", () => leaveChat(c));
+      if (a === "delete") ask(`Удалить «${c.title}»?`, "Чат и загруженные сообщения удалятся у всех участников.", "Удалить", () => deleteChat(c));
+    });
+  });
+}
+function openForward(m) {
+  const targets = allChats().filter((c) => canPost(c) && c.kind !== "ai");
+  openSheet("Переслать в…", `<ul class="people">${targets.map((c) => `<li><button class="person" type="button" data-to="${esc(c.id)}">${avHTML(chatAv(c), 42, false)}<span><b>${esc(chatTitle(c))}</b><small>${esc({ dm: "Личный чат", group: "Группа", channel: "Канал", saved: "Только вы" }[c.kind] || "")}</small></span></button></li>`).join("")}</ul>`, (b) => {
+    b.addEventListener("click", async (e) => {
+      const t = e.target.closest("[data-to]"); if (!t) return; closeSheet();
+      const keep = st.reply; st.reply = null;
+      await sendPayload(Object.assign(cleanCopy(m), { fwd: m.fwd || m.from }), t.dataset.to);
+      st.reply = keep; toast("Переслано: " + chatTitle(getChat(t.dataset.to)));
+    });
+  });
+}
+function openPoll() {
+  openSheet("Новый опрос", `<label class="field"><span>Вопрос</span><input class="input" id="pQ" maxlength="140" placeholder="Например, куда идём в субботу?" autocomplete="off"></label>
+    <div class="field"><span>Варианты (от 2 до 6)</span><div class="opts" id="pO">${[0, 1, 2].map((i) => `<input class="input" maxlength="60" placeholder="Вариант ${i + 1}" aria-label="Вариант ${i + 1}" autocomplete="off">`).join("")}</div></div>
+    <div class="btn-row"><button class="btn sec" type="button" id="pAdd">Добавить вариант</button><button class="btn" type="button" id="pGo">Отправить опрос</button></div>`, (b) => {
+    b.querySelector("#pAdd").addEventListener("click", () => { const box = b.querySelector("#pO"); if (box.children.length >= 6) return; const n = box.children.length + 1; box.insertAdjacentHTML("beforeend", `<input class="input" maxlength="60" placeholder="Вариант ${n}" aria-label="Вариант ${n}" autocomplete="off">`); box.lastElementChild.focus(); });
+    b.querySelector("#pGo").addEventListener("click", async () => {
+      const q = b.querySelector("#pQ").value.trim(), opts = [...b.querySelectorAll("#pO input")].map((x) => x.value.trim()).filter(Boolean).slice(0, 6);
+      if (!q) { toast("Напишите вопрос"); return; } if (opts.length < 2) { toast("Нужно минимум два варианта"); return; }
+      closeSheet(); await sendPayload({ poll: { q, opts, votes: {} } });
+    });
+  });
+}
+function openProfile() {
+  const p = Object.assign({}, meProfile());
+  let color = okColor(p.color || COLORS[0]), emoji = p.emoji || "", photo = okImg(p.photo) ? p.photo : "";
+  const preview = () => { const el = $("#prAv"); if (el) el.innerHTML = avHTML({ photo, emoji, initials: ($("#prNick") && $("#prNick").value || nameOf(st.me)).slice(0, 2).toUpperCase(), color }, 84, false); };
+  openSheet("Мой профиль", `
+    <div class="hero"><div id="prAv"></div><div class="btn-row"><button class="btn sec" type="button" id="prPhoto">Загрузить фото</button>${photo ? `<button class="btn sec" type="button" id="prNoPhoto">Убрать фото</button>` : ""}</div></div>
+    <label class="field"><span>Имя в Ayte</span><input class="input" id="prNick" maxlength="24" value="${esc(p.nick || "")}" placeholder="${esc(st.names[st.me] || "Как вас называть")}" autocomplete="off"></label>
+    <label class="field"><span>О себе</span><input class="input" id="prBio" maxlength="80" value="${esc(p.bio || "")}" placeholder="Пара слов о себе" autocomplete="off"></label>
+    <div class="field"><span>Аватар-эмодзи</span><div class="emopick" id="prEmo">${AV_EMOJI.map((e) => `<button type="button" data-e="${e}" aria-pressed="${e === emoji}" aria-label="${e || "Без эмодзи"}">${e || "Аа"}</button>`).join("")}</div></div>
+    <div class="field"><span>Цвет</span><div class="swatches" id="prCol">${COLORS.map((c) => `<button type="button" data-c="${c}" style="--c:${c}" aria-pressed="${c === color}" aria-label="Цвет ${c}"></button>`).join("")}</div></div>
+    <div class="field"><span>Тема</span><div class="seg" id="prTheme">${[["system", "Как в системе"], ["light", "Светлая"], ["dark", "Тёмная"]].map(([v, t]) => `<button type="button" data-v="${v}" aria-pressed="${st.theme === v}">${t}</button>`).join("")}</div></div>
+    <label class="check"><input type="checkbox" id="prSound" ${st.sound ? "checked" : ""}><span>Звук новых сообщений</span></label>
+    <button class="btn" type="button" id="prSave" ${st.mode === "db" && !st.canWrite ? "disabled" : ""}>Сохранить профиль</button>
+    <p class="note">${st.mode === "db" ? "Имя, «о себе», цвет и фото видят все, кто открывает Ayte V3." : "В режиме устройства профиль хранится только здесь."}</p>`, (b) => {
+    preview();
+    b.querySelector("#prNick").addEventListener("input", preview);
+    b.querySelector("#prEmo").addEventListener("click", (e) => { const x = e.target.closest("[data-e]"); if (!x) return; emoji = x.dataset.e; photo = emoji ? "" : photo; b.querySelectorAll("#prEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); preview(); });
+    b.querySelector("#prCol").addEventListener("click", (e) => { const x = e.target.closest("[data-c]"); if (!x) return; color = x.dataset.c; b.querySelectorAll("#prCol button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); preview(); });
+    b.querySelector("#prTheme").addEventListener("click", (e) => { const x = e.target.closest("[data-v]"); if (!x) return; st.theme = x.dataset.v; ls.set("theme", st.theme); applyTheme(); b.querySelectorAll("#prTheme button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
+    b.querySelector("#prSound").addEventListener("change", (e) => { st.sound = e.target.checked; ls.set("sound", st.sound); });
+    b.querySelector("#prPhoto").addEventListener("click", () => $("#avatarIn").click());
+    const np = b.querySelector("#prNoPhoto"); if (np) np.addEventListener("click", () => { photo = ""; preview(); np.remove(); });
+    $("#avatarIn").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const r = await compress(f, 192, 24000, true); photo = r.src; emoji = ""; b.querySelectorAll("#prEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y.dataset.e === ""))); preview(); } catch (er) { toast("Не удалось открыть фото"); } };
+    b.querySelector("#prSave").addEventListener("click", async () => {
+      const d = { nick: b.querySelector("#prNick").value.replace(/\s+/g, " ").trim().slice(0, 24), bio: b.querySelector("#prBio").value.trim().slice(0, 80), color, emoji, photo, seen: now() };
+      try { await st.B.setProfile(d); st.people.set(st.me, d); closeSheet(); renderMe(); renderList(); toast("Профиль сохранён"); } catch (e) { toast("Не сохранено: " + errText(e)); }
+    });
+  });
+}
+function renderMe() { $("#meBtn").innerHTML = avHTML(personAv(st.me), 40, false); }
+
+/* ================= emoji & sticker panel ================= */
+function renderPanel() {
+  document.querySelectorAll("#panelTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.t === st.panelTab)));
+  const g = $("#panelGrid"); g.className = "grid" + (st.panelTab === "stk" ? " stks" : "");
+  g.innerHTML = st.panelTab === "stk" ? STK.map((s, i) => `<button type="button" data-stk="${i}" aria-label="Стикер ${esc(s[0])}">${stickerSVG(i)}</button>`).join("") : EMOJI.map((e) => `<button type="button" data-emo="${e}" aria-label="${e}">${e}</button>`).join("");
+}
+function closePops() {
+  $("#panel").hidden = true; $("#panelBtn").setAttribute("aria-expanded", "false");
+  $("#attachMenu").hidden = true; $("#attachBtn").setAttribute("aria-expanded", "false");
+}
+
+/* ================= notifications ================= */
+let actx = null, interacted = false;
+document.addEventListener("pointerdown", () => { interacted = true; }, { once: true });
+function ping() {
+  if (!st.sound || !interacted) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+    o.type = "sine"; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(1320, t + 0.09);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.26);
+  } catch (e) { /* audio unavailable */ }
+}
+function toast(text, cid) {
+  const box = $("#toasts"), b = document.createElement("button");
+  b.type = "button"; b.className = "toast";
+  if (cid) { const c = getChat(cid); if (c) b.insertAdjacentHTML("afterbegin", avHTML(chatAv(c), 30, false)); }
+  const s = document.createElement("span"); s.textContent = text; b.appendChild(s);
+  b.addEventListener("click", () => { b.remove(); if (cid && getChat(cid)) openChat(cid); });
+  box.appendChild(b); while (box.children.length > 3) box.firstElementChild.remove();
+  setTimeout(() => b.remove(), cid ? 5000 : 2800);
+}
+
+/* ================= events ================= */
+listEl.addEventListener("click", (e) => {
+  const r = e.target.closest("[data-cid]"); if (r) { openChat(r.dataset.cid); return; }
+  const o = e.target.closest("[data-open]"); if (o) (o.dataset.open === "people" ? openPeople : openDiscover)();
+});
+$("#folders").addEventListener("click", (e) => { const b = e.target.closest("[data-f]"); if (!b) return; st.folder = b.dataset.f; renderList(); });
+$("#q").addEventListener("input", (e) => { st.q = e.target.value; renderList(); });
+$("#newBtn").addEventListener("click", () => { if (st.mode === "boot") return; openNew(); });
+$("#meBtn").addEventListener("click", () => { if (st.mode === "boot") return; openProfile(); });
+headEl.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-act]"); if (!a) return;
+  if (a.dataset.act === "back") closeChat();
+  else if (a.dataset.act === "info") openInfo();
+  else if (a.dataset.act === "find") { const f = $("#find"); f.hidden = !f.hidden; if (!f.hidden) $("#findIn").focus(); else { st.find = ""; $("#findIn").value = ""; renderMsgs(); } }
+});
+$("#findIn").addEventListener("input", (e) => { st.find = e.target.value; renderMsgs(true); });
+$("#findX").addEventListener("click", () => { $("#find").hidden = true; st.find = ""; $("#findIn").value = ""; renderMsgs(true); });
+$("#pinbar").addEventListener("click", async (e) => {
+  const g = e.target.closest("[data-goto]"); if (g) { gotoMsg(g.dataset.goto); return; }
+  if (e.target.closest("[data-unpin]")) { try { await st.B.patchChat(st.active, { pinned: null }); } catch (er) { toast("Не получилось: " + errText(er)); } }
+});
+let tapT = 0, tapId = null, tapTimer = 0;
+msgsEl.addEventListener("click", (e) => {
+  const v = e.target.closest("[data-vote]"); if (v) { const m = v.closest("[data-mid]"); vote(m.dataset.mid, +v.dataset.vote); return; }
+  const rx = e.target.closest("[data-rx]"); if (rx) { toggleReact(rx.dataset.rxm, rx.dataset.rx); return; }
+  const g = e.target.closest("[data-goto]"); if (g) { gotoMsg(g.dataset.goto); return; }
+  const ask2 = e.target.closest("[data-ask]"); if (ask2) { sendPayload({ text: ask2.dataset.ask }); return; }
+  const img = e.target.closest("[data-zoom]"); if (img) { $("#viewImg").src = img.src; $("#viewer").hidden = false; return; }
+  const b = e.target.closest("[data-bubble]"); if (!b) return;
+  if (window.getSelection && String(window.getSelection()).length) return;
+  const id = b.dataset.bubble;
+  // double tap = ❤️, single tap = message menu
+  if (tapId === id && now() - tapT < 320) { clearTimeout(tapTimer); tapId = null; toggleReact(id, "❤️"); return; }
+  tapId = id; tapT = now(); clearTimeout(tapTimer); tapTimer = setTimeout(() => { tapId = null; openActions(id); }, 300);
+});
+msgsEl.addEventListener("keydown", (e) => { const b = e.target.closest("[data-bubble]"); if (b && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openActions(b.dataset.bubble); } });
+$("#actWrap").addEventListener("click", (e) => {
+  if (e.target === $("#actWrap")) { closeActions(); return; }
+  const mid = $("#acts").dataset.mid, q = e.target.closest("[data-qrx]"), a = e.target.closest("[data-a]");
+  if (q) { closeActions(); toggleReact(mid, q.dataset.qrx); } else if (a) doAction(a.dataset.a, mid);
+});
+$("#sheetWrap").addEventListener("click", (e) => { if (e.target === $("#sheetWrap") || e.target.closest("[data-close]")) closeSheet(); });
+$("#viewer").addEventListener("click", () => { $("#viewer").hidden = true; });
+composer.addEventListener("click", async (e) => {
+  if (e.target.closest("#ctxX")) { if (st.edit) { input.value = ""; autoGrow(); } st.reply = null; st.edit = null; renderCtx(); updateSend(); return; }
+  const j = e.target.closest("[data-join]"); if (j) { const c = getChat(st.active); if (c) joinChat(c); return; }
+  const mb = e.target.closest("[data-mutebtn]"); if (mb) { st.muted[st.active] = !st.muted[st.active]; ls.set("muted", st.muted); renderComposer(); renderList(); return; }
+  const em = e.target.closest("[data-emo]"); if (em) { input.setRangeText(em.dataset.emo, input.selectionStart, input.selectionEnd, "end"); autoGrow(); updateSend(); if (!isTouch()) input.focus(); return; }
+  const sk = e.target.closest("[data-stk]"); if (sk) { closePops(); sendPayload({ sticker: +sk.dataset.stk }); return; }
+  const tb = e.target.closest("#panelTabs [data-t]"); if (tb) { st.panelTab = tb.dataset.t; renderPanel(); return; }
+  const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else openPoll(); }
+});
+$("#panelBtn").addEventListener("click", () => { const open = $("#panel").hidden; closePops(); if (open) { renderPanel(); $("#panel").hidden = false; $("#panelBtn").setAttribute("aria-expanded", "true"); } });
+$("#attachBtn").addEventListener("click", () => {
+  const open = $("#attachMenu").hidden; closePops(); if (!open) return;
+  $("#attachMenu").innerHTML = `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
+  $("#attachMenu").hidden = false; $("#attachBtn").setAttribute("aria-expanded", "true");
+});
+$("#sendBtn").addEventListener("click", sendText);
+input.addEventListener("input", () => { autoGrow(); updateSend(); if (st.active) ls.set("draft:" + st.active, input.value.slice(0, 2000)); if (input.value.trim()) onTyping(); });
+input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !isTouch()) { e.preventDefault(); sendText(); } if (e.key === "ArrowUp" && !input.value && st.active) { const mine = [...st.msgs].reverse().find((m) => m.from === st.me && m.text && !m.poll); if (mine && (st.active === "saved" || (!PSEUDO[st.active] && st.canWrite))) { e.preventDefault(); doAction("edit", mine.id); } } });
+input.addEventListener("blur", stopTyping);
+document.addEventListener("click", (e) => {
+  if (!$("#panel").hidden && !e.target.closest("#panel") && !e.target.closest("#panelBtn")) { $("#panel").hidden = true; $("#panelBtn").setAttribute("aria-expanded", "false"); }
+  if (!$("#attachMenu").hidden && !e.target.closest("#attachMenu") && !e.target.closest("#attachBtn")) { $("#attachMenu").hidden = true; $("#attachBtn").setAttribute("aria-expanded", "false"); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!$("#viewer").hidden) $("#viewer").hidden = true;
+  else if (!$("#actWrap").hidden) closeActions();
+  else if (!$("#sheetWrap").hidden) closeSheet();
+  else if (!$("#panel").hidden || !$("#attachMenu").hidden) closePops();
+  else if (st.reply || st.edit) { st.reply = null; st.edit = null; renderCtx(); }
+  else if (st.active && !isWide()) closeChat();
+});
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) { markRead(); return; }
+  stopTyping();
+  if (st.B && st.profileLoaded && st.mode === "db" && st.canWrite) { const p = Object.assign({}, meProfile(), { seen: now() }); st.people.set(st.me, p); st.B.setProfile(p).catch(() => {}); }
+});
+matchMedia("(min-width: 821px)").addEventListener("change", () => renderList());
+setInterval(() => { if (st.peersRaw.length) recomputePeers(); }, 3000);
+setInterval(() => { renderListSoon(); if (st.active) renderHead(); }, 60000);
+$("#newBtn").innerHTML = I.plus; $("#qIco").innerHTML = I.search; $("#attachBtn").innerHTML = I.clip; $("#panelBtn").innerHTML = I.smile; $("#findX").innerHTML = I.x; $("#sendBtn").innerHTML = I.send;
+$("#meBtn").innerHTML = avHTML({ initials: "", color: "#8a9b95" }, 40, false);
+renderFolders();
+
+/* ================= boot ================= */
+function onChats(list, fromCache) {
+  const prev = st.chats;
+  st.chats = new Map(list.map((c) => [c.id, c]));
+  if (!st.chatsReady && !fromCache) { st.chatsReady = true; clearTimeout(st.loadTimer); st.netErr = ""; renderNet(); }
+  // notify about new incoming messages
+  if (st.chatsSeen) list.forEach((c) => {
+    const old = prev.get(c.id), l = c.last;
+    if (!l || l.sys || l.from === st.me) return;
+    if (old && old.last && old.last.t >= l.t) return;
+    if (!old && l.t < st.bootT) return;
+    if (st.muted[c.id] || (st.active === c.id && !document.hidden)) return;
+    toast(`${chatTitle(c)}: ${c.kind === "group" ? nameOf(l.from) + ": " : ""}${pv(l)}`, c.id); ping();
+  });
+  st.chatsSeen = true;
+  if (st.wantOpen) { const w = st.wantOpen; st.wantOpen = null; if (getChat(w) && !st.active) openChat(w, { noFocus: true }); }
+  if (st.active && !PSEUDO[st.active]) {
+    const c = getChat(st.active);
+    if (!c) closeChat();
+    else { renderHead(); renderPin(); renderComposer(); renderMsgs(); markRead(); }
+  }
+  renderListSoon();
+}
+async function resolveNames(ids) {
+  if (!st.user || typeof st.user.profiles !== "function" || !ids.length) return;
+  try { const ps = await st.user.profiles(ids); let ch = false; ids.forEach((id) => { const n = ps && ps[id] && ps[id].name; if (n && st.names[id] !== n) { st.names[id] = n; ch = true; } }); if (ch) { renderListSoon(); renderMe(); if (st.active) { renderHead(); renderMsgs(); } } } catch (e) { /* names stay as nicknames */ }
+}
+function onPeople(list, fromCache) {
+  st.people = new Map(list.map((p) => [p.id, p]));
+  resolveNames(list.map((p) => p.id).concat([st.me]).filter((id) => !st.names[id] && !(st.people.get(id) || {}).nick));
+  if (!fromCache && !st.profileLoaded) {
+    st.profileLoaded = true;
+    if (st.canWrite) {
+      const mine = st.people.get(st.me);
+      const p = mine ? Object.assign({}, mine, { seen: now() }) : { nick: "", bio: "", color: COLORS[parseInt(hash53(st.me).slice(-2), 36) % COLORS.length], emoji: "", photo: "", seen: now() };
+      delete p.id; st.people.set(st.me, p);
+      st.B.setProfile(p).catch((e) => { if (e && e.code === "invalid_argument" && st.mode === "db") { st.canWrite = false; renderNet(); if (st.active) renderComposer(); } });
+    }
+  }
+  renderMe(); renderListSoon(); if (st.active) { renderHead(); renderMsgs(); }
+}
+async function boot() {
+  st.bootT = now();
+  const has = !!(window.claude && typeof window.claude.use === "function");
+  let db = null, user = null, me = null;
+  if (has) { try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch (e) { db = null; user = null; } }
+  if (user) { try { me = await user.id(); } catch (e) { me = null; } }
+  st.user = user;
+  if (db && me) {
+    st.mode = "db"; st.me = me; st.B = dbBackend(db, me);
+    try { const w = await user.can("data.write"); if (w === false) st.canWrite = false; } catch (e) { /* unknown: keep inputs */ }
+    try { st.owner = !!(await user.isOwner()); } catch (e) { st.owner = false; }
+  } else {
+    st.mode = "local"; st.me = ls.get("localMe", "") || "local-" + rid(10); ls.set("localMe", st.me); st.B = localBackend(st.me);
+  }
+  renderNet(); renderMe();
+  st.loadTimer = setTimeout(() => { if (!st.chatsReady && st.mode === "db") { st.netErr = "База Ayte отвечает медленно — список может быть неполным."; renderNet(); } }, 10000);
+  st.B.watchChats(onChats, (e) => { st.netErr = "Чаты не загрузились: " + errText(e) + ". Откройте страницу заново."; renderNet(); });
+  st.B.watchPeople(onPeople, () => {});
+  st.B.watchPriv("saved", (d) => { st.saved = d && Array.isArray(d.items) ? d.items : []; if (st.active === "saved") { st.msgs = st.saved; renderMsgs(); } renderListSoon(); }, () => {});
+  st.B.watchPriv("ai", (d) => { if (st.aiBusy) return; st.ai = d && Array.isArray(d.items) ? d.items : []; if (st.active === "ai") { st.msgs = st.ai; renderMsgs(); } renderListSoon(); }, () => {});
+  renderList();
+  if (isWide()) { if (st.mode === "local") st.wantOpen = "k-welcome"; else openChat("ai", { noFocus: true }); }
+  if (st.mode === "db") {
+    try {
+      const room = await window.claude.use("room");
+      if (room) {
+        st.room = room;
+        room.onPeers(() => { st.peersRaw = room.peers(); recomputePeers(); }, () => { st.room = null; st.peersRaw = []; st.online = new Set([st.me]); st.typing = {}; renderNet(); renderListSoon(); });
+        presence(null);
+        renderNet();
+      }
+    } catch (e) { st.room = null; }
+  }
+}
+boot();
+})();
+</script>
