@@ -4579,6 +4579,11 @@ function renderBankCard(scr) {
   const dp = el("button", "btn alt", "Положить " + fmt(bankAmt)); dp.type = "button"; dp.id = "bankDeposit"; dp.disabled = money < bankAmt;
   dp.addEventListener("click", () => { if (money < bankAmt) return; money -= bankAmt; save.card = cardBal() + bankAmt; tone(660, 990, 0.08, 0.06); writeSave(); updHud(); toast("На карту зачислено " + fmt(bankAmt), 1.8); renderPhone("bank"); });
   row.append(wd, dp); scr.appendChild(row);
+  // move every dollar of cash onto the card in one tap
+  const cash = Math.floor(money), all = el("button", "btn", cash > 0 ? "Перевести все наличные на карту — " + fmt(cash) : "Наличных нет — переводить нечего");
+  all.type = "button"; all.id = "bankAll"; all.style.flex = "none"; all.style.marginTop = "8px"; all.disabled = cash <= 0;
+  all.addEventListener("click", () => { const n = Math.floor(money); if (n <= 0) return; money -= n; save.card = cardBal() + n; [660, 880, 990].forEach((f, i) => setTimeout(() => tone(f, f * 1.5, 0.08, 0.05), i * 80)); writeSave(); updHud(); toast("💳 Все наличные (" + fmt(n) + ") переведены на карту V3", 2.2); renderPhone("bank"); });
+  scr.appendChild(all);
 }
 /* the airport terminal: departures board, check-in with take-off, duty free, souvenirs */
 let TM = null;
