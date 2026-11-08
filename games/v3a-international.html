@@ -899,7 +899,7 @@ const LMS = {
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
     } },
-  olymp: { name: "Висячие сады «Олимпия»", info: "коридор в воздухе, обвитый листьями: поднимись на лифте и пройди по нему", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
+  olymp: { name: "Отель «Олимпия» и висячие сады", info: "отель с коридором в воздухе, обвитым листьями: поднимись на лифте, сними номер и пройди по саду", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
     gen(o) { places.olympDoor = { x: (o.x0 + 3) * T, y: (o.y0 + 5.4) * T }; },
     ground(g, b) { g.fillStyle = "rgba(79,174,90,.35)"; for (let i = 0; i < 6; i++) { g.beginPath(); g.ellipse(b.x + 60 + i * 28, b.y + 128 + (i % 2 ? 40 : -40), 16, 10, 0, 0, TAU); g.fill(); } },
     d2(Q) {
@@ -914,6 +914,7 @@ const LMS = {
       // two lift towers of pink tuff
       for (const x of [32, 224]) { B.box(tuff, x, 128, 50, 50, 150, 0, 0, 64); B.box("#b8735a", x, 128, 54, 54, 4, 150); B.box(B.M("#9fd8f0", { glow: "#bfe8ff" }), x, 128 + 25.2, 14, 1, 24, 0); }
       B.plane(B.M("#ffffff", { map: B.X.txt("ОЛИМПИЯ · ЛИФТ", "#1f4a26", "#e8f6e0", 512, 64, 38) }), 32, 154, 46, 7, 28, 0);
+      for (const x of [32, 224]) B.plane(B.M("#ffffff", { map: B.X.txt("HOTEL «OLYMPIA» ★★★★★", "#ffd23d", "#1f2a26", 512, 64, 30) }), x, 154, 48, 8, 132, 0);
       // the hanging corridor: a deck, a frame of arches, all woven with leaves
       const Y = 118, L = B.M("#3f8f4a"), L2 = B.M("#5fbf5a"), L3 = B.M("#2f6f3a");
       B.box("#e8e0d0", 128, 128, 196, 32, 4, Y); B.box("#8a6a48", 128, 128, 196, 30, 1, Y + 4);
@@ -2167,9 +2168,13 @@ const TERM_ROOM = { RW: TW, RH: TH, OX: WORLD + 2600, OZ: WORLD / 2 + 1400,
 /* ===== hanging gardens «Olympia» (Yerevan): a corridor in the air, woven with leaves ===== */
 const GW = 720, GH = 96;
 const OLYMP_ROOM = { RW: GW, RH: GH, OX: WORLD + 2600, OZ: WORLD / 2 + 2600,
-  solids: [[120, 0, 44, 12], [300, 0, 44, 12], [480, 0, 44, 12], [210, 84, 44, 12], [390, 84, 44, 12], [570, 84, 44, 12]],
+  solids: [[120, 0, 44, 12], [300, 0, 44, 12], [480, 0, 44, 12], [210, 84, 44, 12], [390, 84, 44, 12], [570, 84, 44, 12], [84, 80, 64, 16]],
   spots: [
     { id: "door", x: 30, y: GH / 2, r: 30, label: "ЛИФТ", text: "Спуститься на лифте на улицу" },
+    { id: "desk", x: 116, y: 64, r: 26, label: "ОТЕЛЬ", text: "Ресепшн отеля: снять номер" },
+    { id: "room", n: 101, x: 220, y: 16, r: 22, label: "101", text: "Номер 101" },
+    { id: "room", n: 102, x: 400, y: 16, r: 22, label: "102", text: "Номер 102" },
+    { id: "room", n: 103, x: 580, y: 16, r: 22, label: "103", text: "Номер 103" },
     { id: "bench", x: 360, y: 74, r: 26, label: "СЕСТЬ", text: "Посидеть на скамейке среди листьев" },
     { id: "view", x: GW - 30, y: GH / 2, r: 34, label: "ВИД", text: "Смотровая площадка" },
   ] };
@@ -2181,15 +2186,56 @@ function enterGarden() {
   if (TV.on) tvSet(-1);
   indoor = true; player.couch = false; setLocal(64, GH / 2); player.a = 0;
   cam3.yaw = 0; cam3.init = false; cam.x = player.x; cam.y = player.y;
-  $("game").classList.add("indoor"); sfx.doorOpen(); toast("Лифт поднял тебя в висячие сады «Олимпия». Пройди по коридору до смотровой", 3);
+  $("game").classList.add("indoor"); sfx.doorOpen(); toast("Отель «Олимпия» ★★★★★ · висячие сады. Ресепшн рядом, номера — вдоль коридора, смотровая — в конце", 3.5);
   setTimeout(() => tone(523, 523, 0.2, 0.05, "sine"), 200); setTimeout(() => tone(784, 784, 0.3, 0.05, "sine"), 420);
   if (G3.ready && !G3.garden) buildGarden();
   if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; outerLand(false);
 }
+const HOTEL_PRICE = 180, HOTEL_FOOD = 15;
+let hmRoom = 101;
 function gardenAct(sp) {
   if (sp.id === "door") return leaveHome();
+  if (sp.id === "desk") { hmView = "hotel"; renderHome(); showOv("home"); tone(1320, 1320, 0.15, 0.05, "sine"); return; }
+  if (sp.id === "room") { hmRoom = sp.n; hmView = "hroom"; renderHome(); showOv("home"); sfx.door(); return; }
   if (sp.id === "bench") { toast("Ты сидишь на скамейке. Шелестят листья, внизу шумит Ереван", 3); tone(660, 990, 0.4, 0.03, "sine"); return; }
   if (sp.id === "view") { big("АРАРАТ", "Вид с висячих садов «Олимпия» · Ереван", "#9fe08a", 3.2); tone(523, 1046, 0.6, 0.04, "sine"); }
+}
+function hotelSleep() {
+  const n = save.olympKey; delete save.olympKey;
+  player.hp = 100; dayT = 2 / 24; // 08:00
+  if (SUM && SUM.ph === "follow") { SUM.sleepT = 7; setTimeout(() => toast("💤 " + SUM.hr.name + " спит в номере рядом с тобой", 2.6), 2500); }
+  if (!WX.manual) WX.target = 0;
+  setLocal((OLYMP_ROOM.spots.find((q) => q.n === n) || { x: 220 }).x, 30); player.a = Math.PI / 2;
+  writeSave(); updHud(); tone(440, 220, 0.6, 0.08, "sine");
+  big("ДОБРОЕ УТРО", "Номер " + n + " · отель «Олимпия» · здоровье 100", "#ffe08a", 2.6);
+  setTimeout(() => toast("Выезд из номера. Ждём тебя снова в «Олимпии»!", 3), 2800);
+}
+function renderHotel(box) {
+  $("hmWho").textContent = "Отель «Олимпия» ★★★★★ · Ереван"; $("hmOut").hidden = true;
+  const btn = (txt, cls, fn, dis) => { const b = el("button", cls, txt); b.type = "button"; b.disabled = !!dis; b.style.flex = "none"; b.addEventListener("click", fn); box.appendChild(b); return b; };
+  const key = save.olympKey;
+  if (hmView === "hotel") {
+    $("hmTitle").textContent = "Ресепшн";
+    box.appendChild(el("p", "prog", "Добро пожаловать в «Олимпию»! Номера прямо в висячем саду: кровать king-size, окно на Арарат, завтрак на террасе."));
+    if (key) box.appendChild(el("p", "hm-price", "Твой номер: " + key));
+    else {
+      box.appendChild(el("p", "hm-price", fmt(HOTEL_PRICE) + " / ночь"));
+      btn(money >= HOTEL_PRICE ? "Снять номер на ночь — " + fmt(HOTEL_PRICE) : "Не хватает " + fmt(HOTEL_PRICE - money), "btn", () => {
+        if (money < HOTEL_PRICE) return; money -= HOTEL_PRICE; save.olympKey = 101 + ((Math.random() * 3) | 0); writeSave(); updHud(); sfx.win();
+        toast("🔑 Ключ от номера " + save.olympKey + " — дверь вдоль коридора", 3); renderHome();
+      }, money < HOTEL_PRICE).id = "htBook";
+    }
+    btn(money >= HOTEL_FOOD ? "Завтрак на террасе — " + fmt(HOTEL_FOOD) + " (+40 здоровья)" : "Завтрак — не хватает " + fmt(HOTEL_FOOD - money), "btn alt", () => {
+      if (money < HOTEL_FOOD) return; money -= HOTEL_FOOD; player.hp = Math.min(100, player.hp + 40); writeSave(); updHud(); tone(660, 880, 0.12, 0.05, "sine"); resume(); toast("☕ Лаваш, сыр, зелень и армянский кофе. Здоровье " + Math.round(player.hp), 2.6);
+    }, money < HOTEL_FOOD);
+  } else {
+    $("hmTitle").textContent = "Номер " + hmRoom;
+    if (key === hmRoom) {
+      box.appendChild(el("p", "prog", "Твой номер: большая кровать, окно в листьях с видом на Арарат, халат и тапочки."));
+      btn("Лечь спать до утра (здоровье 100)", "btn", () => { resume(); hotelSleep(); }).id = "htSleep";
+    } else box.appendChild(el("p", "prog", key ? "Здесь живут другие гости — на двери табличка «Не беспокоить». Твой номер — " + key + "." : "Номер закрыт. Снять его можно на ресепшене в начале коридора."));
+  }
+  btn("Закрыть", "btn alt", resume);
 }
 function buildGarden() {
   const K = G3.K, THREE = K.THREE, B = mk3d(K, OLYMP_ROOM.OX, OLYMP_ROOM.OZ, {}), g = B.g;
@@ -2212,7 +2258,7 @@ function buildGarden() {
     // a band of leaves along the roof between this arch and the next
     if (x + 40 <= GW) for (let s = 6; s < 40; s += 7) { const j = hsh(x, s, 4); leaves[(s / 7) % 3 | 0].push([x + s, (GH / 2) * 1.45 - 1, GH / 2 + (j - 0.5) * 50, 6 + j * 4, 3, 6 + j * 3]); }
     // hedge along the railings, with gaps to look down
-    for (const z of [4, GH - 4]) if ((x / 40) % 3 !== 1) for (let s = 0; s < 40; s += 8) { const j = hsh(x + s, z, 6); leaves[(s / 8) % 3 | 0].push([x + s, 6 + j * 10, z, 6, 7 + j * 6, 4]); }
+    for (const z of [4, GH - 4]) if ((x / 40) % 3 !== 1) for (let s = 0; s < 40; s += 8) { if (z === 4 && [220, 400, 580].some((dx) => Math.abs(x + s - dx) < 24)) continue; if (z !== 4 && Math.abs(x + s - 116) < 40) continue; const j = hsh(x + s, z, 6); leaves[(s / 8) % 3 | 0].push([x + s, 6 + j * 10, z, 6, 7 + j * 6, 4]); }
     if (x + 20 < GW) for (const z of [18, GH - 18]) { const len = 14 + hsh(x, z, 2) * 26, top = (GH / 2) * 1.45 * 0.92; vines.push([x + 20, top - len / 2, z, 0.6, len, 0.6]); for (let y = top - len; y < top; y += 4) leaves[(y | 0) % 3].push([x + 20 + (hsh(y, x, 1) - 0.5) * 3, y, z, 2.2, 1.8, 2.2]); }
   }
   B.inst("#3f8f4a", leaves[0], K.SPH); B.inst("#5fbf5a", leaves[1], K.SPH); B.inst("#2f6f3a", leaves[2], K.SPH); B.inst("#2f5a2a", vines);
@@ -2220,10 +2266,21 @@ function buildGarden() {
   // planters, benches and lamps
   for (const [x, z, w, d] of OLYMP_ROOM.solids) { B.box("#b8735a", x + w / 2, z + d / 2, w, d, 10); for (let i = 0; i < 4; i++) B.sph(i % 2 ? "#5fbf5a" : "#3f8f4a", x + 6 + i * 11, z + d / 2, 6, 13, 1, 0.8, 1); B.sph("#ff8fc0", x + w / 2, z + d / 2, 2.2, 19); }
   B.box("#6a4a30", 360, 88, 40, 8, 6, 0); B.box("#8a6a48", 360, 92, 40, 2, 10, 6);
+  // hotel reception: a tuff counter, a bell and a receptionist
+  B.box("#d99a82", 116, 88, 64, 16, 15, 0); B.box("#f2ece0", 116, 88, 66, 18, 1.5, 15); B.box("#c9a14a", 104, 84, 2.4, 2.4, 1.6, 16.5);
+  B.plane(B.M("#ffffff", { map: B.X.txt("РЕСЕПШН · RECEPTION", "#ffd23d", "#1f2a26", 512, 64, 34) }), 116, 79.4, 44, 6, 6, Math.PI);
+  const rc = G3.personMesh({ kind: "ped", id: 3, col: "#1f4a26", skin: "#e2b08a", hair: "#2b1d14" }, false); rc.g.rotation.y = Math.PI / 2; rc.gun.visible = false; if (rc.umb) rc.umb.visible = false; g.add(rc.g); rc.g.position.set(158, 0, 86);
+  // room doors along the north side, framed with leaves
+  for (const sp of OLYMP_ROOM.spots) if (sp.id === "room") {
+    B.box("#e8e0d0", sp.x, 3, 34, 3, 44, 0); B.box("#7a4a2a", sp.x, 4.8, 22, 1.2, 36, 0); B.box("#c9a14a", sp.x + 7, 5.6, 1.6, 1.2, 1.6, 17);
+    B.plane(B.M("#ffffff", { map: B.X.txt(String(sp.n), "#ffd23d", "#1f2a26", 128, 64, 40) }), sp.x, 5.5, 8, 4, 38, 0);
+    const lamp = B.sph(B.M("#fff4c8", { neon: true }), sp.x - 14, 6, 1.3, 40); lamp.scale.setScalar(1.3);
+    for (let k = 0; k < 9; k++) { const t = (k / 8) * Math.PI; B.sph(k % 2 ? "#5fbf5a" : "#3f8f4a", sp.x + Math.cos(t) * 18, 6, 3.4, 22 + Math.sin(t) * 26, 1, 0.8, 0.8); }
+  }
   const lampM = B.M("#fff4c8", { neon: true });
   for (let x = 48; x < GW; x += 80) { const l = B.sph(lampM, x, GH / 2, 2, (GH / 2) * 1.45 - 8); B.anim((t) => l.scale.setScalar(1.8 + Math.sin(t * 1.5 + x) * 0.25)); }
   B.plane(B.M("#ffffff", { map: B.X.txt("СМОТРОВАЯ · АРАРАТ →", "#1f4a26", "#e8f6e0", 512, 64, 36) }), GW - 70, 2.5, 60, 8, 26, 0);
-  B.plane(B.M("#ffffff", { map: B.X.txt("ВИСЯЧИЕ САДЫ «ОЛИМПИЯ»", "#1f4a26", "#e8f6e0", 512, 64, 32) }), 70, 2.5, 70, 8, 26, 0);
+  B.plane(B.M("#ffffff", { map: B.X.txt("ОТЕЛЬ «ОЛИМПИЯ» ★★★★★", "#1f4a26", "#e8f6e0", 512, 64, 32) }), 70, 2.5, 70, 8, 26, 0);
   // the city far below and Ararat on the horizon (no fog, so the drop reads clearly)
   const far = mk3d(K, OLYMP_ROOM.OX, OLYMP_ROOM.OZ, { nofog: true });
   const DROP = -330, cityT = B.X.ct("olympCity", 256, 256, (c) => { c.fillStyle = "#7a6a5a"; c.fillRect(0, 0, 256, 256); c.fillStyle = "#c98a72"; for (let y = 0; y < 256; y += 64) for (let x = 0; x < 256; x += 64) c.fillRect(x + 8, y + 8, 48, 48); c.fillStyle = "#7f9a52"; c.fillRect(72, 72, 48, 48); });
@@ -2251,8 +2308,11 @@ function drawGarden2D(dpr, W, H) {
   for (let x = 0; x < GW; x += 8) for (const y of [3, GH - 3]) { const j = hsh(x, y, 3); ctx.fillStyle = j > 0.66 ? "#5fbf5a" : j > 0.33 ? "#3f8f4a" : "#2f6f3a"; ctx.beginPath(); ctx.arc(x + 4, y, 5 + j * 2, 0, TAU); ctx.fill(); if (j > 0.8) { ctx.fillStyle = "#ff8fc0"; ctx.beginPath(); ctx.arc(x + 4, y, 1.8, 0, TAU); ctx.fill(); } }
   for (const [x, y, w, h] of OLYMP_ROOM.solids) { ctx.fillStyle = "#b8735a"; ctx.fillRect(x, y, w, h); ctx.fillStyle = "#5fbf5a"; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(x + 6 + i * 11, y + h / 2, 5, 0, TAU); ctx.fill(); } }
   ctx.fillStyle = "#6a4a30"; ctx.fillRect(340, 84, 40, 8);
+  ctx.fillStyle = "#d99a82"; ctx.fillRect(84, 80, 64, 16); ctx.fillStyle = "#1f4a26"; ctx.beginPath(); ctx.arc(116, 92, 4, 0, TAU); ctx.fill();
+  for (const sp of OLYMP_ROOM.spots) if (sp.id === "room") { ctx.fillStyle = save.olympKey === sp.n ? "#ffd23d" : "#7a4a2a"; ctx.fillRect(sp.x - 11, 0, 22, 5); }
   ctx.fillStyle = "#1f4a26"; ctx.font = "bold 10px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillStyle = "#e8f6e0"; ctx.fillText("ЛИФТ", 30, 20); ctx.fillText("АРАРАТ →", GW - 40, 20); ctx.fillText("СКАМЕЙКА", 360, 64);
+  ctx.fillStyle = "#e8f6e0"; ctx.fillText("ЛИФТ", 30, 20); ctx.fillText("АРАРАТ →", GW - 40, 20); ctx.fillText("СКАМЕЙКА", 360, 64); ctx.fillText("РЕСЕПШН", 116, 72);
+  for (const sp of OLYMP_ROOM.spots) if (sp.id === "room") ctx.fillText(String(sp.n), sp.x, 12);
   const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
   if (SUM) drawSummon2D(OX, OZ);
   const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
@@ -3224,6 +3284,8 @@ function drawRoom() {
 }
 function renderHome() {
   const box = $("hmBody"); box.innerHTML = "";
+  if (hmView === "hotel" || hmView === "hroom") return renderHotel(box);
+  $("hmWho").textContent = "ЖК «Нова»";
   $("hmOut").hidden = !!save.home;
   if (!save.home) {
     $("hmTitle").textContent = "Квартира продаётся";
