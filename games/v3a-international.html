@@ -2135,17 +2135,17 @@ function openWish() {
 }
 function renderWishLog() { const ul = $("wishLog"); ul.innerHTML = ""; for (const w of (save.wishes || []).slice(-6).reverse()) ul.appendChild(el("li", null, "✨ " + w)); }
 function wishNumber(t) {
-  const m = t.replace(/\s+(?=\d{3}\b)/g, "").match(/(\d[\d.,]*)\s*(тыс|тысяч|к(?![а-яa-z])|млн|миллион|млрд|миллиард)?/);
+  const m = t.replace(/\s+(?=\d{3}\b)/g, "").match(/(\d[\d.,]*)\s*(тыс|тысяч|к(?![а-яa-z])|млн|миллион|млрд|миллиард|трлн|триллион)?/);
   if (!m) return 0; let n = parseFloat(m[1].replace(/[.,](?=\d{3}\b)/g, "").replace(",", ".")) || 0;
-  const u = m[2] || ""; if (/тыс|к/.test(u)) n *= 1e3; else if (/млрд|миллиард/.test(u)) n *= 1e9; else if (/млн|миллион/.test(u)) n *= 1e6;
+  const u = m[2] || ""; if (/трлн|триллион/.test(u)) n *= 1e12; else if (/млрд|миллиард/.test(u)) n *= 1e9; else if (/млн|миллион/.test(u)) n *= 1e6; else if (/тыс|к/.test(u)) n *= 1e3;
   return n;
 }
 function makeWish(raw) {
   const text = String(raw || "").trim(); if (!text) return;
   const t = text.toLowerCase().replace(/ё/g, "е"), done = [], P = player;
   const has = (re) => re.test(t);
-  if (has(/денег|деньг|богат|миллион|миллиард|доллар|бабл|\$|кэш|налич|зарплат/)) {
-    let n = wishNumber(t); if (!n) n = has(/миллиард/) ? 1e9 : 1e6; n = Math.min(n, 1e9);
+  if (has(/денег|деньг|богат|миллион|миллиард|триллион|трлн|млрд|млн|тысяч|тыс\.|доллар|бакс|бабл|\$|кэш|налич|зарплат/) || /^\s*хочу\s+\d/.test(t)) {
+    let n = wishNumber(t); if (!n) n = has(/триллион|трлн/) ? 1e12 : has(/миллиард|млрд/) ? 1e9 : 1e6; n = Math.min(Math.round(n), 1e15); // up to a quadrillion — any wish fits
     money += n; done.push("+" + fmt(n));
   }
   if (has(/здоров|выздоров|вылеч|жизн|не болеть|сил[ауы]?(?![а-яa-z])/)) { P.hp = 100; done.push("здоровье 100"); }
