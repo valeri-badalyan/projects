@@ -106,6 +106,9 @@ svg { display: block; }
 .who-sub { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .who-sub.on { color: var(--green); }
 .who-sub.typing { color: var(--accent); }
+.vh { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; opacity: 0; }
+label.btn, label.ghost { cursor: pointer; }
+label.btn { display: flex; justify-content: center; align-items: center; gap: 6px; text-align: center; }
 .ghost { border: 0; background: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); flex-shrink: 0; }
 .ghost:hover { background: var(--raise); color: var(--ink); }
 .back { display: none; margin-left: -8px; }
@@ -296,7 +299,7 @@ textarea.input { resize: vertical; min-height: 64px; }
       </div>
       <div class="ctx" id="ctx" hidden></div>
       <div class="c-row" id="cRow">
-        <button class="ghost" id="attachBtn" type="button" aria-label="Выбрать фото из галереи"></button>
+        <label class="ghost" id="attachBtn" for="photoIn" role="button" tabindex="0" aria-label="Выбрать фото из галереи"></label>
         <textarea id="input" rows="1" placeholder="Сообщение" aria-label="Сообщение" maxlength="4000"></textarea>
         <button class="ghost" id="panelBtn" type="button" aria-label="Эмодзи и стикеры" aria-expanded="false"></button>
         <button class="send" id="sendBtn" type="button" aria-label="Отправить"></button>
@@ -310,8 +313,8 @@ textarea.input { resize: vertical; min-height: 64px; }
 <div class="scrim" id="actWrap" hidden><div class="actions" id="acts" role="menu"></div></div>
 <div class="viewer" id="viewer" hidden><img id="viewImg" alt="Фото из чата"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
-<input type="file" id="photoIn" accept="image/*" multiple hidden>
-<input type="file" id="avatarIn" accept="image/*" hidden>
+<input type="file" id="photoIn" class="vh" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+<input type="file" id="avatarIn" class="vh" accept="image/*" tabindex="-1" aria-hidden="true">
 
 <script>
 (() => {
@@ -1083,14 +1086,14 @@ function openGallerySheet(cid) {
   const n = gallery.length;
   openSheet(`${n} ${plural(n, "фото", "фото", "фото")} · ${chatTitle(c)}`, `
     <div style="display:grid;grid-template-columns:repeat(${n === 1 ? 1 : 3},minmax(0,1fr));gap:6px">${gallery.map((g, i) => `<div style="position:relative"><img src="${g.src}" alt="Фото ${i + 1}" style="display:block;width:100%;${n === 1 ? "max-height:320px;object-fit:contain" : "aspect-ratio:1;object-fit:cover"};border-radius:12px;background:var(--raise)"><button class="ghost" type="button" data-rm="${i}" aria-label="Убрать фото ${i + 1}" style="position:absolute;top:4px;right:4px;width:30px;height:30px;border-radius:50%;background:var(--panel);color:var(--ink)">${I.x}</button></div>`).join("")}</div>
-    ${n < 10 ? `<button class="btn sec" type="button" id="gMore">${I.plus.replace('class="ico"', 'class="ico" style="display:inline;vertical-align:-4px;width:18px;height:18px"')} Добавить ещё из галереи</button>` : ""}
+    ${n < 10 ? `<label class="btn sec" id="gMore" for="photoIn" role="button" tabindex="0">${I.plus} Добавить ещё из галереи</label>` : ""}
     <label class="field"><span>Подпись</span><textarea class="input" id="gCap" maxlength="1000" placeholder="Добавьте подпись">${esc(input.value.trim())}</textarea></label>
     <button class="btn" type="button" id="gSend">Отправить ${n > 1 ? n + " фото" : "фото"}</button>`, (b) => {
     b.addEventListener("click", (e) => {
       const rm = e.target.closest("[data-rm]");
       if (rm) { gallery.splice(+rm.dataset.rm, 1); if (gallery.length) openGallerySheet(cid); else closeSheet(); }
     });
-    const more = b.querySelector("#gMore"); if (more) more.addEventListener("click", () => $("#photoIn").click());
+    const more = b.querySelector("#gMore"); if (more) more.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); more.click(); } });
     b.querySelector("#gSend").addEventListener("click", async () => {
       const caption = b.querySelector("#gCap").value.trim().slice(0, 1000), items = gallery.slice();
       gallery = []; sheetClose = null; closeSheet();
@@ -1258,12 +1261,12 @@ function onbStepContacts(fromStart) {
     };
     const fallback = (why) => {
       area.innerHTML = `<p class="note">${esc(why)} Можно загрузить файл контактов (.vcf) — его выгружают из приложения «Контакты» на телефоне — или вписать номера друзей.</p>
-        <button class="btn" type="button" id="obVcf">Загрузить файл контактов (.vcf)</button>
+        <label class="btn" id="obVcf" for="obFile" role="button" tabindex="0">Загрузить файл контактов (.vcf)</label>
         <label class="field"><span>Или номера через запятую или с новой строки</span><textarea class="input" id="obTyped" placeholder="+374 77 123456&#10;+7 912 345 67 89"></textarea></label>
         <button class="btn sec" type="button" id="obCheck">Проверить номера</button>
         <button class="btn sec" type="button" id="obLater2">Позже</button>
-        <input type="file" id="obFile" accept=".vcf,text/vcard,text/x-vcard" hidden>`;
-      area.querySelector("#obVcf").addEventListener("click", () => area.querySelector("#obFile").click());
+        <input type="file" id="obFile" class="vh" accept=".vcf,text/vcard,text/x-vcard" tabindex="-1" aria-hidden="true">`;
+      area.querySelector("#obVcf").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } });
       area.querySelector("#obFile").addEventListener("change", async (e) => { const f = e.target.files[0]; if (!f) return; if (f.size > 8e6) { toast("Файл слишком большой"); return; } try { run(parseVCF(await f.text())); } catch (er) { toast("Не удалось прочитать файл"); } });
       area.querySelector("#obCheck").addEventListener("click", () => run(parseTyped(area.querySelector("#obTyped").value)));
       area.querySelector("#obLater2").addEventListener("click", async () => { await saveContactsAsked(); closeSheet(); });
@@ -1497,7 +1500,7 @@ function openProfile() {
   let color = okColor(p.color || COLORS[0]), emoji = p.emoji || "", photo = okImg(p.photo) ? p.photo : "";
   const preview = () => { const el = $("#prAv"); if (el) el.innerHTML = avHTML({ photo, emoji, initials: ($("#prNick") && $("#prNick").value || nameOf(st.me)).slice(0, 2).toUpperCase(), color }, 84, false); };
   openSheet("Мой профиль", `
-    <div class="hero"><div id="prAv"></div><div class="btn-row"><button class="btn sec" type="button" id="prPhoto">Загрузить фото</button>${photo ? `<button class="btn sec" type="button" id="prNoPhoto">Убрать фото</button>` : ""}</div></div>
+    <div class="hero"><div id="prAv"></div><div class="btn-row"><label class="btn sec" id="prPhoto" for="avatarIn" role="button" tabindex="0">Загрузить фото</label>${photo ? `<button class="btn sec" type="button" id="prNoPhoto">Убрать фото</button>` : ""}</div></div>
     <label class="field"><span>Имя в Ayte</span><input class="input" id="prNick" maxlength="24" value="${esc(p.nick || "")}" placeholder="${esc(st.names[st.me] || "Как вас называть")}" autocomplete="off"></label>
     <div class="field"><span>Мой номер телефона</span>${phoneFields("pr", st.myPhone ? st.myPhone.ci : 0, st.myPhone ? st.myPhone.num : "")}<small class="note">По номеру вас находят друзья. Сам номер никому не показывается.</small></div>
     <label class="field"><span>О себе</span><input class="input" id="prBio" maxlength="80" value="${esc(p.bio || "")}" placeholder="Пара слов о себе" autocomplete="off"></label>
@@ -1513,7 +1516,7 @@ function openProfile() {
     b.querySelector("#prCol").addEventListener("click", (e) => { const x = e.target.closest("[data-c]"); if (!x) return; color = x.dataset.c; b.querySelectorAll("#prCol button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); preview(); });
     b.querySelector("#prTheme").addEventListener("click", (e) => { const x = e.target.closest("[data-v]"); if (!x) return; st.theme = x.dataset.v; ls.set("theme", st.theme); applyTheme(); b.querySelectorAll("#prTheme button").forEach((y) => y.setAttribute("aria-pressed", String(y === x))); });
     b.querySelector("#prSound").addEventListener("change", (e) => { st.sound = e.target.checked; ls.set("sound", st.sound); });
-    b.querySelector("#prPhoto").addEventListener("click", () => $("#avatarIn").click());
+    b.querySelector("#prPhoto").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.currentTarget.click(); } });
     const np = b.querySelector("#prNoPhoto"); if (np) np.addEventListener("click", () => { photo = ""; preview(); np.remove(); });
     $("#avatarIn").onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { const r = await compress(f, 192, 24000, true); photo = r.src; emoji = ""; b.querySelectorAll("#prEmo button").forEach((y) => y.setAttribute("aria-pressed", String(y.dataset.e === ""))); preview(); } catch (er) { toast("Не удалось открыть фото"); } };
     b.querySelector("#prSave").addEventListener("click", async () => {
@@ -1619,8 +1622,11 @@ composer.addEventListener("click", async (e) => {
   const am = e.target.closest("[data-am]"); if (am) { closePops(); if (am.dataset.am === "photo") $("#photoIn").click(); else if (am.dataset.am === "draw") { input.value = "Нарисуй "; autoGrow(); updateSend(); input.focus(); input.setSelectionRange(input.value.length, input.value.length); } else openPoll(); }
 });
 $("#panelBtn").addEventListener("click", () => { const open = $("#panel").hidden; closePops(); if (open) { renderPanel(); $("#panel").hidden = false; $("#panelBtn").setAttribute("aria-expanded", "true"); } });
-$("#attachBtn").addEventListener("click", () => {
-  if (st.active !== "ai") { closePops(); $("#photoIn").click(); return; }
+// The paperclip is a <label> for the file input: the tap itself opens the gallery, which in-app browsers allow.
+$("#attachBtn").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#attachBtn").click(); } });
+$("#attachBtn").addEventListener("click", (e) => {
+  if (st.active !== "ai") { closePops(); return; }
+  e.preventDefault();
   const open = $("#attachMenu").hidden; closePops(); if (!open) return;
   $("#attachMenu").innerHTML = st.active === "ai" ? `<button class="menu-item" type="button" data-am="draw">${I.brush}<span>Нарисовать картинку</span></button>`
     : `<button class="menu-item" type="button" data-am="photo">${I.photo}<span>Фото</span></button><button class="menu-item" type="button" data-am="poll">${I.poll}<span>Опрос</span></button>`;
