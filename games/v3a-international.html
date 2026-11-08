@@ -1388,7 +1388,8 @@ const LMS = {
       B.sph(B.M("#ff3dc8", { neon: true }), 128, 128, 4, 342);
       const pts = []; for (let i = 0; i < 360; i++) { const t = Math.random(), a = Math.random() * TAU, y = 70 + t * 265, rr = (96 - (y - 70) * 0.27) * (0.85 + Math.random() * 0.2); pts.push([128 + Math.cos(a) * rr, y - 8, 128 + Math.sin(a) * rr]); } B.sparkle(pts);
     } },
-  dreampalace: { name: "Дворец Снов", info: "здесь живёт Королева Снов, башни светятся всю ночь", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#ff7ad8", h: 300, nofog: true,
+  dreampalace: { name: "Дворец Снов", info: "здесь живёт Королева Снов — заходи через светящиеся ворота", fill: PLAZA_T(), solid: [[0, 0, 4, 3]], mm: "#ff7ad8", h: 300, nofog: true,
+    gen(o) { places.dpalDoor = { x: o.ix * T + 128, y: o.iy * T + 206 }; },
     ground(g, b) { for (let i = 0; i < 40; i++) { g.fillStyle = ["#ff7ad8", "#7af0ff", "#fff07a"][i % 3]; g.beginPath(); g.arc(b.x + hsh(i, 1, 6) * 256, b.y + 200 + hsh(i, 2, 6) * 56, 2.5, 0, TAU); g.fill(); } },
     d2(Q) { Q.box(128, 96, 200, 150, 60, "#9a4ae8", "#7a2ac8"); Q.box(128, 96, 80, 80, 110, "#8a3ad8", "#6a2ab8"); for (const [x, y, h] of [[40, 30, 200], [216, 30, 200], [40, 170, 170], [216, 170, 170]]) Q.cyl(x, y, 14, h, "#ff4fd8", "#c86aff"); Q.cyl(128, 96, 18, 290, "#7af0ff", "#c86aff", 110); },
     d3(B) {
@@ -2278,7 +2279,7 @@ function enterGarden(fromRoom) {
   $("game").classList.add("indoor"); sfx.doorOpen(); if (!fromRoom) toast("Отель «Олимпия» ★★★★★ · висячие сады. Ресепшн рядом, номера — вдоль коридора, смотровая — в конце", 3.5);
   setTimeout(() => tone(523, 523, 0.2, 0.05, "sine"), 200); setTimeout(() => tone(784, 784, 0.3, 0.05, "sine"), 420);
   if (G3.ready && !G3.garden) buildGarden();
-  if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; outerLand(false);
+  if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(false);
 }
 const HOTEL_PRICE = 180, HOTEL_FOOD = 15;
 let hmRoom = 101;
@@ -2288,6 +2289,98 @@ function gardenAct(sp) {
   if (sp.id === "room") { if (save.olympKey === sp.n) return enterHotelRoom(sp.n); hmRoom = sp.n; hmView = "hroom"; renderHome(); showOv("home"); sfx.door(); return; }
   if (sp.id === "bench") { toast("Ты сидишь на скамейке. Шелестят листья, внизу шумит Ереван", 3); tone(660, 990, 0.4, 0.03, "sine"); return; }
   if (sp.id === "view") { big("АРАРАТ", "Вид с висячих садов «Олимпия» · Ереван", "#9fe08a", 3.2); tone(523, 1046, 0.6, 0.04, "sine"); }
+}
+/* ===== the Dream Palace in Snovstol: a throne hall you can walk around ===== */
+const DPW = 480, DPH = 360;
+const DPAL = { RW: DPW, RH: DPH, OX: WORLD + 2600, OZ: WORLD / 2 + 4200,
+  solids: [[196, 6, 88, 46], [70, 110, 20, 20], [150, 110, 20, 20], [310, 110, 20, 20], [390, 110, 20, 20], [70, 240, 20, 20], [150, 240, 20, 20], [310, 240, 20, 20], [390, 240, 20, 20], [212, 168, 56, 56]],
+  spots: [
+    { id: "out", x: DPW / 2, y: DPH - 16, r: 32, label: "ВЫЙТИ", text: "Выйти из дворца" },
+    { id: "queen", x: DPW / 2, y: 84, r: 34, label: "КОРОЛЕВА", text: "Поговорить с Королевой Снов" },
+    { id: "fountain", x: DPW / 2, y: 250, r: 30, label: "ФОНТАН", text: "Испить из Фонтана Снов" },
+    { id: "gallery", x: 34, y: 180, r: 34, label: "КАРТИНЫ", text: "Галерея снов" },
+    { id: "moon", x: DPW - 34, y: 180, r: 34, label: "ЛУНА", text: "Лунное окно" },
+  ] };
+const DREAMS = ["Тебе снится, что Эйфелева башня сделана из сахарной ваты.", "Тебе снится, что Король-сосна поёт колыбельную всему городу.", "Тебе снится полёт над Ереваном на висячем саду «Олимпия».", "Тебе снится, что в Тумосизе материнские платы танцуют вальс.", "Тебе снится матч, где мяч — это луна, а ворота — радуга.", "Тебе снится, что Мона Лиза подмигнула тебе.", "Тебе снится, что Статуя Основателя пошла гулять по Нова-Вэ."];
+function enterPalace() {
+  useRoom("dpal"); player.umbOn = false; if (player.inCar) exitCar(true); if (TV.on) tvSet(-1);
+  indoor = true; player.couch = false; setLocal(DPW / 2, DPH - 44); player.a = -Math.PI / 2;
+  cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.add("indoor"); sfx.doorOpen(); toast("Дворец Снов · тронный зал. Королева ждёт тебя у трона", 3);
+  [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tone(f, f, 0.4, 0.035, "sine"), 150 + i * 140));
+  if (G3.ready && !G3.dpal) buildPalace();
+  for (const k of ["room", "term", "garden", "hroom"]) if (G3[k]) G3[k].g.visible = false;
+  if (G3.dpal) G3.dpal.g.visible = true; outerLand(true);
+}
+function palaceAct(sp) {
+  if (sp.id === "out") return leaveHome();
+  if (sp.id === "queen") { toast("👑 Королева Снов: «Добро пожаловать, путник! В моём королевстве каждое желание сбывается. Загадывай!»", 3.2); setTimeout(openWish, 900); return; }
+  if (sp.id === "fountain") { player.hp = 100; player.boost = Math.max(player.boost || 0, 60); updHud(); [988, 1318, 1568].forEach((f, i) => setTimeout(() => tone(f, f, 0.3, 0.04, "sine"), i * 90)); toast("💧 Вода из Фонтана Снов: здоровье 100 и лёгкость в ногах на минуту", 2.8); return; }
+  if (sp.id === "gallery") { toast("🖼 " + pick(DREAMS), 3.2); tone(660, 880, 0.3, 0.04, "sine"); return; }
+  if (sp.id === "moon") { dayT = 0.72; big("🌙 ЛУННОЕ ОКНО", "Во всей Стране снов наступила звёздная ночь", "#fff07a", 3); }
+}
+function buildPalace() {
+  const K = G3.K, THREE = K.THREE, B = mk3d(K, DPAL.OX, DPAL.OZ, {}), g = B.g, HT = 120;
+  const fl = B.X.ct("dpalFloor", 128, 128, (c) => { c.fillStyle = "#2a0e44"; c.fillRect(0, 0, 128, 128); c.fillStyle = "#3a1458"; c.fillRect(0, 0, 64, 64); c.fillRect(64, 64, 64, 64); c.fillStyle = "rgba(255,122,216,.55)"; for (const [x, y] of [[32, 32], [96, 96]]) { c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 ? 4 : 10; c.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } c.fill(); } });
+  fl.wrapS = fl.wrapT = THREE.RepeatWrapping; fl.repeat.set(DPW / 64, DPH / 64);
+  B.floor(B.M("#ffffff", { map: fl }), DPW / 2, DPH / 2, DPW, DPH, 0.3);
+  B.floor("#ff4fd8", DPW / 2, DPH / 2 + 40, 44, DPH - 80, 0.6); B.floor("#ffd6f4", DPW / 2, DPH / 2 + 40, 34, DPH - 80, 0.7);
+  const wall = B.M("#7a2ac8", { glow: "#9a4ae8" }), neon = B.M("#7af0ff", { neon: true }), pink = B.M("#ff7ad8", { neon: true }), gold = B.M("#fff07a", { neon: true });
+  B.box(wall, -4, DPH / 2, 8, DPH, HT, 0); B.box(wall, DPW + 4, DPH / 2, 8, DPH, HT, 0); B.box(wall, DPW / 2, -4, DPW, 8, HT, 0);
+  B.box(wall, (DPW / 2 - 24) / 2, DPH + 4, DPW / 2 - 24, 8, HT, 0); B.box(wall, DPW - (DPW / 2 - 24) / 2, DPH + 4, DPW / 2 - 24, 8, HT, 0); B.box(wall, DPW / 2, DPH + 4, 48, 8, HT - 50, 50);
+  B.torus(pink, DPW / 2, DPH + 0.5, 24, 1.6, 26, 0, 0, Math.PI, 20);
+  B.box("#1a0630", DPW / 2, DPH / 2, DPW + 16, DPH + 16, 2, HT);
+  for (const [x1, z1, x2, z2] of [[0, 1, DPW, 1], [1, 0, 1, DPH], [DPW - 1, 0, DPW - 1, DPH]]) B.beam(pink, x1, 4, z1, x2, 4, z2, 1.2);
+  const stars = []; for (let i = 0; i < 160; i++) stars.push([hsh(i, 1, 4) * DPW, HT - 1.5, hsh(i, 2, 4) * DPH, 1 + hsh(i, 3, 4) * 1.4, 1, 1 + hsh(i, 3, 4) * 1.4]); B.inst(B.M("#fff4c8", { neon: true }), stars, K.SPH);
+  // columns with neon rings
+  for (const [x, z, w, d] of DPAL.solids.slice(1, 9)) { const cx = x + w / 2, cz = z + d / 2; B.cyl("#9a4ae8", cx, cz, 9, 10, HT, 0, 16); for (const y of [20, 60, 100]) B.torus(y === 60 ? neon : pink, cx, cz, 10.5, 1.1, y, Math.PI / 2, 0, TAU, 24); }
+  // the throne on steps, with a crescent back
+  for (let i = 0; i < 3; i++) B.box("#c86aff", DPW / 2, 30 - i * 2, 88 - i * 16, 46 - i * 8, 4, i * 4);
+  B.box("#ff4fd8", DPW / 2, 24, 30, 20, 12, 12); B.box("#ff4fd8", DPW / 2, 14, 34, 4, 46, 12);
+  const back = B.torus(gold, DPW / 2, 12, 18, 2.4, 58, 0, 0, Math.PI * 1.4, 24); back.rotation.z = -0.2 * Math.PI;
+  B.sph(gold, DPW / 2, 12, 4, 80);
+  // the Queen of Dreams
+  const qn = G3.personMesh({ kind: "ped", id: 7, col: "#ff7ad8", skin: "#f1c7a5", hair: "#fff0fa" }, false);
+  qn.gun.visible = false; if (qn.umb) qn.umb.visible = false; qn.g.rotation.y = -Math.PI / 2; qn.g.position.set(DPW / 2, 12, 40); g.add(qn.g);
+  B.cone("#ff9ae0", DPW / 2, 40, 9, 14, 12, 18); B.cone(gold, DPW / 2, 40, 3.6, 4, 31.5, 8); B.torus(gold, DPW / 2, 40, 3, 0.6, 31.6, Math.PI / 2, 0, TAU, 12);
+  B.anim((t) => { qn.aR.rotation.z = 0.4 + Math.sin(t * 1.6) * 0.35; });
+  // the Fountain of Dreams
+  B.cyl("#c86aff", DPW / 2, 196, 28, 30, 8, 0, 24); B.cyl(B.M("#ff9ae0", { neon: true, op: 0.7 }), DPW / 2, 196, 25, 25, 1, 7.5, 24);
+  B.cyl("#9a4ae8", DPW / 2, 196, 3, 5, 24, 8, 10); B.cyl("#c86aff", DPW / 2, 196, 12, 10, 3, 30, 16);
+  const orb = B.sph(B.M("#7af0ff", { neon: true }), DPW / 2, 196, 5, 44); B.anim((t) => { orb.position.y = 44 + Math.sin(t * 2) * 4; orb.scale.setScalar(5 + Math.sin(t * 3) * 0.8); });
+  const fpts = []; for (let i = 0; i < 120; i++) { const a = Math.random() * TAU, r = Math.random() * 26; fpts.push([DPW / 2 + Math.cos(a) * r, 10 + Math.random() * 50, 196 + Math.sin(a) * r]); } B.sparkle(fpts);
+  // the dream gallery (west) and the moon window (east)
+  const pics = [["ПАРИЖ ВО СНЕ", "#ff7ad8"], ["СНЕЖНЫЙ РИО", "#7af0ff"], ["ЛУННЫЙ ЕРЕВАН", "#fff07a"]];
+  pics.forEach(([t, c], i) => { const z = 110 + i * 70; B.box("#fff07a", 1.5, z, 2, 50, 36, 34); B.plane(B.M("#ffffff", { map: B.X.txt(t, c, "#2a0e44", 512, 256, 46) }), 3, z, 44, 30, 37, Math.PI / 2); });
+  const moonDisc = new THREE.Mesh(new THREE.CircleGeometry(34, 40), new THREE.MeshBasicMaterial({ color: 0x14062a })); moonDisc.position.set(DPW - 1.5, 60, 180); moonDisc.rotation.y = -Math.PI / 2; g.add(moonDisc);
+  const cres = B.torus(gold, DPW - 2.5, 180, 22, 6, 60, 0, -Math.PI / 2, Math.PI * 1.2, 32); cres.rotation.z = 0.5;
+  B.torus(pink, DPW - 2, 180, 35, 1.6, 60, 0, -Math.PI / 2, TAU, 40);
+  // floating stars all over the hall, and soft coloured light
+  const pts = []; for (let i = 0; i < 260; i++) pts.push([10 + Math.random() * (DPW - 20), 20 + Math.random() * (HT - 30), 10 + Math.random() * (DPH - 20)]); B.sparkle(pts);
+  const l1 = new THREE.PointLight(0xff7ad8, 1.1, 520, 1.3); l1.position.set(DPW / 2, 90, DPH / 2); g.add(l1);
+  const l2 = new THREE.PointLight(0x7af0ff, 0.7, 380, 1.4); l2.position.set(DPW / 2, 60, 60); g.add(l2);
+  G3.dpal = { g, tick: () => {} };
+  G3.dpal.g.visible = indoor && INT === "dpal";
+}
+function drawPalace2D(dpr, W, H) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#14062a"; ctx.fillRect(0, 0, W, H);
+  const top = W < 640 ? 196 : 150, k = Math.min((W - 32) / (DPW + 16), (H - top - 110) / (DPH + 16), 2.2), ox = (W - DPW * k) / 2, oy = Math.max(top, (H - DPH * k) / 2);
+  ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  R(0, 0, DPW, DPH, "#2a0e44"); ctx.fillStyle = "#3a1458"; for (let y = 0; y < DPH; y += 32) for (let x = (y / 32) % 2 ? 32 : 0; x < DPW; x += 64) ctx.fillRect(x, y, 32, 32);
+  R(-8, -8, DPW + 16, 8, "#7a2ac8"); R(-8, 0, 8, DPH, "#7a2ac8"); R(DPW, 0, 8, DPH, "#7a2ac8"); R(-8, DPH, DPW / 2 - 16, 8, "#7a2ac8"); R(DPW / 2 + 24, DPH, DPW / 2 - 16, 8, "#7a2ac8");
+  R(DPW / 2 - 22, 60, 44, DPH - 60, "#ff4fd8"); R(DPW / 2 - 17, 60, 34, DPH - 60, "#ffd6f4");
+  R(196, 6, 88, 46, "#c86aff"); R(DPW / 2 - 15, 14, 30, 20, "#ff4fd8"); ctx.fillStyle = "#fff07a"; ctx.beginPath(); ctx.arc(DPW / 2, 40, 6, 0, TAU); ctx.fill();
+  for (const [x, z, w, d] of DPAL.solids.slice(1, 9)) { ctx.fillStyle = "#9a4ae8"; ctx.beginPath(); ctx.arc(x + w / 2, z + d / 2, 10, 0, TAU); ctx.fill(); ctx.strokeStyle = "#7af0ff"; ctx.lineWidth = 2; ctx.stroke(); }
+  ctx.fillStyle = "#c86aff"; ctx.beginPath(); ctx.arc(DPW / 2, 196, 30, 0, TAU); ctx.fill(); ctx.fillStyle = "#ff9ae0"; ctx.beginPath(); ctx.arc(DPW / 2, 196, 24, 0, TAU); ctx.fill(); ctx.fillStyle = "#7af0ff"; ctx.beginPath(); ctx.arc(DPW / 2, 196, 5 + Math.sin(now * 3), 0, TAU); ctx.fill();
+  for (let i = 0; i < 3; i++) R(0, 88 + i * 70, 4, 44, "#fff07a");
+  ctx.fillStyle = "#fff07a"; ctx.beginPath(); ctx.arc(DPW - 4, 180, 30, -Math.PI / 2, Math.PI / 2); ctx.fill();
+  ctx.fillStyle = "#ffd6f4"; for (let i = 0; i < 40; i++) { const a = (Math.sin(now * 2 + i) + 1) / 2; ctx.globalAlpha = 0.3 + a * 0.6; ctx.fillRect(hsh(i, 1, 4) * DPW, hsh(i, 2, 4) * DPH, 2, 2); } ctx.globalAlpha = 1;
+  ctx.fillStyle = "#ffd6f4"; ctx.font = "bold 11px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const [t, x, y] of [["ТРОН КОРОЛЕВЫ СНОВ", DPW / 2, 64], ["ФОНТАН СНОВ", DPW / 2, 236], ["ГАЛЕРЕЯ", 40, 74], ["ЛУНА", DPW - 40, 140], ["ВЫХОД", DPW / 2, DPH + 14]]) ctx.fillText(t, x, y);
+  const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#7af0ff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
+  if (SUM) drawSummon2D(OX, OZ);
+  const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
 }
 /* ===== a walk-in hotel room in «Olympia» ===== */
 const HW = 300, HH2 = 220;
@@ -2306,7 +2399,7 @@ function enterHotelRoom(n) {
   cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("game").classList.add("indoor"); sfx.doorOpen(); toast("Номер " + n + " · отель «Олимпия». Кровать, ванна, мини-бар и окно на Арарат", 3);
   if (G3.ready && !G3.hroom) buildHotelRoom();
-  for (const k of ["room", "term", "garden"]) if (G3[k]) G3[k].g.visible = false;
+  for (const k of ["room", "term", "garden", "dpal"]) if (G3[k]) G3[k].g.visible = false;
   if (G3.hroom) G3.hroom.g.visible = true; outerLand(true);
 }
 function hroomAct(sp) {
@@ -2506,7 +2599,7 @@ function drawGarden2D(dpr, W, H) {
 }
 function useRoom(kind) {
   if (!HOME_ROOM.solids) { HOME_ROOM.solids = ROOM_SOLIDS; HOME_ROOM.spots = ROOM_SPOTS; }
-  const R = kind === "air" ? TERM_ROOM : kind === "olymp" ? OLYMP_ROOM : kind === "hroom" ? HROOM : HOME_ROOM; INT = kind;
+  const R = kind === "air" ? TERM_ROOM : kind === "olymp" ? OLYMP_ROOM : kind === "hroom" ? HROOM : kind === "dpal" ? DPAL : HOME_ROOM; INT = kind;
   RW = R.RW; RH = R.RH; OX = R.OX; OZ = R.OZ; ROOM_SOLIDS = R.solids; ROOM_SPOTS = R.spots;
 }
 function enterTerminal() {
@@ -2518,7 +2611,7 @@ function enterTerminal() {
   $("game").classList.add("indoor"); sfx.doorOpen(); toast(CITY.village ? "Автостанция Нова-Э" : "Терминал аэропорта · " + CITY.name, 1.8);
   setTimeout(() => tone(660, 660, 0.25, 0.06, "sine"), 300); setTimeout(() => tone(880, 880, 0.35, 0.06, "sine"), 560);
   if (G3.ready && !G3.term) buildTerm();
-  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; outerLand(true);
+  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
 }
 function termAct(sp) {
   if (sp.id === "door") return leaveHome();
@@ -3948,23 +4041,24 @@ function enterHome() {
   if (G3.ready && !G3.room) G3.buildRoom();
   if (G3.room) G3.room.g.visible = true;
   if (G3.term) G3.term.g.visible = false;
-  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; outerLand(true);
+  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
 }
 function leaveHome() {
   commHush();
   indoor = false; player.couch = false;
-  const q = INT === "air" ? places.air : INT === "olymp" || INT === "hroom" ? places.olympDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "olymp" || INT === "hroom" ? "olymp" + Math.max(0, (places.olympDoors || []).indexOf(places.olympDoor)) : "home";
+  const q = INT === "air" ? places.air : INT === "olymp" || INT === "hroom" ? places.olympDoor : INT === "dpal" ? places.dpalDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "dpal" ? "dpal" : INT === "olymp" || INT === "hroom" ? "olymp" + Math.max(0, (places.olympDoors || []).indexOf(places.olympDoor)) : "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
   if (G3.room) G3.room.g.visible = false;
   if (G3.term) G3.term.g.visible = false;
-  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; outerLand(true);
+  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
 }
 function roomAct(sp) {
   if (INT === "air") return termAct(sp);
   if (INT === "olymp") return gardenAct(sp);
   if (INT === "hroom") return hroomAct(sp);
+  if (INT === "dpal") return palaceAct(sp);
   if (sp.id === "door") return leaveHome();
   if (sp.id === "bed") { hmView = "sleep"; renderHome(); showOv("home"); return; }
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
@@ -4009,6 +4103,7 @@ function drawIndoor2D(dpr, W, H) {
   if (INT === "air") return drawTerm2D(dpr, W, H);
   if (INT === "olymp") return drawGarden2D(dpr, W, H);
   if (INT === "hroom") return drawHroom2D(dpr, W, H);
+  if (INT === "dpal") return drawPalace2D(dpr, W, H);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
   let top = W < 640 ? 196 : 150; // clear the button column on phones
   if (TV.on) {
@@ -4724,6 +4819,7 @@ function buy(sh, it) {
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
+if (places.dpalDoor) SHOPS.push({ id: "dpal", col: "#ff7ad8", hex: 0xff7ad8, label: "⇧", at: () => places.dpalDoor, open: () => enterPalace() });
 if (places.olympDoors) places.olympDoors.forEach((d, i) => SHOPS.push({ id: "olymp" + i, col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => d, open: () => { places.olympDoor = d; enterGarden(); } }));
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
 for (const sh of SHOPS) if (sh.items) for (const it of sh.items) if (ITEMS[it.id]) { it.act = () => invAdd(it.id); it.bag = true; it.info += " · в сумку"; }
@@ -7153,7 +7249,7 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (indoor && (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : G3.room)) {
+  if (indoor && (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : G3.room)) {
     const L = toLocal(), cam = G3.camera;
     cam3.dragT = Math.max(0, cam3.dragT - dt);
     if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; } if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
@@ -7166,7 +7262,7 @@ function render3d(t) {
     if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
     const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
     cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
-    (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : G3.room).tick(dt);
+    (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : G3.room).tick(dt);
   } else if (state === "lift" && LIFT && places.statue) {
     const S = places.statue, a = Math.atan2(WORLD / 2 - S.y, WORLD / 2 - S.x) + Math.sin(LIFT.ang) * 1.3, h = 30 + LIFT.h * 7.4, d = 300 + LIFT.h * 7;
     cam.position.set(S.x + Math.cos(a) * 60, h, S.y + Math.sin(a) * 60); cam.lookAt(S.x + Math.cos(a) * d, 10, S.y + Math.sin(a) * d);
@@ -7253,7 +7349,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
