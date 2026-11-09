@@ -737,6 +737,8 @@ const CITIES = [
     lang: "en", style: "comic", river: "Река Героев", sea: ["s", "e"], land: "#6a8a5a", bus: "#e8433a", stadium: "Арена Героев", ring: { col: "#2a6fd6", glow: "#ffd23d" }, food: ["Супер-бургер героя", "SB"], lms: ["herotower", "heroplaza", "comicstreet", "meteor"], back: ["heroflyers"], tz: -4 },
   { id: "tac", name: "Тактикград", country: "Тактическая республика", flag: "🎯", lat: 31, lon: 34, seed: 13101, roofs: ["#c8a870", "#b89660", "#d8c08a", "#a88850", "#cdb48a", "#9a7a4a"], tall: 0.75, rain: 0.03, walk: "#d6c08e", grass: "#c8b070", water: "#3a7a8a", taxi: "#e8a83a", slogan: "Город тактиков: пустынные кварталы, ящики и арки, точки A и B. Заложи бомбу и удержи точку 40 секунд!",
     lang: "en", style: "sand", sea: [], land: "#d9c08a", sand: "#ecd9a8", bus: "#c8a870", stadium: "Арена Раундов", ring: { col: "#c8a870", glow: "#ff9a3d" }, food: ["Шаурма тактика", "ШТ"], lms: ["tacA", "tacB", "tacT", "tacCT", "tacArch"], tz: 3 },
+  { id: "aqua", name: "Ракушкино", country: "Подводное королевство", flag: "🐚", lat: -15, lon: -150, seed: 13201, roofs: ["#ff8a7a", "#ffb38a", "#7ad8d0", "#f2d0a8", "#c89af0", "#ff9ac8"], tall: 0.9, rain: 0, walk: "#e8d8b0", grass: "#5aa88a", water: "#2a8aa8", taxi: "#ffd23d", slogan: "Подводный город на дне океана: дома из кораллов и ракушек, между ними плавают рыбы, а вверх поднимаются пузырьки.",
+    underwater: true, style: "coral", sea: [], land: "#d8c89a", sand: "#f0e0b0", bus: "#ff8a7a", stadium: "Коралловая арена", ring: { col: "#7ad8d0", glow: "#ffd23d" }, food: ["Бургер из водорослей", "БВ"], lms: ["shipwreck", "coralreef", "jellyfield", "pearlclam"], back: ["fishschool", "bubbles"], tree: "kelp", sky: ["#3aa8c8", "#1a6a9a", "#06223a"], hemi: "#c8f4ff", hemiGround: "#2a6a7a", sunCol: "#d8fbff", tz: -10 },
   { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
     dream: true, via: "sleep", style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["kingpine", "dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
@@ -942,6 +944,58 @@ const LMS = {
       B.box(t, 128, 32, 30, 30, 110, 0, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#d99a82") }), 128, 32, 31, 31, 16, 84); B.box("#c98a72", 128, 32, 20, 20, 14, 110); B.pyr("#b8735a", 128, 32, 20, 20, 12, 124);
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
+    } },
+  shipwreck: { name: "Затонувший галеон", info: "старый корабль лежит на дне уже 300 лет, в трюме — сундук с золотом", fill: PLAZA_T(), solid: [[0, 1, 4, 2]], mm: "#8a5a3a", h: 120,
+    ground(g, b) { g.fillStyle = "rgba(240,224,176,.6)"; g.beginPath(); g.ellipse(b.x + 128, b.y + 128, 130, 70, 0, 0, TAU); g.fill(); },
+    d2(Q) { Q.box(128, 128, 220, 70, 40, "#6a4a2a", "#4a3018"); Q.cyl(90, 128, 5, 110, "#5a3a20", "#4a3018", 40); Q.cyl(170, 128, 5, 80, "#5a3a20", "#4a3018", 40); Q.box(200, 128, 18, 14, 50, "#c9a14a", "#8a6a2a", 40); },
+    d3(B) {
+      const wood = B.M("#6a4a2a"), dark = B.M("#4a3018"), hull = new B.THREE.Group(); hull.position.set(128, 0, 128); hull.rotation.set(0, 0.2, 0.28); B.g.add(hull);
+      const hb = (m, x, y, z, w, h, d) => { const me = new B.THREE.Mesh(B.K.BOX, m); me.scale.set(w, h, d); me.position.set(x, y, z); me.castShadow = true; hull.add(me); return me; };
+      hb(wood, 0, 16, 0, 200, 30, 60); hb(dark, 0, 32, 0, 190, 4, 56); hb(wood, 100, 26, 0, 30, 40, 44); hb(wood, -96, 30, 0, 40, 46, 56);
+      for (let i = 0; i < 6; i++) hb(dark, -60 + i * 24, 18, 30.5, 8, 8, 1);
+      const m1 = hb(dark, -30, 80, 0, 6, 100, 6); m1.rotation.z = 0.15; const m2 = hb(dark, 50, 60, 0, 5, 56, 5); m2.rotation.z = -0.5;
+      const sail = new B.THREE.Mesh(new B.THREE.PlaneGeometry(50, 40), B.M("#d8ccb0", { ds: true, op: 0.85 })); sail.position.set(-30, 90, 4); hull.add(sail);
+      B.anim((t) => { sail.rotation.y = Math.sin(t * 0.8) * 0.25; });
+      B.box(B.M("#8a5a2a"), 200, 190, 22, 14, 12, 0); B.box(B.M("#c9a14a", { glow: "#ffd23d" }), 200, 190, 22, 14, 3, 12);
+      const coins = []; for (let i = 0; i < 30; i++) coins.push([190 + Math.random() * 24, 1 + Math.random() * 4, 180 + Math.random() * 22, 2.4, 0.6, 2.4]); B.inst(B.M("#ffd23d", { glow: "#ffd23d" }), coins);
+      const glow = B.sph(B.M("#ffe8a0", { neon: true, op: 0.35 }), 200, 190, 14, 16); B.anim((t) => glow.scale.setScalar(12 + Math.sin(t * 2.5) * 2));
+      for (let i = 0; i < 12; i++) B.sph(i % 2 ? "#5aa88a" : "#2f8a4a", 30 + i * 18, 70 + (i % 3) * 60, 5 + (i % 3) * 2, 2, 1, 0.5, 1);
+    } },
+  coralreef: { name: "Коралловый риф", info: "самые яркие кораллы океана, тут живут тысячи рыбок", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#ff7a6a", h: 110,
+    d2(Q) { const c = ["#ff7a6a", "#ffd23d", "#c89af0", "#7ad8d0", "#ff9ac8"]; for (let i = 0; i < 14; i++) Q.circ(70 + (i % 4) * 38 + (i % 2) * 10, 70 + Math.floor(i / 4) * 38, 12 + (i % 3) * 4, 40 + (i % 5) * 14, c[i % 5]); },
+    d3(B) {
+      const c = ["#ff7a6a", "#ffd23d", "#c89af0", "#7ad8d0", "#ff9ac8", "#ff5a4a"];
+      for (let i = 0; i < 18; i++) {
+        const x = 60 + (i % 5) * 34 + (i % 2) * 8, z = 60 + Math.floor(i / 5) * 38, m = B.M(c[i % c.length], { glow: c[i % c.length] }), kind = i % 3;
+        if (kind === 0) { B.sph(m, x, z, 14 + (i % 3) * 3, 8, 1, 0.75, 1); } // brain coral
+        else if (kind === 1) { for (let k = 0; k < 5; k++) { const br = B.beam(m, x, 0, z, x + Math.cos(k * 1.3) * 14, 30 + k * 8, z + Math.sin(k * 1.3) * 14, 3); B.sph(m, x + Math.cos(k * 1.3) * 14, z + Math.sin(k * 1.3) * 14, 4, 30 + k * 8); } } // branch coral
+        else { const an = []; for (let k = 0; k < 10; k++) an.push(B.box(m, x + Math.cos(k) * 4, z + Math.sin(k) * 4, 1.6, 1.6, 22, 0)); B.anim((t) => an.forEach((a, k) => (a.rotation.x = Math.sin(t * 2 + k + i) * 0.3))); } // anemone
+      }
+      for (let i = 0; i < 6; i++) B.half("#e8e0d0", 40 + i * 36, 220, 6, 0);
+    } },
+  jellyfield: { name: "Поле медуз", info: "светящиеся медузы медленно парят над песком", fill: PLAZA_T(), solid: [], mm: "#ff7ad8", h: 160, nofog: true,
+    d2(Q) { for (let i = 0; i < 9; i++) Q.circ(50 + (i % 3) * 78, 50 + Math.floor(i / 3) * 78, 14, 90 + (i % 3) * 20, ["#ff7ad8", "#7af0ff", "#c89aff"][i % 3]); },
+    d3(B) {
+      for (let i = 0; i < 12; i++) {
+        const col = ["#ff7ad8", "#7af0ff", "#c89aff", "#fff07a"][i % 4], g = new B.THREE.Group(), x = 30 + (i % 4) * 66, z = 40 + Math.floor(i / 4) * 80, y0 = 50 + (i % 5) * 22;
+        const bell = new B.THREE.Mesh(B.K.HEMI, B.M(col, { neon: true, op: 0.7 })); bell.scale.set(14, 12, 14); g.add(bell);
+        const tent = []; for (let k = 0; k < 6; k++) { const tt = new B.THREE.Mesh(B.K.BOX, B.M(col, { neon: true, op: 0.55 })); tt.scale.set(0.6, 26, 0.6); tt.position.set(Math.cos(k) * 7, -13, Math.sin(k) * 7); g.add(tt); tent.push(tt); }
+        g.position.set(x, y0, z); B.g.add(g);
+        B.anim((t) => { g.position.y = y0 + Math.sin(t * 0.8 + i) * 14; bell.scale.y = 12 + Math.sin(t * 2.4 + i) * 2.5; tent.forEach((tt, k) => (tt.rotation.x = Math.sin(t * 2 + k + i) * 0.25)); });
+      }
+    } },
+  pearlclam: { name: "Гигантская жемчужница", info: "огромная раковина медленно открывается, внутри — светящаяся жемчужина", fill: PLAZA_T(), solid: [[1, 1, 2, 2]], mm: "#f2f2ff", h: 90,
+    d2(Q) { Q.circ(128, 128, 70, 30, "#c8a0d0"); Q.circ(128, 128, 22, 50, "#ffffff"); },
+    d3(B) {
+      const shell = B.M("#d8b0e0", { ds: true }), inner = B.M("#ffe8f4", { glow: "#ffd0f0" });
+      const bottom = B.add(B.K.HEMI, shell, 128, 22, 128); bottom.scale.set(66, 22, 66); bottom.rotation.x = Math.PI;
+      B.cyl(inner, 128, 128, 60, 60, 2, 20, 32);
+      const pivot = new B.THREE.Group(); pivot.position.set(128, 22, 62); B.g.add(pivot);
+      const top = new B.THREE.Mesh(B.K.HEMI, shell); top.scale.set(66, 30, 66); top.position.set(0, 0, 66); pivot.add(top);
+      for (let k = 0; k < 9; k++) { const r = B.beam("#b890c8", 128 + Math.cos(-Math.PI + (k / 8) * Math.PI) * 60, 22, 128, 128, 22, 128, 1.2); }
+      const pearl = B.sph(B.M("#ffffff", { neon: true }), 128, 128, 16, 40);
+      const halo = B.sph(B.M("#fff0fa", { neon: true, op: 0.3 }), 128, 128, 26, 40);
+      B.anim((t) => { const o = (Math.sin(t * 0.5) + 1) / 2; pivot.rotation.x = -0.1 - o * 0.7; halo.scale.setScalar(24 + o * 8); });
     } },
   tacA: { name: "Точка A", info: "здесь закладывают бомбу: встань на метку A и держи 3 секунды", fill: PLAZA_T(), solid: [[0, 0, 1, 1], [3, 3, 1, 1]], mm: "#e8433a", h: 60,
     gen(o) { places.tacA = { x: o.ix * T + 128, y: o.iy * T + 128 }; },
@@ -1700,6 +1754,7 @@ function tree2d(t) {
   if (t.kind === "palm") { g.fillStyle = "rgba(0,0,0,.22)"; g.beginPath(); g.arc(t.x + 8, t.y + 8, 15, 0, TAU); g.fill(); g.strokeStyle = "#3f8a3a"; g.lineWidth = 4; g.lineCap = "round"; for (let k = 0; k < 7; k++) { const a = (k * TAU) / 7 + t.hue * 3; g.beginPath(); g.moveTo(t.x, t.y); g.quadraticCurveTo(t.x + Math.cos(a) * 12, t.y + Math.sin(a) * 12 - 4, t.x + Math.cos(a) * 19, t.y + Math.sin(a) * 19); g.stroke(); } g.lineCap = "butt"; g.fillStyle = "#6b4a32"; g.beginPath(); g.arc(t.x, t.y, 3, 0, TAU); g.fill(); return true; }
   if (t.kind === "pine") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 9, t.y + 9, t.r * 1.3, 0, TAU); g.fill(); g.fillStyle = "#2f5a2f"; g.beginPath(); g.ellipse(t.x, t.y, t.r * 1.35, t.r * 1.2, t.hue * 3, 0, TAU); g.fill(); g.fillStyle = "rgba(255,255,255,.08)"; g.beginPath(); g.arc(t.x - 4, t.y - 4, t.r * 0.6, 0, TAU); g.fill(); return true; }
   if (t.kind === "pixel") { g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(t.x - 8, t.y - 8, 20, 20); g.fillStyle = "#1aff8a"; g.fillRect(t.x - 11, t.y - 11, 22, 22); g.fillStyle = "#0a8a4a"; for (let k = 0; k < 4; k++) g.fillRect(t.x - 11 + (k % 2) * 11, t.y - 11 + (k >> 1) * 11, 5, 5); return true; }
+  if (t.kind === "kelp") { g.strokeStyle = t.hue < 0.5 ? "#2f8a4a" : "#4aa85a"; g.lineWidth = 4; g.lineCap = "round"; for (let k = 0; k < 3; k++) { g.beginPath(); g.moveTo(t.x + (k - 1) * 5, t.y + 6); for (let s2 = 1; s2 <= 5; s2++) g.lineTo(t.x + (k - 1) * 5 + Math.sin(now * 1.5 + s2 + t.hue * 9 + k) * 4, t.y + 6 - s2 * 5); g.stroke(); } return true; }
   if (t.kind === "hay") { g.fillStyle = "rgba(0,0,0,.2)"; g.beginPath(); g.arc(t.x + 5, t.y + 5, 13, 0, TAU); g.fill(); g.fillStyle = "#e0c060"; g.beginPath(); g.arc(t.x, t.y, 13, 0, TAU); g.fill(); g.strokeStyle = "rgba(120,90,30,.5)"; g.lineWidth = 1.5; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(t.x, t.y, 3 + k * 2, 0, TAU); g.stroke(); } return true; }
   if (t.kind === "candy") { const c = ["#ff7ad8", "#c88aff", "#7af0e0", "#ffb0e8"][(t.hue * 4) | 0]; g.fillStyle = "rgba(80,0,80,.25)"; g.beginPath(); g.arc(t.x + 6, t.y + 6, t.r, 0, TAU); g.fill(); g.fillStyle = c; g.beginPath(); g.arc(t.x, t.y, t.r, 0, TAU); g.fill(); g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 2; g.beginPath(); g.arc(t.x, t.y, t.r * 0.55, 0, TAU * 0.8); g.stroke(); return true; }
   if (t.kind === "sakura" || t.kind === "apple") { g.fillStyle = "rgba(0,0,0,.25)"; g.beginPath(); g.arc(t.x + 6, t.y + 6, t.r, 0, TAU); g.fill(); g.fillStyle = t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"; g.beginPath(); g.arc(t.x, t.y, t.r, 0, TAU); g.fill(); if (t.kind === "apple") { g.fillStyle = "#d8302a"; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(t.x + Math.cos(k * 1.7) * t.r * 0.6, t.y + Math.sin(k * 1.7) * t.r * 0.6, 2, 0, TAU); g.fill(); } } else { g.fillStyle = "rgba(255,255,255,.35)"; g.beginPath(); g.arc(t.x - t.r * 0.3, t.y - t.r * 0.3, t.r * 0.45, 0, TAU); g.fill(); } return true; }
@@ -1721,6 +1776,12 @@ function tree3d(K, t) {
   }
   if (t.kind === "pine") { add(K.TRUNK, mat("#6b4a32"), t.x, 20, t.y).scale.set(0.8, 2, 0.8); const c = add(K.SPH, mat("#2f5a2f"), t.x, 44, t.y); c.scale.set(t.r * 1.5, t.r * 0.45, t.r * 1.4); return true; }
   if (t.kind === "pixel") { add(K.BOX, mat("#3dd8ff"), t.x, 9, t.y).scale.set(3, 18, 3); const c = add(K.BOX, K.pixMat || (K.pixMat = new THREE.MeshLambertMaterial({ color: 0x1aff8a, emissive: 0x0aff6a, emissiveIntensity: 0.6 })), t.x, 26, t.y); c.scale.setScalar(t.r * 1.4); c.rotation.y = t.hue * 3; return true; }
+  if (t.kind === "kelp") {
+    const m = mat(t.hue < 0.5 ? "#2f8a4a" : "#4aa85a"), segs = [];
+    for (let k = 0; k < 3; k++) { const bx = t.x + (k - 1) * 4, bz = t.y + ((k * 7) % 5) - 2; for (let s2 = 0; s2 < 6; s2++) { const seg = add(K.BOX, m, bx, 5 + s2 * 9, bz); seg.scale.set(2.4, 9.5, 1); segs.push([seg, s2, k]); } }
+    K.anims.push((tt) => { for (const [seg, s2, k] of segs) { seg.rotation.z = Math.sin(tt * 1.3 + t.hue * 9 + k) * 0.06 * (s2 + 1); seg.position.x = t.x + (k - 1) * 4 + Math.sin(tt * 1.3 + t.hue * 9 + k) * s2 * s2 * 0.35; } });
+    return true;
+  }
   if (t.kind === "hay") { const m = mat("#e0c060"); add(K.HAYG || (K.HAYG = new THREE.CylinderGeometry(13, 15, 14, 14)), m, t.x, 7, t.y); add(K.HEMI, m, t.x, 14, t.y).scale.set(13, 10, 13); return true; }
   if (t.kind === "candy") { add(K.TRUNK, mat("#f2f2ff"), t.x, 10, t.y).scale.set(0.6, 1, 0.6); const c = add(K.SPH, K.candyMat[(t.hue * 4) | 0] || mat("#ff7ad8"), t.x, 24 + t.r * 0.6, t.y); c.scale.set(t.r * 1.15, t.r, t.r * 1.15); return true; }
   if (t.kind === "sakura" || t.kind === "apple") { add(K.TRUNK, mat("#5a3a2a"), t.x, 10, t.y); const c = add(K.CROWN, mat(t.kind === "sakura" ? (t.hue < 0.5 ? "#f4b6c8" : "#f8c8d6") : "#4f8a3c"), t.x, 20 + t.r * 0.7, t.y); c.scale.setScalar(t.r * 1.15); if (t.kind === "apple") for (let k = 0; k < 5; k++) add(K.SPH, mat("#d8302a"), t.x + Math.cos(k * 1.3) * t.r * 0.9, 20 + t.r * 0.5, t.y + Math.sin(k * 1.3) * t.r * 0.9).scale.setScalar(1.8); return true; }
@@ -1910,6 +1971,36 @@ const BACK3D = {
     }
     K.anims.push((t) => { const cam = G3.camera; streams.forEach(([pl, sp]) => { pl.material.map.offset.y = (t * sp) % 1; pl.rotation.y = Math.atan2(cam.position.x - pl.position.x, cam.position.z - pl.position.z); }); });
   },
+  fishschool(K) {
+    const THREE = K.THREE, fish = [], cols = ["#ffd23d", "#ff7a3d", "#3dd8ff", "#ff7ad8", "#7af0a0", "#f2f2f2"];
+    const body = new THREE.SphereGeometry(1, 10, 8), tail = new THREE.ConeGeometry(1, 1.6, 4);
+    for (let i = 0; i < 70; i++) {
+      const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: cols[i % cols.length] }), sc = 3 + (i % 4);
+      const b = new THREE.Mesh(body, m); b.scale.set(sc * 1.6, sc, sc * 0.7); g.add(b);
+      const tl = new THREE.Mesh(tail, m); tl.scale.set(sc * 0.9, sc * 1.2, sc * 0.4); tl.rotation.z = Math.PI / 2; tl.position.x = -sc * 2; g.add(tl);
+      const eye = new THREE.Mesh(body, new THREE.MeshBasicMaterial({ color: 0x111111 })); eye.scale.setScalar(sc * 0.18); eye.position.set(sc * 1.1, sc * 0.25, sc * 0.5); g.add(eye);
+      K.scene.add(g); fish.push([g, i, tl]);
+    }
+    // one big slow whale far above the streets
+    const wh = new THREE.Group(), wm = new THREE.MeshLambertMaterial({ color: 0x3a5a7a });
+    const wb = new THREE.Mesh(body, wm); wb.scale.set(110, 34, 40); wh.add(wb);
+    const wt = new THREE.Mesh(tail, wm); wt.scale.set(40, 50, 8); wt.rotation.z = Math.PI / 2; wt.position.x = -130; wh.add(wt);
+    const belly = new THREE.Mesh(body, new THREE.MeshLambertMaterial({ color: 0xd8e8f0 })); belly.scale.set(90, 20, 34); belly.position.y = -14; wh.add(belly);
+    K.scene.add(wh);
+    K.anims.push((t) => {
+      for (const [g, i, tl] of fish) { const school = i % 7, a = t * (0.12 + school * 0.02) + school * 0.9 + (i % 10) * 0.025, R = 250 + school * 230 + (i % 5) * 9; g.position.set(WORLD / 2 + Math.cos(a) * R, 40 + school * 26 + (i % 6) * 6 + Math.sin(t * 1.6 + i) * 6, WORLD / 2 + Math.sin(a) * R); g.rotation.y = -a - Math.PI / 2; tl.rotation.y = Math.sin(t * 9 + i) * 0.5; }
+      const a = t * 0.025; wh.position.set(WORLD / 2 + Math.cos(a) * 1500, 420 + Math.sin(t * 0.3) * 30, WORLD / 2 + Math.sin(a) * 1500); wh.rotation.y = -a - Math.PI / 2; wt.rotation.y = Math.sin(t * 1.2) * 0.3;
+    });
+  },
+  bubbles(K) {
+    const THREE = K.THREE, n = 700, pos = new Float32Array(n * 3), sp = [];
+    for (let i = 0; i < n; i++) { pos[i * 3] = Math.random() * WORLD; pos[i * 3 + 1] = Math.random() * 500; pos[i * 3 + 2] = Math.random() * WORLD; sp.push(18 + Math.random() * 30); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xe8fbff, size: 5, transparent: true, opacity: 0.75, depthWrite: false }));
+    pts.frustumCulled = false; K.scene.add(pts);
+    let last = 0;
+    K.anims.push((t) => { const dt = Math.min(0.05, t - last); last = t; for (let i = 0; i < n; i++) { pos[i * 3 + 1] += sp[i] * dt; pos[i * 3] += Math.sin(t * 2 + i) * 0.15; if (pos[i * 3 + 1] > 520) pos[i * 3 + 1] = 0; } geo.attributes.position.needsUpdate = true; });
+  },
   flypcs(K) {
     const fl = [];
     for (let i = 0; i < 12; i++) {
@@ -2006,6 +2097,7 @@ const STYLES = {
   dream: { walls: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0"], win: "arch", roof: "dreamneon" },
   deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
   sand: { walls: ["#d8c08a", "#c8a870", "#e0cc9a", "#b89660", "#cdb48a", "#d4b47c"], win: "arch", roof: "flat" },
+  coral: { walls: ["#ff8a7a", "#ffb38a", "#7ad8d0", "#f2d0a8", "#c89af0", "#ff9ac8", "#8ad0f0"], win: "arch", roof: "trim" },
 };
 const NEON_WORDS = { ja: ["ラーメン", "カラオケ", "居酒屋", "薬", "寿司", "ホテル", "焼肉", "ゲーム"], zh: ["饭店", "酒店", "银行", "药房", "火锅", "茶", "书店", "电影"] };
 function styleMats(K, b, h) {
@@ -2964,6 +3056,18 @@ function digitalMats(K, b, h) {
 }
 // falling code over the screen in the top-down view
 const CODE2D = Array.from({ length: 28 }, (_, i) => ({ x: Math.random(), sp: 0.12 + Math.random() * 0.25, y: Math.random(), seed: i }));
+const SEA2D = Array.from({ length: 60 }, (_, i) => ({ x: Math.random(), y: Math.random(), sp: 0.04 + Math.random() * 0.08, r: 1.5 + Math.random() * 3.5 }));
+function drawSea2D(W, H, dpr) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = "rgba(20,110,150,.24)"; ctx.fillRect(0, 0, W, H);
+  // sun rays from above
+  ctx.fillStyle = "rgba(220,250,255,.06)"; for (let k = 0; k < 5; k++) { const x = ((k * 0.23 + now * 0.01) % 1.2) * W; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 60, 0); ctx.lineTo(x - 120, H); ctx.lineTo(x - 200, H); ctx.fill(); }
+  // fish swimming over the city
+  for (let k = 0; k < 8; k++) { const a = now * (0.12 + k * 0.02) + k, x = W / 2 + Math.cos(a) * W * (0.2 + k * 0.04), y = H / 2 + Math.sin(a * 1.2) * H * 0.35, d = -Math.sin(a) >= 0 ? 1 : -1; ctx.fillStyle = ["#ffd23d", "#ff7a3d", "#3dd8ff", "#ff7ad8"][k % 4]; ctx.beginPath(); ctx.ellipse(x, y, 9, 5, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.moveTo(x - d * 8, y); ctx.lineTo(x - d * 15, y - 5); ctx.lineTo(x - d * 15, y + 5); ctx.fill(); }
+  // bubbles rising
+  ctx.strokeStyle = "rgba(235,252,255,.75)"; ctx.lineWidth = 1.2;
+  for (const b of SEA2D) { b.y -= b.sp / 60; if (b.y < -0.05) { b.y = 1.05; b.x = Math.random(); } ctx.beginPath(); ctx.arc(b.x * W + Math.sin(now * 2 + b.r * 9) * 4, b.y * H, b.r, 0, TAU); ctx.stroke(); }
+}
 function drawCode2D(W, H, dpr) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "rgba(0,20,45,.22)"; ctx.fillRect(0, 0, W, H);
   ctx.font = "bold 13px ui-monospace,Menlo,Consolas,monospace"; ctx.textAlign = "center";
@@ -6810,6 +6914,7 @@ function render() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   if (CITY.digital) drawCode2D(W, H, dpr);
+  if (CITY.underwater) drawSea2D(W, H, dpr);
   if (CITY.dream) { ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "rgba(255,90,210,.12)"; ctx.fillRect(0, 0, W, H); }
   drawRain2D(W, H);
   if (tg) drawEdgeArrow(tg, "#ffd23d"); else if (NJ) drawEdgeArrow(NJ.to, "#ff2d3d"); else if (MISSIONS && !M.active) drawEdgeArrow(places.bar, "#ff3d7f");
@@ -7428,7 +7533,7 @@ function init3d() {
   });
   G3.mkN.children.forEach((m) => (m.material = m.material.clone(), m.material.opacity *= 0.45));
   G3.mkNews = markerObj(0xff2d3d);
-  if (CITY.sky) { G3.cDay.set(CITY.sky[0]); G3.cSet.set(CITY.sky[1]); G3.cNight.set(CITY.sky[2]); G3.hemi.color.set("#ffd8f4"); G3.hemi.groundColor.set("#a04a9a"); G3.sun.color.set("#ffc8ec"); }
+  if (CITY.sky) { G3.cDay.set(CITY.sky[0]); G3.cSet.set(CITY.sky[1]); G3.cNight.set(CITY.sky[2]); G3.hemi.color.set(CITY.hemi || "#ffd8f4"); G3.hemi.groundColor.set(CITY.hemiGround || "#a04a9a"); G3.sun.color.set(CITY.sunCol || "#ffc8ec"); }
   G3.shopMk = MISSIONS ? [] : SHOPS.map((sh) => { const g = markerObj(sh.hex); const q = sh.at(); g.position.set(q.x, 0, q.y); return g; });
 }
 function sync3d() {
@@ -7541,7 +7646,7 @@ function dayNight3d() {
     G3.scene.background.copy(c); G3.scene.fog.color.copy(c);
     G3.hemi.intensity = G3.hemi.intensity * (1 - 0.4 * r) + WX.flash * 1.6; G3.sun.intensity *= 1 - 0.75 * r;
   }
-  G3.scene.fog.near = 380 - 230 * r; G3.scene.fog.far = 1250 - 650 * r;
+  if (CITY.underwater) { G3.scene.fog.near = 150; G3.scene.fog.far = 880; } else { G3.scene.fog.near = 380 - 230 * r; G3.scene.fog.far = 1250 - 650 * r; }
   G3.groundMat.color.setScalar(1 - 0.28 * r);
   if (Math.abs(k - G3.night) > 0.02) { G3.night = k; for (const m of G3.winMats) m.emissiveIntensity = Math.max(k, CITY.dream || CITY.glowDay ? 0.5 : 0) * 0.95; }
 }
