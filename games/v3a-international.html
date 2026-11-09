@@ -77,6 +77,8 @@ body.touch #homeBtn{display:none}
 #dRadio{text-align:left;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dRadio.off{color:var(--muted)}
 #dash #dMJ{background:#f2efe6;color:#14121a;border-color:#fff;text-align:left;padding:0 8px}
+#roundBar{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));z-index:4;padding:8px 16px;border-radius:999px;background:rgba(30,20,10,.85);border:1px solid #ff9a3d;color:#ffd23d;font:800 15px var(--body,system-ui);white-space:nowrap;pointer-events:none}
+#roundBar[hidden]{display:none}
 #tvBar{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:3}
 #tvBar button{min-height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:rgba(20,18,28,.82);color:var(--ink);font-weight:800;font-size:13px;text-align:left}
 #tvBar button.on{background:#2a7de1;border-color:#9cc6ff}
@@ -387,6 +389,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="dRadio">📻 V3 FM</button>
     <button type="button" id="dMJ" hidden>▶ Smooth Criminal</button>
   </div>
+  <div id="roundBar" hidden></div>
   <div id="tvBar" hidden>
     <button type="button" data-ch="0">1 · WorldNews</button>
     <button type="button" data-ch="1">2 · Sport</button>
@@ -722,6 +725,8 @@ const CITIES = [
     digital: true, glowDay: true, via: "pc", style: "digital", lang: "en", river: "Поток данных", sea: [], land: "#0a1828", bus: "#3dd8ff", stadium: "Арена Байтов", ring: { col: "#0c1828", glow: "#3dd8ff" }, food: ["Байт-бургер с чипсетами", "BB"], lms: ["server", "cpu", "datacloud"], back: ["codefall", "flypcs"], tree: "pixel", sky: ["#14305a", "#2a1a5a", "#02060f"], traffic: ["sport", "sport", "compact", "ters", "sedan", "taxi", "van"] },
   { id: "hero", name: "Хиротаун", country: "Вселенная героев", flag: "🦸", lat: 37, lon: -55, seed: 12801, roofs: ["#e8433a", "#2a6fd6", "#ffd23d", "#5fd35f", "#c77ae8", "#ff7a3d", "#3dd8ff", "#f2f2f2"], tall: 1.5, rain: 0.4, walk: "#c8c0d0", water: "#2a5aa8", taxi: "#ffd23d", slogan: "Город супергероев: над крышами летают герои, а на стенах — взрывы из комиксов.",
     lang: "en", style: "comic", river: "Река Героев", sea: ["s", "e"], land: "#6a8a5a", bus: "#e8433a", stadium: "Арена Героев", ring: { col: "#2a6fd6", glow: "#ffd23d" }, food: ["Супер-бургер героя", "SB"], lms: ["herotower", "heroplaza", "comicstreet", "meteor"], back: ["heroflyers"], tz: -4 },
+  { id: "tac", name: "Тактикград", country: "Тактическая республика", flag: "🎯", lat: 31, lon: 34, seed: 13101, roofs: ["#c8a870", "#b89660", "#d8c08a", "#a88850", "#cdb48a", "#9a7a4a"], tall: 0.75, rain: 0.03, walk: "#d6c08e", grass: "#c8b070", water: "#3a7a8a", taxi: "#e8a83a", slogan: "Город тактиков: пустынные кварталы, ящики и арки, точки A и B. Заложи бомбу и удержи точку 40 секунд!",
+    lang: "en", style: "sand", sea: [], land: "#d9c08a", sand: "#ecd9a8", bus: "#c8a870", stadium: "Арена Раундов", ring: { col: "#c8a870", glow: "#ff9a3d" }, food: ["Шаурма тактика", "ШТ"], lms: ["tacA", "tacB", "tacT", "tacCT", "tacArch"], tz: 3 },
   { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
     dream: true, via: "sleep", style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["kingpine", "dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
@@ -927,6 +932,44 @@ const LMS = {
       B.box(t, 128, 32, 30, 30, 110, 0, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#d99a82") }), 128, 32, 31, 31, 16, 84); B.box("#c98a72", 128, 32, 20, 20, 14, 110); B.pyr("#b8735a", 128, 32, 20, 20, 12, 124);
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
+    } },
+  tacA: { name: "Точка A", info: "здесь закладывают бомбу: встань на метку A и держи 3 секунды", fill: PLAZA_T(), solid: [[0, 0, 1, 1], [3, 3, 1, 1]], mm: "#e8433a", h: 60,
+    gen(o) { places.tacA = { x: o.ix * T + 128, y: o.iy * T + 128 }; },
+    ground(g, b) { g.fillStyle = "rgba(232,67,58,.55)"; g.font = "bold 150px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("A", b.x + 128, b.y + 132); g.strokeStyle = "rgba(232,67,58,.6)"; g.lineWidth = 4; g.strokeRect(b.x + 40, b.y + 40, 176, 176); },
+    d2(Q) { tacCrates2d(Q); Q.box(32, 32, 60, 60, 40, "#c8a870"); Q.box(224, 224, 60, 60, 40, "#c8a870"); },
+    d3(B) { tacCrates3d(B, "A", "#e8433a"); B.box(B.M("#c8a870"), 32, 32, 60, 60, 40); B.box(B.M("#c8a870"), 224, 224, 60, 60, 40); } },
+  tacB: { name: "Точка B", info: "вторая точка закладки, под арками", fill: PLAZA_T(), solid: [[3, 0, 1, 1], [0, 3, 1, 1]], mm: "#2a6fd6", h: 70,
+    gen(o) { places.tacB = { x: o.ix * T + 128, y: o.iy * T + 128 }; },
+    ground(g, b) { g.fillStyle = "rgba(42,111,214,.5)"; g.font = "bold 150px 'Russo One','Arial Black',sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("B", b.x + 128, b.y + 132); g.strokeStyle = "rgba(42,111,214,.6)"; g.lineWidth = 4; g.strokeRect(b.x + 40, b.y + 40, 176, 176); },
+    d2(Q) { tacCrates2d(Q); Q.box(224, 32, 60, 60, 60, "#b89660"); Q.box(32, 224, 60, 60, 60, "#b89660"); },
+    d3(B) {
+      tacCrates3d(B, "B", "#2a6fd6");
+      for (const [x, z] of [[224, 32], [32, 224]]) { B.box(B.M("#b89660"), x, z, 60, 60, 44); const a = B.torus("#c8a870", x, z, 20, 4, 44, 0, 0, Math.PI, 16); a.rotation.y = x > 128 ? 0 : Math.PI / 2; B.box(B.M("#b89660"), x, z, 60, 60, 8, 64); }
+    } },
+  tacT: { name: "База атаки", info: "лагерь атакующих: палатки, грузовик, мешки с песком", fill: PLAZA_T(), solid: [[0, 0, 2, 1], [3, 1, 1, 2]], mm: "#ff9a3d", h: 50,
+    d2(Q) { Q.box(64, 32, 120, 56, 30, "#a88850"); Q.box(224, 128, 56, 120, 26, "#6a6a52"); for (let i = 0; i < 6; i++) Q.box(40 + i * 24, 200, 22, 12, 10, "#c8b080"); },
+    d3(B) {
+      for (const x of [34, 94]) { B.pyr("#a88850", x, 32, 56, 56, 30, 0); B.box("#5a4a30", x, 60.5, 14, 1, 16, 0); }
+      B.box("#5a6040", 224, 108, 50, 70, 26, 6); B.box("#4a5034", 224, 160, 50, 34, 30, 6); B.box("#9fd8f0", 224, 178, 40, 1, 12, 22); for (const [x, z] of [[202, 92], [246, 92], [202, 168], [246, 168]]) { const w = B.cyl("#1a1a1a", x, z, 7, 7, 6, 2, 12); w.rotation.z = Math.PI / 2; }
+      const bags = []; for (let i = 0; i < 6; i++) for (let k = 0; k < 2; k++) bags.push([40 + i * 24 + k * 12, 4 + k * 8, 200, 22, 8, 12]); B.inst("#c8b080", bags);
+      B.box("#5a4a30", 150, 140, 2, 2, 60, 0); B.plane(B.M("#ff9a3d", { ds: true }), 162, 140, 22, 14, 44, 0);
+      B.plane(B.M("#ffffff", { map: B.X.txt("БАЗА АТАКИ · ЗАКУПКА", "#ffd23d", "#3a2a10", 512, 64, 34) }), 128, 238, 80, 10, 20, 0);
+    } },
+  tacCT: { name: "База защиты", info: "бункер защитников с синими флагами", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#4d93ff", h: 60,
+    d2(Q) { Q.box(128, 64, 240, 120, 40, "#8a8c90", "#6a6c70"); Q.box(128, 64, 120, 60, 56, "#7a7c80", "#6a6c70", 40); },
+    d3(B) {
+      B.box(B.M("#8a8c90", { map: B.X.win("panel"), glow: "#ffd89a", emap: B.X.lit() }), 128, 64, 240, 120, 40, 0, 0, 64); B.box("#7a7c80", 128, 64, 120, 60, 16, 40);
+      for (const x of [20, 236]) { B.box("#4a4a52", x, 140, 2, 2, 70, 0); B.plane(B.M("#2a6fd6", { ds: true }), x + 12, 140, 22, 14, 54, 0); }
+      for (let x = 10; x < 250; x += 30) B.torus("#6a6a6a", x, 140, 6, 0.6, 6, 0, 0, TAU, 10);
+      B.plane(B.M("#ffffff", { map: B.X.txt("БАЗА ЗАЩИТЫ", "#9cc6ff", "#14243a", 512, 64, 40) }), 128, 124.5, 80, 10, 24, 0);
+    } },
+  tacArch: { name: "Пыльная арка", info: "большая арка из песчаника между точками", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#d8c08a", h: 110,
+    d2(Q) { Q.box(32, 128, 60, 120, 100, "#d8c08a", "#b89660"); Q.box(224, 128, 60, 120, 100, "#d8c08a", "#b89660"); Q.box(128, 128, 256, 50, 110, "#c8a870", "#b89660", 80); },
+    d3(B) {
+      const st = B.M("#d8c08a", { map: B.X.win("arch"), glow: "#ffd89a", emap: B.X.lit() });
+      B.box(st, 32, 128, 60, 120, 100, 0, 0, 64); B.box(st, 224, 128, 60, 120, 100, 0, 0, 64); B.box("#c8a870", 128, 128, 256, 50, 30, 80);
+      for (const z of [108, 128, 148]) B.torus("#c8a870", 128, z, 64, 9, 12, 0, 0, Math.PI, 24);
+      B.plane(B.M("#ffffff", { map: B.X.txt("ТАКТИКГРАД", "#3a2a10", "#e8d8b0", 512, 64, 40) }), 128, 153.5, 90, 12, 90, 0);
     } },
   olymp: { name: "Отель «Олимпия» и висячие сады", info: "вход — стеклянные двери у любой из двух башен: лифт поднимет в коридор-сад в воздухе, там ресепшн и номера", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#4fae5a", h: 200,
     gen(o) { places.olympDoors = [32, 224].map((x) => ({ x: o.ix * T + x, y: o.iy * T + 212 })); places.olympDoor = places.olympDoors[0]; },
@@ -1948,6 +1991,7 @@ const STYLES = {
   village: { walls: ["#b8885a", "#a87848", "#c89868", "#e8dcc0", "#9a6a40"], win: "shutter", roof: "hip", roofCol: "#7a3a2a" },
   dream: { walls: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0"], win: "arch", roof: "dreamneon" },
   deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
+  sand: { walls: ["#d8c08a", "#c8a870", "#e0cc9a", "#b89660", "#cdb48a", "#d4b47c"], win: "arch", roof: "flat" },
 };
 const NEON_WORDS = { ja: ["ラーメン", "カラオケ", "居酒屋", "薬", "寿司", "ホテル", "焼肉", "ゲーム"], zh: ["饭店", "酒店", "银行", "药房", "火锅", "茶", "书店", "电影"] };
 function styleMats(K, b, h) {
@@ -2291,6 +2335,62 @@ function gardenAct(sp) {
   if (sp.id === "room") { if (save.olympKey === sp.n) return enterHotelRoom(sp.n); hmRoom = sp.n; hmView = "hroom"; renderHome(); showOv("home"); sfx.door(); return; }
   if (sp.id === "bench") { toast("Ты сидишь на скамейке. Шелестят листья, внизу шумит Ереван", 3); tone(660, 990, 0.4, 0.03, "sine"); return; }
   if (sp.id === "view") { big("АРАРАТ", "Вид с висячих садов «Олимпия» · Ереван", "#9fe08a", 3.2); tone(523, 1046, 0.6, 0.04, "sine"); }
+}
+/* ===== Taktikgrad: crates, bomb sites and the round ===== */
+function tacCrates2d(Q) { for (const [x, y] of [[80, 70], [180, 80], [70, 190], [190, 180]]) { Q.box(x, y, 30, 30, 22, "#9a7040", "#6a4a20"); Q.box(x + 8, y - 6, 22, 22, 40, "#a87a48", "#6a4a20", 22); } }
+function tacCrates3d(B, letter, col) {
+  const wood = B.X.ct("tacCrate", 64, 64, (c) => { c.fillStyle = "#a87a48"; c.fillRect(0, 0, 64, 64); c.strokeStyle = "#6a4a20"; c.lineWidth = 6; c.strokeRect(3, 3, 58, 58); c.beginPath(); c.moveTo(4, 4); c.lineTo(60, 60); c.stroke(); c.fillStyle = "rgba(0,0,0,.12)"; for (let y = 10; y < 64; y += 12) c.fillRect(0, y, 64, 2); });
+  const M = B.M("#ffffff", { map: wood });
+  for (const [x, z] of [[80, 70], [180, 80], [70, 190], [190, 180]]) { B.box(M, x, z, 30, 30, 22); B.box(M, x + 8, z - 6, 22, 22, 18, 22); }
+  for (const [x, z] of [[110, 60], [150, 200]]) { B.cyl("#5a6a4a", x, z, 6, 6, 18, 0, 12); B.cyl("#b8452a", x + 14, z, 6, 6, 18, 0, 12); }
+  B.plane(B.M("#ffffff", { map: B.X.txt(letter, col, "#e8d8b0", 128, 128, 110) }), 32, 62.5, 40, 36, 2, 0);
+}
+let RD = null; // the current round
+function roundBar(text) { const el2 = $("roundBar"); el2.hidden = !text; if (text) el2.textContent = text; }
+function startPlant(site) {
+  if (RD || player.dead || player.inCar) return;
+  RD = { site, ph: "plant", t: 0, at: site === "A" ? places.tacA : places.tacB };
+  toast("💣 Закладка бомбы на точке " + site + ": стой на метке 3 секунды", 2.4); tone(440, 440, 0.1, 0.06, "square");
+}
+function endRound(win, why) {
+  const R = RD; RD = null; roundBar("");
+  for (let i = people.length - 1; i >= 0; i--) if (people[i].team === "def") people.splice(i, 1);
+  if (R && R.mesh && G3.scene) G3.scene.remove(R.mesh);
+  if (win) { const prize = 3250; money += prize; save.rounds = (save.rounds || 0) + 1; writeSave(); updHud(); sfx.win(); big("АТАКА ПОБЕДИЛА", why + " · +" + fmt(prize) + " · побед: " + save.rounds, "#ffd23d", 3.6); }
+  else { big("РАУНД ПРОИГРАН", why, "#e8433a", 3); }
+  shopLock = R ? (R.site === "A" ? "tacA" : "tacB") : shopLock;
+}
+function updRound(dt) {
+  if (!RD) return;
+  const R = RD;
+  if (player.dead) return endRound(false, "тебя победили защитники");
+  if (R.ph === "plant") {
+    if (dist(player, R.at) > 46 || player.inCar) { RD = null; roundBar(""); toast("Закладка прервана — ты ушёл с точки", 1.8); return; }
+    R.t += dt; roundBar("💣 Закладка на точке " + R.site + " · " + "▮".repeat(Math.min(10, Math.floor(R.t / 0.3))) + "▯".repeat(Math.max(0, 10 - Math.floor(R.t / 0.3))));
+    if (Math.floor(R.t * 4) !== Math.floor((R.t - dt) * 4)) tone(880, 880, 0.04, 0.04, "square");
+    if (R.t >= 3) {
+      R.ph = "planted"; R.t = 40; R.bx = R.at.x; R.by = R.at.y;
+      big("💣 БОМБА ЗАЛОЖЕНА", "Точка " + R.site + " · удержи её 40 секунд — защитники уже бегут!", "#ff9a3d", 3);
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * TAU + rand(-0.3, 0.3), d = rand(380, 520), spot = freeSpot(R.at.x + Math.cos(a) * d, R.at.y + Math.sin(a) * d) || { x: R.at.x + Math.cos(a) * d, y: R.at.y + Math.sin(a) * d };
+        const q = mkPerson("gang", spot.x, spot.y); q.team = "def"; q.keep = true; q.alert = true; q.hp = 70; q.col = "#2a4a8a"; q.armed = true;
+      }
+      if (G3.ready && G3.K) { const THREE = G3.K.THREE, g = new THREE.Group(); const box = new THREE.Mesh(G3.K.BOX, new THREE.MeshLambertMaterial({ color: 0x3a3a2a })); box.scale.set(8, 4, 6); box.position.y = 2; g.add(box); const led = new THREE.Mesh(G3.K.SPH, new THREE.MeshBasicMaterial({ color: 0xff2020 })); led.scale.setScalar(1.2); led.position.set(0, 4.6, 0); g.add(led); g.position.set(R.bx, 0, R.by); G3.scene.add(g); R.mesh = g; R.led = led; }
+    }
+    return;
+  }
+  // planted: tick down, beep faster near the end
+  const prev = R.t; R.t -= dt;
+  const left = people.filter((q) => q.team === "def" && !q.dead).length;
+  roundBar("💣 Точка " + R.site + " · " + Math.ceil(Math.max(0, R.t)) + " с · защитников: " + left);
+  const period = R.t > 10 ? 1 : R.t > 4 ? 0.5 : 0.2;
+  if (Math.floor(prev / period) !== Math.floor(R.t / period)) { tone(1320, 1320, 0.05, 0.05, "square"); if (R.led) R.led.visible = !R.led.visible; }
+  if (left === 0) return endRound(true, "все защитники повержены");
+  if (R.t <= 0) {
+    shake = Math.max(shake, 18); noise(1.4, 0.6, 400);
+    for (let k = 0; k < 60; k++) { const a = rand(0, TAU), sp = rand(60, 260); addPart({ x: R.bx, y: R.by, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, max: 1, size: rand(8, 16), col: pick(["#ff9a3d", "#ffd23d", "#e8433a", "#3a3a3a"]), type: "fire" }); }
+    return endRound(true, "бомба взорвалась");
+  }
 }
 /* ===== the Dream Palace in Snovstol: a throne hall you can walk around ===== */
 const DPW = 480, DPH = 360;
@@ -4836,6 +4936,8 @@ function buy(sh, it) {
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
+if (places.tacA) SHOPS.push({ id: "tacA", col: "#e8433a", hex: 0xe8433a, label: "A", at: () => places.tacA, open: () => startPlant("A") });
+if (places.tacB) SHOPS.push({ id: "tacB", col: "#2a6fd6", hex: 0x2a6fd6, label: "B", at: () => places.tacB, open: () => startPlant("B") });
 if (places.dpalDoor) SHOPS.push({ id: "dpal", col: "#ff7ad8", hex: 0xff7ad8, label: "⇧", at: () => places.dpalDoor, open: () => enterPalace() });
 if (places.olympDoors) places.olympDoors.forEach((d, i) => SHOPS.push({ id: "olymp" + i, col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => d, open: () => { places.olympDoor = d; enterGarden(); } }));
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
@@ -5939,6 +6041,7 @@ function updWeather(dt) {
 let fieldT = 0, manageT = 0, saveT = 0;
 function update(dt) {
   if (money < 0) settleCard();
+  if (RD) updRound(dt);
   now += dt;
   dayT = (dayT + dt / 420) % 1;
   if (toastT > 0 && (toastT -= dt) <= 0) $("toast").classList.remove("on");
@@ -6277,7 +6380,8 @@ function drawHuman(p, isPlayer) {
   ctx.fillStyle = p.col; ctx.beginPath(); ctx.ellipse(0, 0, 6, 9, 0, 0, TAU); ctx.fill();
   ctx.fillStyle = p.hair; ctx.beginPath(); ctx.arc(0.5, 0, 5, 0, TAU); ctx.fill();
   if (p.kind === "cop") { ctx.fillStyle = "#16244a"; ctx.beginPath(); ctx.arc(0.5, 0, 5.4, 0, TAU); ctx.fill(); ctx.fillRect(3, -4, 4, 8); ctx.fillStyle = "#e9c24a"; ctx.fillRect(0, -1, 2, 2); }
-  if (p.kind === "gang") { ctx.fillStyle = "#e0213b"; ctx.fillRect(-4, -5, 3, 10); }
+  if (p.kind === "gang" && p.team === "def") { ctx.fillStyle = "#2a3a5a"; ctx.beginPath(); ctx.arc(0.5, 0, 5.4, 0, TAU); ctx.fill(); }
+  else if (p.kind === "gang") { ctx.fillStyle = "#e0213b"; ctx.fillRect(-4, -5, 3, 10); }
   if (p.kind === "ped" && WX.rain > 0.3) {
     ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.arc(3, 3, 14, 0, TAU); ctx.fill();
     for (let k = 0; k < 8; k++) { ctx.fillStyle = k % 2 ? p.col : shade(p.col, 0.7); ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, 14, (k * TAU) / 8, ((k + 1) * TAU) / 8); ctx.closePath(); ctx.fill(); }
@@ -6426,6 +6530,7 @@ function render() {
   // markers
   if (MISSIONS && !M.active) drawMarker(places.bar.x, places.bar.y, "#ff3d7f", "V");
   if (!MISSIONS) for (const sh of SHOPS) { const q = sh.at(); drawMarker(q.x, q.y, sh.col, sh.label); }
+  if (RD && RD.ph === "planted") { ctx.fillStyle = "#3a3a2a"; ctx.fillRect(RD.bx - 8, RD.by - 5, 16, 10); ctx.fillStyle = Math.sin(now * (RD.t > 10 ? 6 : 18)) > 0 ? "#ff2020" : "#5a1010"; ctx.beginPath(); ctx.arc(RD.bx, RD.by - 1, 2.5, 0, TAU); ctx.fill(); }
   if (NJ) drawMarker(NJ.to.x, NJ.to.y, "#ff2d3d", "●", 40);
   const tg = stepTarget();
   if (tg) {
@@ -6990,7 +7095,8 @@ function init3d() {
     part(BOX, mat("#b8484a"), 0.3, 0.26, 1.2, 2.17, 16.15, 0, null, false);
     if (me || cop) { part(G.cap, hairM, 2.58, 2.05, 2.68, -0.1, 18.05, 0); part(G.cyl, mat(me ? "#0a0a0a" : "#0e1630"), 2.66, 0.8, 2.76, -0.1, 18.0, 0, null, false); if (cop) part(BOX, hairM, 2.2, 0.35, 3.6, 2.4, 18.0, 0, null, false); }
     else { part(G.cap, hairM, 2.5, 1.75, 2.6, -0.3, 18.15, 0); part(SPH, hairM, 1.7, 1.9, 2.3, -1.25, 17.5, 0, null, false); }
-    if (p.kind === "gang") part(G.cyl, mat("#e0213b"), 2.6, 0.9, 2.7, -0.1, 18.3, 0, null, false);
+    if (p.kind === "gang" && p.team === "def") part(G.cap, mat("#2a3a5a"), 2.7, 2.1, 2.8, -0.1, 18.1, 0);
+    else if (p.kind === "gang") part(G.cyl, mat("#e0213b"), 2.6, 0.9, 2.7, -0.1, 18.3, 0, null, false);
     let umb = null;
     if (p.kind === "ped" || me) {
       const uz = me ? -3 : 3, ucol = me ? "#22222a" : p.col;
@@ -7367,7 +7473,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, get RD() { return RD; }, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
