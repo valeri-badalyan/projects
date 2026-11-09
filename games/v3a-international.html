@@ -77,6 +77,15 @@ body.touch #homeBtn{display:none}
 #dRadio{text-align:left;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #dRadio.off{color:var(--muted)}
 #dash #dMJ{background:#f2efe6;color:#14121a;border-color:#fff;text-align:left;padding:0 8px}
+#wasted{position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;
+  background:rgba(70,70,70,.32);-webkit-backdrop-filter:grayscale(1) brightness(.75) contrast(1.1);backdrop-filter:grayscale(1) brightness(.75) contrast(1.1);animation:wastedIn 1s ease-out both}
+#wasted[hidden]{display:none}
+#wasted b{font-family:'Russo One','Arial Black',Impact,sans-serif;font-weight:400;font-size:clamp(56px,16vw,140px);letter-spacing:.04em;color:#c8102e;
+  -webkit-text-stroke:3px #111;paint-order:stroke fill;text-shadow:0 4px 0 #111,0 0 30px rgba(0,0,0,.6);animation:wastedWord 2.4s cubic-bezier(.2,.8,.2,1) both}
+#wasted small{font:800 15px var(--body,system-ui);color:#eee;text-shadow:0 2px 4px #000;animation:wastedIn 1.4s .8s ease-out both}
+@keyframes wastedIn{from{opacity:0}to{opacity:1}}
+@keyframes wastedWord{0%{opacity:0;transform:scale(1.6)}35%{opacity:1;transform:scale(1)}100%{opacity:1;transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){#wasted,#wasted b,#wasted small{animation:none}}
 #roundBar{position:absolute;left:50%;transform:translateX(-50%);top:calc(64px + env(safe-area-inset-top,0px));z-index:4;padding:8px 16px;border-radius:999px;background:rgba(30,20,10,.85);border:1px solid #ff9a3d;color:#ffd23d;font:800 15px var(--body,system-ui);white-space:nowrap;pointer-events:none}
 #roundBar[hidden]{display:none}
 #tvBar{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(96px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;z-index:3}
@@ -390,6 +399,7 @@ button.ph-row:disabled{opacity:.45}
     <button type="button" id="dMJ" hidden>▶ Smooth Criminal</button>
   </div>
   <div id="roundBar" hidden></div>
+  <div id="wasted" hidden aria-live="assertive"><b>WASTED</b><small id="wastedSub"></small></div>
   <div id="tvBar" hidden>
     <button type="button" data-ch="0">1 · WorldNews</button>
     <button type="button" data-ch="1">2 · Sport</button>
@@ -5830,11 +5840,13 @@ function wasted() {
   player.dead = true; player.deadT = 0; player.hp = 0;
   if (player.inCar) exitCar(true);
   if (player.anim) endAnim();
-  big("НОКАУТ", "Больница возьмёт " + fmt(Math.min(money, 100)), "#ff3d7f", 3);
+  $("wastedSub").textContent = "Больница возьмёт " + fmt(Math.min(money, 100)); $("wasted").hidden = false;
+  noise(1.2, 0.25, 220); setTimeout(() => tone(220, 55, 1.4, 0.12, "sawtooth"), 150);
   sfx.fail();
   if (M.active) { endMission(); setTimeout(() => toast("Миссия сорвана. Возвращайся к Арно.", 3), 3100); }
 }
 function respawn() {
+  $("wasted").hidden = true;
   money = Math.max(0, money - 100);
   resetPlayerAt(places.hosp); setWanted(0); player.armor = 0;
   for (let i = cars.length - 1; i >= 0; i--) if (cars[i].type === "cop" && !cars[i].keep) cars.splice(i, 1);
@@ -7639,7 +7651,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, enterBunker, get RD() { return RD; }, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, enterBunker, get RD() { return RD; }, hurtPlayer, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
