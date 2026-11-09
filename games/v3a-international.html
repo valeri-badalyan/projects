@@ -955,13 +955,17 @@ const LMS = {
       B.box("#5a4a30", 150, 140, 2, 2, 60, 0); B.plane(B.M("#ff9a3d", { ds: true }), 162, 140, 22, 14, 44, 0);
       B.plane(B.M("#ffffff", { map: B.X.txt("БАЗА АТАКИ · ЗАКУПКА", "#ffd23d", "#3a2a10", 512, 64, 34) }), 128, 238, 80, 10, 20, 0);
     } },
-  tacCT: { name: "База защиты", info: "бункер защитников с синими флагами", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#4d93ff", h: 60,
+  tacCT: { name: "База защиты", info: "бункер с синими флагами — заходи через стальную дверь", fill: PLAZA_T(), solid: [[0, 0, 4, 2]], mm: "#4d93ff", h: 60,
+    gen(o) { places.bunkDoor = { x: o.ix * T + 128, y: o.iy * T + 154 }; },
     d2(Q) { Q.box(128, 64, 240, 120, 40, "#8a8c90", "#6a6c70"); Q.box(128, 64, 120, 60, 56, "#7a7c80", "#6a6c70", 40); },
     d3(B) {
       B.box(B.M("#8a8c90", { map: B.X.win("panel"), glow: "#ffd89a", emap: B.X.lit() }), 128, 64, 240, 120, 40, 0, 0, 64); B.box("#7a7c80", 128, 64, 120, 60, 16, 40);
       for (const x of [20, 236]) { B.box("#4a4a52", x, 140, 2, 2, 70, 0); B.plane(B.M("#2a6fd6", { ds: true }), x + 12, 140, 22, 14, 54, 0); }
       for (let x = 10; x < 250; x += 30) B.torus("#6a6a6a", x, 140, 6, 0.6, 6, 0, 0, TAU, 10);
       B.plane(B.M("#ffffff", { map: B.X.txt("БАЗА ЗАЩИТЫ", "#9cc6ff", "#14243a", 512, 64, 40) }), 128, 124.5, 80, 10, 24, 0);
+      const stripes = B.X.ct("bunkStripes", 64, 16, (c) => { c.fillStyle = "#ffd23d"; c.fillRect(0, 0, 64, 16); c.fillStyle = "#1a1a1a"; for (let x = -16; x < 64; x += 16) { c.beginPath(); c.moveTo(x, 16); c.lineTo(x + 8, 0); c.lineTo(x + 16, 0); c.lineTo(x + 8, 16); c.fill(); } });
+      B.box("#4a4c52", 128, 124.6, 26, 1.5, 22, 0); B.box("#3a3c40", 128, 125.4, 20, 1, 19, 0); B.box("#c0c4cc", 135, 126.2, 1.4, 1, 1.4, 9);
+      B.plane(B.M("#ffffff", { map: stripes }), 128, 125.6, 26, 3, 22, 0); B.sph(B.M("#ff3030", { neon: true }), 128, 126, 1.6, 27.5);
     } },
   tacArch: { name: "Пыльная арка", info: "большая арка из песчаника между точками", fill: PLAZA_T(), solid: [[0, 1, 1, 2], [3, 1, 1, 2]], mm: "#d8c08a", h: 110,
     d2(Q) { Q.box(32, 128, 60, 120, 100, "#d8c08a", "#b89660"); Q.box(224, 128, 60, 120, 100, "#d8c08a", "#b89660"); Q.box(128, 128, 256, 50, 110, "#c8a870", "#b89660", 80); },
@@ -2325,7 +2329,7 @@ function enterGarden(fromRoom) {
   $("game").classList.add("indoor"); sfx.doorOpen(); if (!fromRoom) toast("Отель «Олимпия» ★★★★★ · висячие сады. Ресепшн рядом, номера — вдоль коридора, смотровая — в конце", 3.5);
   setTimeout(() => tone(523, 523, 0.2, 0.05, "sine"), 200); setTimeout(() => tone(784, 784, 0.3, 0.05, "sine"), 420);
   if (G3.ready && !G3.garden) buildGarden();
-  if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(false);
+  if (G3.garden) G3.garden.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.term) G3.term.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; if (G3.bunk) G3.bunk.g.visible = false; outerLand(false);
 }
 const HOTEL_PRICE = 180, HOTEL_FOOD = 15;
 let hmRoom = 101;
@@ -2392,6 +2396,99 @@ function updRound(dt) {
     return endRound(true, "бомба взорвалась");
   }
 }
+/* ===== Taktikgrad bunker: a concrete room you walk around ===== */
+const BKW = 420, BKH = 280;
+const BUNK = { RW: BKW, RH: BKH, OX: WORLD + 2600, OZ: WORLD / 2 + 5000,
+  solids: [[6, 40, 30, 150], [170, 100, 80, 60], [150, 6, 120, 30], [384, 30, 30, 200], [330, 230, 60, 40], [6, 230, 50, 44]],
+  spots: [
+    { id: "out", x: BKW / 2, y: BKH - 16, r: 32, label: "ВЫЙТИ", text: "Выйти из бункера" },
+    { id: "armory", x: 60, y: 115, r: 34, label: "АРСЕНАЛ", text: "Арсенал: патроны, бронежилет, аптечка" },
+    { id: "map", x: 210, y: 180, r: 32, label: "КАРТА", text: "Тактическая карта города" },
+    { id: "radio", x: 210, y: 56, r: 30, label: "РАЦИЯ", text: "Рация: вызвать подкрепление" },
+    { id: "bunk", x: 356, y: 130, r: 32, label: "КОЙКА", text: "Койка: отдохнуть" },
+  ] };
+function enterBunker() {
+  useRoom("bunk"); player.umbOn = false; if (player.inCar) exitCar(true); if (TV.on) tvSet(-1);
+  indoor = true; player.couch = false; setLocal(BKW / 2, BKH - 44); player.a = -Math.PI / 2;
+  cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
+  $("game").classList.add("indoor"); noise(0.5, 0.12, 300); tone(160, 90, 0.4, 0.08, "square");
+  toast("Бункер «База защиты». Арсенал, карта, рация и койки. Тут тихо — снаружи идёт бой", 3);
+  if (G3.ready && !G3.bunk) buildBunker();
+  for (const k of ["room", "term", "garden", "hroom", "dpal"]) if (G3[k]) G3[k].g.visible = false;
+  if (G3.bunk) G3.bunk.g.visible = true; outerLand(true);
+}
+function bunkerAct(sp) {
+  if (sp.id === "out") return leaveHome();
+  if (sp.id === "armory") {
+    for (const w of ["pistol", "smg"]) if (!player.weapons.includes(w)) player.weapons.push(w);
+    player.ammo.pistol = Math.max(player.ammo.pistol, 300); player.ammo.smg = Math.max(player.ammo.smg, 600); player.armor = 100; invAdd("medkit"); writeSave(); updHud();
+    [300, 260, 420].forEach((f, i) => setTimeout(() => tone(f, f, 0.06, 0.06, "square"), i * 90)); toast("🔫 Арсенал: 300 патронов к пистолету, 600 к узи, бронежилет и аптечка в сумку", 3); return;
+  }
+  if (sp.id === "map") {
+    const dir = (q) => { if (!q) return "—"; const a = Math.atan2(q.y - places.bunkDoor.y, q.x - places.bunkDoor.x), d = Math.round(Math.hypot(q.y - places.bunkDoor.y, q.x - places.bunkDoor.x) / 10); return ["восток", "юго-восток", "юг", "юго-запад", "запад", "северо-запад", "север", "северо-восток"][(Math.round(a / (Math.PI / 4)) + 8) % 8] + ", " + d + " м"; };
+    big("КАРТА", "Точка A — " + dir(places.tacA) + " · Точка B — " + dir(places.tacB), "#9cc6ff", 4); return;
+  }
+  if (sp.id === "radio") {
+    const d = places.bunkDoor; for (let i = 0; i < 4; i++) mkSoldier("att", d.x + rand(-60, 60), d.y + 60 + rand(0, 50));
+    noise(0.6, 0.15, 2400); toast("📻 «Подкрепление выслано!» — у входа в бункер ждут 4 бойца атаки", 3); return;
+  }
+  if (sp.id === "bunk") { player.hp = 100; updHud(); tone(330, 220, 0.5, 0.06, "sine"); toast("😴 Короткий отдых на койке. Здоровье 100", 2.4); }
+}
+function buildBunker() {
+  const K = G3.K, THREE = K.THREE, B = mk3d(K, BUNK.OX, BUNK.OZ, {}), g = B.g, HT = 70;
+  const fl = B.X.ct("bunkFloor", 64, 64, (c) => { c.fillStyle = "#6a6c70"; c.fillRect(0, 0, 64, 64); c.fillStyle = "rgba(0,0,0,.18)"; c.fillRect(0, 31, 64, 2); c.fillRect(31, 0, 2, 64); c.fillStyle = "rgba(255,255,255,.04)"; c.fillRect(6, 6, 20, 20); });
+  fl.wrapS = fl.wrapT = THREE.RepeatWrapping; fl.repeat.set(BKW / 64, BKH / 64);
+  B.floor(B.M("#ffffff", { map: fl }), BKW / 2, BKH / 2, BKW, BKH, 0.3);
+  const wall = B.M("#8a8c90");
+  B.box(wall, -4, BKH / 2, 8, BKH, HT, 0); B.box(wall, BKW + 4, BKH / 2, 8, BKH, HT, 0); B.box(wall, BKW / 2, -4, BKW, 8, HT, 0);
+  B.box(wall, (BKW / 2 - 22) / 2, BKH + 4, BKW / 2 - 22, 8, HT, 0); B.box(wall, BKW - (BKW / 2 - 22) / 2, BKH + 4, BKW / 2 - 22, 8, HT, 0); B.box(wall, BKW / 2, BKH + 4, 44, 8, HT - 40, 40);
+  B.box("#5a5c60", BKW / 2, BKH / 2, BKW + 16, BKH + 16, 2, HT);
+  for (let x = 30; x < BKW; x += 90) B.box("#4a4c52", x, BKH / 2, 6, BKH, 6, HT - 8);
+  for (const z of [40, BKH - 40]) B.cyl("#6a7078", BKW / 2, z, 3, 3, BKW, HT - 14, 10).rotation.z = Math.PI / 2;
+  const lamp = B.M("#ff3030", { neon: true }), warm = B.M("#fff0c8", { neon: true }), lamps = [];
+  for (let x = 70; x < BKW; x += 140) { lamps.push(B.box(lamp, x, 4, 10, 2, 4, HT - 20)); B.box(warm, x, BKH / 2, 30, 6, 1.5, HT - 3); }
+  B.anim((t) => { const on = Math.sin(t * 3) > 0; for (const l of lamps) l.visible = on; });
+  // armoury rack on the west wall
+  B.box("#3a3c40", 21, 115, 30, 150, 46, 0);
+  for (let i = 0; i < 8; i++) { const z = 50 + i * 18; B.box("#1a1a1a", 32, z, 2, 3, 26, 12); B.box("#5a3a1a", 32, z, 2.2, 5, 6, 10); }
+  for (const z of [62, 168]) { B.box("#5a6a4a", 22, z, 14, 10, 6, 46); }
+  // map table in the middle with the city plan
+  const mapT = B.X.ct("bunkMap", 128, 96, (c) => { c.fillStyle = "#d8c08a"; c.fillRect(0, 0, 128, 96); c.strokeStyle = "#7a6a4a"; c.lineWidth = 2; for (let x = 8; x < 128; x += 20) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 96); c.stroke(); } for (let y = 8; y < 96; y += 20) { c.beginPath(); c.moveTo(0, y); c.lineTo(128, y); c.stroke(); } c.font = "bold 22px sans-serif"; c.fillStyle = "#e8433a"; c.fillText("A", 30, 34); c.fillStyle = "#2a6fd6"; c.fillText("B", 88, 74); c.strokeStyle = "#e8433a"; c.lineWidth = 3; c.beginPath(); c.moveTo(60, 50); c.lineTo(38, 30); c.stroke(); c.strokeStyle = "#2a6fd6"; c.beginPath(); c.moveTo(60, 50); c.lineTo(92, 66); c.stroke(); });
+  B.box("#5a4a30", 210, 130, 80, 60, 18, 0); const mp = new THREE.Mesh(new THREE.PlaneGeometry(76, 56), new THREE.MeshLambertMaterial({ map: mapT })); mp.rotation.x = -Math.PI / 2; mp.position.set(210, 18.3, 130); g.add(mp);
+  // radio desk on the north wall
+  B.box("#4a4c52", 210, 21, 120, 30, 20, 0); B.box("#2a3a2a", 190, 18, 30, 16, 14, 20); B.box("#1a1a1a", 230, 16, 24, 12, 10, 20); B.box("#c0c4cc", 182, 12, 1, 1, 22, 34);
+  const dial = B.sph(B.M("#3dff8a", { neon: true }), 196, 26.2, 1.4, 28); B.anim((t) => dial.scale.setScalar(1.2 + Math.sin(t * 6) * 0.3));
+  // bunk beds on the east wall
+  for (const z of [60, 130, 200]) for (const y of [8, 30]) { B.box("#5a6a4a", 399, z, 28, 56, 4, y); B.box("#e8e4d8", 399, z - 22, 24, 10, 3, y + 4); }
+  for (const z of [30, 230]) B.box("#3a3c40", 399, z, 2, 2, 46, 0);
+  // sandbags, crates and a blue flag
+  const bags = []; for (let i = 0; i < 4; i++) for (let k = 0; k < 2; k++) bags.push([340 + i * 14, 4 + k * 8, 250, 14, 8, 10]); B.inst("#c8b080", bags);
+  B.box("#a87a48", 30, 252, 30, 30, 22, 0); B.box("#a87a48", 30, 252, 22, 22, 16, 22);
+  B.box("#4a4a52", 150, 6, 2, 2, 50, 0); B.plane(B.M("#2a6fd6", { ds: true }), 160, 6, 18, 12, 36, 0);
+  const l1 = new THREE.PointLight(0xfff0c8, 1.4, 460, 1.2); l1.position.set(BKW / 2, 60, BKH / 2); g.add(l1);
+  for (const x of [80, BKW - 80]) { const l = new THREE.PointLight(0xfff0c8, 0.6, 260, 1.4); l.position.set(x, 55, BKH / 2); g.add(l); }
+  G3.bunk = { g, tick: () => {} };
+  G3.bunk.g.visible = indoor && INT === "bunk";
+}
+function drawBunker2D(dpr, W, H) {
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
+  const top = W < 640 ? 196 : 150, k = Math.min((W - 32) / (BKW + 16), (H - top - 110) / (BKH + 16), 2.4), ox = (W - BKW * k) / 2, oy = Math.max(top, (H - BKH * k) / 2);
+  ctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * ox, dpr * oy);
+  const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, w, h); };
+  R(0, 0, BKW, BKH, "#6a6c70"); ctx.fillStyle = "rgba(0,0,0,.15)"; for (let x = 0; x < BKW; x += 32) ctx.fillRect(x, 0, 1, BKH); for (let y = 0; y < BKH; y += 32) ctx.fillRect(0, y, BKW, 1);
+  R(-8, -8, BKW + 16, 8, "#8a8c90"); R(-8, 0, 8, BKH, "#8a8c90"); R(BKW, 0, 8, BKH, "#8a8c90"); R(-8, BKH, BKW / 2 - 14, 8, "#8a8c90"); R(BKW / 2 + 22, BKH, BKW / 2 - 14, 8, "#8a8c90");
+  R(6, 40, 30, 150, "#3a3c40"); for (let i = 0; i < 8; i++) R(28, 48 + i * 18, 6, 4, "#1a1a1a");
+  R(170, 100, 80, 60, "#d8c08a"); ctx.fillStyle = "#e8433a"; ctx.font = "bold 16px sans-serif"; ctx.fillText("A", 184, 120); ctx.fillStyle = "#2a6fd6"; ctx.fillText("B", 226, 150);
+  R(150, 6, 120, 30, "#4a4c52"); ctx.fillStyle = Math.sin(now * 6) > 0 ? "#3dff8a" : "#1a5a3a"; ctx.beginPath(); ctx.arc(196, 22, 3, 0, TAU); ctx.fill();
+  for (const z of [32, 102, 172]) R(386, z, 26, 56, "#5a6a4a"); R(330, 230, 60, 40, "#c8b080"); R(6, 230, 50, 44, "#a87a48");
+  if (Math.sin(now * 3) > 0) { ctx.fillStyle = "#ff3030"; for (let x = 70; x < BKW; x += 140) ctx.fillRect(x - 5, 0, 10, 3); }
+  ctx.fillStyle = "#e8e4d8"; ctx.font = "bold 10px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for (const [t, x, y] of [["АРСЕНАЛ", 60, 30], ["КАРТА", 210, 172], ["РАЦИЯ", 210, 46], ["КОЙКИ", 360, 22], ["ВЫХОД", BKW / 2, BKH + 14]]) ctx.fillText(t, x, y);
+  ctx.textAlign = "left";
+  const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#9cc6ff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
+  if (SUM) drawSummon2D(OX, OZ);
+  const L = toLocal(); drawHuman({ ...player, x: L.x, y: L.y, kind: "player", dead: false }, true);
+}
 /* ===== the Dream Palace in Snovstol: a throne hall you can walk around ===== */
 const DPW = 480, DPH = 360;
 const DPAL = { RW: DPW, RH: DPH, OX: WORLD + 2600, OZ: WORLD / 2 + 4200,
@@ -2411,7 +2508,7 @@ function enterPalace() {
   $("game").classList.add("indoor"); sfx.doorOpen(); toast("Дворец Снов · тронный зал. Королева ждёт тебя у трона", 3);
   [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tone(f, f, 0.4, 0.035, "sine"), 150 + i * 140));
   if (G3.ready && !G3.dpal) buildPalace();
-  for (const k of ["room", "term", "garden", "hroom"]) if (G3[k]) G3[k].g.visible = false;
+  for (const k of ["room", "term", "garden", "hroom", "bunk"]) if (G3[k]) G3[k].g.visible = false;
   if (G3.dpal) G3.dpal.g.visible = true; outerLand(true);
 }
 function palaceAct(sp) {
@@ -2501,7 +2598,7 @@ function enterHotelRoom(n) {
   cam3.yaw = -Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("game").classList.add("indoor"); sfx.doorOpen(); toast("Номер " + n + " · отель «Олимпия». Кровать, ванна, мини-бар и окно на Арарат", 3);
   if (G3.ready && !G3.hroom) buildHotelRoom();
-  for (const k of ["room", "term", "garden", "dpal"]) if (G3[k]) G3[k].g.visible = false;
+  for (const k of ["room", "term", "garden", "dpal", "bunk"]) if (G3[k]) G3[k].g.visible = false;
   if (G3.hroom) G3.hroom.g.visible = true; outerLand(true);
 }
 function hroomAct(sp) {
@@ -2701,7 +2798,7 @@ function drawGarden2D(dpr, W, H) {
 }
 function useRoom(kind) {
   if (!HOME_ROOM.solids) { HOME_ROOM.solids = ROOM_SOLIDS; HOME_ROOM.spots = ROOM_SPOTS; }
-  const R = kind === "air" ? TERM_ROOM : kind === "olymp" ? OLYMP_ROOM : kind === "hroom" ? HROOM : kind === "dpal" ? DPAL : HOME_ROOM; INT = kind;
+  const R = kind === "air" ? TERM_ROOM : kind === "olymp" ? OLYMP_ROOM : kind === "hroom" ? HROOM : kind === "dpal" ? DPAL : kind === "bunk" ? BUNK : HOME_ROOM; INT = kind;
   RW = R.RW; RH = R.RH; OX = R.OX; OZ = R.OZ; ROOM_SOLIDS = R.solids; ROOM_SPOTS = R.spots;
 }
 function enterTerminal() {
@@ -2713,7 +2810,7 @@ function enterTerminal() {
   $("game").classList.add("indoor"); sfx.doorOpen(); toast(CITY.village ? "Автостанция Нова-Э" : "Терминал аэропорта · " + CITY.name, 1.8);
   setTimeout(() => tone(660, 660, 0.25, 0.06, "sine"), 300); setTimeout(() => tone(880, 880, 0.35, 0.06, "sine"), 560);
   if (G3.ready && !G3.term) buildTerm();
-  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
+  if (G3.term) G3.term.g.visible = true; if (G3.room) G3.room.g.visible = false; if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; if (G3.bunk) G3.bunk.g.visible = false; outerLand(true);
 }
 function termAct(sp) {
   if (sp.id === "door") return leaveHome();
@@ -4144,24 +4241,25 @@ function enterHome() {
   if (G3.ready && !G3.room) G3.buildRoom();
   if (G3.room) G3.room.g.visible = true;
   if (G3.term) G3.term.g.visible = false;
-  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
+  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; if (G3.bunk) G3.bunk.g.visible = false; outerLand(true);
 }
 function leaveHome() {
   commHush();
   indoor = false; player.couch = false;
-  const q = INT === "air" ? places.air : INT === "olymp" || INT === "hroom" ? places.olympDoor : INT === "dpal" ? places.dpalDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "dpal" ? "dpal" : INT === "olymp" || INT === "hroom" ? "olymp" + Math.max(0, (places.olympDoors || []).indexOf(places.olympDoor)) : "home";
+  const q = INT === "air" ? places.air : INT === "olymp" || INT === "hroom" ? places.olympDoor : INT === "dpal" ? places.dpalDoor : INT === "bunk" ? places.bunkDoor : places.home; player.x = q.x; player.y = q.y + 46; player.a = Math.PI / 2; shopLock = INT === "air" ? "air" : INT === "dpal" ? "dpal" : INT === "bunk" ? "bunk" : INT === "olymp" || INT === "hroom" ? "olymp" + Math.max(0, (places.olympDoors || []).indexOf(places.olympDoor)) : "home";
   cam3.yaw = Math.PI / 2; cam3.init = false; cam.x = player.x; cam.y = player.y;
   $("bEnter").style.fontSize = "";
   $("game").classList.remove("indoor"); $("tvBar").hidden = true; hudCache.tvbar = null; $("bEnter").textContent = "СЕСТЬ"; hudCache.spot = null; $("roomHint").hidden = true; sfx.door();
   if (G3.room) G3.room.g.visible = false;
   if (G3.term) G3.term.g.visible = false;
-  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; outerLand(true);
+  if (G3.garden) G3.garden.g.visible = false; if (G3.hroom) G3.hroom.g.visible = false; if (G3.dpal) G3.dpal.g.visible = false; if (G3.bunk) G3.bunk.g.visible = false; outerLand(true);
 }
 function roomAct(sp) {
   if (INT === "air") return termAct(sp);
   if (INT === "olymp") return gardenAct(sp);
   if (INT === "hroom") return hroomAct(sp);
   if (INT === "dpal") return palaceAct(sp);
+  if (INT === "bunk") return bunkerAct(sp);
   if (sp.id === "door") return leaveHome();
   if (sp.id === "bed") { hmView = "sleep"; renderHome(); showOv("home"); return; }
   if (sp.id === "wardrobe") { hmView = "wardrobe"; renderHome(); showOv("home"); return; }
@@ -4207,6 +4305,7 @@ function drawIndoor2D(dpr, W, H) {
   if (INT === "olymp") return drawGarden2D(dpr, W, H);
   if (INT === "hroom") return drawHroom2D(dpr, W, H);
   if (INT === "dpal") return drawPalace2D(dpr, W, H);
+  if (INT === "bunk") return drawBunker2D(dpr, W, H);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = "#15131b"; ctx.fillRect(0, 0, W, H);
   let top = W < 640 ? 196 : 150; // clear the button column on phones
   if (TV.on) {
@@ -4938,6 +5037,7 @@ if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
 if (places.tacA) SHOPS.push({ id: "tacA", col: "#e8433a", hex: 0xe8433a, label: "A", at: () => places.tacA, open: () => startPlant("A") });
 if (places.tacB) SHOPS.push({ id: "tacB", col: "#2a6fd6", hex: 0x2a6fd6, label: "B", at: () => places.tacB, open: () => startPlant("B") });
+if (places.bunkDoor) SHOPS.push({ id: "bunk", col: "#4d93ff", hex: 0x4d93ff, label: "⇧", at: () => places.bunkDoor, open: () => enterBunker() });
 if (places.dpalDoor) SHOPS.push({ id: "dpal", col: "#ff7ad8", hex: 0xff7ad8, label: "⇧", at: () => places.dpalDoor, open: () => enterPalace() });
 if (places.olympDoors) places.olympDoors.forEach((d, i) => SHOPS.push({ id: "olymp" + i, col: "#4fae5a", hex: 0x4fae5a, label: "⇧", at: () => d, open: () => { places.olympDoor = d; enterGarden(); } }));
 if (places.louvreDoor) SHOPS.push({ id: "louvre", col: "#d9b44a", hex: 0xd9b44a, label: "🖼", at: () => places.louvreDoor, open: () => openMona() });
@@ -7429,7 +7529,7 @@ function render3d(t) {
   if (G3.w !== W || G3.h !== H) { G3.w = W; G3.h = H; G3.r.setSize(W, H, false); cam.aspect = W / H; cam.fov = W < H ? 76 : 62; cam.updateProjectionMatrix(); }
   const P = player.inCar || player, inCar = !!player.inCar;
   dayNight3d();
-  if (indoor && (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : G3.room)) {
+  if (indoor && (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : INT === "bunk" ? G3.bunk : G3.room)) {
     const L = toLocal(), cam = G3.camera;
     cam3.dragT = Math.max(0, cam3.dragT - dt);
     if (keys.KeyZ) { cam3.yaw -= 2.2 * dt; cam3.dragT = 1.5; } if (keys.KeyC) { cam3.yaw += 2.2 * dt; cam3.dragT = 1.5; }
@@ -7442,7 +7542,7 @@ function render3d(t) {
     if (!cam3.init) { cam3.px = tx; cam3.py = ty; cam3.pz = tz; cam3.init = true; }
     const kk = Math.min(1, dt * 10); cam3.px = lerp(cam3.px, tx, kk); cam3.py = lerp(cam3.py, ty, kk); cam3.pz = lerp(cam3.pz, tz, kk);
     cam.position.set(cam3.px, cam3.py, cam3.pz); cam.lookAt(player.x + fx * 20, 14, player.y + fz * 20);
-    (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : G3.room).tick(dt);
+    (INT === "air" ? G3.term : INT === "olymp" ? G3.garden : INT === "hroom" ? G3.hroom : INT === "dpal" ? G3.dpal : INT === "bunk" ? G3.bunk : G3.room).tick(dt);
   } else if (state === "lift" && LIFT && places.statue) {
     const S = places.statue, a = Math.atan2(WORLD / 2 - S.y, WORLD / 2 - S.x) + Math.sin(LIFT.ang) * 1.3, h = 30 + LIFT.h * 7.4, d = 300 + LIFT.h * 7;
     cam.position.set(S.x + Math.cos(a) * 60, h, S.y + Math.sin(a) * 60); cam.lookAt(S.x + Math.cos(a) * d, 10, S.y + Math.sin(a) * d);
@@ -7529,7 +7629,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, get RD() { return RD; }, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, enterBunker, get RD() { return RD; }, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
