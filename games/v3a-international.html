@@ -2409,14 +2409,15 @@ function updRound(dt) {
 /* ===== Taktikgrad bunker: a concrete room you walk around ===== */
 const BKW = 420, BKH = 280;
 const BUNK = { RW: BKW, RH: BKH, OX: WORLD + 2600, OZ: WORLD / 2 + 5000,
-  solids: [[6, 40, 30, 150], [170, 100, 80, 60], [150, 6, 120, 30], [384, 30, 30, 200], [330, 230, 60, 40], [6, 230, 50, 44]],
+  solids: [[6, 40, 30, 150], [170, 100, 80, 60], [150, 6, 120, 30], [384, 30, 30, 200], [330, 230, 60, 40], [6, 230, 50, 44], [286, 6, 92, 28], [314, 34, 34, 30]],
   spots: [
     { id: "out", x: BKW / 2, y: BKH - 16, r: 32, label: "ВЫЙТИ", text: "Выйти из бункера" },
     { id: "ammo", x: 86, y: 246, r: 32, label: "ПАТРОНЫ", text: "Ящик с патронами: взять патроны" },
     { id: "armory", x: 60, y: 115, r: 34, label: "АРСЕНАЛ", text: "Арсенал: патроны, бронежилет, аптечка" },
     { id: "map", x: 210, y: 180, r: 32, label: "КАРТА", text: "Тактическая карта города" },
     { id: "radio", x: 210, y: 56, r: 30, label: "РАЦИЯ", text: "Рация: вызвать подкрепление" },
-    { id: "bunk", x: 356, y: 130, r: 32, label: "КОЙКА", text: "Койка: отдохнуть" },
+    { id: "bunk", x: 356, y: 140, r: 30, label: "КОЙКА", text: "Койка: отдохнуть" },
+    { id: "bcomp", x: 300, y: 84, r: 30, label: "КОМП", text: "Комп управления битвой" },
   ] };
 function enterBunker() {
   useRoom("bunk"); player.umbOn = false; if (player.inCar) exitCar(true); if (TV.on) tvSet(-1);
@@ -2448,6 +2449,12 @@ function bunkerAct(sp) {
   if (sp.id === "radio") {
     const d = places.bunkDoor; for (let i = 0; i < 4; i++) mkSoldier("att", d.x + rand(-60, 60), d.y + 60 + rand(0, 50));
     noise(0.6, 0.15, 2400); toast("📻 «Подкрепление выслано!» — у входа в бункер ждут 4 бойца атаки", 3); return;
+  }
+  if (sp.id === "bcomp") {
+    const att = people.filter((q) => q.team === "att" && !q.dead).length, def = people.filter((q) => q.team === "def" && !q.dead).length;
+    const lines = ["Это мой пост, сюда не сесть — я веду битву!", "Не трогай клавиатуру, я корректирую атаку!", "Место занято, боец. Смотри на экраны!", "Я на связи со всеми отрядами. Держись рядом с нашими!"];
+    tone(990, 990, 0.06, 0.05, "square"); setTimeout(() => tone(1320, 1320, 0.06, 0.05, "square"), 90);
+    toast("🧑‍💻 Сокомандник: «" + lines[(Math.random() * lines.length) | 0] + "» · Атака: " + att + " бойцов · Защита: " + def + " · твоих побед: " + (save.rounds || 0), 4.2); return;
   }
   if (sp.id === "bunk") { player.hp = 100; updHud(); tone(330, 220, 0.5, 0.06, "sine"); toast("😴 Короткий отдых на койке. Здоровье 100", 2.4); }
 }
@@ -2487,7 +2494,39 @@ function buildBunker() {
   B.box("#4a4a52", 150, 6, 2, 2, 50, 0); B.plane(B.M("#2a6fd6", { ds: true }), 160, 6, 18, 12, 36, 0);
   const l1 = new THREE.PointLight(0xfff0c8, 1.4, 460, 1.2); l1.position.set(BKW / 2, 60, BKH / 2); g.add(l1);
   for (const x of [80, BKW - 80]) { const l = new THREE.PointLight(0xfff0c8, 0.6, 260, 1.4); l.position.set(x, 55, BKH / 2); g.add(l); }
-  G3.bunk = { g, tick: () => {} };
+  // battle control computer: three monitors with the live battle, your teammate at the keyboard
+  B.box("#3a3c40", 332, 20, 92, 28, 18, 0); B.box("#1a1a1a", 332, 26, 40, 8, 1, 18);
+  const bc = document.createElement("canvas"); bc.width = 384; bc.height = 128; const bcTex = new THREE.CanvasTexture(bc);
+  for (const [i, x, ry] of [[0, 300, 0.35], [1, 332, 0], [2, 364, -0.35]]) {
+    B.box("#111", x, 10, 30, 2, 20, 22);
+    const sm = new THREE.Mesh(new THREE.PlaneGeometry(28, 18), new THREE.MeshBasicMaterial({ map: bcTex })); sm.material.map = bcTex;
+    const tex = sm.geometry.attributes.uv; for (let k = 0; k < tex.count; k++) tex.setX(k, (i + tex.getX(k)) / 3);
+    sm.position.set(x, 32, 11.2); sm.rotation.y = ry; g.add(sm);
+  }
+  B.box("#4a4c52", 332, 50, 18, 18, 2, 8); B.box("#4a4c52", 332, 59.5, 16, 2, 7, 10); B.cyl("#2a2a2a", 332, 50, 1.2, 1.2, 10, 0, 8);
+  const mate = G3.personMesh({ kind: "gang", team: "att", id: 11, col: "#b8863a", skin: "#d9a47c", hair: "#2b1d14" }, false);
+  mate.gun.visible = false; if (mate.umb) mate.umb.visible = false; mate.g.rotation.y = Math.PI / 2; mate.g.position.set(332, 6, 50); g.add(mate.g);
+  mate.lL.rotation.z = mate.lR.rotation.z = 1.3;
+  B.anim((t) => { mate.aL.rotation.z = 1.25 + Math.sin(t * 14) * 0.08; mate.aR.rotation.z = 1.25 + Math.sin(t * 14 + 1.5) * 0.08; });
+  let bt = 0;
+  const drawBC = () => {
+    const c = bc.getContext("2d"); c.fillStyle = "#06120a"; c.fillRect(0, 0, 384, 128);
+    // screen 1: city map with both teams
+    c.strokeStyle = "#1f5a2a"; for (let x = 0; x < 128; x += 16) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, 128); c.stroke(); c.beginPath(); c.moveTo(0, x); c.lineTo(128, x); c.stroke(); }
+    for (const q of people) if (q.team && !q.dead) { c.fillStyle = q.team === "att" ? "#ff9a3d" : "#4d93ff"; c.fillRect((q.x / WORLD) * 124 + 1, (q.y / WORLD) * 124 + 1, 3, 3); }
+    for (const [q, col, t] of [[places.tacA, "#e8433a", "A"], [places.tacB, "#2a6fd6", "B"]]) if (q) { c.fillStyle = col; c.font = "bold 14px sans-serif"; c.fillText(t, (q.x / WORLD) * 124 - 4, (q.y / WORLD) * 124 + 5); }
+    // screen 2: team strength
+    const att = people.filter((q) => q.team === "att" && !q.dead).length, def = people.filter((q) => q.team === "def" && !q.dead).length;
+    c.fillStyle = "#3dff8a"; c.font = "bold 13px monospace"; c.fillText("БИТВА · LIVE", 140, 20);
+    c.fillStyle = "#ff9a3d"; c.fillRect(140, 34, att * 8, 22); c.fillStyle = "#4d93ff"; c.fillRect(140, 70, def * 8, 22);
+    c.fillStyle = "#fff"; c.fillText("АТАКА " + att, 142, 50); c.fillText("ЗАЩИТА " + def, 142, 86); c.fillStyle = "#3dff8a"; c.fillText("ПОБЕД: " + (save.rounds || 0), 140, 116);
+    // screen 3: radar sweep and radio log
+    const a = now * 2; c.strokeStyle = "#3dff8a"; c.beginPath(); c.arc(320, 64, 50, 0, TAU); c.stroke(); c.beginPath(); c.moveTo(320, 64); c.lineTo(320 + Math.cos(a) * 50, 64 + Math.sin(a) * 50); c.stroke();
+    c.fillStyle = "rgba(61,255,138,.25)"; c.beginPath(); c.moveTo(320, 64); c.arc(320, 64, 50, a - 0.6, a); c.fill();
+    bcTex.needsUpdate = true;
+  };
+  drawBC();
+  G3.bunk = { g, tick: (dt) => { bt -= dt; if (bt <= 0) { bt = 0.3; drawBC(); } } };
   G3.bunk.g.visible = indoor && INT === "bunk";
 }
 function drawBunker2D(dpr, W, H) {
@@ -2500,10 +2539,12 @@ function drawBunker2D(dpr, W, H) {
   R(6, 40, 30, 150, "#3a3c40"); for (let i = 0; i < 8; i++) R(28, 48 + i * 18, 6, 4, "#1a1a1a");
   R(170, 100, 80, 60, "#d8c08a"); ctx.fillStyle = "#e8433a"; ctx.font = "bold 16px sans-serif"; ctx.fillText("A", 184, 120); ctx.fillStyle = "#2a6fd6"; ctx.fillText("B", 226, 150);
   R(150, 6, 120, 30, "#4a4c52"); ctx.fillStyle = Math.sin(now * 6) > 0 ? "#3dff8a" : "#1a5a3a"; ctx.beginPath(); ctx.arc(196, 22, 3, 0, TAU); ctx.fill();
-  for (const z of [32, 102, 172]) R(386, z, 26, 56, "#5a6a4a"); R(330, 230, 60, 40, "#c8b080"); R(6, 230, 50, 44, "#4a5a34"); ctx.fillStyle = "#ffd23d"; ctx.font = "bold 8px sans-serif"; ctx.fillText("ПАТРОНЫ", 8, 254);
+  for (const z of [32, 102, 172]) R(386, z, 26, 56, "#5a6a4a"); R(330, 230, 60, 40, "#c8b080");
+  R(286, 6, 92, 28, "#3a3c40"); for (const x of [292, 322, 352]) R(x, 8, 24, 6, Math.sin(now * 4 + x) > -0.2 ? "#3dff8a" : "#1a5a3a");
+  R(320, 40, 24, 22, "#4a4c52"); drawHuman({ x: 332, y: 50, a: -Math.PI / 2, kind: "gang", team: "att", col: "#b8863a", skin: "#d9a47c", hair: "#2b1d14", walk: now * 3, armed: false, dead: false }, false); R(6, 230, 50, 44, "#4a5a34"); ctx.fillStyle = "#ffd23d"; ctx.font = "bold 8px sans-serif"; ctx.fillText("ПАТРОНЫ", 8, 254);
   if (Math.sin(now * 3) > 0) { ctx.fillStyle = "#ff3030"; for (let x = 70; x < BKW; x += 140) ctx.fillRect(x - 5, 0, 10, 3); }
   ctx.fillStyle = "#e8e4d8"; ctx.font = "bold 10px Manrope,sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  for (const [t, x, y] of [["АРСЕНАЛ", 60, 30], ["ПАТРОНЫ ↓", 86, 220], ["КАРТА", 210, 172], ["РАЦИЯ", 210, 46], ["КОЙКИ", 360, 22], ["ВЫХОД", BKW / 2, BKH + 14]]) ctx.fillText(t, x, y);
+  for (const [t, x, y] of [["АРСЕНАЛ", 60, 30], ["ПАТРОНЫ ↓", 86, 220], ["КОМП БИТВЫ", 332, 76], ["КАРТА", 210, 172], ["РАЦИЯ", 210, 46], ["КОЙКИ", 360, 22], ["ВЫХОД", BKW / 2, BKH + 14]]) ctx.fillText(t, x, y);
   ctx.textAlign = "left";
   const spot = nearSpot(); if (spot) { ctx.strokeStyle = "#9cc6ff"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(spot.x, spot.y, 14 + Math.sin(now * 5) * 2, 0, TAU); ctx.stroke(); }
   if (SUM) drawSummon2D(OX, OZ);
