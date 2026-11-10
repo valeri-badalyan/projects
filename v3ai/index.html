@@ -129,6 +129,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     const MODES = [
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
+      { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
       { id: "school", ico: "📚", n: "Учёба", hi: "Объясню любую тему шаг за шагом.", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения. В конце можно задать один короткий вопрос на проверку.", s: ["Объясни дроби на примере пиццы", "Как решить 3x + 5 = 20?", "Кратко о Солнечной системе"] },
       { id: "write", ico: "✍️", n: "Писатель", hi: "Сказки, стихи, поздравления и идеи.", p: "Режим «Писатель»: ты креативный автор. Пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи.", s: ["Сказка про кота-космонавта", "Стих на день рождения маме", "Придумай название для моего канала"] },
       { id: "lang", ico: "🌍", n: "Переводчик", hi: "Переведу на любой язык и подскажу произношение.", p: "Режим «Переводчик»: переводи текст пользователя. Если язык не указан: с русского — на английский, с других языков — на русский. Дай перевод, а ниже коротко произношение русскими буквами или полезный нюанс.", s: ["Переведи: «Я люблю играть в футбол»", "«Спасибо» на 5 языках", "Hello, how are you?"] },
@@ -153,7 +154,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       chats = chats.slice(0, 30);
       chats.forEach((c) => { c.msgs = c.msgs.slice(-40); });
       let pics = 0; // keep only the 15 newest drawings in storage
-      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if (m.svg && ++pics > 15) { delete m.svg; m.gone = 1; } } });
+      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if (m.svg && ++pics > 15) { delete m.svg; delete m.anim; m.gone = 1; } } });
       store.set("v3aiChats", chats); store.set("v3aiCur", cur); store.set("v3aiMode", mode); store.set("v3aiAsked", asked);
     }
 
@@ -304,6 +305,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       save(); render();
 
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
+      if (!img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
       if (!img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
       setStatus("думает…", true);
       const el = bubble({ r: "a", t: "" });
@@ -316,7 +318,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone ? `(Нарисовал картинку по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone ? `(${m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
         hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
@@ -359,6 +361,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const t = q.toLowerCase().replace(/ё/g, "е");
       return /^(пожалуйста,?\s*)?(нарисуй|изобрази|намалюй)/.test(t) || /(сгенерируй|создай|сделай|покажи|придумай)\s+(мне\s+)?(картин|рисун|изображен|арт|аватар|аватарк|логотип|обои|иконк)/.test(t) || /^(draw|generate an? (image|picture))/.test(t);
     }
+    function wantsGif(q, M) {
+      if (M.id === "gif") return true;
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      return /(^|[^a-z])gif|гиф|анимаци|анимирован|анимируй|оживи/.test(t);
+    }
     function cleanSvg(src) {
       const m = String(src).match(/<svg[\s\S]*<\/svg>/i);
       if (!m) return "";
@@ -393,8 +400,8 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     let dl = null, dlAsked = false;
     async function download(m, btn) {
       try {
-        const cv = await toCanvas(m.svg), blob = await new Promise((r) => cv.toBlob(r, "image/png"));
-        const name = "V3AI-" + (m.q || "art").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + ".png";
+        const blob = m.gif ? (await gifOf(m)).blob : await new Promise(async (r) => (await toCanvas(m.svg)).toBlob(r, "image/png"));
+        const name = "V3AI-" + (m.q || "art").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + (m.gif ? ".gif" : ".png");
         if (!dlAsked) { dlAsked = true; try { dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch (e) { dl = null; } }
         if (dl) { await dl.save({ filename: name, data: blob }); btn.textContent = "✓ Сохранено"; return; }
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); btn.textContent = "✓ Скачивается";
@@ -407,7 +414,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     }
     function art(el, m) {
       const box = document.createElement("div"); box.className = "vi-art";
-      if (m.svg) {
+      if (m.svg && m.gif) {
+        box.classList.add("wait"); box.textContent = "🎞 Собираю GIF…";
+        gifOf(m).then((g) => {
+          box.classList.remove("wait"); box.textContent = "";
+          const im = document.createElement("img"); im.src = g.url; im.alt = m.q || "GIF"; im.addEventListener("click", () => zoom(im.src)); box.appendChild(im);
+          const t = document.createElement("span"); t.className = "vi-off"; t.textContent = (m.off ? "офлайн · " : "") + "GIF · " + (g.blob.size / 1024 | 0) + " КБ"; box.appendChild(t);
+        }, () => { box.classList.remove("wait"); box.textContent = "Не получилось собрать GIF — нажми «Ещё вариант»"; });
+      } else if (m.svg) {
         const im = document.createElement("img"); im.src = svgUrl(m.svg); im.alt = m.q || "Картинка"; im.addEventListener("click", () => zoom(im.src)); box.appendChild(im);
         if (m.off) { const t = document.createElement("span"); t.className = "vi-off"; t.textContent = "офлайн-набросок"; box.appendChild(t); }
       } else { box.classList.add("wait"); box.style.animation = "none"; box.textContent = "🖼 Старая картинка не хранится — нажми «Ещё вариант»"; }
@@ -415,10 +429,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (m.t) { const cap = document.createElement("div"); cap.className = "vi-body"; cap.innerHTML = md(m.t); el.appendChild(cap); }
       const bar = document.createElement("div"); bar.className = "vi-tools";
       if (m.svg) {
-        const sv = document.createElement("button"); sv.type = "button"; sv.textContent = "💾 Скачать"; sv.addEventListener("click", () => download(m, sv));
+        const sv = document.createElement("button"); sv.type = "button"; sv.textContent = m.gif ? "💾 Скачать GIF" : "💾 Скачать"; sv.addEventListener("click", () => download(m, sv));
         bar.append(sv);
+        if (!m.gif) { const an = document.createElement("button"); an.type = "button"; an.textContent = "🎞 Сделать GIF"; an.addEventListener("click", () => send(m.q, "gif")); bar.append(an); }
       }
-      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, true));
+      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, m.gif ? "gif" : true));
       bar.appendChild(again);
       el.appendChild(bar);
     }
@@ -436,23 +451,176 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       let extra = "";
       if (night) for (let i = 0; i < 40; i++) extra += `<circle cx="${(rnd() * 512) | 0}" cy="${(rnd() * 300) | 0}" r="${(rnd() * 2 + .6).toFixed(1)}" fill="#fff" opacity="${(rnd() * .6 + .4).toFixed(2)}"/>`;
       if (snow) for (let i = 0; i < 50; i++) extra += `<circle cx="${(rnd() * 512) | 0}" cy="${(rnd() * 512) | 0}" r="${(rnd() * 3 + 1).toFixed(1)}" fill="#fff" opacity=".85"/>`;
+      if (extra) extra = `<g id="fx">${extra}</g>`;
       const sun = night ? `<circle cx="410" cy="100" r="42" fill="#fff6c8"/><circle cx="428" cy="88" r="38" fill="${sky[0]}"/>` : `<circle cx="410" cy="100" r="48" fill="#fff3a0" opacity=".95"/><circle cx="410" cy="100" r="74" fill="#fff3a0" opacity=".25"/>`;
+      const sunG = `<g id="sun">${sun}</g>`;
       const land = sea ? `<rect y="330" width="512" height="182" fill="${ground}"/><path d="M0 350 q32 -12 64 0 t64 0 t64 0 t64 0 t64 0 t64 0 t64 0 t64 0" stroke="#bfe6ff" stroke-width="4" fill="none" opacity=".6"/>` : `<path d="M0 340 Q120 280 250 330 T512 310 V512 H0z" fill="${ground}"/><path d="M0 390 Q160 350 300 395 T512 380 V512 H0z" fill="#000" opacity=".12"/>`;
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="512" height="512" fill="url(#s)"/>${sun}${extra}${land}<ellipse cx="256" cy="410" rx="110" ry="18" fill="#000" opacity=".18"/><text x="256" y="400" font-size="210" text-anchor="middle">${sub}</text></svg>`;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="512" height="512" fill="url(#s)"/>${sunG}${extra}${land}<ellipse id="shadow" cx="256" cy="410" rx="110" ry="18" fill="#000" opacity=".18"/><text id="hero" x="256" y="400" font-size="210" text-anchor="middle">${sub}</text></svg>`;
       return cleanSvg(svg);
     }
 
-    async function draw(c, q) {
+    /* ---- GIF: Claude draws an SVG and says how its parts move; V3AI renders the frames and encodes a looping GIF ---- */
+    const OFF_ANIM = { frames: 20, fps: 12, anim: [
+      { id: "hero", origin: [256, 400], keys: [{ t: 0, y: 0, sx: 1.06, sy: .94 }, { t: .15, y: 0, sx: 1, sy: 1 }, { t: .5, y: -70, sx: .97, sy: 1.04 }, { t: .85, y: 0, sx: 1, sy: 1 }, { t: 1, y: 0, sx: 1.06, sy: .94 }] },
+      { id: "shadow", origin: [256, 410], keys: [{ t: 0, s: 1, o: 1 }, { t: .5, s: .7, o: .5 }, { t: 1, s: 1, o: 1 }] },
+      { id: "sun", origin: [410, 100], keys: [{ t: 0, s: 1 }, { t: .5, s: 1.08 }, { t: 1, s: 1 }] },
+      { id: "fx", origin: [256, 256], keys: [{ t: 0, o: 1 }, { t: .5, o: .45, y: 6 }, { t: 1, o: 1 }] },
+    ] };
+    function parseAnim(text) {
+      const m = String(text).match(/```json\s*([\s\S]*?)```/i) || String(text).match(/(\{[\s\S]*"anim"[\s\S]*\})/);
+      if (!m) return null;
+      try {
+        const a = JSON.parse(m[1]);
+        if (!a || !Array.isArray(a.anim)) return null;
+        const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
+        const anim = a.anim.slice(0, 16).filter((x) => x && typeof x.id === "string" && Array.isArray(x.keys) && x.keys.length).map((x) => ({
+          id: x.id.slice(0, 40), origin: Array.isArray(x.origin) ? [num(x.origin[0], 256), num(x.origin[1], 256)] : [256, 256],
+          keys: x.keys.slice(0, 12).map((k) => ({ t: Math.min(1, Math.max(0, num(k.t, 0))), x: num(k.x, 0), y: num(k.y, 0), r: num(k.r, 0), s: num(k.s, 1), sx: num(k.sx, NaN), sy: num(k.sy, NaN), o: Math.min(1, Math.max(0, num(k.o, 1))) })).sort((p, q) => p.t - q.t),
+        }));
+        return anim.length ? { frames: Math.round(Math.min(36, Math.max(8, num(a.frames, 24)))), fps: Math.min(20, Math.max(4, num(a.fps, 12))), anim } : null;
+      } catch (e) { return null; }
+    }
+    // the value of every animated property at time t (0..1), eased between keys
+    function at(keys, t) {
+      let i = 0; while (i < keys.length - 1 && keys[i + 1].t < t) i++;
+      const a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)];
+      const span = b.t - a.t, u = span > 0 ? Math.min(1, Math.max(0, (t - a.t) / span)) : 0, e = u * u * (3 - 2 * u);
+      const mix = (p, q) => p + (q - p) * e;
+      const sx = (k) => (isNaN(k.sx) ? k.s : k.sx), sy = (k) => (isNaN(k.sy) ? k.s : k.sy);
+      return { x: mix(a.x, b.x), y: mix(a.y, b.y), r: mix(a.r, b.r), sx: mix(sx(a), sx(b)), sy: mix(sy(a), sy(b)), o: mix(a.o, b.o) };
+    }
+    function frameSvgs(svg, spec) {
+      const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement, NS = "http://www.w3.org/2000/svg";
+      // wrap each moving part, so its own transform stays and ours goes on top
+      const parts = spec.anim.map((a) => {
+        let el = null; try { el = root.querySelector("#" + CSS.escape(a.id)); } catch (e) { el = null; }
+        if (!el || el === root) return null;
+        const g = doc.createElementNS(NS, "g"); el.parentNode.insertBefore(g, el); g.appendChild(el);
+        return { a, g };
+      }).filter(Boolean);
+      if (!parts.length) { // nothing matched: gently sway the whole picture
+        const g = doc.createElementNS(NS, "g"); while (root.firstChild) g.appendChild(root.firstChild); root.appendChild(g);
+        parts.push({ g, a: { origin: [256, 256], keys: [{ t: 0, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }, { t: .5, x: 0, y: -8, r: 2, s: 1.07, sx: NaN, sy: NaN, o: 1 }, { t: 1, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }] } });
+      }
+      const ser = new XMLSerializer(), out = [];
+      for (let f = 0; f < spec.frames; f++) {
+        const t = f / spec.frames;
+        parts.forEach(({ a, g }) => {
+          const v = at(a.keys, t), [ox, oy] = a.origin, n = (z) => Math.round(z * 1000) / 1000;
+          g.setAttribute("transform", `translate(${n(ox + v.x)} ${n(oy + v.y)}) rotate(${n(v.r)}) scale(${n(v.sx)} ${n(v.sy)}) translate(${-ox} ${-oy})`);
+          if (v.o < .999) g.setAttribute("opacity", n(v.o)); else g.removeAttribute("opacity");
+        });
+        out.push(ser.serializeToString(root));
+      }
+      return out;
+    }
+    const loadImg = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
+    // Median-cut palette (256 colours) over all frames, then LZW: a complete GIF89a encoder.
+    function palette(frames) {
+      const hist = new Uint32Array(32768);
+      frames.forEach((d) => { for (let i = 0; i < d.length; i += 8) hist[((d[i] >> 3) << 10) | ((d[i + 1] >> 3) << 5) | (d[i + 2] >> 3)]++; });
+      const bins = []; for (let i = 0; i < 32768; i++) if (hist[i]) bins.push(i);
+      const ch = (b, c) => (c === 0 ? b >> 10 : c === 1 ? (b >> 5) & 31 : b & 31);
+      const boxes = [bins];
+      while (boxes.length < 256) {
+        let best = -1, bestScore = 0, bestC = 0;
+        boxes.forEach((bx, i) => {
+          if (bx.length < 2) return;
+          let cnt = 0; const lo = [31, 31, 31], hi = [0, 0, 0];
+          bx.forEach((b) => { cnt += hist[b]; for (let c = 0; c < 3; c++) { const v = ch(b, c); if (v < lo[c]) lo[c] = v; if (v > hi[c]) hi[c] = v; } });
+          for (let c = 0; c < 3; c++) { const sc = (hi[c] - lo[c]) * Math.sqrt(cnt); if (sc > bestScore) { bestScore = sc; best = i; bestC = c; } }
+        });
+        if (best < 0) break;
+        const bx = boxes[best].sort((p, q) => ch(p, bestC) - ch(q, bestC));
+        let total = 0; bx.forEach((b) => { total += hist[b]; });
+        let acc = 0, cut = 1; for (let i = 0; i < bx.length - 1; i++) { acc += hist[bx[i]]; if (acc >= total / 2) { cut = i + 1; break; } }
+        boxes.splice(best, 1, bx.slice(0, cut), bx.slice(cut));
+      }
+      const pal = boxes.map((bx) => { let n = 0, r = 0, g = 0, b = 0; bx.forEach((v) => { const w = hist[v]; n += w; r += ch(v, 0) * w; g += ch(v, 1) * w; b += ch(v, 2) * w; }); return n ? [r / n * 8.226 | 0, g / n * 8.226 | 0, b / n * 8.226 | 0] : [0, 0, 0]; });
+      while (pal.length < 256) pal.push([0, 0, 0]);
+      return pal;
+    }
+    function encodeGif(frames, w, h, fps) {
+      const pal = palette(frames), look = new Int16Array(32768).fill(-1);
+      const nearest = (key) => {
+        const r = (key >> 10) * 8.226, g = ((key >> 5) & 31) * 8.226, b = (key & 31) * 8.226;
+        let bi = 0, bd = Infinity;
+        for (let i = 0; i < 256; i++) { const p = pal[i], d = (p[0] - r) ** 2 * 2 + (p[1] - g) ** 2 * 4 + (p[2] - b) ** 2 * 3; if (d < bd) { bd = d; bi = i; } }
+        return (look[key] = bi);
+      };
+      const out = []; const put = (...b) => { for (const x of b) out.push(x & 255); }; const word = (v) => put(v, v >> 8); const str = (t) => { for (const c of t) put(c.charCodeAt(0)); };
+      str("GIF89a"); word(w); word(h); put(0xF7, 0, 0); pal.forEach((p) => put(p[0], p[1], p[2]));
+      put(0x21, 0xFF, 11); str("NETSCAPE2.0"); put(3, 1, 0, 0, 0); // loop forever
+      const delay = Math.round(100 / fps), BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+      const idx = new Uint8Array(w * h);
+      frames.forEach((d) => {
+        for (let y = 0, p = 0; y < h; y++) for (let x = 0; x < w; x++, p++) {
+          const o = (BAYER[(y & 3) * 4 + (x & 3)] - 7.5) * .5, q = (v) => Math.min(255, Math.max(0, d[p * 4 + v] + o)) >> 3;
+          const key = (q(0) << 10) | (q(1) << 5) | q(2), v = look[key];
+          idx[p] = v >= 0 ? v : nearest(key);
+        }
+        put(0x21, 0xF9, 4, 0x04); word(delay); put(0, 0);
+        put(0x2C); word(0); word(0); word(w); word(h); put(0);
+        put(8); lzw(idx, out);
+      });
+      put(0x3B);
+      return new Blob([new Uint8Array(out)], { type: "image/gif" });
+    }
+    function lzw(idx, out) {
+      const CLEAR = 256, EOI = 257; let size = 9, next = 258, table = new Map(), cur = 0, bits = 0, block = [];
+      const flush = () => { out.push(block.length); for (const b of block) out.push(b); block = []; };
+      const emit = (c) => { cur |= c << bits; bits += size; while (bits >= 8) { block.push(cur & 255); cur >>>= 8; bits -= 8; if (block.length === 255) flush(); } };
+      emit(CLEAR);
+      let code = idx[0];
+      for (let i = 1; i < idx.length; i++) {
+        const k = idx[i], key = (code << 8) | k, e = table.get(key);
+        if (e !== undefined) { code = e; continue; }
+        emit(code);
+        if (next === 4096) { emit(CLEAR); next = 258; size = 9; table = new Map(); }
+        else { if (next >= 1 << size) size++; table.set(key, next++); }
+        code = k;
+      }
+      emit(code); emit(EOI);
+      if (bits > 0) { block.push(cur & 255); if (block.length === 255) flush(); }
+      if (block.length) flush();
+      out.push(0);
+    }
+    const gifCache = new WeakMap();
+    function gifOf(m) {
+      if (!gifCache.has(m)) gifCache.set(m, (async () => {
+        const spec = m.anim || parseAnim("```json\n" + JSON.stringify(OFF_ANIM) + "\n```"), S = 360, svgs = frameSvgs(m.svg, spec);
+        const cv = document.createElement("canvas"); cv.width = cv.height = S; const g = cv.getContext("2d", { willReadFrequently: true });
+        const frames = [];
+        for (const sv of svgs) { const im = await loadImg(svgUrl(sv)); g.fillStyle = "#fff"; g.fillRect(0, 0, S, S); g.drawImage(im, 0, 0, S, S); frames.push(g.getImageData(0, 0, S, S).data); }
+        await new Promise((r) => setTimeout(r, 0));
+        const blob = encodeGif(frames, S, S, spec.fps);
+        return { blob, url: URL.createObjectURL(blob) };
+      })());
+      const p = gifCache.get(m); p.catch(() => gifCache.delete(m)); return p;
+    }
+
+    async function draw(c, q, gif) {
       setStatus("рисует…", true);
       const el = document.createElement("div"); el.className = "vi-m a";
-      const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = "🎨 Рисую…"; el.appendChild(box);
+      const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = gif ? "🎞 Придумываю анимацию…" : "🎨 Рисую…"; el.appendChild(box);
       log.appendChild(el); log.scrollTop = log.scrollHeight;
       const prev = c.msgs.slice(0, -1).reverse().find((m) => m.q);
-      let svg = "", cap = "", off = false;
+      let svg = "", cap = "", off = false, anim = null;
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const prompt = [
+        const prompt = gif ? [
+          "Ты — V3AI, ИИ-аниматор. Сделай по описанию пользователя короткую зацикленную анимацию для GIF.",
+          'Шаг 1 — картинка: ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">, яркое и детальное, на весь холст (фон, главный объект крупно, градиенты, тени). Каждую часть, которая будет двигаться, оберни в <g id="..."> с латинским id (например "cat", "paw", "tail", "eyes", "star1").',
+          "Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий. Текст — только если его явно попросили.",
+          'Шаг 2 — движение: блок ```json вида {"frames":24,"fps":12,"anim":[{"id":"paw","origin":[300,260],"keys":[{"t":0,"r":0},{"t":0.5,"r":-30},{"t":1,"r":0}]}]}.',
+          "Поля ключа: t — время от 0 до 1; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin (точка в координатах viewBox: шарнир, например плечо для лапы); s — масштаб (или sx и sy отдельно, для сплющивания); o — прозрачность 0..1. Не указанное поле = покой (0, масштаб 1, o 1).",
+          "Первый и последний ключ каждой части одинаковые, чтобы GIF шёл по кругу без рывка. Двигай 2–8 частей заметно и живо: махание, прыжки, полёт, вращение, моргание (sy до 0.1), мерцание. frames 16–32, fps 8–15.",
+          "Только добрые сюжеты, подходящие детям. На неподходящую просьбу сделай что-то милое на похожую безопасную тему.",
+          prev ? `Предыдущая работа в этом чате была по запросу «${prev.q}». Если новый запрос — правка («быстрее», «пусть ещё и прыгает»), сделай ту же сцену с изменением.` : "",
+          "Ответ: блок ```svg, затем блок ```json, затем одна короткая весёлая фраза по-русски о том, что получилось.",
+          "Описание анимации: " + q,
+        ].filter(Boolean).join("\n") : [
           "Ты — V3AI, ИИ-художник в приложении V3AI. Нарисуй картинку по описанию пользователя как ОДНО SVG-изображение.",
           'Формат: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">. Сделай красивую, яркую и детальную композицию на весь холст: фон, средний и передний план, главный объект крупно, свет, тени и блики. Используй linearGradient и radialGradient, opacity, плавные кривые path, много деталей.',
           "Запрещено: script, foreignObject, image, ссылки, внешние шрифты, анимация, обработчики событий. Текст на картинке — только если его явно попросили.",
@@ -464,26 +632,28 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         try {
           const res = await sample(prompt, {
             modelTier: "default", cache: false, signal: ctl.signal,
-            onText: ({ text: t }) => { if (t) { box.textContent = "🎨 Рисую… " + Math.min(97, Math.round(t.length / 90)) + "%"; setStatus("рисует…", true); } },
+            onText: ({ text: t }) => { if (t) { box.textContent = (gif ? "🎞 Рисую кадры… " : "🎨 Рисую… ") + Math.min(97, Math.round(t.length / (gif ? 110 : 90))) + "%"; setStatus("рисует…", true); } },
           });
           const text = res.text || "";
           svg = cleanSvg(text);
+          if (gif) anim = parseAnim(text);
           cap = text.replace(/```[\s\S]*?(```|$)/g, "").replace(/<svg[\s\S]*<\/svg>/i, "").trim().slice(0, 300);
         } catch (e) {
           const code = e && e.code;
           if (OFF.includes(code)) aiOff = true;
           if (code === "cancelled") cap = "Рисование остановлено.";
           else if (code === "rate_limited") cap = "Слишком много запросов подряд 😅 Подожди немного — и я нарисую.";
-          else if (e && e.text) { svg = cleanSvg(e.text); }
+          else if (e && e.text) { svg = cleanSvg(e.text); if (gif) anim = parseAnim(e.text); }
         }
         ctl = null;
       }
       if (!svg && cap !== "Рисование остановлено.") {
         svg = offlineArt(q); off = true;
-        if (!cap) cap = sample && !aiOff ? "Не получилось нарисовать подробно — вот быстрый набросок. Нажми «Ещё вариант»!" : "Это быстрый офлайн-набросок. Внутри Claude я рисую по-настоящему подробные картинки!";
+        if (!cap) cap = sample && !aiOff ? "Не получилось нарисовать подробно — вот быстрый набросок. Нажми «Ещё вариант»!" : gif ? "Это быстрый офлайн-GIF. Внутри Claude я делаю подробные анимации!" : "Это быстрый офлайн-набросок. Внутри Claude я рисую по-настоящему подробные картинки!";
       }
       el.remove();
-      const am = svg ? { r: "a", t: cap || "Готово! Вот твоя картинка 🎨", q, svg } : { r: "a", t: cap || "Не получилось нарисовать." };
+      const am = svg ? { r: "a", t: cap || (gif ? "Готово! Вот твой GIF 🎞" : "Готово! Вот твоя картинка 🎨"), q, svg } : { r: "a", t: cap || "Не получилось нарисовать." };
+      if (svg && gif) { am.gif = 1; if (anim && !off) am.anim = anim; }
       if (off) am.off = 1;
       if (svg && !off) Hero.earn(1);
       bubble(am);
