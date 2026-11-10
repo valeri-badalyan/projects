@@ -79,6 +79,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-zoom { position: fixed; inset: 0; z-index: 95; background: rgba(5,5,15,.92); display: grid; place-items: center; padding: 16px; cursor: zoom-out; } .vi-zoom img { width: min(92vw, 640px); border-radius: 14px; }
 .vi-note { font-size: 11px; color: var(--muted); text-align: center; margin: 0; }
 .vi-orb { font-size: 14px; letter-spacing: -.5px; } .vi-hello .vi-orb { font-size: 24px; }
+.vi-art video { display: block; width: 100%; height: 100%; background: #000; }
+.vi-play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 12px 18px; border-radius: 999px; border: 0; background: rgba(0,0,0,.65); color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+.vi-play:disabled { cursor: default; }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -130,6 +133,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
       { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
+      { id: "video", ico: "🎬", n: "Видео", hi: "Опиши сюжет — и я сниму короткое видео: несколько сцен, движение, субтитры и музыка. Его можно скачать.", p: "Режим «Видео»: снимаешь короткие видео по описанию.", s: ["Кот летит в космос и находит планету из сыра", "День из жизни робота-повара", "Рыбка ищет друзей в океане"] },
       { id: "school", ico: "📚", n: "Учёба", hi: "Объясню любую тему шаг за шагом.", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения. В конце можно задать один короткий вопрос на проверку.", s: ["Объясни дроби на примере пиццы", "Как решить 3x + 5 = 20?", "Кратко о Солнечной системе"] },
       { id: "write", ico: "✍️", n: "Писатель", hi: "Сказки, стихи, поздравления и идеи.", p: "Режим «Писатель»: ты креативный автор. Пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи.", s: ["Сказка про кота-космонавта", "Стих на день рождения маме", "Придумай название для моего канала"] },
       { id: "lang", ico: "🌍", n: "Переводчик", hi: "Переведу на любой язык и подскажу произношение.", p: "Режим «Переводчик»: переводи текст пользователя. Если язык не указан: с русского — на английский, с других языков — на русский. Дай перевод, а ниже коротко произношение русскими буквами или полезный нюанс.", s: ["Переведи: «Я люблю играть в футбол»", "«Спасибо» на 5 языках", "Hello, how are you?"] },
@@ -154,7 +158,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       chats = chats.slice(0, 30);
       chats.forEach((c) => { c.msgs = c.msgs.slice(-40); });
       let pics = 0; // keep only the 15 newest drawings in storage
-      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if (m.svg && ++pics > 15) { delete m.svg; delete m.anim; m.gone = 1; } } });
+      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if ((m.svg || m.scenes) && ++pics > 15) { delete m.svg; delete m.anim; delete m.scenes; m.gone = 1; } } });
       store.set("v3aiChats", chats); store.set("v3aiCur", cur); store.set("v3aiMode", mode); store.set("v3aiAsked", asked);
     }
 
@@ -205,7 +209,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
         el.appendChild(document.createTextNode(m.t));
       } else {
-        if (m.svg || m.gone) { art(el, m); log.appendChild(el); return el; }
+        if (m.svg || m.gone || m.scenes) { art(el, m); log.appendChild(el); return el; }
         const body = document.createElement("div"); body.className = "vi-body"; body.innerHTML = md(m.t); el.appendChild(body);
         tools(el, m);
       }
@@ -305,6 +309,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       save(); render();
 
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
+      if (!img && (forceArt === "video" || (!forceArt && wantsVideo(q, M)))) { await film(c, q); return; }
       if (!img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
       if (!img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
       setStatus("думает…", true);
@@ -318,7 +323,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone ? `(${m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone || m.scenes ? `(${m.scenes ? "Снял видео" : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
         hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
@@ -361,6 +366,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const t = q.toLowerCase().replace(/ё/g, "е");
       return /^(пожалуйста,?\s*)?(нарисуй|изобрази|намалюй)/.test(t) || /(сгенерируй|создай|сделай|покажи|придумай)\s+(мне\s+)?(картин|рисун|изображен|арт|аватар|аватарк|логотип|обои|иконк)/.test(t) || /^(draw|generate an? (image|picture))/.test(t);
     }
+    function wantsVideo(q, M) {
+      if (M.id === "video") return true;
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      return /(сделай|создай|сними|сгенерируй|смонтируй|нарисуй|покажи|придумай)\s+(мне\s+)?(\S+\s+)?(видео|ролик|клип|мультик|мультфильм)/.test(t) || /^(make|create|generate) (a |an )?(\S+ )?(video|clip|cartoon)/.test(t);
+    }
     function wantsGif(q, M) {
       if (M.id === "gif") return true;
       const t = q.toLowerCase().replace(/ё/g, "е");
@@ -400,8 +410,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     let dl = null, dlAsked = false;
     async function download(m, btn) {
       try {
-        const blob = m.gif ? (await gifOf(m)).blob : await new Promise(async (r) => (await toCanvas(m.svg)).toBlob(r, "image/png"));
-        const name = "V3AI-" + (m.q || "art").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + (m.gif ? ".gif" : ".png");
+        if (m.scenes && !videoCache.has(m)) { btn.textContent = "Сначала собери видео ▶"; return; }
+        const blob = m.scenes ? (await videoOf(m)).blob : m.gif ? (await gifOf(m)).blob : await new Promise(async (r) => (await toCanvas(m.svg)).toBlob(r, "image/png"));
+        const name = "V3AI-" + (m.q || "art").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + (m.scenes ? (/mp4/.test((await videoOf(m)).blob.type) ? ".mp4" : ".webm") : m.gif ? ".gif" : ".png");
         if (!dlAsked) { dlAsked = true; try { dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch (e) { dl = null; } }
         if (dl) { await dl.save({ filename: name, data: blob }); btn.textContent = "✓ Сохранено"; return; }
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); btn.textContent = "✓ Скачивается";
@@ -414,7 +425,23 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     }
     function art(el, m) {
       const box = document.createElement("div"); box.className = "vi-art";
-      if (m.svg && m.gif) {
+      if (m.scenes) {
+        const poster = document.createElement("img"); poster.src = svgUrl(m.scenes[0].svg); poster.alt = m.q || "Видео"; box.appendChild(poster);
+        const ov = document.createElement("button"); ov.type = "button"; ov.className = "vi-play"; box.appendChild(ov);
+        const show = (v) => {
+          box.innerHTML = "";
+          const vd = document.createElement("video"); vd.src = v.url; vd.controls = true; vd.loop = true; vd.playsInline = true; vd.setAttribute("playsinline", ""); box.appendChild(vd);
+          if (visible) vd.play().catch(() => {});
+        };
+        const go = () => {
+          ov.disabled = true; ov.textContent = "🎬 Монтирую… 0%";
+          videoOf(m, (k) => { ov.textContent = "🎬 Монтирую… " + Math.round(k * 100) + "%"; }).then(show, (e) => {
+            ov.disabled = false; ov.textContent = e && e.message === "norec" ? "😔 Это устройство не умеет записывать видео" : "⚠️ Не вышло — нажми, чтобы ещё раз";
+          });
+        };
+        ov.addEventListener("click", () => { wakeAudio(); go(); });
+        if (videoCache.has(m) || freshVideo.has(m)) { freshVideo.delete(m); go(); } else ov.textContent = "▶ Собрать видео";
+      } else if (m.svg && m.gif) {
         box.classList.add("wait"); box.textContent = "🎞 Собираю GIF…";
         gifOf(m).then((g) => {
           box.classList.remove("wait"); box.textContent = "";
@@ -428,12 +455,17 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       el.appendChild(box);
       if (m.t) { const cap = document.createElement("div"); cap.className = "vi-body"; cap.innerHTML = md(m.t); el.appendChild(cap); }
       const bar = document.createElement("div"); bar.className = "vi-tools";
+      if (m.scenes) {
+        const sv = document.createElement("button"); sv.type = "button"; sv.textContent = "💾 Скачать видео"; sv.addEventListener("click", () => download(m, sv));
+        bar.append(sv);
+      }
       if (m.svg) {
         const sv = document.createElement("button"); sv.type = "button"; sv.textContent = m.gif ? "💾 Скачать GIF" : "💾 Скачать"; sv.addEventListener("click", () => download(m, sv));
         bar.append(sv);
+        if (!m.gif) { const vb = document.createElement("button"); vb.type = "button"; vb.textContent = "🎬 Сделать видео"; vb.addEventListener("click", () => send(m.q, "video")); bar.append(vb); }
         if (!m.gif) { const an = document.createElement("button"); an.type = "button"; an.textContent = "🎞 Сделать GIF"; an.addEventListener("click", () => send(m.q, "gif")); bar.append(an); }
       }
-      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, m.gif ? "gif" : true));
+      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, m.scenes ? "video" : m.gif ? "gif" : true));
       bar.appendChild(again);
       el.appendChild(bar);
     }
@@ -466,11 +498,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "sun", origin: [410, 100], keys: [{ t: 0, s: 1 }, { t: .5, s: 1.08 }, { t: 1, s: 1 }] },
       { id: "fx", origin: [256, 256], keys: [{ t: 0, o: 1 }, { t: .5, o: .45, y: 6 }, { t: 1, o: 1 }] },
     ] };
-    function parseAnim(text) {
-      const m = String(text).match(/```json\s*([\s\S]*?)```/i) || String(text).match(/(\{[\s\S]*"anim"[\s\S]*\})/);
+    function jsonBlock(text, key) {
+      const m = String(text).match(/```json\s*([\s\S]*?)```/i) || String(text).match(new RegExp('(\\{[\\s\\S]*"' + key + '"[\\s\\S]*\\})'));
       if (!m) return null;
+      try { return JSON.parse(m[1]); } catch (e) { return null; }
+    }
+    const parseAnim = (text) => normAnim(jsonBlock(text, "anim"));
+    function normAnim(a) {
       try {
-        const a = JSON.parse(m[1]);
         if (!a || !Array.isArray(a.anim)) return null;
         const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
         const anim = a.anim.slice(0, 16).filter((x) => x && typeof x.id === "string" && Array.isArray(x.keys) && x.keys.length).map((x) => ({
@@ -480,6 +515,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         return anim.length ? { frames: Math.round(Math.min(36, Math.max(8, num(a.frames, 24)))), fps: Math.min(20, Math.max(4, num(a.fps, 12))), anim } : null;
       } catch (e) { return null; }
     }
+    const offAnim = () => normAnim(OFF_ANIM);
     // the value of every animated property at time t (0..1), eased between keys
     function at(keys, t) {
       let i = 0; while (i < keys.length - 1 && keys[i + 1].t < t) i++;
@@ -489,10 +525,12 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sx = (k) => (isNaN(k.sx) ? k.s : k.sx), sy = (k) => (isNaN(k.sy) ? k.s : k.sy);
       return { x: mix(a.x, b.x), y: mix(a.y, b.y), r: mix(a.r, b.r), sx: mix(sx(a), sx(b)), sy: mix(sy(a), sy(b)), o: mix(a.o, b.o) };
     }
-    function frameSvgs(svg, spec) {
+    function frameSvgs(svg, spec) { const rig = makeRig(svg, spec.anim), out = []; for (let f = 0; f < spec.frames; f++) out.push(rig(f / spec.frames)); return out; }
+    // a "rig": the picture with its moving parts wrapped; rig(t) gives the SVG at loop time t (0..1)
+    function makeRig(svg, anims) {
       const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement, NS = "http://www.w3.org/2000/svg";
       // wrap each moving part, so its own transform stays and ours goes on top
-      const parts = spec.anim.map((a) => {
+      const parts = (anims || []).map((a) => {
         let el = null; try { el = root.querySelector("#" + CSS.escape(a.id)); } catch (e) { el = null; }
         if (!el || el === root) return null;
         const g = doc.createElementNS(NS, "g"); el.parentNode.insertBefore(g, el); g.appendChild(el);
@@ -502,17 +540,15 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         const g = doc.createElementNS(NS, "g"); while (root.firstChild) g.appendChild(root.firstChild); root.appendChild(g);
         parts.push({ g, a: { origin: [256, 256], keys: [{ t: 0, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }, { t: .5, x: 0, y: -8, r: 2, s: 1.07, sx: NaN, sy: NaN, o: 1 }, { t: 1, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }] } });
       }
-      const ser = new XMLSerializer(), out = [];
-      for (let f = 0; f < spec.frames; f++) {
-        const t = f / spec.frames;
+      const ser = new XMLSerializer();
+      return (t) => {
         parts.forEach(({ a, g }) => {
           const v = at(a.keys, t), [ox, oy] = a.origin, n = (z) => Math.round(z * 1000) / 1000;
           g.setAttribute("transform", `translate(${n(ox + v.x)} ${n(oy + v.y)}) rotate(${n(v.r)}) scale(${n(v.sx)} ${n(v.sy)}) translate(${-ox} ${-oy})`);
           if (v.o < .999) g.setAttribute("opacity", n(v.o)); else g.removeAttribute("opacity");
         });
-        out.push(ser.serializeToString(root));
-      }
-      return out;
+        return ser.serializeToString(root);
+      };
     }
     const loadImg = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
     // Median-cut palette (256 colours) over all frames, then LZW: a complete GIF89a encoder.
@@ -588,7 +624,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     const gifCache = new WeakMap();
     function gifOf(m) {
       if (!gifCache.has(m)) gifCache.set(m, (async () => {
-        const spec = m.anim || parseAnim("```json\n" + JSON.stringify(OFF_ANIM) + "\n```"), S = 360, svgs = frameSvgs(m.svg, spec);
+        const spec = m.anim || offAnim(), S = 360, svgs = frameSvgs(m.svg, spec);
         const cv = document.createElement("canvas"); cv.width = cv.height = S; const g = cv.getContext("2d", { willReadFrequently: true });
         const frames = [];
         for (const sv of svgs) { const im = await loadImg(svgUrl(sv)); g.fillStyle = "#fff"; g.fillRect(0, 0, S, S); g.drawImage(im, 0, 0, S, S); frames.push(g.getImageData(0, 0, S, S).data); }
@@ -597,6 +633,154 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         return { blob, url: URL.createObjectURL(blob) };
       })());
       const p = gifCache.get(m); p.catch(() => gifCache.delete(m)); return p;
+    }
+
+    /* ---- Video: Claude directs 1–4 scenes (picture + motion + subtitle); V3AI plays them on a canvas with music and records it ---- */
+    let actx = null;
+    function wakeAudio() { // must run inside the tap that asked for the video
+      try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) { actx = null; }
+    }
+    function music(dest, total, mood) {
+      const a = actx, t0 = a.currentTime + .05;
+      const M = { happy: { bpm: 120, wave: "triangle", root: 60, prog: [0, 7, 9, 5] }, calm: { bpm: 80, wave: "sine", root: 57, prog: [0, 5, 3, 7] }, epic: { bpm: 100, wave: "sawtooth", root: 50, prog: [0, 8, 3, 10] } }[mood] || null;
+      if (!M) return;
+      const out = a.createGain(); out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(.5, t0 + .4); out.gain.setValueAtTime(.5, t0 + total - 1.2); out.gain.linearRampToValueAtTime(0, t0 + total); out.connect(dest);
+      const hz = (n) => 440 * Math.pow(2, (n - 69) / 12), beat = 60 / M.bpm, minor = mood !== "happy";
+      const note = (n, at, len, wave, vol) => { const o = a.createOscillator(), g = a.createGain(); o.type = wave; o.frequency.value = hz(n); g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + .02); g.gain.exponentialRampToValueAtTime(.001, at + len); o.connect(g); g.connect(out); o.start(at); o.stop(at + len + .05); };
+      for (let b = 0, t = t0; t < t0 + total; b++, t += beat) {
+        const ch = M.root + M.prog[Math.floor(b / 4) % 4], tri = [0, minor && b % 8 < 4 ? 3 : 4, 7, 12];
+        note(ch - 12, t, beat * .9, "sine", .35);
+        note(ch + tri[b % 4], t, beat * .8, M.wave, mood === "epic" ? .07 : .16);
+        if (mood === "happy") note(ch + tri[(b + 2) % 4] + 12, t + beat / 2, beat * .4, "triangle", .08);
+      }
+    }
+    function wrapLines(g, text, max) {
+      const words = String(text).split(/\s+/), lines = []; let cur = "";
+      words.forEach((w) => { const t = cur ? cur + " " + w : w; if (g.measureText(t).width > max && cur) { lines.push(cur); cur = w; } else cur = t; });
+      if (cur) lines.push(cur); return lines.slice(0, 2);
+    }
+    const videoCache = new WeakMap(), freshVideo = new WeakSet();
+    function videoOf(m, onProg) {
+      if (!videoCache.has(m)) videoCache.set(m, recordVideo(m, onProg || (() => {})));
+      const p = videoCache.get(m); p.catch(() => videoCache.delete(m)); return p;
+    }
+    async function recordVideo(m, onProg) {
+      const cv = document.createElement("canvas"); cv.width = cv.height = 720;
+      if (!window.MediaRecorder || !cv.captureStream) throw new Error("norec");
+      const mime = ['video/mp4;codecs="avc1.42E01E,mp4a.40.2"', "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((t) => { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } });
+      if (!mime) throw new Error("norec");
+      const g = cv.getContext("2d"), S = 720, scenes = m.scenes, FADE = .5;
+      const rigs = scenes.map((sc) => makeRig(sc.svg, sc.anim)), starts = []; let total = 0;
+      scenes.forEach((sc) => { starts.push(total); total += sc.dur; });
+      const frame = async (sec) => {
+        let i = 0; while (i < scenes.length - 1 && sec >= starts[i + 1]) i++;
+        const local = sec - starts[i], sc = scenes[i];
+        const im = await loadImg(svgUrl(rigs[i]((local % sc.loop) / sc.loop)));
+        g.globalAlpha = 1; g.fillStyle = "#000"; g.fillRect(0, 0, S, S); g.drawImage(im, 0, 0, S, S);
+        const left = sc.dur - local; // crossfade into the next scene
+        if (i < scenes.length - 1 && left < FADE) { const nx = scenes[i + 1]; const im2 = await loadImg(svgUrl(rigs[i + 1](0))); g.globalAlpha = 1 - left / FADE; g.drawImage(im2, 0, 0, S, S); g.globalAlpha = 1; void nx; }
+        if (sec < FADE) { g.fillStyle = `rgba(0,0,0,${1 - sec / FADE})`; g.fillRect(0, 0, S, S); }
+        if (total - sec < FADE) { g.fillStyle = `rgba(0,0,0,${1 - (total - sec) / FADE})`; g.fillRect(0, 0, S, S); }
+        if (sc.caption) {
+          g.font = "800 34px Manrope, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+          const lines = wrapLines(g, sc.caption, S - 120), a = Math.min(1, local / .3, (sc.dur - local) / .3);
+          if (a > 0) {
+            g.globalAlpha = a; const hh = lines.length * 44 + 24, y0 = S - 40 - hh;
+            g.fillStyle = "rgba(0,0,0,.55)"; g.beginPath(); (g.roundRect ? g.roundRect(40, y0, S - 80, hh, 18) : g.rect(40, y0, S - 80, hh)); g.fill();
+            g.fillStyle = "#fff"; lines.forEach((l, k) => g.fillText(l, S / 2, y0 + 12 + 22 + k * 44)); g.globalAlpha = 1;
+          }
+        }
+        g.font = "900 20px Manrope, system-ui, sans-serif"; g.textAlign = "right"; g.fillStyle = "rgba(255,255,255,.75)"; g.fillText("V3AI", S - 18, 30);
+      };
+      await frame(0);
+      const stream = cv.captureStream(30);
+      if (actx && m.music && m.music !== "none") {
+        try { if (actx.state === "suspended") await actx.resume(); const dest = actx.createMediaStreamDestination(); music(dest, total, m.music); dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t)); } catch (e) { /* silent video then */ }
+      }
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3e6 }), chunks = [];
+      rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      const stopped = new Promise((res) => { rec.onstop = res; });
+      rec.start(250);
+      const t0 = performance.now();
+      for (;;) {
+        const sec = (performance.now() - t0) / 1000;
+        if (sec >= total) break;
+        await frame(sec); onProg(sec / total);
+        const wait = 33 - ((performance.now() - t0) % 33); await new Promise((r) => setTimeout(r, wait));
+      }
+      await frame(total - .001);
+      rec.stop(); await stopped; stream.getTracks().forEach((t) => t.stop());
+      const blob = new Blob(chunks, { type: mime.split(";")[0] });
+      if (!blob.size) throw new Error("empty");
+      return { blob, url: URL.createObjectURL(blob) };
+    }
+    function parseVideo(text) {
+      const raw = String(text), blocks = [];
+      raw.replace(/```svg\s*([\s\S]*?)```/gi, (_, b) => { blocks.push(b); return ""; });
+      if (!blocks.length) (raw.match(/<svg[\s\S]*?<\/svg>/gi) || []).forEach((b) => blocks.push(b));
+      const svgs = blocks.map(cleanSvg).filter(Boolean).slice(0, 5);
+      if (!svgs.length) return null;
+      const j = jsonBlock(raw, "scenes") || {}, list = Array.isArray(j.scenes) ? j.scenes : [];
+      const num = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
+      let scenes = svgs.map((svg, i) => {
+        const sc = list[i] || {}, an = normAnim({ anim: Array.isArray(sc.anim) ? sc.anim : [] });
+        return { svg, anim: an ? an.anim : [], dur: num(sc.dur, 4, 2, 8), loop: num(sc.loop, 2, .5, 6), caption: typeof sc.caption === "string" ? sc.caption.slice(0, 80) : "" };
+      });
+      let sum = 0; scenes = scenes.filter((sc) => (sum += sc.dur) <= 26);
+      return { scenes, music: ["happy", "calm", "epic", "none"].includes(j.music) ? j.music : "happy" };
+    }
+    async function film(c, q) {
+      wakeAudio();
+      setStatus("снимает…", true);
+      const el = document.createElement("div"); el.className = "vi-m a";
+      const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = "🎬 Пишу сценарий…"; el.appendChild(box);
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      const prev = c.msgs.slice(0, -1).reverse().find((m) => m.q);
+      let vid = null, cap = "", off = false;
+      const sample = aiOff ? null : await samplePromise;
+      if (sample) {
+        ctl = new AbortController();
+        const prompt = [
+          "Ты — V3AI, ИИ-режиссёр мультфильмов. Сними по описанию пользователя короткое видео из 2–4 сцен (всего 8–16 секунд), которые вместе рассказывают маленькую историю: начало, развитие, финал.",
+          'Для каждой сцены по порядку — блок ```svg с ОДНИМ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">: яркая детальная картинка на весь холст (фон, герой крупно, градиенты, тени), до ~4000 символов. Герой в разных сценах выглядит одинаково. Каждую движущуюся часть оберни в <g id="..."> с латинским id.',
+          "Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий, текст на картинке (субтитры добавлю сам).",
+          'После всех сцен — один блок ```json: {"music":"happy","scenes":[{"dur":4,"loop":2,"caption":"Кот мечтает о космосе","anim":[{"id":"cat","origin":[256,300],"keys":[{"t":0,"y":0},{"t":0.5,"y":-20},{"t":1,"y":0}]}]}]} — сцены в том же порядке, что и SVG.',
+          "music: happy, calm, epic или none. dur — длительность сцены 2–6 с. loop — период движения в секундах (движение повторяется). Ключи: t от 0 до 1 внутри периода; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin (шарнир в координатах viewBox); s — масштаб (или sx, sy); o — прозрачность 0..1. Первый и последний ключ одинаковые. Двигай 2–6 частей в каждой сцене заметно и живо.",
+          "caption — субтитр сцены по-русски, до 60 символов.",
+          "Только добрые сюжеты, подходящие детям. На неподходящую просьбу сними что-то милое на похожую безопасную тему.",
+          prev ? `Предыдущая работа в этом чате была по запросу «${prev.q}». Если новый запрос — правка, сними тот же сюжет с изменением.` : "",
+          "В самом конце — одна короткая весёлая фраза по-русски о том, что получилось.",
+          "Сюжет видео: " + q,
+        ].filter(Boolean).join("\n");
+        try {
+          const res = await sample(prompt, {
+            modelTier: "default", cache: false, signal: ctl.signal,
+            onText: ({ text: t }) => { if (t) { const n = (t.match(/<\/svg>/g) || []).length; box.textContent = `🎬 Рисую сцены… ${n ? n + " готово" : ""} ${Math.min(97, Math.round(t.length / 160))}%`; setStatus("снимает…", true); } },
+          });
+          const text = res.text || "";
+          vid = parseVideo(text);
+          cap = text.replace(/```[\s\S]*?(```|$)/g, "").replace(/<svg[\s\S]*<\/svg>/gi, "").trim().slice(0, 300);
+        } catch (e) {
+          const code = e && e.code;
+          if (OFF.includes(code)) aiOff = true;
+          if (code === "cancelled") cap = "Съёмка остановлена.";
+          else if (code === "rate_limited") cap = "Слишком много запросов подряд 😅 Подожди немного — и я сниму.";
+          else if (e && e.text) vid = parseVideo(e.text);
+        }
+        ctl = null;
+      }
+      if (!vid && cap !== "Съёмка остановлена.") {
+        off = true;
+        vid = { music: "happy", scenes: [{ svg: offlineArt(q), anim: offAnim().anim, dur: 6, loop: 1.6, caption: q.slice(0, 60) }] };
+        if (!cap) cap = sample && !aiOff ? "Не получилось снять подробно — вот быстрый ролик. Нажми «Ещё вариант»!" : "Это быстрый офлайн-ролик. Внутри Claude я снимаю настоящие мультики из нескольких сцен!";
+      }
+      el.remove();
+      const am = vid ? { r: "a", t: cap || "Готово! Вот твоё видео 🎬", q, scenes: vid.scenes, music: vid.music } : { r: "a", t: cap || "Не получилось снять видео." };
+      if (off) am.off = 1;
+      if (vid) freshVideo.add(am);
+      bubble(am);
+      c.msgs.push(am); save();
+      done(sample);
     }
 
     async function draw(c, q, gif) {
