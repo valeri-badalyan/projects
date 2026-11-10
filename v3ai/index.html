@@ -714,20 +714,15 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (!blob.size) throw new Error("empty");
       return { blob, url: URL.createObjectURL(blob) };
     }
-    function parseVideo(text) {
-      const raw = String(text), blocks = [];
-      raw.replace(/```svg\s*([\s\S]*?)```/gi, (_, b) => { blocks.push(b); return ""; });
-      if (!blocks.length) (raw.match(/<svg[\s\S]*?<\/svg>/gi) || []).forEach((b) => blocks.push(b));
-      const svgs = blocks.map(cleanSvg).filter(Boolean).slice(0, 5);
-      if (!svgs.length) return null;
-      const j = jsonBlock(raw, "scenes") || {}, list = Array.isArray(j.scenes) ? j.scenes : [];
-      const num = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
-      let scenes = svgs.map((svg, i) => {
-        const sc = list[i] || {}, an = normAnim({ anim: Array.isArray(sc.anim) ? sc.anim : [] });
-        return { svg, anim: an ? an.anim : [], dur: num(sc.dur, 4, 2, 8), loop: num(sc.loop, 2, .5, 6), caption: typeof sc.caption === "string" ? sc.caption.slice(0, 80) : "" };
-      });
-      let sum = 0; scenes = scenes.filter((sc) => (sum += sc.dur) <= 26);
-      return { scenes, music: ["happy", "calm", "epic", "none"].includes(j.music) ? j.music : "happy" };
+    // Why the AI could not help, in words a viewer understands.
+    function whyOff(code, sample) {
+      if (!sample) return "ИИ не подключён в этом окне — открой V3AI по ссылке в приложении Claude.";
+      if (code === "not_granted") return "Доступ к ИИ не разрешён. Разреши его в меню «Разрешения» этой страницы и обнови её.";
+      if (code === "rate_limited" || code === "queue_overflow") return "Слишком много запросов подряд — подожди минутку.";
+      if (code === "session_expired") return "Сессия Claude истекла — обнови страницу.";
+      if (["sampling_disabled", "capability_disabled", "capability_removed", "not_declared"].includes(code)) return "ИИ для этой страницы сейчас выключен.";
+      if (code === "refused") return "ИИ отказался снимать такой сюжет — попробуй другой.";
+      return "ИИ не ответил" + (code ? " (" + code + ")" : "") + " — нажми «Ещё вариант».";
     }
     async function film(c, q) {
       wakeAudio();
@@ -736,53 +731,73 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = "🎬 Пишу сценарий…"; el.appendChild(box);
       log.appendChild(el); log.scrollTop = log.scrollHeight;
       const prev = c.msgs.slice(0, -1).reverse().find((m) => m.q);
-      let vid = null, cap = "", off = false;
       const sample = aiOff ? null : await samplePromise;
+      let vid = null, cap = "", errCode = "", stopped = false;
+      const fail = (e) => { const code = (e && e.code) || "error"; if (OFF.includes(code)) aiOff = true; if (code === "cancelled") stopped = true; if (!errCode) errCode = code; };
       if (sample) {
         ctl = new AbortController();
-        const prompt = [
-          "Ты — V3AI, ИИ-режиссёр мультфильмов. Сними по описанию пользователя короткое видео из 2–4 сцен (всего 8–16 секунд), которые вместе рассказывают маленькую историю: начало, развитие, финал.",
-          'Для каждой сцены по порядку — блок ```svg с ОДНИМ <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">: яркая детальная картинка на весь холст (фон, герой крупно, градиенты, тени), до ~4000 символов. Герой в разных сценах выглядит одинаково. Каждую движущуюся часть оберни в <g id="..."> с латинским id.',
-          "Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий, текст на картинке (субтитры добавлю сам).",
-          'После всех сцен — один блок ```json: {"music":"happy","scenes":[{"dur":4,"loop":2,"caption":"Кот мечтает о космосе","anim":[{"id":"cat","origin":[256,300],"keys":[{"t":0,"y":0},{"t":0.5,"y":-20},{"t":1,"y":0}]}]}]} — сцены в том же порядке, что и SVG.',
-          "music: happy, calm, epic или none. dur — длительность сцены 2–6 с. loop — период движения в секундах (движение повторяется). Ключи: t от 0 до 1 внутри периода; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin (шарнир в координатах viewBox); s — масштаб (или sx, sy); o — прозрачность 0..1. Первый и последний ключ одинаковые. Двигай 2–6 частей в каждой сцене заметно и живо.",
-          "caption — субтитр сцены по-русски, до 60 символов.",
-          "Только добрые сюжеты, подходящие детям. На неподходящую просьбу сними что-то милое на похожую безопасную тему.",
-          prev ? `Предыдущая работа в этом чате была по запросу «${prev.q}». Если новый запрос — правка, сними тот же сюжет с изменением.` : "",
-          "В самом конце — одна короткая весёлая фраза по-русски о том, что получилось.",
-          "Сюжет видео: " + q,
-        ].filter(Boolean).join("\n");
+        const SAFE = "Только добрые сюжеты, подходящие детям. На неподходящую просьбу выбери что-то милое на похожую безопасную тему.";
+        // 1) the script: short and quick
+        let plan = null;
         try {
-          const res = await sample(prompt, {
-            modelTier: "default", cache: false, signal: ctl.signal,
-            onText: ({ text: t }) => { if (t) { const n = (t.match(/<\/svg>/g) || []).length; box.textContent = `🎬 Рисую сцены… ${n ? n + " готово" : ""} ${Math.min(97, Math.round(t.length / 160))}%`; setStatus("снимает…", true); } },
-          });
-          const text = res.text || "";
-          vid = parseVideo(text);
-          cap = text.replace(/```[\s\S]*?(```|$)/g, "").replace(/<svg[\s\S]*<\/svg>/gi, "").trim().slice(0, 300);
-        } catch (e) {
-          const code = e && e.code;
-          if (OFF.includes(code)) aiOff = true;
-          if (code === "cancelled") cap = "Съёмка остановлена.";
-          else if (code === "rate_limited") cap = "Слишком много запросов подряд 😅 Подожди немного — и я сниму.";
-          else if (e && e.text) vid = parseVideo(e.text);
+          plan = await sample.json([
+            "Ты — V3AI, ИИ-режиссёр мультфильмов. Придумай по запросу пользователя короткое видео из 3 сцен (максимум 4), которые вместе рассказывают маленькую историю: начало, развитие, финал.",
+            SAFE,
+            prev ? `Предыдущая работа в этом чате была по запросу «${prev.q}». Если новый запрос — правка, оставь тот же сюжет с изменением.` : "",
+            'Ответь ТОЛЬКО JSON: {"music":"happy|calm|epic","hero":"как выглядит главный герой: цвета, форма, одежда — одной фразой","style":"общий стиль и палитра одной фразой","scenes":[{"picture":"что нарисовано в сцене и что в ней двигается","caption":"субтитр по-русски до 60 символов","dur":4}],"comment":"одна короткая весёлая фраза по-русски о ролике"}',
+            "dur — от 3 до 6 секунд.",
+            "Запрос: " + q,
+          ].filter(Boolean).join("\n"), { modelTier: "quick", cache: false, signal: ctl.signal });
+        } catch (e) { fail(e); }
+        const list = plan && Array.isArray(plan.scenes) ? plan.scenes.slice(0, 4) : [];
+        // 2) each scene: one picture with its motion (the same format as GIF mode)
+        const scenes = [];
+        for (let i = 0; i < list.length && !stopped && !aiOff; i++) {
+          const sc = list[i] || {};
+          box.textContent = `🎬 Рисую сцену ${i + 1} из ${list.length}…`;
+          try {
+            const res = await sample([
+              `Ты — V3AI, ИИ-аниматор. Нарисуй сцену ${i + 1} из ${list.length} короткого мультфильма.`,
+              "Сюжет фильма: " + q,
+              plan.hero ? "Главный герой (во всех сценах выглядит одинаково): " + plan.hero : "",
+              plan.style ? "Стиль: " + plan.style : "",
+              "Эта сцена: " + (sc.picture || sc.caption || q),
+              'Шаг 1 — ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"> в блоке ```svg: яркое и детальное, на весь холст (фон, герой крупно, градиенты, тени), до ~5000 символов. Каждую часть, которая двигается, оберни в <g id="..."> с латинским id.',
+              "Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий, текст на картинке.",
+              'Шаг 2 — блок ```json: {"loop":2,"anim":[{"id":"hero","origin":[256,300],"keys":[{"t":0,"y":0},{"t":0.5,"y":-30},{"t":1,"y":0}]}]}. loop — период движения в секундах (оно повторяется). Ключи: t от 0 до 1; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin (шарнир в координатах viewBox); s — масштаб (или sx, sy); o — прозрачность 0..1. Первый и последний ключ одинаковые. Двигай 2–6 частей заметно и живо.',
+              SAFE,
+              "Ответ — только эти два блока.",
+            ].filter(Boolean).join("\n"), {
+              modelTier: "default", cache: false, signal: ctl.signal,
+              onText: ({ text: t }) => { if (t) box.textContent = `🎬 Рисую сцену ${i + 1} из ${list.length}… ${Math.min(97, Math.round(t.length / 60))}%`; },
+            });
+            const text = res.text || "", svg = cleanSvg(text);
+            if (svg) {
+              const j = jsonBlock(text, "anim") || {}, an = normAnim(j), num = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
+              scenes.push({ svg, anim: an ? an.anim : [], dur: num(sc.dur, 4, 2, 7), loop: num(j.loop, 2, .5, 6), caption: typeof sc.caption === "string" ? sc.caption.slice(0, 80) : "" });
+            } else if (!errCode) errCode = res.truncated ? "truncated" : "no_picture";
+          } catch (e) { fail(e); }
+        }
+        if (scenes.length) {
+          vid = { scenes, music: ["happy", "calm", "epic", "none"].includes(plan.music) ? plan.music : "happy" };
+          cap = typeof plan.comment === "string" ? plan.comment.slice(0, 200) : "";
+          if (scenes.length < list.length && !stopped) cap = (cap ? cap + "\n\n" : "") + `(Сцен получилось ${scenes.length} из ${list.length}.)`;
         }
         ctl = null;
       }
-      if (!vid && cap !== "Съёмка остановлена.") {
-        off = true;
-        vid = { music: "happy", scenes: [{ svg: offlineArt(q), anim: offAnim().anim, dur: 6, loop: 1.6, caption: q.slice(0, 60) }] };
-        if (!cap) cap = sample && !aiOff ? "Не получилось снять подробно — вот быстрый ролик. Нажми «Ещё вариант»!" : "Это быстрый офлайн-ролик. Внутри Claude я снимаю настоящие мультики из нескольких сцен!";
+      if (stopped && !vid) cap = "Съёмка остановлена.";
+      if (!vid && !stopped) {
+        vid = { music: "happy", scenes: [{ svg: offlineArt(q), anim: offAnim().anim, dur: 6, loop: 1.6, caption: q.slice(0, 60) }], off: 1 };
+        cap = "📴 Это простой офлайн-ролик. " + whyOff(errCode, sample);
       }
       el.remove();
       const am = vid ? { r: "a", t: cap || "Готово! Вот твоё видео 🎬", q, scenes: vid.scenes, music: vid.music } : { r: "a", t: cap || "Не получилось снять видео." };
-      if (off) am.off = 1;
+      if (vid && vid.off) am.off = 1;
       if (vid) freshVideo.add(am);
       bubble(am);
       c.msgs.push(am); save();
       done(sample);
     }
-
     async function draw(c, q, gif) {
       setStatus("рисует…", true);
       const el = document.createElement("div"); el.className = "vi-m a";
