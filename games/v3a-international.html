@@ -116,6 +116,17 @@ body.touch #bagBtn{display:none}
 #whistleBtn[hidden]{display:none}
 #wishBtn{display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(180deg,#ff7ad8,#b25cff)!important;border-color:#ffd6f4!important;box-shadow:0 0 18px -2px #ff7ad8}
 #wishBtn[hidden]{display:none}
+.gd-seeds{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.gd-seeds button{min-height:38px;padding:0 10px;border-radius:999px;border:2px solid #b8a070;background:#fff8e8;color:#2a3a1a;font:800 13px var(--body,system-ui);cursor:pointer}
+.gd-seeds button.on{border-color:#3a8a2a;background:#d8f0c0}
+.gd-seeds button:disabled{opacity:.45}
+.gd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.gd-bed{min-height:74px;border-radius:12px;border:2px solid #6a4a2a;background:#7a5a3a;color:#fff;font:800 12px var(--body,system-ui);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:4px}
+.gd-bed i{font-style:normal;font-size:24px;line-height:1}
+.gd-bed.ready{background:#5a8a2a;border-color:#ffd23d;box-shadow:0 0 0 2px #ffd23d inset}
+.gd-bed .bar{width:90%;height:5px;border-radius:3px;background:rgba(0,0,0,.35);overflow:hidden}
+.gd-bed .bar b{display:block;height:100%;background:#7fe05a}
+.gd-note{font:700 13px var(--body,system-ui);color:#4a5a3a;margin:8px 0 0}
 #wishBtn svg{width:22px;height:22px}
 .wish-card{background:linear-gradient(180deg,#3a1450,#1e0c30)!important;border:1px solid #ff7ad8!important;box-shadow:0 0 40px -8px #ff7ad8,0 30px 70px -20px rgba(0,0,0,.8)!important}
 .wish-card .who{color:#ff9ae0!important}
@@ -587,6 +598,14 @@ button.ph-row:disabled{opacity:.45}
     </div>
   </div>
 
+  <div class="ov dim" id="garden" hidden>
+    <div class="card" style="background:#f4ecd8;color:#2a3a1a;border:3px solid #6a4a2a">
+      <span class="who" style="color:#3a8a2a">Садоград · мой огород</span>
+      <h3 style="color:#2a3a1a" id="gdTitle">Мой огород</h3>
+      <div id="gdBody"></div>
+      <button type="button" class="btn alt" id="gdOut" style="flex:none">Закрыть</button>
+    </div>
+  </div>
   <div class="ov dim" id="wish" hidden>
     <div class="card wish-card">
       <span class="who">Сновстол · здесь все желания сбываются</span>
@@ -739,6 +758,8 @@ const CITIES = [
     lang: "en", style: "sand", sea: [], land: "#d9c08a", sand: "#ecd9a8", bus: "#c8a870", stadium: "Арена Раундов", ring: { col: "#c8a870", glow: "#ff9a3d" }, food: ["Шаурма тактика", "ШТ"], lms: ["tacA", "tacB", "tacT", "tacCT", "tacArch"], tz: 3 },
   { id: "aqua", name: "Ракушкино", country: "Подводное королевство", flag: "🐚", lat: -15, lon: -150, seed: 13201, roofs: ["#ff8a7a", "#ffb38a", "#7ad8d0", "#f2d0a8", "#c89af0", "#ff9ac8"], tall: 0.9, rain: 0, walk: "#e8d8b0", grass: "#5aa88a", water: "#2a8aa8", taxi: "#ffd23d", slogan: "Подводный город на дне океана: дома из кораллов и ракушек, между ними плавают рыбы, а вверх поднимаются пузырьки.",
     underwater: true, style: "coral", sea: [], land: "#d8c89a", sand: "#f0e0b0", bus: "#ff8a7a", stadium: "Коралловая арена", ring: { col: "#7ad8d0", glow: "#ffd23d" }, food: ["Бургер из водорослей", "БВ"], lms: ["shipwreck", "coralreef", "jellyfield", "pearlclam"], back: ["fishschool", "bubbles"], tree: "kelp", sky: ["#3aa8c8", "#1a6a9a", "#06223a"], hemi: "#c8f4ff", hemiGround: "#2a6a7a", sunCol: "#d8fbff", tz: -10 },
+  { id: "sad", name: "Садоград", country: "Огородная долина", flag: "🌻", lat: 47, lon: 8, seed: 13301, roofs: ["#c8574a", "#d8784a", "#b8483a", "#e89a5a", "#9a5a3a"], tall: 0.6, rain: 0.3, walk: "#d8c8a0", grass: "#6fbf4a", water: "#3a8ac8", taxi: "#ffd23d", slogan: "Город огородников: купи семена, посади на своём огороде, дождись урожая и продай на рынке. Бывают золотые и радужные плоды!",
+    style: "garden", sea: [], land: "#7fb85a", bus: "#5fbf4a", stadium: "Огородная арена", ring: { col: "#6fbf4a", glow: "#ffd23d" }, food: ["Салат с грядки", "СГ"], lms: ["myplot", "seedshop", "market", "greenhouse", "sunflower"], tree: "apple", tz: 2 },
   { id: "snv", name: "Сновстол", country: "Страна снов", flag: "🌙", lat: 8, lon: 172, seed: 12701, roofs: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0", "#7030c0", "#9550e0", "#6828b0", "#a868f0"], tall: 1.25, rain: 0.12, walk: "#f0b8e4", grass: "#f590d0", water: "#e8a8f0", taxi: "#ff4fd8", slogan: "Столица Страны снов: всё светится розовым неоном, как во сне.",
     dream: true, via: "sleep", style: "dream", river: "Молочная река", sea: [], land: "#e890d8", sand: "#ffd8f0", bus: "#b05aff", stadium: "Арена Снов", ring: { col: "#ff7ad8", glow: "#ff3dc8" }, food: ["Облачная сахарная вата", "СВ"], lms: ["kingpine", "dreampalace", "moonwheel", "dreamcloud"], back: ["dreammoon", "dreamislands"], tree: "candy", sky: ["#ff9ad8", "#ff5ab0", "#3a0a5a"], traffic: ["compact", "compact", "sport", "sport", "sedan", "taxi", "van", "bus"] },
 ];
@@ -944,6 +965,62 @@ const LMS = {
       B.box(t, 128, 32, 30, 30, 110, 0, 0, 64); B.box(B.M("#ffffff", { map: B.X.clock("#d99a82") }), 128, 32, 31, 31, 16, 84); B.box("#c98a72", 128, 32, 20, 20, 14, 110); B.pyr("#b8735a", 128, 32, 20, 20, 12, 124);
       const jets = []; for (let i = 0; i < 9; i++) jets.push(B.cyl(B.M("#d8f0ff", { op: 0.6, glow: "#7fd0ff" }), 72 + i * 14, 160, 1.2, 2.2, 1, 0, 8));
       B.anim((t2, night) => jets.forEach((j, i) => { const h = 10 + Math.abs(Math.sin(t2 * 1.7 + i * 0.7)) * (night > 0.3 ? 46 : 26); j.scale.y = h; j.position.y = h / 2; }));
+    } },
+  myplot: { name: "Мой огород", info: "12 грядок: сажай семена, жди урожай и собирай — метка у калитки", fill: GRASS_T(), solid: [], mm: "#7a5a3a", h: 20,
+    gen(o) { places.plot = { x: o.ix * T + 128, y: o.iy * T + 236 }; places.plotO = { x: o.ix * T, y: o.iy * T }; },
+    ground(g, b) { g.fillStyle = "#c8b080"; g.fillRect(b.x + 20, b.y + 30, 216, 190); },
+    d2(Q) { for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) Q.box(56 + c * 48, 70 + r * 56, 36, 40, 4, "#6a4a2a", "#5a3a1a"); },
+    d3(B) {
+      const soil = B.M("#6a4a2a"), wood = B.M("#c8a070");
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { B.box(soil, 56 + c * 48, 70 + r * 56, 36, 40, 4); for (let k = 0; k < 3; k++) B.box("#5a3a1a", 56 + c * 48, 58 + r * 56 + k * 12, 34, 2, 1, 4); }
+      for (let x = 16; x <= 240; x += 16) { B.box(wood, x, 26, 3, 3, 14); B.box(wood, x, 230, 3, 3, 14); } for (let z = 26; z <= 230; z += 16) { B.box(wood, 16, z, 3, 3, 14); B.box(wood, 240, z, 3, 3, 14); }
+      for (const z of [26, 230]) for (const y of [5, 11]) B.box(wood, 128, z, 226, 1.5, 1.5, y); for (const x of [16, 240]) for (const y of [5, 11]) B.box(wood, x, 128, 1.5, 206, 1.5, y);
+      B.box("#8a6a40", 128, 231, 30, 4, 16, 0);
+      B.plane(B.M("#ffffff", { map: B.X.txt("МОЙ ОГОРОД", "#2a5a1a", "#f4ecd8", 512, 64, 40) }), 128, 233, 60, 8, 18, 0);
+      const beds = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) { const g = new B.THREE.Group(); g.position.set(56 + c * 48, 4, 70 + r * 56); B.g.add(g); beds.push({ g, key: "" }); }
+      let last = -1;
+      B.anim((t) => { if (t - last < 0.5) return; last = t; for (let i = 0; i < GBEDS; i++) { const st = gdState(i), key = st.k === "empty" ? "" : st.sd.id + ":" + (st.k === "ready" ? 3 : Math.floor(st.pr * 3)); const bd = beds[i]; if (bd.key === key) continue; bd.key = key; while (bd.g.children.length) bd.g.remove(bd.g.children[0]); if (st.k !== "empty") bd.g.add(cropMesh(B, st.sd, st.k === "ready" ? 1 : st.pr)); } });
+    } },
+  seedshop: { name: "Лавка «Семена»", info: "семена для огорода: от моркови до радужного цветка", fill: PLAZA_T(), solid: [[1, 0, 2, 1]], mm: "#5fbf4a", h: 40,
+    gen(o) { places.seedShop = { x: o.ix * T + 128, y: o.iy * T + 110 }; },
+    d2(Q) { Q.box(128, 32, 128, 56, 30, "#e8d0a0", "#c8a070"); for (let i = 0; i < 6; i++) Q.box(74 + i * 21, 6, 20, 10, 34, i % 2 ? "#ffffff" : "#5fbf4a"); },
+    d3(B) {
+      B.box("#c8a070", 128, 32, 128, 50, 16); B.box("#a8804a", 128, 54, 128, 6, 16);
+      const aw = B.X.ct("seedAwn", 64, 32, (c) => { for (let x = 0; x < 64; x += 16) { c.fillStyle = (x / 16) % 2 ? "#ffffff" : "#4aa83a"; c.fillRect(x, 0, 16, 32); } });
+      const roof = new B.THREE.Mesh(new B.THREE.PlaneGeometry(136, 40), B.M("#ffffff", { map: aw, ds: true })); roof.rotation.x = -Math.PI / 2 + 0.35; roof.position.set(128, 40, 42); B.g.add(roof);
+      for (const x of [66, 190]) B.box("#8a6a40", x, 60, 3, 3, 40);
+      for (let i = 0; i < 14; i++) B.box(GSEEDS[i % GSEEDS.length].col, 74 + (i % 7) * 18, 50 + Math.floor(i / 7) * 6, 10, 2, 14, 16 + Math.floor(i / 7) * 2);
+      B.plane(B.M("#ffffff", { map: B.X.txt("СЕМЕНА · SEEDS", "#ffffff", "#3a8a2a", 512, 64, 40) }), 128, 63, 70, 9, 42, 0);
+    } },
+  market: { name: "Рынок урожая", info: "здесь покупают твой урожай — золотые и радужные плоды дороже", fill: PLAZA_T(), solid: [[1, 0, 2, 1]], mm: "#ffd23d", h: 40,
+    gen(o) { places.marketStall = { x: o.ix * T + 128, y: o.iy * T + 110 }; },
+    d2(Q) { Q.box(128, 32, 128, 56, 30, "#e8c080", "#c8a070"); for (let i = 0; i < 5; i++) Q.circ(84 + i * 22, 30, 7, 34, GSEEDS[i].col); },
+    d3(B) {
+      B.box("#a8804a", 128, 32, 128, 50, 16);
+      const aw = B.X.ct("mktAwn", 64, 32, (c) => { for (let x = 0; x < 64; x += 16) { c.fillStyle = (x / 16) % 2 ? "#ffffff" : "#e8433a"; c.fillRect(x, 0, 16, 32); } });
+      const roof = new B.THREE.Mesh(new B.THREE.PlaneGeometry(136, 40), B.M("#ffffff", { map: aw, ds: true })); roof.rotation.x = -Math.PI / 2 + 0.35; roof.position.set(128, 40, 42); B.g.add(roof);
+      for (const x of [66, 190]) B.box("#8a6a40", x, 60, 3, 3, 40);
+      GSEEDS.slice(0, 5).forEach((sd, i) => { B.box("#8a6a40", 82 + i * 23, 48, 20, 14, 6, 16); for (let k = 0; k < 4; k++) B.sph(sd.col, 76 + i * 23 + (k % 2) * 8, 46 + (k > 1 ? 6 : 0), 3.4 + (sd.id === "pumpkin" || sd.id === "melon" ? 2 : 0), 24); });
+      B.box("#c0c4cc", 200, 52, 10, 10, 2, 18); B.cyl("#c0c4cc", 200, 52, 1, 1, 10, 18, 8);
+      B.plane(B.M("#ffffff", { map: B.X.txt("РЫНОК · ПРОДАЖА", "#3a2a10", "#ffd23d", 512, 64, 40) }), 128, 63, 70, 9, 42, 0);
+    } },
+  greenhouse: { name: "Теплица", info: "стеклянная теплица с помидорами и огурцами", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#bfe8f0", h: 50,
+    d2(Q) { Q.box(128, 128, 128, 128, 44, "rgba(190,232,240,1)", "#8ac0d0"); },
+    d3(B) {
+      const glass = B.M("#cfeff8", { op: 0.35 }), frame = B.M("#e8e8e8");
+      B.box(glass, 128, 128, 126, 126, 30); const r1 = B.box(glass, 128, 96, 126, 4, 72, 30); r1.rotation.x = 0.9; const r2 = B.box(glass, 128, 160, 126, 4, 72, 30); r2.rotation.x = -0.9;
+      for (let x = 66; x <= 190; x += 31) { B.box(frame, x, 65, 2, 2, 30); B.box(frame, x, 191, 2, 2, 30); } B.box(frame, 128, 128, 128, 2, 2, 52);
+      for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) { B.box("#6a4a2a", 80 + c * 24, 90 + r * 38, 18, 26, 4); B.sph("#3a8a2a", 80 + c * 24, 90 + r * 38, 7, 12, 1, 1.4, 1); B.sph("#e8433a", 83 + c * 24, 86 + r * 38, 2.4, 14); }
+    } },
+  sunflower: { name: "Гигантский подсолнух", info: "подсолнух высотой 40 метров — символ Садограда", fill: GRASS_T(), solid: [[1, 1, 2, 2]], mm: "#ffd23d", h: 420, nofog: true,
+    d2(Q) { Q.cyl(128, 128, 8, 380, "#4a9a2a", "#3a8a2a"); Q.circ(128, 128, 60, 400, "#ffd23d"); Q.circ(128, 128, 28, 410, "#6a3a1a"); },
+    d3(B) {
+      B.cyl("#4a9a2a", 128, 128, 6, 9, 380, 0, 10);
+      for (let k = 0; k < 6; k++) { const lf = B.sph("#3a9a2a", 128 + Math.cos(k * 2.1) * 26, 128 + Math.sin(k * 2.1) * 26, 18, 80 + k * 50, 1.6, 0.25, 0.8); lf.rotation.y = -k * 2.1; }
+      const head = new B.THREE.Group(); head.position.set(128, 400, 128); B.g.add(head);
+      const disc = new B.THREE.Mesh(new B.THREE.CylinderGeometry(30, 30, 8, 32), B.M("#6a3a1a")); disc.rotation.x = Math.PI / 2; head.add(disc);
+      for (let k = 0; k < 22; k++) { const a = (k / 22) * TAU, pt = new B.THREE.Mesh(B.K.SPH, B.M("#ffd23d", { glow: "#ffd23d" })); pt.scale.set(9, 22, 3); pt.position.set(Math.cos(a) * 46, Math.sin(a) * 46, 0); pt.rotation.z = a - Math.PI / 2; head.add(pt); }
+      B.anim((t) => { head.rotation.y = Math.sin(t * 0.2) * 0.6; head.rotation.x = -0.25; });
     } },
   shipwreck: { name: "Затонувший галеон", info: "старый корабль лежит на дне уже 300 лет, в трюме — сундук с золотом", fill: PLAZA_T(), solid: [[0, 1, 4, 2]], mm: "#8a5a3a", h: 120,
     ground(g, b) { g.fillStyle = "rgba(240,224,176,.6)"; g.beginPath(); g.ellipse(b.x + 128, b.y + 128, 130, 70, 0, 0, TAU); g.fill(); },
@@ -2097,6 +2174,7 @@ const STYLES = {
   dream: { walls: ["#8a3ad8", "#7a2ac8", "#9a4ae8", "#6a2ab8", "#a05af0", "#8040d0"], win: "arch", roof: "dreamneon" },
   deco: { walls: ["#f2b5a0", "#a8dcd1", "#f7e3a1", "#e8a0c0", "#b5d0f0", "#f2f2f2"], win: "deco", roof: "trim" },
   sand: { walls: ["#d8c08a", "#c8a870", "#e0cc9a", "#b89660", "#cdb48a", "#d4b47c"], win: "arch", roof: "flat" },
+  garden: { walls: ["#f2e6c8", "#e8d0b0", "#d8e8c0", "#f0d0d8", "#c8e0f0", "#f8f0d8"], win: "shutter", roof: "hip", roofCol: "#c8574a" },
   coral: { walls: ["#ff8a7a", "#ffb38a", "#7ad8d0", "#f2d0a8", "#c89af0", "#ff9ac8", "#8ad0f0"], win: "arch", roof: "trim" },
 };
 const NEON_WORDS = { ja: ["ラーメン", "カラオケ", "居酒屋", "薬", "寿司", "ホテル", "焼肉", "ゲーム"], zh: ["饭店", "酒店", "银行", "药房", "火锅", "茶", "书店", "电影"] };
@@ -2330,6 +2408,7 @@ function makeWish(raw) {
 }
 $("wishBtn").addEventListener("click", () => { initAudio(); openWish(); });
 $("wishOut").addEventListener("click", resume);
+$("gdOut").addEventListener("click", resume);
 $("wishForm").addEventListener("submit", (e) => { e.preventDefault(); makeWish($("wishIn").value); });
 $("wsOut").addEventListener("click", resume);
 /* the lift inside the Founder statue */
@@ -2441,6 +2520,73 @@ function gardenAct(sp) {
   if (sp.id === "room") { if (save.olympKey === sp.n) return enterHotelRoom(sp.n); hmRoom = sp.n; hmView = "hroom"; renderHome(); showOv("home"); sfx.door(); return; }
   if (sp.id === "bench") { toast("Ты сидишь на скамейке. Шелестят листья, внизу шумит Ереван", 3); tone(660, 990, 0.4, 0.03, "sine"); return; }
   if (sp.id === "view") { big("АРАРАТ", "Вид с висячих садов «Олимпия» · Ереван", "#9fe08a", 3.2); tone(523, 1046, 0.6, 0.04, "sine"); }
+}
+/* ===== Sadograd: grow your own garden ===== */
+const GSEEDS = [
+  { id: "carrot", name: "Морковь", e: "🥕", price: 10, grow: 30, sell: 28, col: "#ff8a2a", leaf: "#4aa83a" },
+  { id: "straw", name: "Клубника", e: "🍓", price: 25, grow: 60, sell: 75, col: "#e8333a", leaf: "#3a9a3a" },
+  { id: "tomato", name: "Помидор", e: "🍅", price: 40, grow: 90, sell: 130, col: "#e8433a", leaf: "#3a8a2a" },
+  { id: "pumpkin", name: "Тыква", e: "🎃", price: 60, grow: 120, sell: 210, col: "#ff8a1a", leaf: "#4a9a2a" },
+  { id: "melon", name: "Арбуз", e: "🍉", price: 150, grow: 180, sell: 540, col: "#2a8a3a", leaf: "#3a8a2a" },
+  { id: "rainbow", name: "Радужный цветок", e: "🌈", price: 500, grow: 300, sell: 2100, col: "#ff7ad8", leaf: "#5abf4a" },
+];
+const GBEDS = 12, gseed = (id) => GSEEDS.find((q) => q.id === id);
+let gdSel = "carrot", gdTimer = 0;
+function gdState(i) { const b = (save.garden || [])[i]; if (!b) return { k: "empty" }; const sd = gseed(b.s); if (!sd) return { k: "empty" }; const pr = Math.min(1, (Date.now() - b.t) / (sd.grow * 1000)); return { k: pr >= 1 ? "ready" : "grow", sd, pr, left: Math.max(0, Math.ceil(sd.grow * (1 - pr))) }; }
+function openGarden() { renderGarden(); showOv("garden"); clearInterval(gdTimer); gdTimer = setInterval(() => { if (state === "garden") liveGarden(); else clearInterval(gdTimer); }, 1000); }
+// once a second: only move the progress bars; redraw everything only when a bed changes state
+function liveGarden() { for (let i = 0; i < GBEDS; i++) { const st = gdState(i), b = $("bed-" + i); if (!b) return; if (b.dataset.k !== st.k) return renderGarden(); if (st.k === "grow") { const f = b.querySelector(".bar b"); if (f) f.style.width = Math.round(st.pr * 100) + "%"; b.lastChild.textContent = st.left + " с"; b.firstChild.textContent = st.pr < 0.5 ? "🌱" : "🌿"; } } }
+function renderGarden() {
+  const box = $("gdBody"); box.innerHTML = ""; save.garden = save.garden || []; save.seeds = save.seeds || {};
+  const seeds = el("div", "gd-seeds");
+  for (const sd of GSEEDS) { const n = save.seeds[sd.id] || 0, b = el("button", sd.id === gdSel ? "on" : "", sd.e + " " + sd.name + " ×" + n); b.type = "button"; b.disabled = !n; b.addEventListener("click", () => { gdSel = sd.id; renderGarden(); }); seeds.appendChild(b); }
+  box.appendChild(Object.assign(el("p", "gd-note", "Семена (выбери и нажми на пустую грядку):"), { style: "margin:0 0 6px" })); box.appendChild(seeds);
+  const grid = el("div", "gd-grid");
+  for (let i = 0; i < GBEDS; i++) {
+    const st = gdState(i), b = el("button", "gd-bed" + (st.k === "ready" ? " ready" : "")); b.type = "button"; b.id = "bed-" + i; b.dataset.k = st.k;
+    if (st.k === "empty") { b.append(el("i", null, "🟫"), el("span", null, "Посадить")); b.addEventListener("click", () => plantBed(i)); }
+    else if (st.k === "grow") { const bar = el("span", "bar"); const f = el("b"); f.style.width = Math.round(st.pr * 100) + "%"; bar.appendChild(f); b.append(el("i", null, st.pr < 0.5 ? "🌱" : "🌿"), bar, el("span", null, st.left + " с")); }
+    else { b.append(el("i", null, st.sd.e), el("span", null, "Собрать!")); b.addEventListener("click", () => harvestBed(i)); }
+    grid.appendChild(b);
+  }
+  box.appendChild(grid);
+  const ready = Array.from({ length: GBEDS }, (_, i) => gdState(i)).filter((q) => q.k === "ready").length;
+  const row = el("div", "row"); row.style.marginTop = "10px";
+  const all = el("button", "btn", ready ? "Собрать всё (" + ready + ")" : "Пока нечего собирать"); all.type = "button"; all.id = "gdAll"; all.disabled = !ready; all.addEventListener("click", () => { for (let i = 0; i < GBEDS; i++) if (gdState(i).k === "ready") harvestBed(i, true); renderGarden(); });
+  row.appendChild(all); box.appendChild(row);
+  const bk = save.basket || [], sum = bk.reduce((a, q) => a + q.v, 0);
+  box.appendChild(el("p", "gd-note", bk.length ? "🧺 В корзине " + bk.length + " плодов на " + fmt(sum) + " — продай на рынке (метка $ у прилавка)." : "Семена — в лавке «Семена» (зелёная метка). Растут даже когда игра закрыта."));
+}
+function plantBed(i) {
+  const n = (save.seeds || {})[gdSel] || 0; if (!n) { toast("Нет семян «" + (gseed(gdSel) || {}).name + "» — купи в лавке «Семена»", 2.2); return; }
+  save.seeds[gdSel] = n - 1; save.garden[i] = { s: gdSel, t: Date.now() }; writeSave(); tone(330, 440, 0.12, 0.05, "triangle"); renderGarden();
+}
+function harvestBed(i, quiet) {
+  const st = gdState(i); if (st.k !== "ready") return;
+  const r = Math.random(), mut = r < 0.03 ? "rainbow" : r < 0.13 ? "gold" : "", mul = mut === "rainbow" ? 10 : mut === "gold" ? 4 : 1;
+  (save.basket = save.basket || []).push({ s: st.sd.id, m: mut, v: st.sd.sell * mul }); save.garden[i] = null; writeSave();
+  tone(660, 990, 0.1, 0.05, "sine");
+  if (mut) big(mut === "rainbow" ? "🌈 РАДУЖНЫЙ ПЛОД!" : "✨ ЗОЛОТОЙ ПЛОД!", st.sd.name + " · стоит " + fmt(st.sd.sell * mul) + " (×" + mul + ")", mut === "rainbow" ? "#ff7ad8" : "#ffd23d", 2.6);
+  if (!quiet) renderGarden();
+}
+function sellHarvest() {
+  const bk = save.basket || []; if (!bk.length) { toast("Корзина пуста — сначала собери урожай на огороде", 2.2); return; }
+  const sum = bk.reduce((a, q) => a + q.v, 0), gold = bk.filter((q) => q.m).length; money += sum; save.basket = []; save.sold = (save.sold || 0) + bk.length; writeSave(); updHud(); sfx.win();
+  big("ПРОДАНО!", bk.length + " плодов" + (gold ? " (из них особых: " + gold + ")" : "") + " · +" + fmt(sum), "#7fe05a", 3);
+}
+function cropMesh(B, sd, pr, mut) {
+  const g = new B.THREE.Group(), leaf = B.M(sd.leaf), col = B.M(mut === "gold" ? "#ffd23d" : sd.col, mut ? { glow: mut === "gold" ? "#ffd23d" : "#ff7ad8" } : undefined), s = 0.3 + pr * 0.7;
+  const add = (geo, m, x, y, z, sx, sy, sz) => { const me = new B.THREE.Mesh(geo, m); me.position.set(x, y, z); me.scale.set(sx, sy, sz); g.add(me); return me; };
+  for (let k = 0; k < 5; k++) add(B.K.BOX, leaf, Math.cos(k * 1.3) * 3 * s, 6 * s, Math.sin(k * 1.3) * 3 * s, 1.6, 12 * s, 1).rotation.set(Math.sin(k) * 0.4, k, Math.cos(k) * 0.4);
+  if (pr < 0.66) return g;
+  const big = pr >= 1 ? 1 : 0.6;
+  if (sd.id === "carrot") add(B.K.SPH, col, 0, 2, 0, 3 * big, 4 * big, 3 * big);
+  else if (sd.id === "straw") for (let k = 0; k < 4; k++) add(B.K.SPH, col, Math.cos(k * 1.6) * 5, 3, Math.sin(k * 1.6) * 5, 2.4 * big, 2.8 * big, 2.4 * big);
+  else if (sd.id === "tomato") for (let k = 0; k < 3; k++) add(B.K.SPH, col, Math.cos(k * 2) * 4, 9 + k * 2, Math.sin(k * 2) * 4, 3 * big, 3 * big, 3 * big);
+  else if (sd.id === "pumpkin") add(B.K.SPH, col, 0, 6 * big, 0, 10 * big, 7 * big, 10 * big);
+  else if (sd.id === "melon") { add(B.K.SPH, col, 0, 6 * big, 0, 12 * big, 7 * big, 8 * big); add(B.K.SPH, B.M("#7ac85a"), 0, 6 * big, 0, 12.2 * big, 6 * big, 8.2 * big); }
+  else { add(B.K.BOX, leaf, 0, 10, 0, 1.2, 20, 1.2); ["#ff3d3d", "#ff9a3d", "#ffd23d", "#5fd35f", "#3d8bff", "#b25cff"].forEach((c, k) => add(B.K.SPH, B.M(c, { neon: true }), Math.cos(k * 1.05) * 4 * big, 20, Math.sin(k * 1.05) * 4 * big, 2.6 * big, 1.4, 2.6 * big)); }
+  return g;
 }
 /* ===== Taktikgrad: crates, bomb sites and the round ===== */
 function tacCrates2d(Q) { for (const [x, y] of [[80, 70], [180, 80], [70, 190], [190, 180]]) { Q.box(x, y, 30, 30, 22, "#9a7040", "#6a4a20"); Q.box(x + 8, y - 6, 22, 22, 40, "#a87a48", "#6a4a20", 22); } }
@@ -5200,6 +5346,11 @@ function buy(sh, it) {
 for (const sh of SHOPS) if (sh.items) sh.bonus = SHOP_BONUS;
 if (CITY.village) for (let i = SHOPS.length - 1; i >= 0; i--) if (!["air", "food"].includes(SHOPS[i].id)) SHOPS.splice(i, 1);
 if (places.liftDoor) SHOPS.push({ id: "lift", col: "#ffd23d", hex: 0xffd23d, label: "⇧", at: () => places.liftDoor, open: () => openLift() });
+if (places.plot) SHOPS.push({ id: "plot", col: "#8a5a2a", hex: 0x8a5a2a, label: "🌱", at: () => places.plot, open: () => openGarden() });
+if (places.marketStall) SHOPS.push({ id: "market", col: "#ffd23d", hex: 0xffd23d, label: "$", at: () => places.marketStall, open: () => sellHarvest() });
+if (places.seedShop) SHOPS.push({ id: "seeds", who: "Лавка «Семена» · Садоград", title: "Семена", col: "#5fbf4a", hex: 0x5fbf4a, label: "🌱", at: () => places.seedShop, bonus: 0,
+  note: "Посади семена на своём огороде. Чем дороже семя, тем дольше растёт и тем дороже урожай. 10% плодов — золотые (×4), 3% — радужные (×10).",
+  items: GSEEDS.map((sd) => ({ id: "seed_" + sd.id, name: sd.e + " " + sd.name, info: "растёт " + (sd.grow >= 60 ? sd.grow / 60 + " мин" : sd.grow + " с") + " · продаётся за " + fmt(sd.sell), price: sd.price, quiet: true, act: () => { save.seeds = save.seeds || {}; save.seeds[sd.id] = (save.seeds[sd.id] || 0) + 1; gdSel = sd.id; toast("Семена «" + sd.name + "» ×1 — сажай на огороде", 1.8); } })) });
 if (places.tacA) SHOPS.push({ id: "tacA", col: "#e8433a", hex: 0xe8433a, label: "A", at: () => places.tacA, open: () => startPlant("A") });
 if (places.tacB) SHOPS.push({ id: "tacB", col: "#2a6fd6", hex: 0x2a6fd6, label: "B", at: () => places.tacB, open: () => startPlant("B") });
 if (places.bunkDoor) SHOPS.push({ id: "bunk", col: "#4d93ff", hex: 0x4d93ff, label: "⇧", at: () => places.bunkDoor, open: () => enterBunker() });
@@ -6086,8 +6237,8 @@ setTouch(touchMode);
 let ovOpenedAt = 0, lastDown = 0;
 document.addEventListener("pointerdown", () => { lastDown = performance.now(); }, true);
 document.addEventListener("click", (e) => { if (lastDown < ovOpenedAt && performance.now() - ovOpenedAt < 700 && e.target.closest && e.target.closest(".ov")) { e.stopPropagation(); e.preventDefault(); } }, true);
-function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
-function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); stopMenuMusic(); }
+function showOv(id) { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish", "garden"].forEach((k) => ($(k).hidden = k !== id)); state = id; ovOpenedAt = performance.now(); if (eng) eng.g.gain.value = 0; if (sir) sir.g.gain.value = 0; }
+function resume() { ["start", "card", "pause", "shop", "stadium", "match", "factory", "phone", "kitchen", "inv", "home", "darts", "film", "museum", "passport", "terminal", "whistle", "lift", "wish", "garden"].forEach((k) => ($(k).hidden = true)); state = "play"; last = performance.now(); stopMenuMusic(); }
 function pauseGame() {
   $("pauseProg").textContent = progressText(); showOv("pause");
 }
@@ -6876,6 +7027,7 @@ function render() {
   const cx = view.x + view.w / 2, cy = view.y + view.h / 2;
   vis.sort((a, b) => Math.hypot(b.x + b.w / 2 - cx, b.y + b.h / 2 - cy) * b.hgt - Math.hypot(a.x + a.w / 2 - cx, a.y + a.h / 2 - cy) * a.hgt);
   for (const b of vis) drawBuilding(b);
+  if (places.plotO) for (let i = 0; i < GBEDS; i++) { const st = gdState(i); if (st.k === "empty") continue; const x = places.plotO.x + 56 + (i % 4) * 48, y = places.plotO.y + 70 + Math.floor(i / 4) * 56; ctx.fillStyle = st.sd.leaf; ctx.beginPath(); ctx.arc(x, y, 4 + st.pr * 8, 0, TAU); ctx.fill(); if (st.pr >= 0.66) { ctx.fillStyle = st.sd.col; ctx.beginPath(); ctx.arc(x + 3, y + 2, st.k === "ready" ? 7 : 4, 0, TAU); ctx.fill(); } if (st.k === "ready" && Math.sin(now * 4) > 0) { ctx.strokeStyle = "#ffd23d"; ctx.lineWidth = 2; ctx.strokeRect(x - 18, y - 20, 36, 40); } }
   for (const p of parts) {
     const a = clamp(p.life / p.max, 0, 1);
     if (p.type === "smoke") { ctx.globalAlpha = a * 0.5; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, TAU); ctx.fill(); }
@@ -7797,7 +7949,7 @@ function renderIdle(t) {
   cam.x = WORLD / 2 + Math.cos(t * 0.05) * 900; cam.y = WORLD / 2 + Math.sin(t * 0.05) * 900; cam.z = clamp(Math.min(cv.clientWidth, cv.clientHeight) / 700, 0.4, 1);
   now = t; render();
 }
-if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, enterBunker, get RD() { return RD; }, hurtPlayer, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
+if (location.hash === "#debug") window.__v3a = { setDay: (v) => { dayT = v; }, get SUM() { return SUM; }, CITY, LMS, cam, G3, cam3, setView, get mode3d() { return mode3d; }, player, cars, people, setWanted, M, places, STORY, startMission, get money() { return money; }, WX, STATS, TV, get state() { return state; }, set state(v) { state = v; }, set money(v) { money = v; }, get wanted() { return wanted; }, get NJ() { return NJ; }, radioSong, get FM() { return FM; }, filmSubject, wakeUp, enterNet, openTerminal, get INT() { return INT; }, get MM() { return MM; }, enterGarden, enterHotelRoom, enterPalace, enterBunker, openGarden, ffGarden: () => { for (const b of save.garden || []) if (b) b.t -= b.s === "carrot" ? 40e3 : b.s === "pumpkin" ? 85e3 : 60e3; writeSave(); }, get RD() { return RD; }, hurtPlayer, get INT2() { return INT; }, get ac() { return ac; }, get master() { return master; } };
 $("viewBtn").addEventListener("click", () => setView(!mode3d));
 $("startView").addEventListener("click", () => setView(!mode3d));
 $("pauseView").addEventListener("click", () => setView(!mode3d));
