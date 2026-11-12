@@ -143,7 +143,8 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
       { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
-      { id: "video", ico: "🎬", n: "Видео", hi: "Опиши сюжет — и я сниму короткое видео: несколько сцен, движение, субтитры и музыка. Его можно скачать.", p: "Режим «Видео»: снимаешь короткие видео по описанию.", s: ["Кот летит в космос и находит планету из сыра", "День из жизни робота-повара", "Рыбка ищет друзей в океане"] },
+      { id: "video3d", ico: "🧊", n: "3D-видео", hi: "Опиши сюжет — и я сниму 3D-мультфильм: объёмные герои, свет и тени, полёт камеры, субтитры и музыка. Его можно скачать.", p: "Режим «3D-видео»: снимаешь 3D-мультфильмы по описанию.", s: ["Робот танцует на Луне", "Кот плывёт на лодке к острову", "Динозавр собирает подарки под ёлкой"] },
+      { id: "video", ico: "🎬", n: "Мульт 2D", hi: "Опиши сюжет — и я сниму рисованный 2D-мультик: несколько сцен, движение, субтитры и музыка. Его можно скачать.", p: "Режим «Видео»: снимаешь короткие видео по описанию.", s: ["Кот летит в космос и находит планету из сыра", "День из жизни робота-повара", "Рыбка ищет друзей в океане"] },
       { id: "school", ico: "📚", n: "Учёба", hi: "Объясню любую тему шаг за шагом.", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения. В конце можно задать один короткий вопрос на проверку.", s: ["Объясни дроби на примере пиццы", "Как решить 3x + 5 = 20?", "Кратко о Солнечной системе"] },
       { id: "write", ico: "✍️", n: "Писатель", hi: "Сказки, стихи, поздравления и идеи.", p: "Режим «Писатель»: ты креативный автор. Пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи.", s: ["Сказка про кота-космонавта", "Стих на день рождения маме", "Придумай название для моего канала"] },
       { id: "lang", ico: "🌍", n: "Переводчик", hi: "Переведу на любой язык и подскажу произношение.", p: "Режим «Переводчик»: переводи текст пользователя. Если язык не указан: с русского — на английский, с других языков — на русский. Дай перевод, а ниже коротко произношение русскими буквами или полезный нюанс.", s: ["Переведи: «Я люблю играть в футбол»", "«Спасибо» на 5 языках", "Hello, how are you?"] },
@@ -352,7 +353,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       save(); render();
 
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
-      if (!img && (forceArt === "video" || (!forceArt && wantsVideo(q, M)))) { await film(c, q); return; }
+      if (!img && (forceArt === "video3d" || (!forceArt && M.id === "video3d"))) { await film(c, q, true); return; }
+      if (!img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
+      if (!img && !forceArt && wantsVideo(q, M)) { await film(c, q, !/2d|2д|рисованн|мульт/i.test(q)); return; }
       if (!img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
       if (!img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
       setStatus("думает…", true);
@@ -366,7 +369,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone || m.scenes ? `(${m.scenes ? "Снял видео" : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
         hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
@@ -410,7 +413,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       return /^(пожалуйста,?\s*)?(нарисуй|изобрази|намалюй)/.test(t) || /(сгенерируй|создай|сделай|покажи|придумай)\s+(мне\s+)?(картин|рисун|изображен|арт|аватар|аватарк|логотип|обои|иконк)/.test(t) || /^(draw|generate an? (image|picture))/.test(t);
     }
     function wantsVideo(q, M) {
-      if (M.id === "video") return true;
+      if (M.id === "video" || M.id === "video3d") return true;
       const t = q.toLowerCase().replace(/ё/g, "е");
       return /(сделай|создай|сними|сгенерируй|смонтируй|нарисуй|покажи|придумай)\s+(мне\s+)?(\S+\s+)?(видео|ролик|клип|мультик|мультфильм)/.test(t) || /^(make|create|generate) (a |an )?(\S+ )?(video|clip|cartoon)/.test(t);
     }
@@ -469,7 +472,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     function art(el, m) {
       const box = document.createElement("div"); box.className = "vi-art";
       if (m.scenes) {
-        const poster = document.createElement("img"); poster.src = svgUrl(m.scenes[0].svg); poster.alt = m.q || "Видео"; box.appendChild(poster);
+        const poster = document.createElement("img"); poster.alt = m.q || "Видео"; box.appendChild(poster);
+        if (m.scenes[0].svg) poster.src = svgUrl(m.scenes[0].svg);
+        else { box.style.background = "linear-gradient(135deg,#062a3a,#0a5a4a)"; posterOf(m).then((u) => { if (u) poster.src = u; }, () => {}); }
         const ov = document.createElement("button"); ov.type = "button"; ov.className = "vi-play"; box.appendChild(ov);
         const show = (v) => {
           box.innerHTML = "";
@@ -479,7 +484,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         const go = () => {
           ov.disabled = true; ov.textContent = "🎬 Монтирую… 0%";
           videoOf(m, (k) => { ov.textContent = "🎬 Монтирую… " + Math.round(k * 100) + "%"; }).then(show, (e) => {
-            ov.disabled = false; ov.textContent = e && e.message === "norec" ? "😔 Это устройство не умеет записывать видео" : "⚠️ Не вышло — нажми, чтобы ещё раз";
+            ov.disabled = false; ov.textContent = e && e.message === "norec" ? "😔 Это устройство не умеет записывать видео" : e && e.message === "no3d" ? "⚠️ 3D-движок не загрузился — проверь интернет и нажми ещё раз" : "⚠️ Не вышло — нажми, чтобы ещё раз";
           });
         };
         ov.addEventListener("click", () => { wakeAudio(); go(); });
@@ -505,11 +510,12 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (m.svg) {
         const sv = document.createElement("button"); sv.type = "button"; sv.textContent = m.gif ? "💾 Скачать GIF" : "💾 Скачать"; sv.addEventListener("click", () => download(m, sv));
         bar.append(sv);
-        if (!m.gif) { const vb = document.createElement("button"); vb.type = "button"; vb.textContent = "🎬 Сделать видео"; vb.addEventListener("click", () => send(m.q, "video")); bar.append(vb); }
+        if (!m.gif) { const vb = document.createElement("button"); vb.type = "button"; vb.textContent = "🧊 3D-видео"; vb.addEventListener("click", () => send(m.q, "video3d")); bar.append(vb); }
+        if (!m.gif) { const vb = document.createElement("button"); vb.type = "button"; vb.textContent = "🎬 Мульт 2D"; vb.addEventListener("click", () => send(m.q, "video")); bar.append(vb); }
         if (!m.gif) { const an = document.createElement("button"); an.type = "button"; an.textContent = "🎞 Сделать GIF"; an.addEventListener("click", () => send(m.q, "gif")); bar.append(an); }
       }
       if (m.by) { const by = document.createElement("span"); by.className = "vi-by"; by.textContent = m.by; bar.appendChild(by); }
-      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, m.scenes ? "video" : m.gif ? "gif" : true));
+      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё вариант"; again.addEventListener("click", () => send(m.q, m.scenes ? (m.scenes[0] && m.scenes[0].three ? "video3d" : "video") : m.gif ? "gif" : true));
       bar.appendChild(again);
       el.appendChild(bar);
     }
@@ -710,19 +716,25 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (!videoCache.has(m)) videoCache.set(m, fastVideo(m, prog).catch(() => recordVideo(m, prog)));
       const p = videoCache.get(m); p.catch(() => videoCache.delete(m)); return p;
     }
-    // Draws any moment of the film on a canvas: scene, crossfade, fades, subtitle, logo.
-    function makeFrames(m, S) {
+    // Draws any moment of the film on a canvas: 2D or 3D scene, crossfade, fades, subtitle, logo.
+    async function makeFrames(m, S) {
       const cv = document.createElement("canvas"); cv.width = cv.height = S;
       const g = cv.getContext("2d"), scenes = m.scenes, FADE = .5, k = S / 720;
-      const rigs = scenes.map((sc) => makeRig(sc.svg, sc.anim)), starts = [], firsts = []; let total = 0;
+      const stage = scenes.some((sc) => sc.three) ? stage3d(await loadThree(), S) : null;
+      const views = scenes.map((sc) => (sc.three ? stage.build(sc) : makeRig(sc.svg, sc.anim))), starts = []; let total = 0;
       scenes.forEach((sc) => { starts.push(total); total += sc.dur; });
-      const first = (i) => firsts[i] || (firsts[i] = loadImg(svgUrl(rigs[i](0)))); // next scene's opening frame, reused for the crossfade
+      const paint = async (i, local, alpha) => {
+        const sc = scenes[i];
+        let src;
+        if (sc.three) { stage.render(views[i], local); src = stage.canvas; } else src = await loadImg(svgUrl(views[i]((local % sc.loop) / sc.loop)));
+        g.globalAlpha = alpha; g.drawImage(src, 0, 0, S, S); g.globalAlpha = 1;
+      };
       const frame = async (sec) => {
         let i = 0; while (i < scenes.length - 1 && sec >= starts[i + 1]) i++;
-        const local = sec - starts[i], sc = scenes[i], left = sc.dur - local, fade = i < scenes.length - 1 && left < FADE;
-        const [im, im2] = await Promise.all([loadImg(svgUrl(rigs[i]((local % sc.loop) / sc.loop))), fade ? first(i + 1) : null]);
-        g.globalAlpha = 1; g.fillStyle = "#000"; g.fillRect(0, 0, S, S); g.drawImage(im, 0, 0, S, S);
-        if (im2) { g.globalAlpha = 1 - left / FADE; g.drawImage(im2, 0, 0, S, S); g.globalAlpha = 1; }
+        const local = sec - starts[i], sc = scenes[i], left = sc.dur - local;
+        g.fillStyle = "#000"; g.fillRect(0, 0, S, S);
+        await paint(i, local, 1);
+        if (i < scenes.length - 1 && left < FADE) await paint(i + 1, 0, 1 - left / FADE); // crossfade into the next scene
         if (sec < FADE) { g.fillStyle = `rgba(0,0,0,${1 - sec / FADE})`; g.fillRect(0, 0, S, S); }
         if (total - sec < FADE) { g.fillStyle = `rgba(0,0,0,${Math.min(1, 1 - (total - sec) / FADE)})`; g.fillRect(0, 0, S, S); }
         if (sc.caption) {
@@ -736,7 +748,205 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         }
         g.font = `900 ${20 * k}px Manrope, system-ui, sans-serif`; g.textAlign = "right"; g.textBaseline = "middle"; g.fillStyle = "rgba(255,255,255,.75)"; g.fillText("V3AI", S - 18 * k, 30 * k);
       };
-      return { cv, frame, total };
+      return { cv, frame, total, dispose: () => { if (stage) stage.dispose(); } };
+    }
+    const posterCache = new WeakMap();
+    function posterOf(m) {
+      if (!posterCache.has(m)) posterCache.set(m, (async () => { const R = await makeFrames(m, 360); try { await R.frame(Math.min(1.2, R.total / 2)); return R.cv.toDataURL("image/jpeg", .85); } finally { R.dispose(); } })());
+      return posterCache.get(m);
+    }
+
+    /* ---- 3D: Claude describes a scene (shapes, materials, light, camera, motion); Three.js renders it ---- */
+    let threeLib = null;
+    function loadThree() {
+      if (window.THREE) return Promise.resolve(window.THREE);
+      return threeLib || (threeLib = new Promise((res, rej) => {
+        const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; sc.async = true;
+        sc.onload = () => (window.THREE ? res(window.THREE) : rej(new Error("no3d")));
+        sc.onerror = () => { threeLib = null; sc.remove(); rej(new Error("no3d")); };
+        document.head.appendChild(sc);
+      }));
+    }
+    const clampN = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
+    const vec3 = (v, d, lo, hi) => (Array.isArray(v) ? [0, 1, 2].map((i) => clampN(v[i], d[i], lo, hi)) : typeof v === "number" ? [clampN(v, d[0], lo, hi), clampN(v, d[1], lo, hi), clampN(v, d[2], lo, hi)] : d.slice());
+    const colr = (c, d) => (typeof c === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c) ? c : d);
+    const SHAPES = ["group", "box", "sphere", "cylinder", "cone", "capsule", "torus", "plane", "ring", "star", "dodecahedron", "icosahedron", "octahedron", "tetrahedron"];
+    // Turn whatever came back into a safe, bounded scene description.
+    function norm3d(j) {
+      if (!j || !Array.isArray(j.objects)) return null;
+      const ids = new Set(), objects = [];
+      j.objects.slice(0, 90).forEach((o) => {
+        if (!o || typeof o !== "object") return;
+        const shape = SHAPES.includes(String(o.shape).toLowerCase()) ? String(o.shape).toLowerCase() : "box";
+        const id = typeof o.id === "string" ? o.id.slice(0, 40) : "";
+        const size = Array.isArray(o.size) ? o.size.slice(0, 3).map((v) => clampN(v, 1, .01, 60)) : typeof o.size === "number" ? [clampN(o.size, 1, .01, 60)] : [];
+        objects.push({ id, shape, size, parent: typeof o.parent === "string" && ids.has(o.parent) ? o.parent : "",
+          pos: vec3(o.pos, [0, 0, 0], -120, 120), rot: vec3(o.rot, [0, 0, 0], -720, 720), scale: vec3(o.scale, [1, 1, 1], .01, 40),
+          color: colr(o.color, "#cccccc"), emissive: colr(o.emissive, "#000000"), rough: clampN(o.rough, .55, 0, 1), metal: clampN(o.metal, 0, 0, 1), opacity: clampN(o.opacity, 1, .05, 1) });
+        if (id) ids.add(id);
+      });
+      if (!objects.length) return null;
+      const anim = (Array.isArray(j.anim) ? j.anim : []).slice(0, 24).filter((x) => x && ids.has(x.id) && Array.isArray(x.keys) && x.keys.length).map((x) => ({
+        id: x.id, loop: clampN(x.loop, 2, .2, 12), linear: !!x.linear,
+        keys: x.keys.slice(0, 12).map((k) => ({ t: clampN(k.t, 0, 0, 1), x: clampN(k.x, 0, -60, 60), y: clampN(k.y, 0, -60, 60), z: clampN(k.z, 0, -60, 60), rx: clampN(k.rx, 0, -1080, 1080), ry: clampN(k.ry, 0, -1080, 1080), rz: clampN(k.rz, 0, -1080, 1080), s: clampN(k.s, 1, .01, 20) })).sort((p, q) => p.t - q.t),
+      }));
+      const cam = j.camera && typeof j.camera === "object" ? j.camera : {};
+      const from = vec3(cam.from, [0, 2.5, 8], -80, 80);
+      return {
+        sky: colr(j.sky, "#8fd3ff"), ground: ["grass", "sand", "snow", "water", "space", "none"].includes(j.ground) ? j.ground : "grass", groundColor: colr(j.groundColor, ""),
+        light: ["day", "sunset", "night"].includes(j.light) ? j.light : "day", particles: ["none", "stars", "snow", "rain", "confetti", "bubbles", "sparkles"].includes(j.particles) ? j.particles : "none",
+        camera: { from, to: vec3(cam.to, from, -80, 80), look: vec3(cam.look, [0, 1, 0], -80, 80), fov: clampN(cam.fov, 50, 20, 100), orbit: clampN(cam.orbit, 0, -360, 360) },
+        objects, anim,
+      };
+    }
+    function stage3d(T, S) {
+      const canvas = document.createElement("canvas"); canvas.width = canvas.height = S;
+      const rd = new T.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+      rd.setPixelRatio(1); rd.setSize(S, S, false); rd.shadowMap.enabled = true; rd.shadowMap.type = T.PCFSoftShadowMap; rd.outputEncoding = T.sRGBEncoding;
+      return { canvas, build: (sc) => build3d(T, sc.three, sc.dur), render: (v, local) => { v.update(local); rd.render(v.scene, v.cam); }, dispose: () => { rd.dispose(); try { rd.forceContextLoss(); } catch (e) { /* fine */ } } };
+    }
+    function geom(T, shape, sz) {
+      const a = (i, d) => (sz[i] != null ? sz[i] : d);
+      switch (shape) {
+        case "sphere": return new T.SphereGeometry(a(0, .5), 32, 20);
+        case "cylinder": return sz.length >= 3 ? new T.CylinderGeometry(a(0, .5), a(1, .5), a(2, 1), 32) : new T.CylinderGeometry(a(0, .5), a(0, .5), a(1, 1), 32);
+        case "cone": return new T.ConeGeometry(a(0, .5), a(1, 1), 32);
+        case "torus": return new T.TorusGeometry(a(0, .5), a(1, .15), 16, 48);
+        case "plane": return new T.PlaneGeometry(a(0, 1), a(1, 1));
+        case "ring": return new T.RingGeometry(a(0, .3), a(1, .5), 48);
+        case "dodecahedron": return new T.DodecahedronGeometry(a(0, .5));
+        case "icosahedron": return new T.IcosahedronGeometry(a(0, .5));
+        case "octahedron": return new T.OctahedronGeometry(a(0, .5));
+        case "tetrahedron": return new T.TetrahedronGeometry(a(0, .5));
+        case "star": {
+          const r = a(0, .5), sh = new T.Shape();
+          for (let i = 0; i < 10; i++) { const ang = Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; const x = Math.cos(ang) * rr, y = Math.sin(ang) * rr; if (i) sh.lineTo(x, y); else sh.moveTo(x, y); }
+          const gm = new T.ExtrudeGeometry(sh, { depth: a(1, .15), bevelEnabled: true, bevelSize: r * .05, bevelThickness: r * .05, bevelSegments: 2 }); gm.center(); return gm;
+        }
+        default: return new T.BoxGeometry(a(0, 1), a(1, 1), a(2, 1));
+      }
+    }
+    function build3d(T, spec, dur) {
+      const scene = new T.Scene(), d2r = Math.PI / 180;
+      const lc = (hex) => new T.Color(hex).convertSRGBToLinear(); // colours as people pick them, shown true on screen
+      const LIGHT = { day: [1, .75, "#ffffff"], sunset: [.8, .55, "#ffb27a"], night: [.35, .35, "#9fb4ff"] }[spec.light];
+      const space = spec.ground === "space";
+      scene.background = new T.Color(space ? "#02030c" : spec.sky);
+      if (!space) scene.fog = new T.Fog(lc(spec.sky), 30, 90);
+      scene.add(new T.HemisphereLight(lc(space ? "#8899ff" : spec.sky), lc("#555555"), LIGHT[1]));
+      const sun = new T.DirectionalLight(lc(LIGHT[2]), LIGHT[0] * 1.1); sun.position.set(6, 12, 7); sun.castShadow = true;
+      sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 50 }); sun.shadow.bias = -.0008;
+      scene.add(sun);
+      if (!["space", "none"].includes(spec.ground)) {
+        const GC = { grass: "#5cb85c", sand: "#e8d29b", snow: "#f4f8ff", water: "#2a7fd4" }[spec.ground];
+        const gnd = new T.Mesh(new T.CircleGeometry(90, 64), new T.MeshStandardMaterial({ color: lc(spec.groundColor || GC), roughness: spec.ground === "water" ? .15 : .95, metalness: spec.ground === "water" ? .25 : 0 }));
+        gnd.rotation.x = -Math.PI / 2; gnd.receiveShadow = true; scene.add(gnd);
+      }
+      // the objects; a part's position is relative to its parent
+      const byId = {};
+      spec.objects.forEach((o) => {
+        let node;
+        if (o.shape === "group") node = new T.Group();
+        else {
+          const mat = new T.MeshStandardMaterial({ color: lc(o.color), roughness: Math.max(.2, o.rough), metalness: o.metal * .45, emissive: lc(o.emissive), transparent: o.opacity < 1, opacity: o.opacity, side: o.shape === "plane" || o.shape === "ring" ? T.DoubleSide : T.FrontSide });
+          if (o.shape === "capsule") { // r128 has no capsule: a cylinder with two half-spheres
+            const r = o.size[0] != null ? o.size[0] : .3, h = o.size[1] != null ? o.size[1] : .8;
+            node = new T.Group();
+            const body = new T.Mesh(new T.CylinderGeometry(r, r, h, 32), mat), top = new T.Mesh(new T.SphereGeometry(r, 32, 16), mat), bot = top.clone();
+            top.position.y = h / 2; bot.position.y = -h / 2;
+            [body, top, bot].forEach((x) => { x.castShadow = x.receiveShadow = true; node.add(x); });
+          } else { node = new T.Mesh(geom(T, o.shape, o.size), mat); node.castShadow = node.receiveShadow = true; }
+        }
+        node.position.set(...o.pos); node.rotation.set(o.rot[0] * d2r, o.rot[1] * d2r, o.rot[2] * d2r); node.scale.set(...o.scale);
+        (o.parent && byId[o.parent] ? byId[o.parent] : scene).add(node);
+        if (o.id) byId[o.id] = node;
+        node.userData.base = { p: node.position.clone(), r: node.rotation.clone(), s: node.scale.clone() };
+      });
+      // particles
+      let pts = null, base = null, speed = 0;
+      if (spec.particles !== "none") {
+        const N = spec.particles === "stars" ? 700 : 450, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), c = new T.Color();
+        base = new Float32Array(N * 3);
+        for (let i = 0; i < N; i++) {
+          if (spec.particles === "stars") { const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, rr = 60; base.set([Math.sqrt(1 - u * u) * Math.cos(th) * rr, Math.abs(u) * rr * .9 + 2, Math.sqrt(1 - u * u) * Math.sin(th) * rr], i * 3); }
+          else base.set([(Math.random() - .5) * 24, Math.random() * 14, -14 + Math.random() * 16], i * 3); // in front of the camera, never on its lens
+          c.set(spec.particles === "confetti" ? ["#ff4d6d", "#ffd84d", "#4dd2ff", "#7dffcf", "#b48cff"][i % 5] : spec.particles === "bubbles" ? "#bfefff" : spec.particles === "sparkles" ? "#fff3a0" : "#ffffff");
+          c.convertSRGBToLinear(); col.set([c.r, c.g, c.b], i * 3);
+        }
+        pos.set(base);
+        const gm = new T.BufferGeometry(); gm.setAttribute("position", new T.BufferAttribute(pos, 3)); gm.setAttribute("color", new T.BufferAttribute(col, 3));
+        const size = { stars: .35, snow: .12, rain: .06, confetti: .14, bubbles: .18, sparkles: .12 }[spec.particles];
+        pts = new T.Points(gm, new T.PointsMaterial({ size, vertexColors: true, transparent: true, opacity: spec.particles === "bubbles" ? .7 : .95, sizeAttenuation: true }));
+        scene.add(pts);
+        speed = { stars: 0, snow: -1.2, rain: -9, confetti: -1.6, bubbles: 1.1, sparkles: .4 }[spec.particles];
+      }
+      const cam = new T.PerspectiveCamera(spec.camera.fov, 1, .1, 400);
+      const look = new T.Vector3(...spec.camera.look), from = new T.Vector3(...spec.camera.from), to = new T.Vector3(...spec.camera.to);
+      const ease = (u) => u * u * (3 - 2 * u);
+      const value = (keys, t, lin) => {
+        let i = 0; while (i < keys.length - 1 && keys[i + 1].t < t) i++;
+        const a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)], span = b.t - a.t;
+        const u = span > 0 ? Math.min(1, Math.max(0, (t - a.t) / span)) : 0, e = lin ? u : ease(u), mix = (p, q) => p + (q - p) * e;
+        return { x: mix(a.x, b.x), y: mix(a.y, b.y), z: mix(a.z, b.z), rx: mix(a.rx, b.rx), ry: mix(a.ry, b.ry), rz: mix(a.rz, b.rz), s: mix(a.s, b.s) };
+      };
+      const update = (local) => {
+        spec.anim.forEach((an) => {
+          const node = byId[an.id]; if (!node) return;
+          const v = value(an.keys, (local % an.loop) / an.loop, an.linear), B = node.userData.base;
+          node.position.set(B.p.x + v.x, B.p.y + v.y, B.p.z + v.z);
+          node.rotation.set(B.r.x + v.rx * d2r, B.r.y + v.ry * d2r, B.r.z + v.rz * d2r);
+          node.scale.set(B.s.x * v.s, B.s.y * v.s, B.s.z * v.s);
+        });
+        if (pts) {
+          const arr = pts.geometry.attributes.position.array;
+          for (let i = 0; i < arr.length; i += 3) {
+            if (speed) { let y = base[i + 1] + speed * local; y = ((y % 14) + 14) % 14; arr[i + 1] = y; arr[i] = base[i] + Math.sin(local * 1.3 + i) * (spec.particles === "rain" ? 0 : .25); }
+          }
+          if (speed) pts.geometry.attributes.position.needsUpdate = true;
+          if (spec.particles === "stars" || spec.particles === "sparkles") pts.material.opacity = .75 + .25 * Math.sin(local * 4);
+        }
+        const e = ease(Math.min(1, local / Math.max(.1, dur)));
+        cam.position.lerpVectors(from, to, e);
+        if (spec.camera.orbit) { const off = cam.position.clone().sub(look); off.applyAxisAngle(new T.Vector3(0, 1, 0), spec.camera.orbit * d2r * e); cam.position.copy(look).add(off); }
+        cam.lookAt(look);
+      };
+      return { scene, cam, update };
+    }
+    // Without the AI: a cheerful little 3D character on a matching ground.
+    function offline3d(q) {
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      let h = 0; for (const ch of t) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      const PAL = ["#ff8a3d", "#ff5d8f", "#4dabff", "#7d5cff", "#2fc97a", "#ffc93d"], body = PAL[h % PAL.length];
+      const space = /космос|звезд|луна|луне|планет|галакт|ракет/.test(t), snow = /зим|снег|елк|новый год/.test(t), sea = /мор|океан|пляж|остров|лодк|корабл|рыб/.test(t), night = /ноч/.test(t);
+      const o = [
+        { id: "hero", shape: "group", pos: [0, 0, 0] },
+        { id: "body", parent: "hero", shape: "sphere", size: 1, pos: [0, 1.1, 0], scale: [1, .95, 1], color: body, rough: .45 },
+        { parent: "body", shape: "sphere", size: .62, pos: [0, -.12, .45], scale: [1, .8, .7], color: "#fff4e6" },
+        { parent: "body", shape: "sphere", size: .2, pos: [-.34, .3, .86], color: "#ffffff" }, { parent: "body", shape: "sphere", size: .2, pos: [.34, .3, .86], color: "#ffffff" },
+        { id: "eyes", parent: "body", shape: "group" },
+        { parent: "eyes", shape: "sphere", size: .11, pos: [-.34, .3, 1.02], color: "#151515", rough: .2 }, { parent: "eyes", shape: "sphere", size: .11, pos: [.34, .3, 1.02], color: "#151515", rough: .2 },
+        { parent: "body", shape: "sphere", size: .13, pos: [-.62, -.05, .72], color: "#ff9fb5" }, { parent: "body", shape: "sphere", size: .13, pos: [.62, -.05, .72], color: "#ff9fb5" },
+        { parent: "body", shape: "torus", size: [.2, .05], pos: [0, -.12, .93], rot: [0, 0, 180], scale: [1, .8, 1], color: "#5a1f1f" },
+        { id: "earL", parent: "body", shape: "cone", size: [.28, .6], pos: [-.55, .85, 0], rot: [0, 0, 25], color: body }, { id: "earR", parent: "body", shape: "cone", size: [.28, .6], pos: [.55, .85, 0], rot: [0, 0, -25], color: body },
+        { id: "armL", parent: "hero", shape: "capsule", size: [.16, .5], pos: [-1.05, 1.1, .1], rot: [0, 0, 30], color: body }, { id: "armR", parent: "hero", shape: "capsule", size: [.16, .5], pos: [1.05, 1.1, .1], rot: [0, 0, -30], color: body },
+        { parent: "hero", shape: "sphere", size: .3, pos: [-.45, .15, .2], scale: [1, .6, 1.3], color: "#ffffff" }, { parent: "hero", shape: "sphere", size: .3, pos: [.45, .15, .2], scale: [1, .6, 1.3], color: "#ffffff" },
+      ];
+      for (let i = 0; i < 6; i++) { const ang = i / 6 * Math.PI * 2 + .4, R = 9 + (i % 2) * 3; o.push(space ? { shape: "sphere", size: .6 + (i % 3) * .3, pos: [Math.cos(ang) * R, 3 + (i % 3) * 2, Math.sin(ang) * R - 4], color: PAL[(h + i) % PAL.length], rough: .8 } : snow ? { shape: "cone", size: [.9, 2.4], pos: [Math.cos(ang) * R, 1.2, Math.sin(ang) * R - 3], color: "#2e8b57" } : sea ? { shape: "sphere", size: [.5], pos: [Math.cos(ang) * R, .2, Math.sin(ang) * R - 3], scale: [1.4, .4, 1], color: "#e8d29b" } : { shape: "cone", size: [.9, 2.2], pos: [Math.cos(ang) * R, 1.6, Math.sin(ang) * R - 3], color: "#3a9d4a" }); }
+      if (!space && !sea && !snow) for (let i = 0; i < 6; i++) { const ang = i / 6 * Math.PI * 2 + .4, R = 9 + (i % 2) * 3; o.push({ shape: "cylinder", size: [.18, .5], pos: [Math.cos(ang) * R, .25, Math.sin(ang) * R - 3], color: "#7a4a2a" }); }
+      return norm3d({
+        sky: night || space ? "#0b1030" : snow ? "#cfe6ff" : "#8fd3ff", ground: space ? "space" : snow ? "snow" : sea ? "water" : "grass", light: night || space ? "night" : "day",
+        particles: space || night ? "stars" : snow ? "snow" : "confetti",
+        camera: { from: [0, 2.2, 6.5], to: [0, 2.6, 5.5], look: [0, 1.1, 0], fov: 45, orbit: 40 },
+        objects: o,
+        anim: [
+          { id: "hero", loop: 1.2, keys: [{ t: 0, y: 0, s: 1 }, { t: .5, y: .9 }, { t: 1, y: 0 }] },
+          { id: "armL", loop: 1.2, keys: [{ t: 0, rz: 0 }, { t: .5, rz: 60 }, { t: 1, rz: 0 }] },
+          { id: "armR", loop: 1.2, keys: [{ t: 0, rz: 0 }, { t: .5, rz: -60 }, { t: 1, rz: 0 }] },
+          { id: "eyes", loop: 2.4, keys: [{ t: 0, s: 1 }, { t: .9, s: 1 }, { t: .95, s: .3 }, { t: 1, s: 1 }] },
+          { id: "earL", loop: .8, keys: [{ t: 0, rz: 0 }, { t: .5, rz: 12 }, { t: 1, rz: 0 }] },
+          { id: "earR", loop: .8, keys: [{ t: 0, rz: 0 }, { t: .5, rz: -12 }, { t: 1, rz: 0 }] },
+        ],
+      });
     }
 
     // Fast path: WebCodecs encodes the frames as quickly as they can be drawn, mp4-muxer packs them into an MP4.
@@ -771,7 +981,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const S = 720, FPS = 24, wantMusic = m.music && m.music !== "none";
       const [M, v, a] = await Promise.all([loadMuxer(), pickVideo(S, FPS), wantMusic ? pickAudio() : null]);
       if (!v) throw new Error("nowc");
-      const R = makeFrames(m, S), n = Math.round(R.total * FPS);
+      const R = await makeFrames(m, S), n = Math.round(R.total * FPS);
       const muxer = new M.Muxer({ target: new M.ArrayBufferTarget(), video: { codec: v.mux, width: S, height: S, frameRate: FPS }, audio: a ? { codec: a.mux, numberOfChannels: 2, sampleRate: 48000 } : undefined, fastStart: "in-memory", firstTimestampBehavior: "offset" });
       let err = null;
       const ve = new VideoEncoder({ output: (c, meta) => muxer.addVideoChunk(c, meta), error: (e) => { err = e; } });
@@ -799,7 +1009,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         }
         await ae.flush(); ae.close(); if (err) throw err;
       }
-      muxer.finalize(); onProg(1);
+      R.dispose(); muxer.finalize(); onProg(1);
       const blob = new Blob([muxer.target.buffer], { type: "video/mp4" });
       if (!blob.size) throw new Error("empty");
       return { blob, url: URL.createObjectURL(blob) };
@@ -810,7 +1020,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error("norec");
       const mime = ['video/mp4;codecs="avc1.42E01E,mp4a.40.2"', "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((t) => { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } });
       if (!mime) throw new Error("norec");
-      const R = makeFrames(m, 720), total = R.total;
+      const R = await makeFrames(m, 720), total = R.total;
       await R.frame(0);
       const stream = R.cv.captureStream(30);
       if (actx && m.music && m.music !== "none") {
@@ -828,7 +1038,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         const wait = 33 - ((performance.now() - t0) % 33); await new Promise((r) => setTimeout(r, wait));
       }
       await R.frame(total - .001);
-      rec.stop(); await stopped; stream.getTracks().forEach((t) => t.stop());
+      rec.stop(); await stopped; stream.getTracks().forEach((t) => t.stop()); R.dispose();
       const blob = new Blob(chunks, { type: mime.split(";")[0] });
       if (!blob.size) throw new Error("empty");
       return { blob, url: URL.createObjectURL(blob) };
@@ -843,13 +1053,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (code === "refused") return "ИИ отказался снимать такой сюжет — попробуй другой.";
       return "ИИ не ответил" + (code ? " (" + code + ")" : "") + " — нажми «Ещё вариант».";
     }
-    async function film(c, q) {
+    async function film(c, q, three) {
       wakeAudio();
       setStatus("снимает…", true);
       const el = document.createElement("div"); el.className = "vi-m a";
-      const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = "🎬 Пишу сценарий…"; el.appendChild(box);
+      const box = document.createElement("div"); box.className = "vi-art wait"; box.textContent = three ? "🧊 Пишу сценарий 3D-мультфильма…" : "🎬 Пишу сценарий…"; el.appendChild(box);
       log.appendChild(el); log.scrollTop = log.scrollHeight;
       const prev = c.msgs.slice(0, -1).reverse().find((m) => m.q);
+      if (three) loadThree().catch(() => {}); // fetch the 3D engine while the AI writes
       const sample = aiOff ? null : await samplePromise;
       let vid = null, cap = "", errCode = "", stopped = false;
       const fail = (e) => { const code = (e && e.code) || "error"; if (OFF.includes(code)) aiOff = true; if (code === "cancelled") stopped = true; if (!errCode) errCode = code; };
@@ -872,12 +1083,26 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         // 2) each scene: one picture with its motion (the same format as GIF mode)
         // all scenes are drawn at the same time
         const pct = list.map(() => 0); let ready = 0;
-        const tick = () => { box.textContent = `🎬 Рисую ${list.length} сцены сразу… готово ${ready} из ${list.length} · ${Math.round(pct.reduce((x, y) => x + y, 0) / (list.length || 1))}%`; };
+        const tick = () => { box.textContent = `${three ? "🧊 Строю" : "🎬 Рисую"} ${list.length} сцены сразу… готово ${ready} из ${list.length} · ${Math.round(pct.reduce((x, y) => x + y, 0) / (list.length || 1))}%`; };
         if (list.length) tick();
         const drawn = await Promise.all(list.map(async (sc0, i) => {
           const sc = sc0 || {};
           try {
-            const res = await sample([
+            const res = await sample(three ? [
+              `Ты — V3AI, 3D-аниматор. Опиши сцену ${i + 1} из ${list.length} 3D-мультфильма как JSON. Ответ — только JSON в блоке \`\`\`json.`,
+              "Сюжет фильма: " + q,
+              plan.hero ? "Главный герой (во всех сценах выглядит одинаково, собран из тех же частей): " + plan.hero : "",
+              plan.style ? "Стиль: " + plan.style : "",
+              "Эта сцена: " + (sc.picture || sc.caption || q),
+              "Мир: ось Y вверх, земля на y=0, 1 единица ≈ 1 метр, герой ростом 1–2, всё действие в пределах ±6 от центра.",
+              'Формат: {"sky":"#87ceeb","ground":"grass|sand|snow|water|space|none","groundColor":"#5cb85c","light":"day|sunset|night","particles":"none|stars|snow|rain|confetti|bubbles|sparkles","camera":{"from":[0,2.5,8],"to":[1,2,6],"look":[0,1,0],"fov":50,"orbit":20},"objects":[...],"anim":[...]}',
+              'objects — по порядку, родитель раньше детей: {"id":"cat","shape":"group","pos":[0,0,0]}, {"id":"head","parent":"cat","shape":"sphere","size":0.5,"pos":[0,1.4,0],"rot":[0,0,0],"scale":[1,0.9,1],"color":"#ff9a3c","rough":0.6,"metal":0,"emissive":"#000000"}. pos и rot (градусы) — относительно родителя.',
+              "Формы и size: box [w,h,d]; sphere r; cylinder [rTop,rBottom,h]; cone [r,h]; capsule [r,h]; torus [R,tube]; plane [w,h]; ring [rIn,rOut]; star [r,толщина]; dodecahedron/icosahedron/octahedron/tetrahedron r; group — без формы, для частей.",
+              "Героев собирай из 10–25 частей (голова, глаза с белками и зрачками, бликами, нос, уши, лапы, хвост, одежда) — милые, узнаваемые, яркие. Добавь окружение (деревья из конуса и цилиндра, дома, камни, облака из сфер, планеты, цветы) — всего до 70 объектов. Светящиеся вещи — через emissive.",
+              'anim: [{"id":"cat","loop":1.2,"linear":false,"keys":[{"t":0,"y":0},{"t":0.5,"y":0.6},{"t":1,"y":0}]}] — смещения от исходного положения: x, y, z; поворот rx, ry, rz в градусах; s — множитель масштаба. t от 0 до 1 внутри периода loop (секунды). Первый и последний ключ одинаковые; для непрерывного вращения — "linear":true и ry от 0 до 360. Двигай 3–8 вещей: шаги (лапы rx ±25), прыжки, махи, вращение колёс и планет, полёт, моргание (s глаз).',
+              "camera: from→to — плавный полёт камеры за сцену, orbit — облёт вокруг look в градусах. Снимай кинематографично, герой хорошо виден.",
+              SAFE,
+            ].filter(Boolean).join("\n") : [
               `Ты — V3AI, ИИ-аниматор. Нарисуй сцену ${i + 1} из ${list.length} короткого мультфильма.`,
               "Сюжет фильма: " + q,
               plan.hero ? "Главный герой (во всех сценах выглядит одинаково): " + plan.hero : "",
@@ -892,7 +1117,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
               modelTier: artTier(), cache: false, signal: ctl.signal,
               onText: ({ text: t }) => { if (t) { pct[i] = Math.min(97, Math.round(t.length / 60)); tick(); } },
             });
-            const text = res.text || "", svg = cleanSvg(text);
+            const text = res.text || "";
+            if (three) {
+              const sp = norm3d(jsonBlock(text, "objects"));
+              if (sp) { pct[i] = 100; ready++; tick(); return { three: sp, dur: clampN(sc.dur, 4, 2, 7), caption: typeof sc.caption === "string" ? sc.caption.slice(0, 80) : "" }; }
+              if (!errCode) errCode = res.truncated ? "truncated" : "no_scene";
+              return null;
+            }
+            const svg = cleanSvg(text);
             if (svg) {
               const j = jsonBlock(text, "anim") || {}, an = normAnim(j), num = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
               pct[i] = 100; ready++; tick();
@@ -912,11 +1144,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       }
       if (stopped && !vid) cap = "Съёмка остановлена.";
       if (!vid && !stopped) {
-        vid = { music: "happy", scenes: [{ svg: offlineArt(q), anim: offAnim().anim, dur: 6, loop: 1.6, caption: q.slice(0, 60) }], off: 1 };
+        vid = { music: "happy", scenes: [three ? { three: offline3d(q), dur: 6, caption: q.slice(0, 60) } : { svg: offlineArt(q), anim: offAnim().anim, dur: 6, loop: 1.6, caption: q.slice(0, 60) }], off: 1 };
         cap = "📴 Это простой офлайн-ролик. " + whyOff(errCode, sample);
       }
       el.remove();
-      const am = vid ? { r: "a", t: cap || "Готово! Вот твоё видео 🎬", q, scenes: vid.scenes, music: vid.music } : { r: "a", t: cap || "Не получилось снять видео." };
+      const am = vid ? { r: "a", t: cap || (three ? "Готово! Вот твой 3D-мультфильм 🧊" : "Готово! Вот твоё видео 🎬"), q, scenes: vid.scenes, music: vid.music } : { r: "a", t: cap || "Не получилось снять видео." };
       if (vid && vid.off) am.off = 1; else if (vid) am.by = mdl().n;
       if (vid) freshVideo.add(am);
       bubble(am);
