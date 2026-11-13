@@ -4009,7 +4009,7 @@ div.sc-pl { cursor: default; }
     { id: "alexander", name: "Александр", tier: "paid",  skin: "#f6d5c0", hair: "long",  hairC: "#d2602b", shirt: "#8b5cf6", accent: "#c4a8ff", bg: ["#c4a8ff", "#3b2470"], acc: ["glasses"], motto: "Тактика важнее силы." },
     { id: "maremed",   name: "Маремед",   tier: "paid",  skin: "#8d5a3b", hair: "buzz",  hairC: "#16121a", shirt: "#ff8a3d", accent: "#ffa45c", bg: ["#ffc27a", "#6b2f12"], acc: ["beard", "earring"], motto: "Работаем чётко." },
     { id: "khabich",   name: "Хабич",     tier: "ultra", skin: "#e2b48f", hair: "slick", hairC: "#121014", shirt: "#1d1a2b", accent: "#ffd36b", bg: ["#ffe08a", "#b8741a", "#2a1a06"], acc: ["chain", "crown", "shades"], motto: "Король поля на месте." },
-    { id: "emir",      name: "Эмир",      tier: "ultra", skin: "#c8916b", hair: "flame", hairC: "#ff5ad1", shirt: "#2d1b5e", accent: "#ff5ad1", bg: ["#7cf8ff", "#7a3cff", "#12062e"], acc: ["jacket", "glow"], motto: "Горю на максимум!" },
+    { id: "emir",      name: "Эмир",      tier: "ultra", skin: "#c8916b", hair: "flame", hairC: "#ff5ad1", shirt: "#0c0a12", accent: "#ff5ad1", bg: ["#7cf8ff", "#7a3cff", "#12062e"], acc: ["v3kit", "glow"], motto: "Горю на максимум!" },
     { id: "mika",      name: "Мика",      tier: "ultra", skin: "#eceae2", hair: "buzz",  hairC: "#eceae2", shirt: "#d8d6cc", accent: "#5ce8c8", bg: ["#8af0dc", "#3ac8a8", "#0a4a3e"], acc: [], motto: "Я ползу… к победе." },
     { id: "vaag",      name: "Вааг",      tier: "giga",  skin: "#ffd21f", hair: "buzz",  hairC: "#ffd21f", shirt: "#c8203a", accent: "#ffd21f", bg: ["#f48a9a", "#c8405a", "#5a0f1e"], acc: [], motto: "Улыбнись… шире!" },
     { id: "titan",     name: "Левон",     tier: "giga",  skin: "#b8bcc8", hair: "buzz",  hairC: "#8a8e9c", shirt: "#6a6e7c", accent: "#e05cff", bg: ["#5a1fa0", "#1c0838", "#000"], acc: [], motto: "Стальная мощь V3. Ядро заряжено!" },
@@ -4281,9 +4281,21 @@ div.sc-pl { cursor: default; }
     if (cl.hands) d.push(`<circle cx="10" cy="92" r="9" fill="${cc("hands")}"/><circle cx="90" cy="92" r="9" fill="${cc("hands")}"/><path d="M5 88 q5 -3 10 0 M85 88 q5 -3 10 0" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" fill="none"/>`);
     const tags = ["legs", "feet"].filter((k) => cl[k]).map((k, i) => `<circle cx="${9 + i * 15}" cy="91" r="7" fill="#fff" opacity=".85"/><text x="${9 + i * 15}" y="94.5" font-size="9" text-anchor="middle">${k === "legs" ? "👖" : "👟"}</text>`).join("");
     if (tags) d.push(tags);
+    // V3 football kit (Эмир): black shirt with violet slashes, violet V-neck and cuffs, white V3 logo and the hex badge
+    if (has("v3kit") && !cl.body) {
+      const KB = { thin: `<path d="M27 100 C27 82 38 76 50 76 C62 76 73 82 73 100Z"/>`, fat: `<path d="M3 100 C1 76 28 70 50 70 C72 70 99 76 97 100Z"/><ellipse cx="50" cy="96" rx="40" ry="24"/>`, muscle: `<path d="M0 100 C0 74 20 64 50 66 C80 64 100 74 100 100Z"/><circle cx="14" cy="80" r="13"/><circle cx="86" cy="80" r="13"/>`, normal: `<path d="M16 100 C16 78 32 70 50 70 C68 70 84 78 84 100Z"/>` }[build] || "";
+      d.push(`<clipPath id="${u}kit">${KB}</clipPath><g clip-path="url(#${u}kit)">`);
+      d.push(`<g fill="#6a2cff" opacity=".9"><path d="M8 84 L30 74 L22 86 L40 78 L26 100 L12 100Z"/><path d="M92 84 L70 74 L78 86 L60 80 L74 100 L88 100Z"/><path d="M58 90 L76 80 L66 94Z" opacity=".7"/><path d="M30 96 L44 86 L38 100Z" opacity=".7"/></g>`);
+      d.push(`<g fill="none" stroke="#3a1a8a" stroke-width=".5" opacity=".6"><path d="M20 92 L40 82 M60 96 L82 84 M34 100 L50 90"/></g>`);
+      d.push(`<path d="M14 86 L24 80 M86 86 L76 80" stroke="#7a3cff" stroke-width="3.2"/><path d="M14 89.5 L24 83.5 M86 89.5 L76 83.5" stroke="#7a3cff" stroke-width="1.2" opacity=".8"/>`);
+      d.push(`</g>`);
+      d.push(`<path d="M39 70.5 L50 82 L61 70.5" fill="none" stroke="#7a3cff" stroke-width="3.4" stroke-linejoin="round"/><path d="M41.5 71 L50 79.5 L58.5 71" fill="none" stroke="#2a1060" stroke-width="1"/>`);
+      d.push(`<text x="47" y="93" font-family="Arial Black, Arial" font-weight="900" font-size="9.5" text-anchor="middle" fill="#fff" font-style="italic" stroke="#d8d0ff" stroke-width=".3">V3</text>`);
+      d.push(`<path d="M61 80 L65 78 L69 80 V84.5 L65 86.5 L61 84.5Z" fill="#14082e" stroke="#9a5cff" stroke-width=".9"/><text x="65" y="84" font-family="Arial Black, Arial" font-weight="900" font-size="3.6" text-anchor="middle" fill="#fff">V3</text>`);
+    }
     if (has("jacket")) d.push(`<path d="M16 100 C16 80 28 72 42 70 L50 92 L58 70 C72 72 84 80 84 100Z" fill="#7a3cff"/><path d="M42 70 L50 92 L58 70" fill="none" stroke="#7cf8ff" stroke-width="2"/>`);
-    else d.push(`<path d="M42 71 L50 80 L58 71" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>`);
-    if (c.tier !== "free") d.push(`<path d="M24 90 h52" stroke="#fff" stroke-opacity=".25" stroke-width="3"/>`);
+    else if (!has("v3kit")) d.push(`<path d="M42 71 L50 80 L58 71" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>`);
+    if (c.tier !== "free" && !has("v3kit")) d.push(`<path d="M24 90 h52" stroke="#fff" stroke-opacity=".25" stroke-width="3"/>`);
     if (has("chain")) d.push(`<path d="M37 72 Q50 90 63 72" fill="none" stroke="url(#${u}g)" stroke-width="3"/><circle cx="50" cy="83" r="4.5" fill="url(#${u}g)"/>`);
     d.push(`<g${headT ? ` transform="${headT}"` : ""}>`);
     // neck + long hair back
