@@ -4113,48 +4113,82 @@ div.sc-pl { cursor: default; }
     if (cl.head) d.push(`<path d="M24 30 C26 6 74 6 76 30Z" fill="${cl.head.col}" opacity=".9"/>`);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Валерий">${d.join("")}</svg>`;
   }
-  // Мика (Ультра): a pale crawling creature with a skull-like face and long bony limbs on a mint background
+  // Мика (Ультра): a pale crawling creature — realistic shading, skin texture, sinewy limbs and a skull-like face
   function mikaSVG(u, cl) {
     cl = cl || {};
-    const d = [];
-    d.push(`<defs>
-      <radialGradient id="${u}mb" cx=".5" cy=".45" r=".75"><stop offset="0" stop-color="#9af6e2"/><stop offset=".6" stop-color="#46d2b2"/><stop offset="1" stop-color="#14705e"/></radialGradient>
-      <radialGradient id="${u}mh" cx=".42" cy=".32" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e6e4dc"/><stop offset="1" stop-color="#9a978c"/></radialGradient>
-      <linearGradient id="${u}ml" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f2ec"/><stop offset="1" stop-color="#b8b5aa"/></linearGradient>
-      <filter id="${u}ms" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.4"/></filter>
-    </defs>`);
-    d.push(`<rect width="100" height="100" fill="url(#${u}mb)"/>`);
-    d.push(`<ellipse cx="50" cy="80" rx="34" ry="7" fill="#063a30" opacity=".35" filter="url(#${u}ms)"/>`);
-    // the whole creature twitches as it crawls
-    d.push(`<g><animateTransform attributeName="transform" type="translate" values="0 0;0 -1.5;1 0;0 0" dur="1.8s" repeatCount="indefinite"/>`);
-    // long bony limbs: shoulder -> elbow -> hand with thin fingers
-    const limb = (sx, sy, ex, ey, hx, hy, k, dur) => {
-      let fingers = ""; for (let i = 0; i < 4; i++) { const a = -0.9 + i * 0.5, fx = hx + Math.cos(a) * 7 * k, fy = hy + Math.sin(a) * 6 + 2; fingers += `<path d="M${hx} ${hy} L${fx.toFixed(1)} ${fy.toFixed(1)}"/>`; }
-      return `<g><animateTransform attributeName="transform" type="rotate" values="0 ${sx} ${sy};${k * 4} ${sx} ${sy};0 ${sx} ${sy}" dur="${dur}s" repeatCount="indefinite"/>` +
-        `<path d="M${sx} ${sy} L${ex} ${ey} L${hx} ${hy}" fill="none" stroke="#8a877c" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<path d="M${sx} ${sy} L${ex} ${ey} L${hx} ${hy}" fill="none" stroke="url(#${u}ml)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>` +
-        `<circle cx="${ex}" cy="${ey}" r="2.6" fill="#d8d6cc" stroke="#8a877c" stroke-width=".6"/>` +
-        `<g fill="none" stroke="#ece9e0" stroke-width="1.3" stroke-linecap="round">${fingers}</g></g>`;
+    const d = [], f = (n) => n.toFixed(1);
+    // a limb as a tapered shape through points [x, y, width]
+    const taper = (pts) => {
+      const L = [], R = [];
+      pts.forEach((p, i) => {
+        const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1, nx = -dy / l, ny = dx / l;
+        L.push([p[0] + nx * p[2] / 2, p[1] + ny * p[2] / 2]); R.push([p[0] - nx * p[2] / 2, p[1] - ny * p[2] / 2]);
+      });
+      const all = L.concat(R.reverse());
+      return "M" + all.map((q) => f(q[0]) + " " + f(q[1])).join(" L") + "Z";
     };
-    d.push(limb(40, 58, 22, 44, 9, 56, -1, 1.6));
-    d.push(limb(60, 58, 78, 44, 91, 56, 1, 1.9));
-    d.push(limb(43, 66, 26, 74, 14, 86, -1, 2.2));
-    d.push(limb(57, 66, 74, 74, 86, 86, 1, 2.0));
-    // thin body with visible ribs
-    d.push(`<ellipse cx="50" cy="64" rx="11" ry="9" fill="url(#${u}mh)" stroke="#8a877c" stroke-width=".8"/>`);
-    d.push(`<g fill="none" stroke="#a8a59a" stroke-width=".8"><path d="M42 61 Q50 64 58 61"/><path d="M42 65 Q50 68 58 65"/><path d="M43 69 Q50 72 57 69"/></g>`);
-    // skull-like face
-    d.push(`<ellipse cx="50" cy="40" rx="15" ry="17" fill="url(#${u}mh)" stroke="#8a877c" stroke-width="1"/>`);
-    d.push(`<ellipse cx="45" cy="30" rx="5" ry="2.6" fill="#fff" opacity=".8"/>`);
-    d.push(`<path d="M38 36 Q42 31 47 36 Q47 43 42 44 Q37 43 38 36Z M53 36 Q58 31 62 36 Q63 43 58 44 Q53 43 53 36Z" fill="#141414"/>`);
-    d.push(`<circle cx="43" cy="38" r=".9" fill="#fff"><animate attributeName="opacity" values="1;.1;1" dur="2.6s" repeatCount="indefinite"/></circle><circle cx="58" cy="38" r=".9" fill="#fff"><animate attributeName="opacity" values="1;.1;1" dur="2.6s" repeatCount="indefinite"/></circle>`);
-    d.push(`<path d="M48.6 46 L50 44 L51.4 46Z" fill="#2a2a2a"/>`);
-    d.push(`<ellipse cx="50" cy="51" rx="4.6" ry="3.4" fill="#1a1010"><animate attributeName="ry" values="3.4;4.6;3.4" dur="1.8s" repeatCount="indefinite"/></ellipse>`);
-    d.push(`<path d="M46.5 49.4 h7" stroke="#e8e4d8" stroke-width="1" stroke-dasharray="1 .6"/>`);
-    if (cl.eyes) d.push(`<path d="M36 34 h28 v5 q0 6 -7 6 h-14 q-7 0 -7 -6z" fill="${cl.eyes.col}" opacity=".85"/>`);
-    if (cl.head) d.push(`<path d="M35 34 Q36 20 50 21 Q64 20 65 34 Q50 28 35 34Z" fill="${cl.head.col}" opacity=".9"/>`);
-    if (cl.body) d.push(`<ellipse cx="50" cy="64" rx="11" ry="9" fill="${cl.body.col}" opacity=".6"/>`);
+    d.push(`<defs>
+      <radialGradient id="${u}mb" cx=".5" cy=".42" r=".8"><stop offset="0" stop-color="#8ce8d4"/><stop offset=".55" stop-color="#3fbfa2"/><stop offset="1" stop-color="#0b3f35"/></radialGradient>
+      <radialGradient id="${u}mh" cx=".4" cy=".28" r=".85"><stop offset="0" stop-color="#fbf8f0"/><stop offset=".4" stop-color="#e2ddcf"/><stop offset=".75" stop-color="#b9b2a0"/><stop offset="1" stop-color="#6e685a"/></radialGradient>
+      <linearGradient id="${u}ml" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2eee4"/><stop offset=".55" stop-color="#cfc9b9"/><stop offset="1" stop-color="#8a8474"/></linearGradient>
+      <radialGradient id="${u}me" cx=".5" cy=".45" r=".55"><stop offset="0" stop-color="#000"/><stop offset=".6" stop-color="#0d0a08"/><stop offset=".85" stop-color="#3a3228"/><stop offset="1" stop-color="#6e685a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${u}mm" cx=".5" cy=".35" r=".65"><stop offset="0" stop-color="#000"/><stop offset=".7" stop-color="#1e0e0c"/><stop offset="1" stop-color="#5a3a32"/></radialGradient>
+      <filter id="${u}ms" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.6"/></filter>
+      <filter id="${u}mt" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="1.6" numOctaves="2" seed="7" result="n"/>
+        <feColorMatrix in="n" type="matrix" values="0 0 0 0 .35  0 0 0 0 .3  0 0 0 0 .22  0 0 0 .55 0" result="g"/>
+        <feComposite in="g" in2="SourceGraphic" operator="in" result="t"/>
+        <feBlend in="t" in2="SourceGraphic" mode="multiply"/>
+      </filter>
+      <filter id="${u}mv" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 .1  0 0 0 0 .08  0 0 0 .25 0"/></filter>
+      <radialGradient id="${u}mg" cx=".5" cy=".5" r=".7"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
+    </defs>`);
+    d.push(`<rect width="100" height="100" fill="url(#${u}mb)"/><rect width="100" height="100" filter="url(#${u}mv)"/>`);
+    d.push(`<ellipse cx="50" cy="82" rx="38" ry="8" fill="#03241c" opacity=".55" filter="url(#${u}ms)"/>`);
+    d.push(`<g><animateTransform attributeName="transform" type="translate" values="0 0;.4 -1.2;-.4 -.3;0 0" dur="2.2s" repeatCount="indefinite"/>`);
+    d.push(`<g filter="url(#${u}mt)">`);
+    // limbs: shoulder, elbow, wrist; each sways a little out of step
+    const arm = (pts, hand, k, dur) => {
+      const [hx, hy] = hand, last = pts[pts.length - 1];
+      let fing = "";
+      for (let i = 0; i < 4; i++) { const a = (k > 0 ? -0.55 : Math.PI + 0.55) + (i - 1.5) * 0.42 * k, l = 6.5 + (i === 1 || i === 2 ? 1.6 : 0), mx = hx + Math.cos(a) * l * 0.55, my = hy + Math.sin(a) * l * 0.55 + 0.6, ex = hx + Math.cos(a) * l, ey = hy + Math.sin(a) * l + 2.2;
+        fing += `<path d="${taper([[hx, hy, 1.9], [mx, my, 1.4], [ex, ey, 0.7]])}" fill="url(#${u}ml)" stroke="#6e685a" stroke-width=".25"/><circle cx="${f(mx)}" cy="${f(my)}" r=".75" fill="#d9d3c3" stroke="#7a7464" stroke-width=".2"/><ellipse cx="${f(ex)}" cy="${f(ey)}" rx=".55" ry=".4" fill="#5a5040"/>`; }
+      return `<g><animateTransform attributeName="transform" type="rotate" values="0 ${pts[0][0]} ${pts[0][1]};${k * 5} ${pts[0][0]} ${pts[0][1]};${-k * 2} ${pts[0][0]} ${pts[0][1]};0 ${pts[0][0]} ${pts[0][1]}" dur="${dur}s" repeatCount="indefinite"/>` +
+        `<path d="${taper(pts.concat([[hx, hy, 3]]))}" fill="url(#${u}ml)" stroke="#6e685a" stroke-width=".5"/>` +
+        `<path d="M${pts[0][0]} ${pts[0][1]} L${pts[1][0]} ${pts[1][1]} L${last[0]} ${last[1]}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width=".8" transform="translate(${-k * .5} -.8)"/>` +
+        `<ellipse cx="${pts[1][0]}" cy="${pts[1][1]}" rx="3" ry="2.6" fill="url(#${u}mh)" stroke="#7a7464" stroke-width=".4"/>` +
+        `<ellipse cx="${hx}" cy="${hy}" rx="2.6" ry="2" fill="url(#${u}ml)" stroke="#7a7464" stroke-width=".3"/>${fing}</g>`;
+    };
+    d.push(arm([[41, 58, 5.4], [23, 43, 3.6], [15, 50, 2.6]], [10, 55], -1, 1.7));
+    d.push(arm([[59, 58, 5.4], [77, 43, 3.6], [85, 50, 2.6]], [90, 55], 1, 2.0));
+    d.push(arm([[44, 67, 5], [28, 73, 3.4], [19, 80, 2.4]], [15, 84], -1, 2.3));
+    d.push(arm([[56, 67, 5], [72, 73, 3.4], [81, 80, 2.4]], [85, 84], 1, 2.1));
+    // emaciated torso with ribs and a spine shadow
+    d.push(`<path d="M39 58 Q50 52 61 58 Q63 66 57 73 Q50 76 43 73 Q37 66 39 58Z" fill="url(#${u}mh)" stroke="#6e685a" stroke-width=".6"/>`);
+    d.push(`<g fill="none" stroke-linecap="round"><path d="M42 60.5 Q50 63.5 58 60.5" stroke="#8a8474" stroke-width="1"/><path d="M41.6 64 Q50 67.2 58.4 64" stroke="#8a8474" stroke-width="1"/><path d="M42.4 67.4 Q50 70.4 57.6 67.4" stroke="#8a8474" stroke-width=".9"/><path d="M42 61.3 Q50 64.3 58 61.3 M41.6 64.8 Q50 68 58.4 64.8" stroke="#fff" stroke-opacity=".35" stroke-width=".6"/><path d="M50 56 V74" stroke="#6e685a" stroke-opacity=".5" stroke-width="1.2"/></g>`);
+    // neck tendons
+    d.push(`<path d="M45 53 Q47 57 45 60 M55 53 Q53 57 55 60" fill="none" stroke="#8a8474" stroke-width="1.6" stroke-linecap="round"/><path d="M44 52 L56 52 L55 59 L45 59Z" fill="#d9d3c3" opacity=".9"/>`);
+    // skull-like head
+    d.push(`<path d="M50 20 C61 20 66.5 28 66 38 C65.6 45 62 50 57.5 53.5 C55 55.5 52.5 56.4 50 56.4 C47.5 56.4 45 55.5 42.5 53.5 C38 50 34.4 45 34 38 C33.5 28 39 20 50 20Z" fill="url(#${u}mh)" stroke="#6e685a" stroke-width=".7"/>`);
+    d.push(`<g filter="url(#${u}ms)" opacity=".55"><ellipse cx="40.5" cy="46.5" rx="3.6" ry="5" fill="#6e685a"/><ellipse cx="59.5" cy="46.5" rx="3.6" ry="5" fill="#6e685a"/><ellipse cx="50" cy="31" rx="10" ry="2.4" fill="#fff"/></g>`);
+    d.push(`<path d="M36.5 34.5 Q43 31 48 34.6 M52 34.6 Q57 31 63.5 34.5" fill="none" stroke="#8a8474" stroke-width="1.2" stroke-linecap="round"/>`);
+    d.push(`<path d="M44 24 Q50 22.8 56 24" fill="none" stroke="#8a8474" stroke-opacity=".5" stroke-width=".6"/><path d="M42 27 Q50 25.4 58 27" fill="none" stroke="#8a8474" stroke-opacity=".4" stroke-width=".5"/>`);
+    // deep eye sockets with a faint wet glint
+    d.push(`<ellipse cx="42.6" cy="40" rx="5.6" ry="6.4" fill="url(#${u}me)"/><ellipse cx="57.4" cy="40" rx="5.6" ry="6.4" fill="url(#${u}me)"/>`);
+    d.push(`<ellipse cx="42.6" cy="40.4" rx="3.6" ry="4.2" fill="#000"/><ellipse cx="57.4" cy="40.4" rx="3.6" ry="4.2" fill="#000"/>`);
+    d.push(`<g fill="#e8f4f0"><circle cx="43.6" cy="39" r=".7"><animate attributeName="opacity" values=".9;.15;.9" dur="3s" repeatCount="indefinite"/></circle><circle cx="58.4" cy="39" r=".7"><animate attributeName="opacity" values=".9;.15;.9" dur="3s" repeatCount="indefinite"/></circle></g>`);
+    // nose: two dark slits on a flat bridge
+    d.push(`<path d="M50 41.5 L48.6 47 Q50 47.8 51.4 47 Z" fill="#c9c2b0" opacity=".7"/><path d="M48 47.2 Q48.6 46 49.4 47.6 M52 47.2 Q51.4 46 50.6 47.6" fill="none" stroke="#1a1410" stroke-width="1" stroke-linecap="round"/>`);
+    // gaping mouth with thin lips and a few crooked teeth
+    d.push(`<ellipse cx="50" cy="51.4" rx="4.6" ry="3.4" fill="url(#${u}mm)" stroke="#8a7464" stroke-width=".7"><animate attributeName="ry" values="3.2;4.4;3.2" dur="2.2s" repeatCount="indefinite"/></ellipse>`);
+    d.push(`<g fill="#e4dcc6" stroke="#7a6a54" stroke-width=".2"><path d="M46.6 49.4 l1.2 0 l-.5 1.7z"/><path d="M48.4 48.8 l1.3 0 l-.6 1.9z"/><path d="M50.4 48.8 l1.3 0 l-.7 1.6z"/><path d="M52.3 49.3 l1.1 0 l-.4 1.5z"/></g>`);
+    d.push(`<path d="M43.5 49.5 Q46 47 50 47.4 Q54 47 56.5 49.5" fill="none" stroke="#6e685a" stroke-opacity=".6" stroke-width=".5"/>`);
+    d.push(`</g>`); // end texture
+    if (cl.eyes) d.push(`<path d="M36 35 h28 v5 q0 6 -7 6 h-14 q-7 0 -7 -6z" fill="${cl.eyes.col}" opacity=".85"/>`);
+    if (cl.head) d.push(`<path d="M35 33 Q36 19 50 20 Q64 19 65 33 Q50 27 35 33Z" fill="${cl.head.col}" opacity=".9"/>`);
+    if (cl.body) d.push(`<path d="M39 58 Q50 52 61 58 Q63 66 57 73 Q50 76 43 73 Q37 66 39 58Z" fill="${cl.body.col}" opacity=".55"/>`);
     d.push(`</g>`);
+    d.push(`<rect width="100" height="100" fill="url(#${u}mg)"/>`);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Мика">${d.join("")}</svg>`;
   }
   // Вааг (Гига Ультра): a creepy yellow smiley with hollow dripping eyes and a huge toothy grin
