@@ -106,6 +106,7 @@ textarea{width:100%;resize:vertical}
 .mi .ad button{width:24px;height:24px;border-radius:6px;border:0;background:var(--acc);color:#fff;font-weight:900;padding:0}
 .mi .ad button.x{background:rgba(0,0,0,.7)}
 .dropz{border:1px dashed #5b3fa0;border-radius:10px;padding:14px;text-align:center;color:var(--mute);font-size:12.5px;margin-bottom:10px}
+.dropz .btn{color:var(--text)}
 .vtl{grid-column:1/4;display:flex;flex-direction:column;background:var(--panel);border-top:1px solid var(--line);min-height:0}
 .tlbar{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);overflow-x:auto;flex:none;scrollbar-width:thin}
 .tlbar .time{font:700 13px/1 ui-monospace,Menlo,monospace;color:#e9e3f7;min-width:116px;text-align:center}
@@ -191,7 +192,8 @@ textarea{width:100%;resize:vertical}
     <button class="btn pri" id="pExport" type="button">Сохранить</button>
   </div>
   <div class="hact" id="hactVideo" hidden>
-    <label class="btn">Импорт<input type="file" id="vFile" accept="video/*,image/*,audio/*" multiple hidden></label>
+    <label class="btn" title="Видео и фото из галереи телефона">Галерея<input type="file" id="vFile" accept="image/*,video/*" multiple hidden></label>
+    <label class="btn" title="Музыка и звуки">Музыка<input type="file" id="vFileA" accept="audio/*" multiple hidden></label>
     <button class="btn" id="vUndo" type="button" title="Отменить (Ctrl+Z)">↶</button>
     <button class="btn" id="vRedo" type="button" title="Повторить (Ctrl+Shift+Z)">↷</button>
     <button class="btn" id="vToPhoto" type="button" title="Открыть текущий кадр в фоторедакторе">Кадр → Фото</button>
@@ -248,7 +250,12 @@ textarea{width:100%;resize:vertical}
   <!-- ================= VIDEO ================= -->
   <section id="video" class="mode" hidden>
     <aside class="vbin">
-      <div class="dropz" id="vDrop">Перетащи сюда видео, фото и музыку<br><label class="btn sm" style="margin-top:8px">Выбрать файлы<input type="file" id="vFile2" accept="video/*,image/*,audio/*" multiple hidden></label></div>
+      <div class="dropz" id="vDrop">Добавь видео, фото и музыку<div class="btnrow" style="justify-content:center;margin-bottom:0">
+        <label class="btn sm pri">🖼 Из галереи<input type="file" id="vFile2" accept="image/*,video/*" multiple hidden></label>
+        <label class="btn sm">🎬 Только видео<input type="file" id="vFileV" accept="video/*" multiple hidden></label>
+        <label class="btn sm">♪ Музыка<input type="file" id="vFileA2" accept="audio/*" multiple hidden></label>
+        <label class="btn sm">📁 Файлы<input type="file" id="vFileAny" multiple hidden></label>
+      </div><p class="note" style="margin-bottom:0">На телефоне «Из галереи» открывает фото и видео. Если браузер спросит доступ к медиатеке — разреши.</p></div>
       <div class="bin" id="vBin"></div>
     </aside>
     <div class="vprev"><canvas id="vCanvas" width="1280" height="720" title="Нажми — воспроизвести/пауза"></canvas></div>
@@ -1063,11 +1070,12 @@ const Video = (() => {
   async function addFiles(files) {
     let added = 0;
     for (const f of files) {
-      const type = /^video\//.test(f.type) ? "video" : /^image\//.test(f.type) ? "image" : /^audio\//.test(f.type) ? "audio" : null;
+      const ext = (f.name.split(".").pop() || "").toLowerCase();
+      const type = /^video\//.test(f.type) || /^(mp4|mov|m4v|webm|mkv|3gp|avi)$/.test(ext) ? "video" : /^image\//.test(f.type) || /^(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/.test(ext) ? "image" : /^audio\//.test(f.type) || /^(mp3|m4a|aac|wav|ogg|oga|opus|flac)$/.test(ext) ? "audio" : null;
       if (!type) { toast("Неподдерживаемый файл: " + f.name); continue; }
       const m = { id: uid(), type, name: f.name, url: URL.createObjectURL(f), duration: 0, w: 0, h: 0, thumb: "" };
       media.set(m.id, m); renderBin();
-      try { await probe(m); } catch (e) { media.delete(m.id); renderBin(); toast("Браузер не смог открыть " + f.name); continue; }
+      try { await probe(m); } catch (e) { media.delete(m.id); renderBin(); toast(/heic|heif|hevc|mov/i.test(ext) ? "Этот браузер не умеет открывать " + f.name + " (формат Apple). Открой в Safari или выбери «Совместимый» формат в настройках камеры" : "Браузер не смог открыть " + f.name, 5000); continue; }
       if (type === "video" && !m.duration) m.duration = 10;
       if (!clips.length && type !== "audio" && m.w && m.h) autoFormat(m.w, m.h);
       toTimeline(m, true); added++; renderBin();
@@ -1309,7 +1317,7 @@ const Video = (() => {
 
   /* ---- wiring ---- */
   const fin = (id) => { const i = $(id); i.onchange = () => { addFiles([...i.files]); i.value = ""; }; };
-  fin("#vFile"); fin("#vFile2");
+  ["#vFile", "#vFileA", "#vFile2", "#vFileV", "#vFileA2", "#vFileAny"].forEach(fin);
   $("#video").addEventListener("dragover", (e) => e.preventDefault());
   $("#video").addEventListener("drop", (e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); });
   $("#vPlay").onclick = () => playing ? pause() : play();
