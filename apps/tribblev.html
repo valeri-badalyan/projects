@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TribbleV Adobe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Montserrat:ital,wght@0,400;0,700;0,900;1,700&family=Russo+One&family=Pacifico&family=Rubik+Mono+One&display=swap">
+<style>
+:root{--bg:#0c0a11;--panel:#15121c;--panel2:#1d1927;--line:#2b2538;--text:#ece8f5;--mute:#978fab;--acc:#8b5cf6;--acc2:#c084fc;--danger:#f43f5e;--ok:#22c55e;--r:10px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.35 Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 12px;white-space:nowrap;font-weight:700;font-size:13px;cursor:pointer;user-select:none}
+.btn:hover{border-color:#4a3f63}
+.btn.pri{background:linear-gradient(135deg,var(--acc),#6d28d9);border-color:transparent}
+.btn.sm{padding:5px 9px;font-size:12px}
+.btn.danger{color:#fda4af}
+.btn:disabled{opacity:.4;cursor:default}
+/* header */
+.top{display:flex;align-items:center;gap:14px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line);flex:none}
+.brand{display:flex;align-items:center;gap:9px;flex:none}
+.logo{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font:900 15px/1 "Russo One",sans-serif;background:linear-gradient(135deg,#1f1430,#3b1d6e);border:1px solid #5b3fa0;letter-spacing:-1px}
+.logo b{color:var(--acc2)}
+.bname{font:900 16px/1 Montserrat,sans-serif;letter-spacing:.2px}
+.bname i{font-style:normal;color:var(--acc2);font-weight:700}
+.modes{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px}
+.modes button{border:0;background:none;padding:6px 14px;border-radius:7px;font-weight:800;color:var(--mute)}
+.modes button.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px #4a3f63}
+.hact{display:flex;gap:6px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.hact::-webkit-scrollbar{display:none}
+main{flex:1;min-height:0;position:relative}
+.mode{height:100%;min-height:0}
+/* panels */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin:0 0 10px}
+.card>summary{list-style:none;padding:10px 12px;font-weight:800;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;text-transform:uppercase;letter-spacing:.6px;color:#cfc6e6}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary::after{content:"▾";color:var(--mute)}
+.card:not([open])>summary::after{content:"▸"}
+.card>div{padding:0 12px 12px}
+.row{display:grid;grid-template-columns:96px 1fr 44px;align-items:center;gap:8px;margin:6px 0;font-size:12.5px;color:#d6cfe8}
+.row output{font-size:11.5px;color:var(--mute);text-align:right;font-variant-numeric:tabular-nums}
+.row.two{grid-template-columns:96px 1fr}
+.row select,.row input[type=text],.row input[type=number]{width:100%}
+input[type=range]{width:100%;accent-color:var(--acc);min-width:0}
+input[type=color]{width:38px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
+input[type=text],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
+textarea{width:100%;resize:vertical}
+.chk{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:7px 0;cursor:pointer}
+.chk input{accent-color:var(--acc)}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.grid2 label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--mute)}
+.grid2 input{width:100%}
+.ititle{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:#cfc6e6;margin:12px 0 6px}
+.note{font-size:12px;color:var(--mute);margin:6px 0}
+.presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:6px;margin-bottom:8px}
+.presets button{background:none;border:1px solid var(--line);border-radius:8px;padding:3px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:#cfc6e6}
+.presets button:hover{border-color:var(--acc)}
+.presets canvas{width:100%;aspect-ratio:1;border-radius:5px;display:block}
+/* ===== photo ===== */
+#photo{display:grid;grid-template-columns:52px minmax(0,1fr) 310px;grid-template-rows:auto minmax(0,1fr)}
+.ptools{grid-row:1/3;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0}
+.ptools button{width:38px;height:38px;border-radius:9px;border:1px solid transparent;background:none;display:grid;place-items:center;color:#cfc6e6;flex:none}
+.ptools button:hover{background:var(--panel2)}
+.ptools button.on{background:var(--acc);color:#fff}
+.ptools svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ptools hr{width:26px;border:0;border-top:1px solid var(--line);margin:4px 0}
+.ptools .zv{font-size:10.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.popts{grid-column:2;display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line);min-height:44px;font-size:12.5px;color:#d6cfe8}
+.popts .opt{display:flex;align-items:center;gap:7px}
+.popts .opt input[type=range]{width:120px}
+.popts output{min-width:34px;color:var(--mute);font-variant-numeric:tabular-nums}
+.pstage{grid-column:2;overflow:auto;display:flex;position:relative;background:radial-gradient(circle at 50% 40%,#17131f,#0a080e)}
+#pCanvas{margin:auto;flex:none;touch-action:none;box-shadow:0 10px 40px rgba(0,0,0,.6);background-color:#fff;background-image:linear-gradient(45deg,#cfcfd6 25%,transparent 25%,transparent 75%,#cfcfd6 75%),linear-gradient(45deg,#cfcfd6 25%,transparent 25%,transparent 75%,#cfcfd6 75%);background-size:16px 16px;background-position:0 0,8px 8px}
+.empty{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.empty div{pointer-events:auto;text-align:center;background:rgba(21,18,28,.92);border:1px dashed #5b3fa0;border-radius:14px;padding:22px 26px;max-width:340px}
+.empty b{display:block;font-size:17px;margin-bottom:6px}
+.empty p{margin:0 0 12px;color:var(--mute);font-size:13px}
+.pside{grid-column:3;grid-row:1/3;overflow:auto;padding:10px;border-left:1px solid var(--line);background:#100d16}
+#pLayers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+#pLayers li{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:8px;border:1px solid transparent;cursor:pointer;background:var(--panel2)}
+#pLayers li.sel{border-color:var(--acc);background:#251d36}
+#pLayers li canvas{width:34px;height:34px;border-radius:5px;background:#2a2533;flex:none}
+#pLayers li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}
+#pLayers li button{background:none;border:0;padding:2px 4px;font-size:14px;opacity:.8}
+#pLayers li.hid span,#pLayers li.hid canvas{opacity:.4}
+.stickers{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.stickers button{background:var(--panel2);border:1px solid var(--line);border-radius:7px;font-size:20px;padding:3px 0;line-height:1.3}
+/* ===== video ===== */
+#video{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;grid-template-rows:minmax(0,1fr) 260px}
+.vbin,.vinsp{overflow:auto;padding:10px;background:#100d16}
+.vbin{border-right:1px solid var(--line)}
+.vinsp{border-left:1px solid var(--line)}
+.vprev{display:flex;align-items:center;justify-content:center;padding:12px;min-width:0;min-height:0;background:radial-gradient(circle at 50% 40%,#17131f,#0a080e);position:relative}
+#vCanvas{max-width:100%;max-height:100%;background:#000;box-shadow:0 10px 40px rgba(0,0,0,.6);border-radius:4px;cursor:pointer}
+.bin{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mi{background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden;position:relative;font-size:11px}
+.mi .th{aspect-ratio:16/9;background:#000 center/cover no-repeat;display:grid;place-items:center;font-size:22px}
+.mi .nm{padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi .du{position:absolute;top:4px;left:4px;background:rgba(0,0,0,.7);border-radius:4px;padding:1px 5px;font-size:10px}
+.mi .ad{position:absolute;top:4px;right:4px;display:flex;gap:3px}
+.mi .ad button{width:24px;height:24px;border-radius:6px;border:0;background:var(--acc);color:#fff;font-weight:900;padding:0}
+.mi .ad button.x{background:rgba(0,0,0,.7)}
+.dropz{border:1px dashed #5b3fa0;border-radius:10px;padding:14px;text-align:center;color:var(--mute);font-size:12.5px;margin-bottom:10px}
+.vtl{grid-column:1/4;display:flex;flex-direction:column;background:var(--panel);border-top:1px solid var(--line);min-height:0}
+.tlbar{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);overflow-x:auto;flex:none;scrollbar-width:thin}
+.tlbar .time{font:700 13px/1 ui-monospace,Menlo,monospace;color:#e9e3f7;min-width:116px;text-align:center}
+.tlbar .sp{flex:1}
+.tlbar .zoom{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mute)}
+.tlbar .zoom input{width:100px}
+.ibtn{width:34px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);display:grid;place-items:center;font-size:14px;flex:none;padding:0}
+.ibtn.play{background:var(--acc);border-color:transparent;font-size:15px}
+.tlwrap{flex:1;display:flex;min-height:0}
+.tlheads{width:70px;flex:none;border-right:1px solid var(--line);padding-top:24px;background:var(--panel)}
+.tlheads div{height:54px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--line)}
+.tlheads div:nth-child(2),.tlheads div:nth-child(3){height:44px}
+.tlscroll{flex:1;overflow:auto;position:relative;min-width:0}
+.tlinner{position:relative;min-width:100%}
+.ruler{height:24px;position:relative;border-bottom:1px solid var(--line);cursor:pointer;touch-action:none;background:#120f18}
+.ruler i{position:absolute;bottom:0;width:1px;height:7px;background:#4a4160}
+.ruler i.b{height:12px;background:#6f6390}
+.ruler span{position:absolute;top:3px;font-size:10px;color:var(--mute);transform:translateX(3px);font-variant-numeric:tabular-nums}
+.track{position:relative;height:54px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(90deg,transparent 0 59px,rgba(255,255,255,.02) 59px 60px)}
+.track[data-track=text],.track[data-track=audio]{height:44px}
+.tli{position:absolute;top:5px;bottom:5px;border-radius:7px;overflow:hidden;cursor:grab;touch-action:none;border:1.5px solid rgba(255,255,255,.18);display:flex;align-items:flex-end;min-width:4px}
+.tli.clip{background:#2c2142 left/auto 100% repeat-x}
+.tli.text{background:linear-gradient(135deg,#a855f7,#7c3aed);align-items:center}
+.tli.audio{background:#123a2c left/100% 100% no-repeat;align-items:center}
+.tli.sel{border-color:#fff;box-shadow:0 0 0 2px var(--acc);z-index:3}
+.tli.drag{opacity:.85;z-index:5;cursor:grabbing}
+.tli .lbl{font-size:11px;font-weight:700;padding:2px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000;pointer-events:none;position:relative}
+.tli.clip .lbl{background:linear-gradient(transparent,rgba(0,0,0,.75));width:100%}
+.tli .hl,.tli .hr{position:absolute;top:0;bottom:0;width:10px;cursor:ew-resize;z-index:2;background:rgba(255,255,255,.0)}
+.tli .hl{left:0}.tli .hr{right:0}
+.tli.sel .hl,.tli.sel .hr{background:rgba(255,255,255,.85)}
+.tli .fi,.tli .fo{position:absolute;top:0;height:100%;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.7),transparent)}
+.tli .fi{left:0}.tli .fo{right:0;transform:scaleX(-1)}
+.phead{position:absolute;top:0;bottom:0;width:2px;background:#ff3b6b;pointer-events:none;z-index:8}
+.phead::before{content:"";position:absolute;top:0;left:-6px;border:7px solid transparent;border-top:9px solid #ff3b6b}
+#vPool{position:fixed;left:-10px;top:-10px;width:2px;height:2px;overflow:hidden;opacity:0;pointer-events:none}
+#vPool video{width:2px;height:2px}
+/* modal, toast, overlay */
+.modal{position:fixed;inset:0;background:rgba(5,3,9,.7);display:grid;place-items:center;z-index:50;padding:16px}
+.modal>div{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:min(440px,100%);max-height:90vh;overflow:auto}
+.modal h3{margin:0 0 12px;font-size:17px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.sizes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.sizes button{text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px}
+.sizes button small{display:block;color:var(--mute);font-size:11px}
+.sizes button.on{border-color:var(--acc)}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#241c35;border:1px solid #4a3f63;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+#toast.on{opacity:1;transform:translateX(-50%)}
+.prog{height:8px;background:var(--bg);border-radius:5px;overflow:hidden;margin:12px 0}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+/* mobile */
+@media (max-width:860px){
+  body{overflow:auto;height:auto;min-height:100%}
+  html,body{height:auto}
+  .top{flex-wrap:wrap;gap:8px 10px}
+  .hact{order:3;width:100%;margin:0}
+  main{flex:none}
+  .mode{height:auto}
+  #photo{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 58vh auto}
+  .ptools{grid-row:auto;flex-direction:row;overflow-x:auto;padding:6px 8px;border-right:0;border-bottom:1px solid var(--line)}
+  .ptools hr{width:1px;height:24px;border:0;border-left:1px solid var(--line);margin:0 4px}
+  .popts,.pstage{grid-column:1}
+  .pside{grid-column:1;grid-row:auto;overflow:visible;border-left:0}
+  #video{grid-template-columns:minmax(0,1fr);grid-template-rows:auto}
+  .vprev{grid-row:1;height:42vh}
+  .vtl{grid-column:1;grid-row:2;height:250px}
+  .vbin{grid-row:3;border-right:0}
+  .vinsp{grid-row:4;border-left:0}
+  .bin{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">T<b>V</b></span><span class="bname">TribbleV <i>Adobe</i></span></div>
+  <nav class="modes" id="modes"><button data-mode="photo" class="on" type="button">Фото</button><button data-mode="video" type="button">Видео</button></nav>
+  <div class="hact" id="hactPhoto">
+    <button class="btn" id="pNew" type="button">Новый</button>
+    <label class="btn">Открыть<input type="file" id="pFile" accept="image/*" multiple hidden></label>
+    <button class="btn" id="pUndo" type="button" title="Отменить (Ctrl+Z)">↶</button>
+    <button class="btn" id="pRedo" type="button" title="Повторить (Ctrl+Shift+Z)">↷</button>
+    <button class="btn" id="pToVideo" type="button" title="Отправить картинку в видеомонтаж">В монтаж →</button>
+    <button class="btn pri" id="pExport" type="button">Сохранить</button>
+  </div>
+  <div class="hact" id="hactVideo" hidden>
+    <label class="btn">Импорт<input type="file" id="vFile" accept="video/*,image/*,audio/*" multiple hidden></label>
+    <button class="btn" id="vUndo" type="button" title="Отменить (Ctrl+Z)">↶</button>
+    <button class="btn" id="vRedo" type="button" title="Повторить (Ctrl+Shift+Z)">↷</button>
+    <button class="btn" id="vToPhoto" type="button" title="Открыть текущий кадр в фоторедакторе">Кадр → Фото</button>
+    <button class="btn pri" id="vExport" type="button">Экспорт видео</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= PHOTO ================= -->
+  <section id="photo" class="mode">
+    <div class="ptools" id="pTools">
+      <button type="button" data-tool="move" class="on" title="Перемещение (V)"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M12 2 9 5M12 2l3 3M12 22l-3-3M12 22l3-3M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"/></svg></button>
+      <button type="button" data-tool="brush" title="Кисть (B)"><svg viewBox="0 0 24 24"><path d="M19 3l2 2-9 9-2-2z"/><path d="M10 12c-3 0-4 2-4 4 0 1.5-1 3-3 3 2.5 2 8 1.5 9-2 .4-1.5 0-3-.5-3.5"/></svg></button>
+      <button type="button" data-tool="eraser" title="Ластик (E)"><svg viewBox="0 0 24 24"><path d="M15 4l5 5-10 10H6l-3-3z"/><path d="M9 9l6 6M11 20h10"/></svg></button>
+      <button type="button" data-tool="text" title="Текст (T)"><svg viewBox="0 0 24 24"><path d="M4 7V4h16v3M12 4v16M8.5 20h7"/></svg></button>
+      <button type="button" data-tool="crop" title="Кадрирование (C)"><svg viewBox="0 0 24 24"><path d="M6 2v16h16M2 6h16v16"/></svg></button>
+      <button type="button" data-tool="pick" title="Пипетка (I)"><svg viewBox="0 0 24 24"><path d="M18 3l3 3-3.5 3.5-3-3z"/><path d="M14.5 6.5 5 16l-1 4 4-1 9.5-9.5"/></svg></button>
+      <hr>
+      <button type="button" id="pZoomIn" title="Приблизить">＋</button>
+      <span class="zv" id="pZoomVal">100%</span>
+      <button type="button" id="pZoomOut" title="Отдалить">－</button>
+      <button type="button" id="pZoomFit" title="Вписать в окно"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+    <div class="popts" id="pOpts"></div>
+    <div class="pstage" id="pStage">
+      <canvas id="pCanvas" width="1080" height="1080"></canvas>
+      <div class="empty" id="pEmpty"><div><b>Открой картинку</b><p>Перетащи фото сюда, вставь из буфера (Ctrl+V) или выбери файл. Можно начать и с чистого холста — кисть, текст, фигуры и стикеры.</p><label class="btn pri">Выбрать фото<input type="file" id="pFile2" accept="image/*" hidden></label></div></div>
+    </div>
+    <aside class="pside">
+      <details class="card" open><summary>Слой</summary><div id="pProps"></div></details>
+      <details class="card" open><summary>Коррекция и фильтры</summary><div id="pFx"></div></details>
+      <details class="card" open><summary>Слои</summary><div>
+        <div class="btnrow">
+          <label class="btn sm">+ Фото<input type="file" id="pFile3" accept="image/*" hidden></label>
+          <button class="btn sm" type="button" id="pAddText">+ Текст</button>
+          <button class="btn sm" type="button" id="pAddPaint">+ Рисунок</button>
+          <button class="btn sm" type="button" id="pAddRect">+ ▭</button>
+          <button class="btn sm" type="button" id="pAddEll">+ ◯</button>
+        </div>
+        <ul id="pLayers"></ul>
+        <div class="btnrow">
+          <button class="btn sm" type="button" id="pUp" title="Выше">↑</button>
+          <button class="btn sm" type="button" id="pDown" title="Ниже">↓</button>
+          <button class="btn sm" type="button" id="pDup" title="Копия (Ctrl+D)">Копия</button>
+          <button class="btn sm" type="button" id="pMerge" title="Слить со слоем ниже">Слить вниз</button>
+          <button class="btn sm danger" type="button" id="pDel" title="Удалить (Delete)">Удалить</button>
+        </div>
+      </div></details>
+      <details class="card"><summary>Стикеры</summary><div><div class="stickers" id="pStickers"></div></div></details>
+      <details class="card"><summary>Холст</summary><div id="pDoc"></div></details>
+    </aside>
+  </section>
+
+  <!-- ================= VIDEO ================= -->
+  <section id="video" class="mode" hidden>
+    <aside class="vbin">
+      <div class="dropz" id="vDrop">Перетащи сюда видео, фото и музыку<br><label class="btn sm" style="margin-top:8px">Выбрать файлы<input type="file" id="vFile2" accept="video/*,image/*,audio/*" multiple hidden></label></div>
+      <div class="bin" id="vBin"></div>
+    </aside>
+    <div class="vprev"><canvas id="vCanvas" width="1280" height="720" title="Нажми — воспроизвести/пауза"></canvas></div>
+    <aside class="vinsp" id="vInsp"></aside>
+    <div class="vtl">
+      <div class="tlbar">
+        <button class="ibtn" type="button" id="vStart" title="В начало (Home)">⏮</button>
+        <button class="ibtn play" type="button" id="vPlay" title="Воспроизвести (Пробел)">▶</button>
+        <span class="time" id="vTime">0:00.0 / 0:00.0</span>
+        <button class="btn sm" type="button" id="vSplit" title="Разрезать по плейхеду (S)">✂ Разрезать</button>
+        <button class="btn sm" type="button" id="vAddText">+ Титр</button>
+        <button class="btn sm" type="button" id="vDup">Копия</button>
+        <button class="btn sm danger" type="button" id="vDel" title="Удалить (Delete)">Удалить</button>
+        <span class="sp"></span>
+        <label class="zoom">Масштаб <input type="range" id="vZoom" min="10" max="300" value="60"></label>
+      </div>
+      <div class="tlwrap">
+        <div class="tlheads"><div>Видео</div><div>Титры</div><div>Звук</div></div>
+        <div class="tlscroll" id="tlScroll"><div class="tlinner" id="tlInner">
+          <div class="ruler" id="tlRuler"></div>
+          <div class="track" data-track="clip"></div>
+          <div class="track" data-track="text"></div>
+          <div class="track" data-track="audio"></div>
+          <div class="phead" id="tlHead"></div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="vPool"></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ================= helpers ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const D2R = Math.PI / 180;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const newCanvas = (w, h) => { const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h)); return c; };
+const srcW = (s) => s.naturalWidth || s.videoWidth || s.width;
+const srcH = (s) => s.naturalHeight || s.videoHeight || s.height;
+const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+let toastT = 0;
+function toast(msg, ms = 2400) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), ms); }
+function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
+function fmtT(s) { s = Math.max(0, s || 0); const m = Math.floor(s / 60); const r = s - m * 60; return m + ":" + (r < 10 ? "0" : "") + r.toFixed(1); }
+function rr(c, x, y, w, h, r) { r = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2)); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+function modal(title, html, acts) {
+  const m = document.createElement("div"); m.className = "modal";
+  m.innerHTML = `<div><h3>${esc(title)}</h3><div class="mb">${html}</div><div class="acts"></div></div>`;
+  const close = () => m.remove();
+  acts.forEach((a) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn" + (a.pri ? " pri" : ""); b.textContent = a.label; b.onclick = () => { if (a.fn && a.fn(m) === false) return; close(); }; $(".acts", m).appendChild(b); });
+  m.addEventListener("pointerdown", (e) => { if (e.target === m) close(); });
+  document.body.appendChild(m); return m;
+}
+const rng = (label, k, min, max, step = 1, u = "") => `<label class="row"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" data-u="${u}"><output data-o="${k}"></output></label>`;
+// Two-way binding: inputs with data-k read/write obj[k]; "input" -> live preview, "change" -> history step.
+function bindForm(root, obj, onInput, onCommit) {
+  root.querySelectorAll("[data-k]").forEach((inp) => {
+    const k = inp.dataset.k, out = root.querySelector(`[data-o="${k}"]`);
+    if (inp.type === "checkbox") inp.checked = !!obj[k]; else inp.value = inp.type === "number" && typeof obj[k] === "number" ? Math.round(obj[k] * 100) / 100 : obj[k] ?? "";
+    const show = () => { if (out) out.textContent = inp.value + (inp.dataset.u || ""); };
+    show();
+    const read = () => inp.type === "checkbox" ? inp.checked : (inp.type === "range" || inp.type === "number" || inp.dataset.num !== undefined) ? parseFloat(inp.value) : inp.value;
+    inp.addEventListener("input", () => { const v = read(); if (typeof v === "number" && isNaN(v)) return; obj[k] = v; show(); onInput && onInput(k, v); });
+    inp.addEventListener("change", () => onCommit && onCommit(k));
+  });
+}
+
+/* ================= colour & filters (shared by photo and video) ================= */
+const FILTER_OK = (() => { try { const c = newCanvas(2, 2).getContext("2d"); c.filter = "blur(1px)"; return c.filter === "blur(1px)"; } catch (e) { return false; } })();
+const FX_DEF = { brightness: 100, contrast: 100, saturate: 100, hue: 0, blur: 0, grayscale: 0, sepia: 0, invert: 0, vignette: 0, tint: "#ff8a00", tintAmt: 0 };
+const FX_KEYS = ["brightness", "contrast", "saturate", "hue", "blur", "grayscale", "sepia", "invert"];
+const PRESETS = [
+  ["Оригинал", {}],
+  ["Ч/Б", { grayscale: 100, contrast: 115 }],
+  ["Винтаж", { sepia: 45, contrast: 90, saturate: 80, brightness: 105, vignette: 35 }],
+  ["Тёплый", { saturate: 115, tint: "#ff9a1f", tintAmt: 40 }],
+  ["Холодный", { saturate: 95, tint: "#3b82f6", tintAmt: 40 }],
+  ["Драма", { contrast: 140, saturate: 120, brightness: 95, vignette: 55 }],
+  ["Нуар", { grayscale: 100, contrast: 155, brightness: 90, vignette: 65 }],
+  ["Неон", { saturate: 200, contrast: 120, tint: "#d946ef", tintAmt: 35 }],
+  ["Пастель", { saturate: 70, brightness: 112, contrast: 85 }],
+  ["Выцвет", { contrast: 80, brightness: 110, saturate: 70, sepia: 15 }],
+  ["Закат", { saturate: 130, contrast: 110, tint: "#f43f5e", tintAmt: 35, vignette: 30 }],
+  ["Мята", { saturate: 90, hue: -15, tint: "#10b981", tintAmt: 30, brightness: 105 }],
+];
+const isPlainCss = (fx) => !fx || FX_KEYS.every((k) => fx[k] === FX_DEF[k]);
+function fxCss(fx) {
+  if (isPlainCss(fx)) return "none";
+  const p = [];
+  if (fx.brightness !== 100) p.push(`brightness(${fx.brightness}%)`);
+  if (fx.contrast !== 100) p.push(`contrast(${fx.contrast}%)`);
+  if (fx.saturate !== 100) p.push(`saturate(${fx.saturate}%)`);
+  if (fx.hue) p.push(`hue-rotate(${fx.hue}deg)`);
+  if (fx.blur) p.push(`blur(${fx.blur}px)`);
+  if (fx.grayscale) p.push(`grayscale(${fx.grayscale}%)`);
+  if (fx.sepia) p.push(`sepia(${fx.sepia}%)`);
+  if (fx.invert) p.push(`invert(${fx.invert}%)`);
+  return p.join(" ");
+}
+// Fallback for browsers without ctx.filter (Safari): the same CSS filter chain as one affine colour matrix.
+function fxMatrix(fx) {
+  let M = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0];
+  const mul = (B) => { const R = new Array(12); for (let i = 0; i < 3; i++) { for (let j = 0; j < 3; j++) R[i * 4 + j] = B[i * 4] * M[j] + B[i * 4 + 1] * M[4 + j] + B[i * 4 + 2] * M[8 + j]; R[i * 4 + 3] = B[i * 4] * M[3] + B[i * 4 + 1] * M[7] + B[i * 4 + 2] * M[11] + B[i * 4 + 3]; } M = R; };
+  const b = fx.brightness / 100, c = fx.contrast / 100, s = fx.saturate / 100;
+  if (b !== 1) mul([b, 0, 0, 0, 0, b, 0, 0, 0, 0, b, 0]);
+  if (c !== 1) { const o = (1 - c) / 2; mul([c, 0, 0, o, 0, c, 0, o, 0, 0, c, o]); }
+  if (s !== 1) mul([.213 + .787 * s, .715 - .715 * s, .072 - .072 * s, 0, .213 - .213 * s, .715 + .285 * s, .072 - .072 * s, 0, .213 - .213 * s, .715 - .715 * s, .072 + .928 * s, 0]);
+  if (fx.hue) { const a = fx.hue * D2R, co = Math.cos(a), si = Math.sin(a); mul([.213 + co * .787 - si * .213, .715 - co * .715 - si * .715, .072 - co * .072 + si * .928, 0, .213 - co * .213 + si * .143, .715 + co * .285 + si * .14, .072 - co * .072 - si * .283, 0, .213 - co * .213 - si * .787, .715 - co * .715 + si * .715, .072 + co * .928 + si * .072, 0]); }
+  if (fx.grayscale) { const g = 1 - clamp(fx.grayscale / 100, 0, 1); mul([.2126 + .7874 * g, .7152 - .7152 * g, .0722 - .0722 * g, 0, .2126 - .2126 * g, .7152 + .2848 * g, .0722 - .0722 * g, 0, .2126 - .2126 * g, .7152 - .7152 * g, .0722 + .9278 * g, 0]); }
+  if (fx.sepia) { const g = 1 - clamp(fx.sepia / 100, 0, 1); mul([.393 + .607 * g, .769 - .769 * g, .189 - .189 * g, 0, .349 - .349 * g, .686 + .314 * g, .168 - .168 * g, 0, .272 - .272 * g, .534 - .534 * g, .131 + .869 * g, 0]); }
+  if (fx.invert) { const a = clamp(fx.invert / 100, 0, 1), d = 1 - 2 * a; mul([d, 0, 0, a, 0, d, 0, a, 0, 0, d, a]); }
+  return M;
+}
+const fxCanvas = newCanvas(2, 2), fxCtx = fxCanvas.getContext("2d", { willReadFrequently: !FILTER_OK });
+// Draws the source rect (sx,sy,sw,sh) into ctx at 0,0,w,h with colour adjustments, tint and vignette.
+function drawWithFx(ctx, src, sx, sy, sw, sh, w, h, fx) {
+  const plain = isPlainCss(fx), extra = fx && (fx.tintAmt > 0 || fx.vignette > 0);
+  if (!fx || (plain && !extra)) { ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h); return; }
+  if (FILTER_OK && !extra) { ctx.filter = fxCss(fx); ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h); ctx.filter = "none"; return; }
+  const W = Math.max(1, Math.min(4096, Math.round(Math.abs(w)))), H = Math.max(1, Math.min(4096, Math.round(Math.abs(h))));
+  if (fxCanvas.width !== W || fxCanvas.height !== H) { fxCanvas.width = W; fxCanvas.height = H; } else fxCtx.clearRect(0, 0, W, H);
+  const c = fxCtx;
+  if (FILTER_OK) c.filter = fxCss(fx);
+  c.drawImage(src, sx, sy, sw, sh, 0, 0, W, H);
+  c.filter = "none";
+  if (!FILTER_OK && !plain) {
+    const M = fxMatrix(fx), d = c.getImageData(0, 0, W, H), p = d.data;
+    for (let i = 0; i < p.length; i += 4) {
+      const r = p[i], g = p[i + 1], b = p[i + 2];
+      p[i] = M[0] * r + M[1] * g + M[2] * b + M[3] * 255;
+      p[i + 1] = M[4] * r + M[5] * g + M[6] * b + M[7] * 255;
+      p[i + 2] = M[8] * r + M[9] * g + M[10] * b + M[11] * 255;
+    }
+    c.putImageData(d, 0, 0);
+  }
+  if (fx.tintAmt > 0) {
+    c.globalCompositeOperation = "soft-light"; c.globalAlpha = fx.tintAmt / 100; c.fillStyle = fx.tint; c.fillRect(0, 0, W, H);
+    c.globalAlpha = 1; c.globalCompositeOperation = "destination-in"; c.drawImage(src, sx, sy, sw, sh, 0, 0, W, H);
+  }
+  if (fx.vignette > 0) {
+    const g = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .25, W / 2, H / 2, Math.hypot(W, H) / 2);
+    g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, `rgba(0,0,0,${fx.vignette / 100 * .9})`);
+    c.globalCompositeOperation = "source-atop"; c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
+  c.globalCompositeOperation = "source-over"; c.globalAlpha = 1;
+  ctx.drawImage(fxCanvas, 0, 0, W, H, 0, 0, w, h);
+}
+// Presets (with live thumbnails) + sliders for one fx object.
+function fxPanel(root, fx, thumbSrc, onInput, onCommit) {
+  const sl = [["Яркость", "brightness", 0, 200, "%"], ["Контраст", "contrast", 0, 200, "%"], ["Насыщ.", "saturate", 0, 300, "%"], ["Оттенок", "hue", -180, 180, "°"], ["Размытие", "blur", 0, 30, "px"], ["Ч/Б", "grayscale", 0, 100, "%"], ["Сепия", "sepia", 0, 100, "%"], ["Инверсия", "invert", 0, 100, "%"], ["Виньетка", "vignette", 0, 100, "%"], ["Тон", "tintAmt", 0, 100, "%"]];
+  root.innerHTML = `<div class="presets"></div>${sl.map((s) => rng(s[0], s[1], s[2], s[3], 1, s[4])).join("")}<label class="row two"><span>Цвет тона</span><input type="color" data-k="tint"></label><div class="btnrow"><button class="btn sm" type="button" data-reset>Сбросить всё</button></div>${!FILTER_OK ? '<p class="note">В этом браузере размытие недоступно, остальные настройки работают.</p>' : ""}`;
+  const pr = $(".presets", root);
+  PRESETS.forEach(([name, p]) => {
+    const b = document.createElement("button"); b.type = "button";
+    const c = newCanvas(64, 64);
+    if (thumbSrc && srcW(thumbSrc)) { const sw = srcW(thumbSrc), sh = srcH(thumbSrc), s = Math.min(sw, sh); try { drawWithFx(c.getContext("2d"), thumbSrc, (sw - s) / 2, (sh - s) / 2, s, s, 64, 64, { ...FX_DEF, ...p }); } catch (e) {} }
+    else { const x = c.getContext("2d"); const g = x.createLinearGradient(0, 0, 64, 64); g.addColorStop(0, "#f59e0b"); g.addColorStop(.5, "#ec4899"); g.addColorStop(1, "#3b82f6"); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }
+    b.appendChild(c); b.appendChild(document.createTextNode(name));
+    b.onclick = () => { Object.assign(fx, FX_DEF, p); fxPanel(root, fx, thumbSrc, onInput, onCommit); onInput(); onCommit(); };
+    pr.appendChild(b);
+  });
+  $("[data-reset]", root).onclick = () => { Object.assign(fx, FX_DEF); fxPanel(root, fx, thumbSrc, onInput, onCommit); onInput(); onCommit(); };
+  bindForm(root, fx, onInput, onCommit);
+}
+const FONTS = [["Montserrat", "Montserrat, sans-serif"], ["Системный", "system-ui, sans-serif"], ["Russo One", "'Russo One', sans-serif"], ["Lobster", "Lobster, cursive"], ["Pacifico", "Pacifico, cursive"], ["Rubik Mono", "'Rubik Mono One', sans-serif"], ["Georgia", "Georgia, serif"], ["Times", "'Times New Roman', serif"], ["Courier", "'Courier New', monospace"], ["Impact", "Impact, sans-serif"]];
+const fontOpts = () => FONTS.map(([n, f]) => `<option value="${esc(f)}">${n}</option>`).join("");
+const loadFont = (spec) => { try { return document.fonts.load(spec).catch(() => {}); } catch (e) { return Promise.resolve(); } };
+
+/* ================= PHOTO EDITOR ================= */
+const Photo = (() => {
+  const cv = $("#pCanvas"), ctx = cv.getContext("2d"), stage = $("#pStage");
+  let doc = { w: 1080, h: 1080, bg: "#ffffff", transparent: false };
+  let layers = [], selId = null, tool = "move", zoom = 1, autoFit = true;
+  const brush = { size: 30, color: "#8b5cf6", opacity: 100 };
+  let crop = null, cropRatio = 0, drag = null, hover = null, guide = null, nPaint = 0;
+  const hist = [], fut = [];
+  const sel = () => layers.find((l) => l.id === selId) || null;
+  const isRaster = (l) => l && (l.type === "image" || l.type === "paint");
+
+  /* ---- history: every committed state is kept; canvases are copy-on-write so snapshots stay valid ---- */
+  const cloneL = (l) => ({ ...l, fx: l.fx ? { ...l.fx } : undefined });
+  const snapshot = () => ({ doc: { ...doc }, layers: layers.map(cloneL), selId });
+  function commit() { hist.push(snapshot()); if (hist.length > 40) hist.shift(); fut.length = 0; updUndo(); }
+  function restore(s) { const resized = s.doc.w !== doc.w || s.doc.h !== doc.h; doc = { ...s.doc }; layers = s.layers.map(cloneL); selId = s.selId; if (resized) fit(); refresh(); }
+  function undo() { if (hist.length < 2) return; fut.push(hist.pop()); restore(hist[hist.length - 1]); updUndo(); }
+  function redo() { if (!fut.length) return; const s = fut.pop(); hist.push(s); restore(s); updUndo(); }
+  function updUndo() { $("#pUndo").disabled = hist.length < 2; $("#pRedo").disabled = !fut.length; }
+
+  /* ---- layers ---- */
+  function baseL(type, name) { return { id: uid(), type, name, x: doc.w / 2, y: doc.h / 2, w: 100, h: 100, rot: 0, flipX: false, flipY: false, opacity: 100, blend: "source-over", visible: true }; }
+  function insert(l) { const i = layers.findIndex((q) => q.id === selId); if (i >= 0) layers.splice(i + 1, 0, l); else layers.push(l); selId = l.id; }
+  function addImage(img, name, asDoc) {
+    const iw = srcW(img), ih = srcH(img);
+    if (asDoc) { doc = { ...doc, w: iw, h: ih }; layers = []; selId = null; }
+    const l = baseL("image", name || "Фото"); l.img = img; l.fx = { ...FX_DEF };
+    if (asDoc) { l.w = iw; l.h = ih; } else { const s = Math.min(doc.w * .8 / iw, doc.h * .8 / ih, 1); l.w = iw * s; l.h = ih * s; }
+    l.x = doc.w / 2; l.y = doc.h / 2;
+    insert(l); if (asDoc) fit(); refresh(); commit();
+  }
+  function addPaint(silent) {
+    const l = baseL("paint", "Рисунок " + (++nPaint)); l.img = newCanvas(doc.w, doc.h); l.w = doc.w; l.h = doc.h; l.fx = { ...FX_DEF };
+    insert(l); if (!silent) { refresh(); commit(); } return l;
+  }
+  function addText(x, y, text, opts) {
+    const l = baseL("text", "Текст");
+    Object.assign(l, { text: text || "Твой текст", font: FONTS[0][1], size: Math.round(Math.min(doc.w, doc.h) / 9), weight: 900, italic: false, color: "#ffffff", stroke: "#1a1026", strokeW: 6, shadow: true, bg: false, bgColor: "#8b5cf6", x: x ?? doc.w / 2, y: y ?? doc.h / 2 }, opts || {});
+    if (opts && opts.name) l.name = opts.name;
+    insert(l); refresh(); commit(); return l;
+  }
+  function addShape(kind) {
+    const l = baseL("shape", kind === "rect" ? "Прямоугольник" : "Эллипс"); const s = Math.min(doc.w, doc.h) * .4;
+    Object.assign(l, { shape: kind, w: s * (kind === "rect" ? 1.4 : 1), h: s, fill: "#8b5cf6", fillOn: true, stroke: "#ffffff", strokeW: 0, radius: kind === "rect" ? 24 : 0 });
+    insert(l); refresh(); commit();
+  }
+  const fontStr = (l) => `${l.italic ? "italic " : ""}${l.weight} ${l.size}px ${l.font}`;
+  function textBox(l) {
+    ctx.save(); ctx.font = fontStr(l); const lines = String(l.text).split("\n"); const lh = l.size * 1.2;
+    const w = Math.max(10, ...lines.map((s) => ctx.measureText(s).width)); ctx.restore();
+    const pad = l.bg ? l.size * .35 : l.size * .1;
+    return { lines, lh, w: w + pad * 2, h: lines.length * lh + pad * 2, tw: w };
+  }
+  const lsize = (l) => l.type === "text" ? textBox(l) : { w: l.w, h: l.h };
+
+  /* ---- rendering ---- */
+  function drawLayer(c, l) {
+    if (!l.visible) return;
+    c.save(); c.globalAlpha = l.opacity / 100; c.globalCompositeOperation = l.blend || "source-over";
+    c.translate(l.x, l.y); c.rotate(l.rot * D2R); c.scale(l.flipX ? -1 : 1, l.flipY ? -1 : 1);
+    if (l.type === "text") {
+      const b = textBox(l); c.font = fontStr(l); c.textAlign = "center"; c.textBaseline = "middle";
+      if (l.bg) { c.fillStyle = l.bgColor; c.beginPath(); rr(c, -b.w / 2, -b.h / 2, b.w, b.h, l.size * .3); c.fill(); }
+      b.lines.forEach((s, i) => {
+        const y = -b.lines.length * b.lh / 2 + b.lh * (i + .5);
+        if (l.shadow) { c.shadowColor = "rgba(0,0,0,.55)"; c.shadowBlur = l.size * .18; c.shadowOffsetY = l.size * .06; }
+        if (l.strokeW > 0) { c.lineJoin = "round"; c.lineWidth = l.strokeW * 2; c.strokeStyle = l.stroke; c.strokeText(s, 0, y); c.shadowColor = "transparent"; }
+        c.fillStyle = l.color; c.fillText(s, 0, y); c.shadowColor = "transparent";
+      });
+    } else if (l.type === "shape") {
+      c.beginPath(); if (l.shape === "ellipse") c.ellipse(0, 0, Math.abs(l.w) / 2, Math.abs(l.h) / 2, 0, 0, Math.PI * 2); else rr(c, -l.w / 2, -l.h / 2, l.w, l.h, l.radius);
+      if (l.fillOn) { c.fillStyle = l.fill; c.fill(); }
+      if (l.strokeW > 0) { c.lineWidth = l.strokeW; c.strokeStyle = l.stroke; c.stroke(); }
+    } else {
+      c.translate(-l.w / 2, -l.h / 2); drawWithFx(c, l.img, 0, 0, srcW(l.img), srcH(l.img), l.w, l.h, l.fx);
+    }
+    c.restore();
+  }
+  function renderTo(scale = 1, forceBg) {
+    const c = newCanvas(doc.w * scale, doc.h * scale), x = c.getContext("2d");
+    x.scale(scale, scale);
+    if (!doc.transparent || forceBg) { x.fillStyle = doc.transparent ? forceBg : doc.bg; x.fillRect(0, 0, doc.w, doc.h); }
+    layers.forEach((l) => drawLayer(x, l));
+    return c;
+  }
+  let rq = 0;
+  const reqR = () => { if (!rq) rq = requestAnimationFrame(render); };
+  function render() {
+    rq = 0;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+    if (!doc.transparent) { ctx.fillStyle = doc.bg; ctx.fillRect(0, 0, doc.w, doc.h); }
+    layers.forEach((l) => drawLayer(ctx, l));
+    // overlay (not exported)
+    const z = 1 / zoom, l = sel();
+    if (l && tool !== "crop" && l.visible) {
+      const { w, h } = lsize(l);
+      ctx.save(); ctx.translate(l.x, l.y); ctx.rotate(l.rot * D2R);
+      ctx.strokeStyle = "#8b5cf6"; ctx.lineWidth = 2 * z; ctx.strokeRect(-w / 2, -h / 2, w, h);
+      if (tool === "move") {
+        const hs = 9 * z;
+        ctx.beginPath(); ctx.moveTo(0, -h / 2); ctx.lineTo(0, -h / 2 - 28 * z); ctx.stroke();
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, -h / 2 - 28 * z, 7 * z, 0, 7); ctx.fill(); ctx.stroke();
+        [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, b]) => { ctx.fillRect(a * w / 2 - hs / 2, b * h / 2 - hs / 2, hs, hs); ctx.strokeRect(a * w / 2 - hs / 2, b * h / 2 - hs / 2, hs, hs); });
+      }
+      ctx.restore();
+    }
+    if (guide) { ctx.save(); ctx.strokeStyle = "#ff3b9a"; ctx.lineWidth = z; ctx.setLineDash([6 * z, 4 * z]); ctx.beginPath(); if (guide.x) { ctx.moveTo(doc.w / 2, 0); ctx.lineTo(doc.w / 2, doc.h); } if (guide.y) { ctx.moveTo(0, doc.h / 2); ctx.lineTo(doc.w, doc.h / 2); } ctx.stroke(); ctx.restore(); }
+    if (tool === "crop" && crop) {
+      const r = normRect(crop);
+      ctx.save(); ctx.fillStyle = "rgba(0,0,0,.55)"; ctx.beginPath(); ctx.rect(0, 0, doc.w, doc.h); ctx.rect(r.x, r.y, r.w, r.h); ctx.fill("evenodd");
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2 * z; ctx.strokeRect(r.x, r.y, r.w, r.h);
+      ctx.strokeStyle = "rgba(255,255,255,.4)"; ctx.lineWidth = z; ctx.beginPath();
+      for (let i = 1; i < 3; i++) { ctx.moveTo(r.x + r.w * i / 3, r.y); ctx.lineTo(r.x + r.w * i / 3, r.y + r.h); ctx.moveTo(r.x, r.y + r.h * i / 3); ctx.lineTo(r.x + r.w, r.y + r.h * i / 3); }
+      ctx.stroke(); ctx.restore();
+    }
+    if (hover && (tool === "brush" || tool === "eraser")) { ctx.save(); ctx.strokeStyle = "#fff"; ctx.lineWidth = z; ctx.beginPath(); ctx.arc(hover[0], hover[1], brush.size / 2, 0, 7); ctx.stroke(); ctx.strokeStyle = "#000"; ctx.setLineDash([3 * z, 3 * z]); ctx.stroke(); ctx.restore(); }
+    $("#pEmpty").hidden = layers.length > 0;
+  }
+
+  /* ---- zoom ---- */
+  function applyZoom() {
+    if (cv.width !== doc.w || cv.height !== doc.h) { cv.width = doc.w; cv.height = doc.h; }
+    cv.style.width = doc.w * zoom + "px"; cv.style.height = doc.h * zoom + "px";
+    $("#pZoomVal").textContent = Math.round(zoom * 100) + "%"; reqR();
+  }
+  function fit() { const r = stage.getBoundingClientRect(); const z = Math.min((r.width - 40) / doc.w, (r.height - 40) / doc.h); zoom = z > 0 && isFinite(z) ? z : 1; autoFit = true; applyZoom(); }
+  function zoomBy(k) { zoom = clamp(zoom * k, .05, 16); autoFit = false; applyZoom(); }
+
+  /* ---- geometry ---- */
+  function pt(e) { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * doc.w / r.width, (e.clientY - r.top) * doc.h / r.height]; }
+  function toLocal(l, px, py) { const dx = px - l.x, dy = py - l.y, a = -l.rot * D2R, c = Math.cos(a), s = Math.sin(a); let lx = dx * c - dy * s, ly = dx * s + dy * c; if (l.flipX) lx = -lx; if (l.flipY) ly = -ly; return [lx, ly]; }
+  function toDoc(l, lx, ly) { const a = l.rot * D2R, c = Math.cos(a), s = Math.sin(a); return [l.x + lx * c - ly * s, l.y + lx * s + ly * c]; }
+  function hitLayer(px, py) {
+    for (let i = layers.length - 1; i >= 0; i--) {
+      const l = layers[i]; if (!l.visible) continue;
+      const { w, h } = lsize(l); const [lx, ly] = toLocal(l, px, py);
+      if (Math.abs(lx) > Math.abs(w) / 2 || Math.abs(ly) > Math.abs(h) / 2) continue;
+      if (l.type === "paint" || (l.type === "image" && l.img instanceof HTMLCanvasElement)) {
+        const cx = Math.floor((lx + l.w / 2) * l.img.width / l.w), cy = Math.floor((ly + l.h / 2) * l.img.height / l.h);
+        try { if (l.img.getContext("2d").getImageData(cx, cy, 1, 1).data[3] < 10) continue; } catch (e) {}
+      }
+      return l;
+    }
+    return null;
+  }
+  function hitHandle(l, px, py, e) {
+    const { w, h } = lsize(l), R = (e.pointerType === "touch" ? 22 : 12) / zoom;
+    const rp = toDoc(l, 0, -h / 2 - 28 / zoom); if (Math.hypot(px - rp[0], py - rp[1]) < R) return "rotate";
+    for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const p = toDoc(l, a * w / 2, b * h / 2); if (Math.hypot(px - p[0], py - p[1]) < R) return "scale"; }
+    return null;
+  }
+  const normRect = (r) => ({ x: Math.min(r.x, r.x + r.w), y: Math.min(r.y, r.y + r.h), w: Math.abs(r.w), h: Math.abs(r.h) });
+
+  /* ---- painting ---- */
+  function startStroke(px, py) {
+    let l = sel();
+    if (tool === "brush" && !(l && l.type === "paint")) l = addPaint(true);
+    if (tool === "eraser" && !isRaster(l)) { toast("Выбери слой с фото или рисунком, чтобы стирать"); return; }
+    if (!l.visible) { toast("Слой скрыт — включи глазик"); return; }
+    const base = l.img, nc = newCanvas(srcW(base), srcH(base)); nc.getContext("2d").drawImage(base, 0, 0);
+    l.img = nc; // copy-on-write: history keeps `base`
+    drag = { kind: "stroke", l, base, pts: [], moved: true };
+    addPt(px, py);
+  }
+  function addPt(px, py) {
+    const { l } = drag, [lx, ly] = toLocal(l, px, py);
+    drag.pts.push([(lx + l.w / 2) * l.img.width / l.w, (ly + l.h / 2) * l.img.height / l.h]);
+    const c = l.img.getContext("2d"), P = drag.pts, k = l.img.width / Math.abs(l.w);
+    c.save(); c.clearRect(0, 0, l.img.width, l.img.height); c.drawImage(drag.base, 0, 0);
+    c.globalAlpha = brush.opacity / 100; c.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
+    c.strokeStyle = c.fillStyle = brush.color; c.lineWidth = brush.size * k; c.lineCap = c.lineJoin = "round";
+    c.beginPath();
+    if (P.length === 1) { c.arc(P[0][0], P[0][1], brush.size * k / 2, 0, 7); c.fill(); }
+    else { c.moveTo(P[0][0], P[0][1]); for (let i = 1; i < P.length - 1; i++) { const mx = (P[i][0] + P[i + 1][0]) / 2, my = (P[i][1] + P[i + 1][1]) / 2; c.quadraticCurveTo(P[i][0], P[i][1], mx, my); } c.lineTo(P[P.length - 1][0], P[P.length - 1][1]); c.stroke(); }
+    c.restore(); reqR();
+  }
+
+  /* ---- pointer ---- */
+  cv.addEventListener("pointerdown", (e) => {
+    if (e.button > 0) return;
+    cv.setPointerCapture(e.pointerId); const [px, py] = pt(e);
+    if (tool === "move") {
+      const l = sel(), h = l && l.visible && hitHandle(l, px, py, e);
+      if (h) drag = { kind: h, l, px, py, w0: l.w, h0: l.h, s0: l.size, sw0: l.strokeW, rot0: l.rot, a0: Math.atan2(py - l.y, px - l.x), d0: Math.max(1, Math.hypot(px - l.x, py - l.y)) };
+      else { const hit = hitLayer(px, py); if ((hit && hit.id) !== selId) { selId = hit ? hit.id : null; refreshPanels(); } if (hit) drag = { kind: "move", l: hit, px, py, x0: hit.x, y0: hit.y }; }
+    } else if (tool === "brush" || tool === "eraser") startStroke(px, py);
+    else if (tool === "crop") {
+      const r = crop && normRect(crop);
+      if (r && px > r.x && px < r.x + r.w && py > r.y && py < r.y + r.h) drag = { kind: "cropmove", px, py, r0: { ...r } };
+      else { crop = { x: px, y: py, w: 0, h: 0 }; drag = { kind: "crop", px, py }; }
+    } else if (tool === "text") {
+      const hit = hitLayer(px, py);
+      if (hit && hit.type === "text") { selId = hit.id; setTool("move"); }
+      else { addText(px, py); setTool("move"); focusText(); }
+    } else if (tool === "pick") {
+      const c = renderTo(1, "#ffffff").getContext("2d"); const d = c.getImageData(clamp(Math.floor(px), 0, doc.w - 1), clamp(Math.floor(py), 0, doc.h - 1), 1, 1).data;
+      const hex = "#" + [d[0], d[1], d[2]].map((v) => v.toString(16).padStart(2, "0")).join("");
+      brush.color = hex; const l = sel();
+      if (l && l.type === "text") { l.color = hex; commit(); } else if (l && l.type === "shape") { l.fill = hex; commit(); }
+      toast("Цвет " + hex + " — взят в кисть" + (l && (l.type === "text" || l.type === "shape") ? " и в слой" : "")); refresh();
+    }
+    reqR();
+  });
+  cv.addEventListener("pointermove", (e) => {
+    const [px, py] = pt(e); hover = [px, py];
+    if (!drag) { if (tool === "brush" || tool === "eraser") reqR(); return; }
+    const d = drag, l = d.l; d.moved = true;
+    if (d.kind === "move") {
+      let nx = d.x0 + px - d.px, ny = d.y0 + py - d.py; const sn = 8 / zoom; guide = {};
+      if (Math.abs(nx - doc.w / 2) < sn) { nx = doc.w / 2; guide.x = 1; }
+      if (Math.abs(ny - doc.h / 2) < sn) { ny = doc.h / 2; guide.y = 1; }
+      l.x = nx; l.y = ny;
+    } else if (d.kind === "scale") {
+      const f = Math.max(.02, Math.hypot(px - l.x, py - l.y) / d.d0);
+      if (l.type === "text") { l.size = Math.max(4, Math.round(d.s0 * f)); l.strokeW = Math.round(d.sw0 * f * 10) / 10; } else { l.w = d.w0 * f; l.h = d.h0 * f; }
+    } else if (d.kind === "rotate") {
+      let r = d.rot0 + (Math.atan2(py - l.y, px - l.x) - d.a0) / D2R; if (e.shiftKey) r = Math.round(r / 15) * 15; l.rot = ((r % 360) + 540) % 360 - 180;
+    } else if (d.kind === "stroke") addPt(px, py);
+    else if (d.kind === "crop") {
+      let w = px - d.px, h = py - d.py;
+      if (cropRatio) { h = Math.sign(h || 1) * Math.abs(w) / cropRatio; }
+      crop = { x: d.px, y: d.py, w, h };
+    } else if (d.kind === "cropmove") {
+      crop = { x: clamp(d.r0.x + px - d.px, 0, doc.w - d.r0.w), y: clamp(d.r0.y + py - d.py, 0, doc.h - d.r0.h), w: d.r0.w, h: d.r0.h };
+    }
+    reqR();
+  });
+  const endDrag = () => {
+    if (!drag) return; const d = drag; drag = null; guide = null;
+    if (d.kind === "crop" || d.kind === "cropmove") { const r = normRect(crop); const x = clamp(r.x, 0, doc.w), y = clamp(r.y, 0, doc.h); crop = { x, y, w: Math.min(r.w, doc.w - x), h: Math.min(r.h, doc.h - y) }; if (crop.w < 4 || crop.h < 4) crop = { x: 0, y: 0, w: doc.w, h: doc.h }; }
+    else if (d.moved) { commit(); refreshPanels(); }
+    reqR();
+  };
+  cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
+  cv.addEventListener("pointerleave", () => { hover = null; reqR(); });
+  stage.addEventListener("wheel", (e) => { if (!e.ctrlKey && !e.metaKey) return; e.preventDefault(); zoomBy(e.deltaY < 0 ? 1.1 : 1 / 1.1); }, { passive: false });
+
+  /* ---- crop & canvas ops ---- */
+  function cropToRatio(r) {
+    cropRatio = r;
+    if (!r) { crop = { x: 0, y: 0, w: doc.w, h: doc.h }; reqR(); return; }
+    let w = doc.w, h = w / r; if (h > doc.h) { h = doc.h; w = h * r; }
+    crop = { x: (doc.w - w) / 2, y: (doc.h - h) / 2, w, h }; reqR();
+  }
+  function applyCrop() {
+    if (!crop) return; const r = normRect(crop); const x = Math.round(r.x), y = Math.round(r.y), w = Math.round(r.w), h = Math.round(r.h);
+    if (w < 4 || h < 4) return;
+    layers.forEach((l) => { l.x -= x; l.y -= y; });
+    doc.w = w; doc.h = h; crop = null; setTool("move"); fit(); refresh(); commit(); toast(`Кадрировано: ${w}×${h}`);
+  }
+  function rotateDoc(dir) {
+    const W = doc.w, H = doc.h;
+    layers.forEach((l) => { const x = l.x, y = l.y; if (dir > 0) { l.x = H - y; l.y = x; } else { l.x = y; l.y = W - x; } l.rot = ((l.rot + 90 * dir + 540) % 360) - 180; });
+    doc.w = H; doc.h = W; fit(); refresh(); commit();
+  }
+  function flipDoc(axis) {
+    layers.forEach((l) => { if (axis === "x") { l.x = doc.w - l.x; l.flipX = !l.flipX; } else { l.y = doc.h - l.y; l.flipY = !l.flipY; } l.rot = -l.rot; });
+    reqR(); commit();
+  }
+  function resizeDoc(w, h) {
+    w = Math.round(w); h = Math.round(h); if (!(w > 0 && h > 0) || w > 8000 || h > 8000) return toast("Размер от 1 до 8000 px");
+    const sx = w / doc.w, sy = h / doc.h;
+    layers.forEach((l) => { l.x *= sx; l.y *= sy; if (l.type === "text") { l.size = Math.max(2, l.size * Math.min(sx, sy)); l.strokeW *= Math.min(sx, sy); } else { l.w *= sx; l.h *= sy; } if (l.type === "shape") l.strokeW *= Math.min(sx, sy); });
+    doc.w = w; doc.h = h; fit(); refresh(); commit();
+  }
+  function newDoc(w, h, bg, transparent) { doc = { w, h, bg, transparent }; layers = []; selId = null; nPaint = 0; fit(); refresh(); commit(); }
+  function mergeDown() {
+    const i = layers.findIndex((l) => l.id === selId); if (i < 1) return toast("Ниже нет слоя");
+    const c = newCanvas(doc.w, doc.h), x = c.getContext("2d"); drawLayer(x, layers[i - 1]); drawLayer(x, layers[i]);
+    const l = baseL("paint", layers[i - 1].name); l.img = c; l.w = doc.w; l.h = doc.h; l.fx = { ...FX_DEF };
+    layers.splice(i - 1, 2, l); selId = l.id; refresh(); commit();
+  }
+
+  /* ---- panels ---- */
+  const BLENDS = [["source-over", "Обычный"], ["multiply", "Умножение"], ["screen", "Экран"], ["overlay", "Перекрытие"], ["soft-light", "Мягкий свет"], ["hard-light", "Жёсткий свет"], ["darken", "Затемнение"], ["lighten", "Осветление"], ["color-dodge", "Осветл. основы"], ["color-burn", "Затемн. основы"], ["difference", "Разница"], ["exclusion", "Исключение"], ["hue", "Цветовой тон"], ["saturation", "Насыщенность"], ["color", "Цветность"], ["luminosity", "Яркость"]];
+  function renderProps() {
+    const root = $("#pProps"), l = sel();
+    if (!l) { root.innerHTML = '<p class="note">Нажми на слой на холсте или в списке. Тяни, чтобы двигать; угловые квадраты — масштаб; кружок сверху — поворот.</p>'; return; }
+    let h = `<label class="row two"><span>Имя</span><input type="text" data-k="name"></label>${rng("Непрозрачн.", "opacity", 0, 100, 1, "%")}<label class="row two"><span>Наложение</span><select data-k="blend">${BLENDS.map(([v, n]) => `<option value="${v}">${n}</option>`).join("")}</select></label>`;
+    if (l.type === "text") h += `<div class="ititle">Текст</div><textarea data-k="text" rows="2" id="pTextArea"></textarea>
+      <label class="row two"><span>Шрифт</span><select data-k="font">${fontOpts()}</select></label>${rng("Размер", "size", 6, 600, 1, "px")}
+      <label class="row two"><span>Начертание</span><select data-k="weight" data-num><option value="400">Обычный</option><option value="700">Жирный</option><option value="900">Чёрный</option></select></label>
+      <label class="chk"><input type="checkbox" data-k="italic"> Курсив</label>
+      <label class="row two"><span>Цвет</span><input type="color" data-k="color"></label>
+      <label class="row two"><span>Обводка</span><input type="color" data-k="stroke"></label>${rng("Толщина", "strokeW", 0, 40, .5, "px")}
+      <label class="chk"><input type="checkbox" data-k="shadow"> Тень</label>
+      <label class="chk"><input type="checkbox" data-k="bg"> Плашка под текстом</label><label class="row two"><span>Цвет плашки</span><input type="color" data-k="bgColor"></label>`;
+    if (l.type === "shape") h += `<div class="ititle">Фигура</div><div class="grid2"><label>Ширина<input type="number" data-k="w" min="1"></label><label>Высота<input type="number" data-k="h" min="1"></label></div>
+      <label class="chk"><input type="checkbox" data-k="fillOn"> Заливка</label><label class="row two"><span>Цвет</span><input type="color" data-k="fill"></label>
+      <label class="row two"><span>Обводка</span><input type="color" data-k="stroke"></label>${rng("Толщина", "strokeW", 0, 80, 1, "px")}${l.shape === "rect" ? rng("Скругление", "radius", 0, 400, 1, "px") : ""}`;
+    if (l.type === "image" || l.type === "paint") h += `<div class="grid2"><label>Ширина<input type="number" data-k="w" min="1"></label><label>Высота<input type="number" data-k="h" min="1"></label></div>`;
+    h += `<div class="ititle">Трансформация</div><div class="btnrow">
+      <button class="btn sm" type="button" data-a="rl">⟲ 90°</button><button class="btn sm" type="button" data-a="rr">⟳ 90°</button>
+      <button class="btn sm" type="button" data-a="fx">⇋ Отразить</button><button class="btn sm" type="button" data-a="fy">⇅</button>
+      <button class="btn sm" type="button" data-a="center">По центру</button>
+      ${l.type === "image" ? '<button class="btn sm" type="button" data-a="cover">Заполнить холст</button><button class="btn sm" type="button" data-a="fit">Вписать</button>' : ""}
+      <button class="btn sm" type="button" data-a="reset">Сбросить поворот</button></div>`;
+    root.innerHTML = h;
+    bindForm(root, l, (k) => {
+      if (k === "name") renderLayers();
+      if (k === "font" || k === "weight" || k === "italic") loadFont(fontStr(l)).then(reqR);
+      reqR();
+    }, () => { commit(); renderLayers(); });
+    $$("[data-a]", root).forEach((b) => b.onclick = () => {
+      const a = b.dataset.a;
+      if (a === "rl") l.rot = ((l.rot - 90 + 540) % 360) - 180; if (a === "rr") l.rot = ((l.rot + 90 + 540) % 360) - 180;
+      if (a === "fx") l.flipX = !l.flipX; if (a === "fy") l.flipY = !l.flipY;
+      if (a === "center") { l.x = doc.w / 2; l.y = doc.h / 2; }
+      if (a === "reset") l.rot = 0;
+      if (a === "cover" || a === "fit") { const iw = srcW(l.img), ih = srcH(l.img), s = (a === "cover" ? Math.max : Math.min)(doc.w / iw, doc.h / ih); l.w = iw * s; l.h = ih * s; l.x = doc.w / 2; l.y = doc.h / 2; l.rot = 0; }
+      reqR(); commit(); renderProps();
+    });
+  }
+  function renderFx() {
+    const root = $("#pFx"), l = sel();
+    if (!isRaster(l)) { root.innerHTML = '<p class="note">Фильтры работают со слоями «Фото» и «Рисунок». Выбери такой слой.</p>'; return; }
+    fxPanel(root, l.fx, l.img, reqR, () => { commit(); renderLayers(); });
+  }
+  function layerThumb(l) {
+    const c = newCanvas(68, 68), x = c.getContext("2d");
+    if (l.type === "text") { x.fillStyle = "#3b2a5c"; x.fillRect(0, 0, 68, 68); x.fillStyle = l.color; x.font = `900 34px ${l.font}`; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(/\p{Extended_Pictographic}/u.test(l.text) ? l.text.slice(0, 2) : "T", 34, 37); }
+    else if (l.type === "shape") { x.fillStyle = l.fillOn ? l.fill : "transparent"; x.strokeStyle = l.stroke; x.lineWidth = 4; x.beginPath(); if (l.shape === "ellipse") x.ellipse(34, 34, 24, 24, 0, 0, 7); else rr(x, 10, 18, 48, 32, 6); if (l.fillOn) x.fill(); if (l.strokeW) x.stroke(); }
+    else { const iw = srcW(l.img), ih = srcH(l.img), s = Math.min(68 / iw, 68 / ih); try { drawWithFx(x, l.img, 0, 0, iw, ih, iw * s, ih * s, l.fx); } catch (e) {} }
+    return c;
+  }
+  function renderLayers() {
+    const ul = $("#pLayers"); ul.innerHTML = "";
+    if (!layers.length) { ul.innerHTML = '<li style="cursor:default"><span class="note">Слоёв пока нет</span></li>'; return; }
+    [...layers].reverse().forEach((l) => {
+      const li = document.createElement("li"); li.className = (l.id === selId ? "sel " : "") + (l.visible ? "" : "hid");
+      const eye = document.createElement("button"); eye.type = "button"; eye.textContent = l.visible ? "👁" : "◌"; eye.title = "Показать/скрыть";
+      eye.onclick = (e) => { e.stopPropagation(); l.visible = !l.visible; refresh(); commit(); };
+      const nm = document.createElement("span"); nm.textContent = l.name;
+      li.append(eye, layerThumb(l), nm);
+      li.onclick = () => { selId = l.id; if (tool === "crop") setTool("move"); refreshPanels(); reqR(); };
+      ul.appendChild(li);
+    });
+  }
+  function renderDoc() {
+    const root = $("#pDoc");
+    root.innerHTML = `<p class="note">Сейчас: <b>${doc.w}×${doc.h}</b> px</p>
+      <label class="row two"><span>Фон</span><input type="color" data-k="bg"></label><label class="chk"><input type="checkbox" data-k="transparent"> Прозрачный фон</label>
+      <div class="btnrow"><button class="btn sm" type="button" data-d="rl">⟲ Повернуть</button><button class="btn sm" type="button" data-d="rr">⟳ Повернуть</button><button class="btn sm" type="button" data-d="fx">⇋ Отразить</button><button class="btn sm" type="button" data-d="fy">⇅ Отразить</button></div>
+      <div class="ititle">Размер изображения</div><div class="grid2"><label>Ширина<input type="number" id="pRw" value="${doc.w}" min="1"></label><label>Высота<input type="number" id="pRh" value="${doc.h}" min="1"></label></div>
+      <label class="chk"><input type="checkbox" id="pRl" checked> Сохранять пропорции</label><button class="btn sm" type="button" id="pRgo">Изменить размер</button>`;
+    bindForm(root, doc, reqR, commit);
+    $$("[data-d]", root).forEach((b) => b.onclick = () => { const a = b.dataset.d; if (a === "rl") rotateDoc(-1); if (a === "rr") rotateDoc(1); if (a === "fx") flipDoc("x"); if (a === "fy") flipDoc("y"); });
+    const rw = $("#pRw", root), rh = $("#pRh", root), lock = $("#pRl", root);
+    rw.oninput = () => { if (lock.checked) rh.value = Math.round(rw.value * doc.h / doc.w); };
+    rh.oninput = () => { if (lock.checked) rw.value = Math.round(rh.value * doc.w / doc.h); };
+    $("#pRgo", root).onclick = () => resizeDoc(+rw.value, +rh.value);
+  }
+  function renderOpts() {
+    const o = $("#pOpts");
+    if (tool === "brush" || tool === "eraser") {
+      o.innerHTML = `<label class="opt">Размер <input type="range" min="1" max="400" data-k="size" data-u="px"><output data-o="size"></output></label>${tool === "brush" ? '<label class="opt">Цвет <input type="color" data-k="color"></label>' : ""}<label class="opt">Непрозр. <input type="range" min="5" max="100" data-k="opacity" data-u="%"><output data-o="opacity"></output></label><span class="note">${tool === "brush" ? "Кисть рисует на слое «Рисунок» — он создастся сам" : "Ластик стирает выбранный слой"}</span>`;
+      bindForm(o, brush, reqR);
+    } else if (tool === "crop") {
+      o.innerHTML = `<span>Пропорции:</span>${[["Свободно", 0], ["1:1", 1], ["4:5", .8], ["16:9", 16 / 9], ["9:16", 9 / 16], ["3:2", 1.5]].map(([n, r]) => `<button class="btn sm${cropRatio === r ? " pri" : ""}" type="button" data-r="${r}">${n}</button>`).join("")}<button class="btn sm pri" type="button" id="pCropGo">✓ Применить</button><button class="btn sm" type="button" id="pCropNo">Отмена</button>`;
+      $$("[data-r]", o).forEach((b) => b.onclick = () => { cropToRatio(+b.dataset.r); renderOpts(); });
+      $("#pCropGo").onclick = applyCrop; $("#pCropNo").onclick = () => { crop = null; setTool("move"); };
+    } else if (tool === "text") o.innerHTML = '<span class="note">Нажми на холст, чтобы добавить надпись. Нажми на существующий текст, чтобы его выбрать.</span>';
+    else if (tool === "pick") o.innerHTML = `<span class="note">Нажми на картинку, чтобы взять цвет.</span><span class="opt">Кисть: <input type="color" data-k="color"></span>`, bindForm(o, brush);
+    else o.innerHTML = '<span class="note">Тяни слой мышью или пальцем. Углы — масштаб, кружок — поворот (Shift — шаг 15°). Стрелки — сдвиг, Delete — удалить.</span>';
+  }
+  function setTool(t) {
+    tool = t; $$("#pTools [data-tool]").forEach((b) => b.classList.toggle("on", b.dataset.tool === t));
+    if (t === "crop") { cropRatio = 0; crop = { x: 0, y: 0, w: doc.w, h: doc.h }; }
+    if (t !== "crop") crop = null;
+    cv.style.cursor = t === "move" ? "default" : t === "text" ? "text" : "crosshair";
+    renderOpts(); reqR();
+  }
+  const focusText = () => { const t = $("#pTextArea"); if (t) { t.focus(); t.select(); } };
+  function refreshPanels() { renderProps(); renderFx(); renderLayers(); }
+  function refresh() { refreshPanels(); renderDoc(); reqR(); }
+
+  /* ---- files ---- */
+  async function openFiles(files, forceLayer) {
+    for (const f of files) {
+      if (!f.type.startsWith("image/")) { toast("Это не картинка: " + f.name); continue; }
+      try { const img = await loadImage(URL.createObjectURL(f)); addImage(img, f.name.replace(/\.[^.]+$/, "").slice(0, 30), !forceLayer && !layers.length); }
+      catch (e) { toast("Не удалось открыть " + f.name); }
+    }
+  }
+  const fileIn = (id, layer) => { const i = $(id); i.onchange = () => { openFiles([...i.files], layer); i.value = ""; }; };
+  fileIn("#pFile"); fileIn("#pFile2"); fileIn("#pFile3", true);
+  stage.addEventListener("dragover", (e) => e.preventDefault());
+  stage.addEventListener("drop", (e) => { e.preventDefault(); openFiles([...e.dataTransfer.files]); });
+
+  /* ---- export ---- */
+  function exportDlg() {
+    const m = modal("Сохранить картинку", `<label class="row two"><span>Формат</span><select id="exF"><option value="image/png">PNG (без потерь)</option><option value="image/jpeg">JPEG</option><option value="image/webp">WEBP</option></select></label>
+      ${rng("Качество", "q", 30, 100, 1, "%")}<label class="row two"><span>Масштаб</span><select id="exS"><option value="0.5">50%</option><option value="1" selected>100%</option><option value="2">200%</option></select></label><p class="note" id="exInfo"></p>`,
+      [{ label: "Отмена" }, { label: "Скачать", pri: true, fn: (m) => {
+        const type = $("#exF", m).value, s = +$("#exS", m).value, ext = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[type];
+        renderTo(s, type === "image/jpeg" ? "#ffffff" : null).toBlob((b) => { if (!b) return toast("Не удалось сохранить"); download(b, "TribbleV-" + Date.now() + "." + ext); toast("Сохранено ✓"); }, type, opts.q / 100);
+      } }]);
+    const opts = { q: 92 }; bindForm(m, opts);
+    const info = () => { const s = +$("#exS", m).value; $("#exInfo", m).textContent = `Итог: ${Math.round(doc.w * s)}×${Math.round(doc.h * s)} px`; };
+    $("#exS", m).onchange = info; info();
+  }
+  function newDlg() {
+    const P = [["Квадрат", 1080, 1080], ["Пост 4:5", 1080, 1350], ["История 9:16", 1080, 1920], ["Full HD", 1920, 1080], ["Обложка YouTube", 1280, 720], ["A4 (печать)", 2480, 3508]];
+    const m = modal("Новый холст", `<div class="sizes">${P.map(([n, w, h], i) => `<button type="button" data-i="${i}" class="${i ? "" : "on"}">${n}<small>${w}×${h}</small></button>`).join("")}</div>
+      <div class="grid2"><label>Ширина<input type="number" id="nW" value="1080"></label><label>Высота<input type="number" id="nH" value="1080"></label></div>
+      <label class="row two"><span>Фон</span><input type="color" id="nBg" value="#ffffff"></label><label class="chk"><input type="checkbox" id="nTr"> Прозрачный</label>`,
+      [{ label: "Отмена" }, { label: "Создать", pri: true, fn: (m) => { const w = +$("#nW", m).value, h = +$("#nH", m).value; if (!(w > 0 && h > 0 && w <= 8000 && h <= 8000)) { toast("Размер от 1 до 8000 px"); return false; } newDoc(Math.round(w), Math.round(h), $("#nBg", m).value, $("#nTr", m).checked); } }]);
+    $$(".sizes button", m).forEach((b) => b.onclick = () => { $$(".sizes button", m).forEach((q) => q.classList.remove("on")); b.classList.add("on"); const p = P[+b.dataset.i]; $("#nW", m).value = p[1]; $("#nH", m).value = p[2]; });
+  }
+
+  /* ---- wiring ---- */
+  $$("#pTools [data-tool]").forEach((b) => b.onclick = () => setTool(b.dataset.tool));
+  $("#pZoomIn").onclick = () => zoomBy(1.25); $("#pZoomOut").onclick = () => zoomBy(.8); $("#pZoomFit").onclick = fit;
+  $("#pUndo").onclick = undo; $("#pRedo").onclick = redo;
+  $("#pNew").onclick = newDlg; $("#pExport").onclick = exportDlg;
+  $("#pAddText").onclick = () => { addText(); setTool("move"); focusText(); };
+  $("#pAddPaint").onclick = () => { addPaint(); setTool("brush"); };
+  $("#pAddRect").onclick = () => { addShape("rect"); setTool("move"); };
+  $("#pAddEll").onclick = () => { addShape("ellipse"); setTool("move"); };
+  function move(d) { const i = layers.findIndex((l) => l.id === selId), j = i + d; if (i < 0 || j < 0 || j >= layers.length) return; [layers[i], layers[j]] = [layers[j], layers[i]]; refresh(); commit(); }
+  function dup() { const l = sel(); if (!l) return; const c = cloneL(l); c.id = uid(); c.name = l.name + " копия"; c.x += 20; c.y += 20; insert(c); refresh(); commit(); }
+  function del() { const i = layers.findIndex((l) => l.id === selId); if (i < 0) return; layers.splice(i, 1); selId = (layers[Math.min(i, layers.length - 1)] || {}).id || null; refresh(); commit(); }
+  $("#pUp").onclick = () => move(1); $("#pDown").onclick = () => move(-1); $("#pDup").onclick = dup; $("#pDel").onclick = del; $("#pMerge").onclick = mergeDown;
+  const ST = "😀 😂 😍 😎 🤩 🥳 😜 🤯 😱 🥺 😈 🤡 👍 👏 🙏 💪 🔥 💯 ✨ ⭐ ❤️ 💜 💥 🎉 🎁 🎂 🌈 ☀️ 🌙 ⚡ 🍕 🍔 🎮 🏆 ⚽ 🚀 👑 💎 🦄 🐱 🐶 👻 💀 🎃 🌸 🍀 💬 ➡️".split(" ");
+  ST.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.onclick = () => { addText(doc.w / 2, doc.h / 2, s, { name: "Стикер " + s, size: Math.round(Math.min(doc.w, doc.h) / 4.5), strokeW: 0, shadow: false, weight: 400 }); setTool("move"); }; $("#pStickers").appendChild(b); });
+  addEventListener("resize", () => { if (autoFit && !$("#photo").hidden) fit(); });
+  function key(e) {
+    if (typing(e)) return;
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if (mod && k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (mod && k === "y") { e.preventDefault(); redo(); return; }
+    if (mod && k === "d") { e.preventDefault(); dup(); return; }
+    if (mod && k === "s") { e.preventDefault(); exportDlg(); return; }
+    if (mod) return;
+    if (k === "delete" || k === "backspace") { e.preventDefault(); del(); return; }
+    if (k === "enter" && tool === "crop") return applyCrop();
+    if (k === "escape") { if (tool === "crop") setTool("move"); else { selId = null; refreshPanels(); reqR(); } return; }
+    const T = { v: "move", b: "brush", e: "eraser", t: "text", c: "crop", i: "pick" }; if (T[k]) return setTool(T[k]);
+    if (k === "[") { brush.size = Math.max(1, brush.size - 5); renderOpts(); reqR(); }
+    if (k === "]") { brush.size = Math.min(400, brush.size + 5); renderOpts(); reqR(); }
+    const l = sel(); const st = e.shiftKey ? 10 : 1;
+    const arr = { arrowleft: [-st, 0], arrowright: [st, 0], arrowup: [0, -st], arrowdown: [0, st] }[k];
+    if (l && arr) { e.preventDefault(); l.x += arr[0]; l.y += arr[1]; reqR(); clearTimeout(key.t); key.t = setTimeout(commit, 400); }
+  }
+  return {
+    init() { setTool("move"); refresh(); fit(); commit(); },
+    enter() { fit(); },
+    key, openFiles,
+    paste(files) { openFiles(files); },
+    toBlob: () => new Promise((res) => renderTo(1, doc.transparent ? null : undefined).toBlob(res, "image/png")),
+    openCanvas(c, name) { addImage(c, name, true); },
+    hasLayers: () => layers.length > 0,
+  };
+})();
+
+/* ================= VIDEO EDITOR ================= */
+const Video = (() => {
+  const pv = $("#vCanvas"), pc = pv.getContext("2d"), pool = $("#vPool");
+  const scroll = $("#tlScroll"), inner = $("#tlInner"), ruler = $("#tlRuler"), head = $("#tlHead");
+  const FORMATS = { "16:9": [1280, 720, "Горизонтальное 16:9 (720p)"], "16:9hd": [1920, 1080, "Горизонтальное 16:9 (1080p)"], "9:16": [720, 1280, "Вертикальное 9:16 (Reels, Shorts)"], "1:1": [1080, 1080, "Квадрат 1:1"], "4:5": [1080, 1350, "Пост 4:5"] };
+  let proj = { fmt: "16:9", w: 1280, h: 720, bg: "#000000" };
+  const media = new Map();
+  let clips = [], texts = [], audios = [];
+  let sel = null; // {kind, id}
+  let t = 0, playing = false, last = 0, raf = 0, pps = 60, exporting = null;
+  const els = new Map(), tlEls = new Map();
+  const hist = [], fut = [];
+  let actx = null, master = null, recDest = null;
+
+  /* ---- model helpers ---- */
+  const M = (it) => media.get(it.mediaId);
+  const isImg = (c) => (M(c) || {}).type === "image";
+  const maxOut = (it) => { const m = M(it); return !m || !isFinite(m.duration) ? 600 : m.duration; };
+  const cdur = (c) => Math.max(.05, (c.out - c.in) / (isImg(c) ? 1 : c.speed));
+  const adur = (a) => Math.max(.05, a.out - a.in);
+  function layout() { let s = 0; clips.forEach((c) => { c._s = s; s += cdur(c); }); return s; }
+  function total() { let m = layout(); texts.forEach((x) => m = Math.max(m, x.start + x.dur)); audios.forEach((a) => m = Math.max(m, a.start + adur(a))); return m; }
+  function clipAt(time) {
+    for (const c of clips) if (time >= c._s && time < c._s + cdur(c)) return { c, lt: time - c._s };
+    const lc = clips[clips.length - 1]; if (lc && time >= lc._s + cdur(lc) - 1e-6 && time <= lc._s + cdur(lc) + .05) return { c: lc, lt: cdur(lc) - .02 };
+    return null;
+  }
+  const env = (fi, fo, lt, d) => { let a = 1; if (fi > 0) a = Math.min(a, lt / fi); if (fo > 0) a = Math.min(a, (d - lt) / fo); return clamp(a, 0, 1); };
+  const find = (s) => !s ? null : (s.kind === "clip" ? clips : s.kind === "text" ? texts : audios).find((x) => x.id === s.id) || null;
+
+  /* ---- history ---- */
+  const snap = () => JSON.stringify({ proj, clips, texts, audios });
+  function commit() { const s = snap(); if (hist[hist.length - 1] === s) return; hist.push(s); if (hist.length > 60) hist.shift(); fut.length = 0; updUndo(); }
+  function restore(s) { const o = JSON.parse(s); const fmtCh = o.proj.w !== proj.w || o.proj.h !== proj.h; proj = o.proj; clips = o.clips.filter((c) => media.has(c.mediaId)); texts = o.texts; audios = o.audios.filter((a) => media.has(a.mediaId)); if (fmtCh) setCanvas(); if (!find(sel)) sel = null; renderAll(); }
+  function undo() { if (hist.length < 2) return; fut.push(hist.pop()); restore(hist[hist.length - 1]); updUndo(); }
+  function redo() { if (!fut.length) return; const s = fut.pop(); hist.push(s); restore(s); updUndo(); }
+  function updUndo() { $("#vUndo").disabled = hist.length < 2; $("#vRedo").disabled = !fut.length; }
+
+  /* ---- audio graph (so volume >100%, fades and export audio work) ---- */
+  function ensureAudio() {
+    if (actx) return; const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    actx = new AC(); master = actx.createGain(); master.connect(actx.destination);
+    try { recDest = actx.createMediaStreamDestination(); master.connect(recDest); } catch (e) { recDest = null; }
+    els.forEach(hook);
+  }
+  function hook(e) { if (!actx || e._g) return; try { const s = actx.createMediaElementSource(e); e._g = actx.createGain(); s.connect(e._g); e._g.connect(master); } catch (err) {} }
+  function setVol(e, v) { if (e._g) { e._g.gain.value = v; e.volume = 1; } else e.volume = clamp(v, 0, 1); }
+  function elFor(it) {
+    const m = M(it); let e = els.get(it.id);
+    if (e && e._mid === m.id) return e;
+    if (e) { e.pause(); e.remove(); }
+    e = document.createElement(m.type === "audio" ? "audio" : "video");
+    e.preload = "auto"; e.playsInline = true; e.setAttribute("playsinline", ""); e.src = m.url; e._mid = m.id;
+    e.addEventListener("seeked", reqDraw); e.addEventListener("loadeddata", reqDraw);
+    pool.appendChild(e); els.set(it.id, e); hook(e); return e;
+  }
+  function gcEls() { const ids = new Set([...clips, ...audios].map((x) => x.id)); els.forEach((e, id) => { if (!ids.has(id)) { e.pause(); e.removeAttribute("src"); e.load(); e.remove(); els.delete(id); } }); }
+
+  /* ---- keep media elements in step with the playhead ---- */
+  function syncEl(e, local, rate, vol, active) {
+    if (!active) { if (!e.paused) e.pause(); return; }
+    e.playbackRate = rate; setVol(e, vol);
+    if (playing) { if (Math.abs(e.currentTime - local) > .3 && !e.seeking) e.currentTime = local; if (e.paused) e.play().catch(() => {}); }
+    else { if (!e.paused) e.pause(); if (Math.abs(e.currentTime - local) > .03 && !e.seeking) e.currentTime = local; }
+  }
+  function sync() {
+    const cur = clipAt(t);
+    clips.forEach((c) => {
+      const m = M(c); if (!m || m.type !== "video") return; const e = elFor(c);
+      if (cur && cur.c === c) syncEl(e, c.in + cur.lt * c.speed, c.speed, c.mute ? 0 : c.volume / 100 * env(c.fadeIn, c.fadeOut, cur.lt, cdur(c)), true);
+      else { if (!e.paused) e.pause(); if (c._s > t && c._s - t < 1.5 && Math.abs(e.currentTime - c.in) > .05 && !e.seeking) e.currentTime = c.in; }
+    });
+    audios.forEach((a) => {
+      const e = elFor(a), lt = t - a.start, on = lt >= 0 && lt < adur(a) && (playing || true);
+      syncEl(e, a.in + clamp(lt, 0, adur(a)), 1, a.volume / 100 * env(a.fadeIn, a.fadeOut, lt, adur(a)), on && lt >= 0 && lt < adur(a));
+    });
+  }
+
+  /* ---- drawing ---- */
+  function draw() {
+    const W = proj.w, H = proj.h;
+    pc.setTransform(1, 0, 0, 1, 0, 0); pc.globalAlpha = 1; pc.fillStyle = proj.bg; pc.fillRect(0, 0, W, H);
+    const cur = clipAt(t);
+    if (cur) {
+      const c = cur.c, m = M(c); let src = null;
+      if (m.type === "image") src = m.img; else { const e = els.get(c.id); if (e && e.readyState >= 2) src = e; }
+      if (src) {
+        const sw = m.w || srcW(src), sh = m.h || srcH(src), d = cdur(c);
+        const kb = m.type === "image" && c.kb ? 1 + .12 * (cur.lt / d) : 1;
+        pc.save(); pc.globalAlpha = env(c.fadeIn, c.fadeOut, cur.lt, d);
+        if (c.fit === "cover") { const s = Math.max(W / sw, H / sh) * kb, cw = W / s, ch = H / s; drawWithFx(pc, src, (sw - cw) / 2, (sh - ch) / 2, cw, ch, W, H, c.fx); }
+        else { const s = Math.min(W / sw, H / sh) * kb, dw = sw * s, dh = sh * s; pc.translate((W - dw) / 2, (H - dh) / 2); drawWithFx(pc, src, 0, 0, sw, sh, dw, dh, c.fx); }
+        pc.restore();
+      }
+    }
+    texts.forEach((x) => { if (t >= x.start && t < x.start + x.dur) drawTitle(x, t - x.start); });
+    if (!clips.length && !texts.length) { pc.fillStyle = "#5b5070"; pc.font = `700 ${Math.round(H / 22)}px Montserrat, sans-serif`; pc.textAlign = "center"; pc.textBaseline = "middle"; pc.fillText("Импортируй видео, фото или музыку", W / 2, H / 2); }
+  }
+  const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+  const easeBack = (p) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(p - 1, 3) + c1 * Math.pow(p - 1, 2); };
+  function drawTitle(x, lt) {
+    const W = proj.w, H = proj.h, fs = x.size / 100 * H;
+    const ti = Math.min(.5, x.dur / 3), to = Math.min(.4, x.dur / 3), pIn = clamp(lt / ti, 0, 1), pOut = clamp((x.dur - lt) / to, 0, 1);
+    let a = 1, dy = 0, sc = 1, text = String(x.text);
+    if (x.anim === "fade") a = Math.min(pIn, pOut);
+    else if (x.anim === "slide") { a = Math.min(pIn, pOut); dy = (1 - easeOut(pIn)) * H * .08; }
+    else if (x.anim === "pop") { sc = pIn < 1 ? Math.max(.01, easeBack(pIn)) : 1; a = pOut; }
+    else if (x.anim === "type") { text = text.slice(0, Math.ceil(text.length * clamp(lt / Math.max(.3, x.dur * .45), 0, 1))); a = pOut; }
+    if (a <= 0) return;
+    pc.save(); pc.globalAlpha = a; pc.font = `${x.italic ? "italic " : ""}${x.weight} ${fs}px ${x.font}`; pc.textAlign = "center"; pc.textBaseline = "middle";
+    const lines = text.split("\n"), lh = fs * 1.2, bh = lines.length * lh;
+    const full = String(x.text).split("\n"), bw = Math.max(...full.map((s) => pc.measureText(s).width));
+    let cy = x.pos === "top" ? H * .1 + bh / 2 : x.pos === "center" ? H / 2 : H * .88 - bh / 2;
+    pc.translate(W / 2, cy + dy); pc.scale(sc, sc);
+    if (x.bg) { const p = fs * .35; pc.fillStyle = x.bgColor; pc.beginPath(); rr(pc, -bw / 2 - p, -bh / 2 - p * .6, bw + p * 2, bh + p * 1.2, fs * .25); pc.fill(); }
+    lines.forEach((s, i) => {
+      const y = -bh / 2 + lh * (i + .5);
+      if (x.shadow) { pc.shadowColor = "rgba(0,0,0,.6)"; pc.shadowBlur = fs * .2; pc.shadowOffsetY = fs * .06; }
+      if (x.strokeW > 0) { pc.lineJoin = "round"; pc.lineWidth = fs * x.strokeW / 50; pc.strokeStyle = x.stroke; pc.strokeText(s, 0, y); pc.shadowColor = "transparent"; }
+      pc.fillStyle = x.color; pc.fillText(s, 0, y); pc.shadowColor = "transparent";
+    });
+    pc.restore();
+  }
+  let drq = 0;
+  function reqDraw() { if (playing || drq) return; drq = requestAnimationFrame(() => { drq = 0; sync(); draw(); }); }
+
+  /* ---- transport ---- */
+  function seek(time) { t = clamp(time, 0, total()); updTime(); if (!playing) { sync(); draw(); } }
+  function play() {
+    if (playing) return; const T = total(); if (T <= 0) return toast("Сначала добавь клипы на таймлайн");
+    if (t >= T - .02) t = 0;
+    ensureAudio(); if (actx && actx.state === "suspended") actx.resume();
+    playing = true; last = performance.now(); updPlay(); loop();
+  }
+  function pause() { playing = false; cancelAnimationFrame(raf); updPlay(); sync(); draw(); }
+  function loop() {
+    cancelAnimationFrame(raf);
+    const f = (now) => {
+      if (!playing) return;
+      t += Math.min(.1, (now - last) / 1000); last = now;
+      const T = total();
+      if (t >= T) { t = T; playing = false; sync(); draw(); updTime(); updPlay(); if (exporting) finishExport(); return; }
+      sync(); draw(); updTime(); follow();
+      raf = requestAnimationFrame(f);
+    };
+    raf = requestAnimationFrame(f);
+  }
+  function updPlay() { $("#vPlay").textContent = playing ? "❚❚" : "▶"; }
+  function updTime() {
+    const T = total(); $("#vTime").textContent = fmtT(t) + " / " + fmtT(T);
+    head.style.left = t * pps + "px";
+    if (exporting) { const p = clamp(t / exporting.T, 0, 1); $("#exBar").style.width = p * 100 + "%"; $("#exTxt").textContent = `${Math.round(p * 100)}% · ${fmtT(t)} из ${fmtT(exporting.T)}`; }
+  }
+  function follow() { const x = t * pps, w = scroll.clientWidth; if (x > scroll.scrollLeft + w - 40 || x < scroll.scrollLeft) scroll.scrollLeft = x - 60; }
+
+  /* ---- import ---- */
+  function thumbOf(src, w, h) { const c = newCanvas(192, 108), x = c.getContext("2d"), s = Math.max(192 / w, 108 / h); x.fillStyle = "#000"; x.fillRect(0, 0, 192, 108); try { x.drawImage(src, (192 - w * s) / 2, (108 - h * s) / 2, w * s, h * s); } catch (e) {} return c.toDataURL("image/jpeg", .7); }
+  async function waveform(m) {
+    try {
+      const buf = await (await fetch(m.url)).arrayBuffer();
+      const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      const ab = await new Promise((res, rej) => { const p = new OAC(1, 2, 44100).decodeAudioData(buf, res, rej); if (p && p.catch) p.catch(rej); });
+      const ch = ab.getChannelData(0), N = 600, step = Math.max(1, Math.floor(ch.length / N)), c = newCanvas(N, 60), x = c.getContext("2d");
+      x.fillStyle = "#34d399";
+      for (let i = 0; i < N; i++) { let mx = 0; for (let j = i * step, e = Math.min(ch.length, j + step); j < e; j += 16) mx = Math.max(mx, Math.abs(ch[j])); const hh = Math.max(1, mx * 56); x.fillRect(i, 30 - hh / 2, 1, hh); }
+      m.wave = c.toDataURL();
+    } catch (e) {}
+  }
+  function probe(m) {
+    return new Promise((res, rej) => {
+      const to = setTimeout(() => res(), 8000);
+      const done = () => { clearTimeout(to); res(); };
+      if (m.type === "image") { const img = new Image(); img.onload = () => { m.img = img; m.w = img.naturalWidth; m.h = img.naturalHeight; m.duration = Infinity; m.thumb = thumbOf(img, m.w, m.h); done(); }; img.onerror = () => { clearTimeout(to); rej(); }; img.src = m.url; }
+      else if (m.type === "video") {
+        const v = document.createElement("video"); v.muted = true; v.preload = "auto"; v.playsInline = true; let fixing = false;
+        v.onloadedmetadata = () => { m.w = v.videoWidth; m.h = v.videoHeight; if (!isFinite(v.duration)) { fixing = true; v.currentTime = 1e7; } else { m.duration = v.duration; v.currentTime = Math.min(1, v.duration * .1); } };
+        v.onseeked = () => { if (fixing) { fixing = false; m.duration = isFinite(v.duration) ? v.duration : v.currentTime || 10; v.currentTime = Math.min(1, m.duration * .1); return; } m.thumb = thumbOf(v, m.w, m.h); v.removeAttribute("src"); v.load(); done(); };
+        v.onerror = () => { clearTimeout(to); rej(); };
+        v.src = m.url;
+      } else { const a = new Audio(); a.preload = "metadata"; a.onloadedmetadata = () => { m.duration = isFinite(a.duration) ? a.duration : 60; waveform(m).then(done); }; a.onerror = () => { clearTimeout(to); rej(); }; a.src = m.url; }
+    });
+  }
+  async function addFiles(files) {
+    let added = 0;
+    for (const f of files) {
+      const type = /^video\//.test(f.type) ? "video" : /^image\//.test(f.type) ? "image" : /^audio\//.test(f.type) ? "audio" : null;
+      if (!type) { toast("Неподдерживаемый файл: " + f.name); continue; }
+      const m = { id: uid(), type, name: f.name, url: URL.createObjectURL(f), duration: 0, w: 0, h: 0, thumb: "" };
+      media.set(m.id, m); renderBin();
+      try { await probe(m); } catch (e) { media.delete(m.id); renderBin(); toast("Браузер не смог открыть " + f.name); continue; }
+      if (type === "video" && !m.duration) m.duration = 10;
+      if (!clips.length && type !== "audio" && m.w && m.h) autoFormat(m.w, m.h);
+      toTimeline(m, true); added++; renderBin();
+    }
+    if (added) { renderAll(); commit(); toast(added === 1 ? "Добавлено на таймлайн" : `Добавлено файлов: ${added}`); }
+  }
+  function autoFormat(w, h) { const r = w / h; const f = r < .8 ? "9:16" : r < 1.15 ? "1:1" : "16:9"; if (f !== proj.fmt) { setFormat(f); toast("Формат проекта: " + FORMATS[f][2]); } }
+  function toTimeline(m, silent) {
+    if (m.type === "audio") {
+      const end = audios.reduce((s, a) => Math.max(s, a.start + adur(a)), 0);
+      audios.push({ id: uid(), mediaId: m.id, start: end, in: 0, out: m.duration, volume: 100, fadeIn: 0, fadeOut: 1 });
+    } else {
+      const ar = m.w && m.h ? (m.w / m.h) / (proj.w / proj.h) : 1;
+      clips.push({ id: uid(), mediaId: m.id, in: 0, out: m.type === "image" ? 4 : m.duration, speed: 1, volume: 100, mute: false, fit: ar > .75 && ar < 1.33 ? "cover" : "contain", kb: true, fadeIn: 0, fadeOut: 0, fx: { ...FX_DEF } });
+    }
+    if (!silent) { renderAll(); commit(); }
+  }
+  function removeMedia(id) {
+    const used = clips.some((c) => c.mediaId === id) || audios.some((a) => a.mediaId === id);
+    const go = () => { clips = clips.filter((c) => c.mediaId !== id); audios = audios.filter((a) => a.mediaId !== id); const m = media.get(id); media.delete(id); if (!find(sel)) sel = null; renderAll(); commit(); setTimeout(() => URL.revokeObjectURL(m.url), 1000); };
+    if (used) modal("Удалить файл?", '<p class="note">Он используется на таймлайне — его клипы тоже удалятся.</p>', [{ label: "Отмена" }, { label: "Удалить", pri: true, fn: go }]); else go();
+  }
+
+  /* ---- editing ---- */
+  function split() {
+    let s = sel && find(sel) ? sel : null;
+    const inside = (k, x) => k === "clip" ? t > x._s + .05 && t < x._s + cdur(x) - .05 : k === "text" ? t > x.start + .05 && t < x.start + x.dur - .05 : t > x.start + .05 && t < x.start + adur(x) - .05;
+    layout();
+    if (!s || !inside(s.kind, find(s))) { const cur = clipAt(t); s = cur && inside("clip", cur.c) ? { kind: "clip", id: cur.c.id } : null; }
+    if (!s) return toast("Поставь плейхед внутрь клипа, чтобы разрезать");
+    const x = find(s), n = JSON.parse(JSON.stringify(x)); n.id = uid();
+    if (s.kind === "clip") { const local = x.in + (t - x._s) * (isImg(x) ? 1 : x.speed); n.in = local; x.out = local; x.fadeOut = 0; n.fadeIn = 0; if (isImg(x)) { n.in = 0; n.out = x.out - x.in - (local - x.in); x.out = local; } clips.splice(clips.indexOf(x) + 1, 0, n); }
+    else if (s.kind === "text") { n.start = t; n.dur = x.start + x.dur - t; x.dur = t - x.start; texts.push(n); }
+    else { const local = x.in + (t - x.start); n.in = local; n.start = t; x.out = local; x.fadeOut = 0; n.fadeIn = 0; audios.push(n); }
+    sel = { kind: s.kind, id: n.id }; renderAll(); commit(); toast("Разрезано ✂");
+  }
+  function del() {
+    const x = find(sel); if (!x) return toast("Выбери клип на таймлайне");
+    if (sel.kind === "clip") clips = clips.filter((c) => c !== x); else if (sel.kind === "text") texts = texts.filter((c) => c !== x); else audios = audios.filter((c) => c !== x);
+    sel = null; renderAll(); commit();
+  }
+  function dup() {
+    const x = find(sel); if (!x) return toast("Выбери клип на таймлайне");
+    const n = JSON.parse(JSON.stringify(x)); n.id = uid();
+    if (sel.kind === "clip") clips.splice(clips.indexOf(x) + 1, 0, n);
+    else if (sel.kind === "text") { n.start = x.start + x.dur; texts.push(n); }
+    else { n.start = x.start + adur(x); audios.push(n); }
+    sel = { kind: sel.kind, id: n.id }; renderAll(); commit();
+  }
+  function addTitle() {
+    const x = { id: uid(), text: "Заголовок", start: t, dur: 3, size: 9, font: FONTS[0][1], weight: 900, italic: false, color: "#ffffff", stroke: "#1a1026", strokeW: 8, shadow: true, bg: false, bgColor: "#8b5cf6", pos: "bottom", anim: "pop" };
+    texts.push(x); sel = { kind: "text", id: x.id }; renderAll(); commit();
+    const ta = $("#vInsp textarea"); if (ta) { ta.focus(); ta.select(); }
+  }
+  function setFormat(f) { proj.fmt = f; proj.w = FORMATS[f][0]; proj.h = FORMATS[f][1]; setCanvas(); }
+  function setCanvas() { pv.width = proj.w; pv.height = proj.h; reqDraw(); }
+
+  /* ---- timeline ---- */
+  const track = (k) => $(`.track[data-track="${k}"]`, inner);
+  function renderRuler(T) {
+    const width = Math.max(scroll.clientWidth, (T + 8) * pps); inner.style.width = width + "px";
+    const step = [.5, 1, 2, 5, 10, 15, 30, 60, 120].find((s) => s * pps >= 70) || 300;
+    let h = ""; for (let s = 0; s * pps < width; s += step) { h += `<i class="b" style="left:${s * pps}px"></i><span style="left:${s * pps}px">${fmtT(s).replace(/\.0$/, "")}</span>`; h += `<i style="left:${(s + step / 2) * pps}px"></i>`; }
+    ruler.innerHTML = h;
+  }
+  function upsert(kind, it, start, dur, label, style, seen) {
+    let d = tlEls.get(it.id);
+    if (!d || d.dataset.kind !== kind) { if (d) d.remove(); d = document.createElement("div"); d.className = "tli " + kind; d.dataset.kind = kind; d.dataset.id = it.id; d.innerHTML = '<i class="fi"></i><i class="fo"></i><i class="hl"></i><span class="lbl"></span><i class="hr"></i>'; track(kind).appendChild(d); bindItem(d); tlEls.set(it.id, d); }
+    d.style.left = start * pps + "px"; d.style.width = Math.max(6, dur * pps) + "px";
+    $(".lbl", d).textContent = label; Object.assign(d.style, style || {});
+    const fi = it.fadeIn || 0, fo = it.fadeOut || 0; $(".fi", d).style.width = fi * pps + "px"; $(".fo", d).style.width = fo * pps + "px";
+    d.classList.toggle("sel", !!sel && sel.id === it.id); seen.add(it.id);
+  }
+  function renderTL() {
+    const T = total(), seen = new Set(); renderRuler(T);
+    clips.forEach((c) => { const m = M(c), d = cdur(c); upsert("clip", c, c._s, d, `${m.type === "image" ? "🖼" : "🎬"} ${m.name} · ${fmtT(d)}${!isImg(c) && c.speed !== 1 ? " · " + c.speed + "×" : ""}`, { backgroundImage: m.thumb ? `url(${m.thumb})` : "none" }, seen); });
+    texts.forEach((x) => upsert("text", x, x.start, x.dur, "T  " + x.text.replace(/\n/g, " "), null, seen));
+    audios.forEach((a) => { const m = M(a); upsert("audio", a, a.start, adur(a), "♪ " + m.name, m.wave ? { backgroundImage: `url(${m.wave})`, backgroundSize: `${(isFinite(m.duration) ? m.duration : adur(a)) * pps}px 100%`, backgroundPosition: `${-a.in * pps}px 0` } : null, seen); });
+    tlEls.forEach((d, id) => { if (!seen.has(id)) { d.remove(); tlEls.delete(id); } });
+    updTime();
+  }
+  function snapT(v, self) {
+    const th = 8 / pps, cand = [0, t];
+    clips.forEach((c) => cand.push(c._s, c._s + cdur(c)));
+    texts.forEach((x) => { if (x.id !== self) cand.push(x.start, x.start + x.dur); });
+    audios.forEach((a) => { if (a.id !== self) cand.push(a.start, a.start + adur(a)); });
+    for (const c of cand) if (Math.abs(c - v) < th) return c;
+    return v;
+  }
+  function bindItem(d) {
+    d.addEventListener("pointerdown", (e) => {
+      if (e.button > 0) return; e.stopPropagation(); e.preventDefault();
+      const kind = d.dataset.kind, id = d.dataset.id, it = (kind === "clip" ? clips : kind === "text" ? texts : audios).find((x) => x.id === id); if (!it) return;
+      const part = e.target.classList.contains("hl") ? "l" : e.target.classList.contains("hr") ? "r" : "body";
+      const changed = !sel || sel.id !== id; sel = { kind, id }; if (changed) { renderTL(); renderInsp(); }
+      d.setPointerCapture(e.pointerId);
+      const o = { x: e.clientX, it0: JSON.parse(JSON.stringify(it)), moved: false };
+      const mv = (ev) => {
+        const dx = (ev.clientX - o.x) / pps; if (Math.abs(ev.clientX - o.x) > 3) o.moved = true; if (!o.moved) return;
+        const a = o.it0;
+        if (kind === "clip") {
+          const sp = isImg(it) ? 1 : it.speed;
+          if (part === "body") { d.style.transform = `translateX(${dx * pps}px)`; d.classList.add("drag"); return; }
+          if (isImg(it)) { it.out = clamp(a.out + (part === "r" ? dx : -dx), .2, 600); }
+          else if (part === "l") it.in = clamp(a.in + dx * sp, 0, a.out - .1); else it.out = clamp(a.out + dx * sp, a.in + .1, maxOut(it));
+        } else if (kind === "text") {
+          if (part === "body") it.start = Math.max(0, snapT(a.start + dx, id));
+          else if (part === "l") { const ns = clamp(snapT(a.start + dx, id), 0, a.start + a.dur - .2); it.dur = a.dur - (ns - a.start); it.start = ns; }
+          else it.dur = Math.max(.2, snapT(a.start + a.dur + dx, id) - a.start);
+        } else {
+          if (part === "body") it.start = Math.max(0, snapT(a.start + dx, id));
+          else if (part === "l") { const dd = clamp(dx, Math.max(-a.in, -a.start), a.out - a.in - .1); it.in = a.in + dd; it.start = a.start + dd; }
+          else it.out = clamp(a.out + dx, a.in + .1, maxOut(it));
+        }
+        renderTL(); if (!playing) { sync(); draw(); }
+      };
+      const up = (ev) => {
+        d.removeEventListener("pointermove", mv); d.removeEventListener("pointerup", up); d.removeEventListener("pointercancel", up);
+        if (kind === "clip" && part === "body" && o.moved) {
+          d.style.transform = ""; d.classList.remove("drag");
+          const dx = (ev.clientX - o.x) / pps, mid = it._s + cdur(it) / 2 + dx;
+          const rest = clips.filter((c) => c !== it); let idx = rest.findIndex((c) => c._s + cdur(c) / 2 > mid); if (idx < 0) idx = rest.length;
+          rest.splice(idx, 0, it); clips = rest;
+        }
+        if (o.moved) { renderAll(); commit(); }
+        else if (!playing) { const r = scroll.getBoundingClientRect(); seek((ev.clientX - r.left + scroll.scrollLeft) / pps); }
+      };
+      d.addEventListener("pointermove", mv); d.addEventListener("pointerup", up); d.addEventListener("pointercancel", up);
+    });
+  }
+  // ruler & empty track space: seek / scrub
+  function scrubStart(e, deselect) {
+    if (e.button > 0 || e.target.closest(".tli")) return;
+    if (deselect && sel) { sel = null; renderTL(); renderInsp(); }
+    const x = (ev) => { const r = scroll.getBoundingClientRect(); seek((ev.clientX - r.left + scroll.scrollLeft) / pps); };
+    x(e); if (e.currentTarget !== ruler) return;
+    ruler.setPointerCapture(e.pointerId);
+    const mv = (ev) => x(ev), up = () => { ruler.removeEventListener("pointermove", mv); ruler.removeEventListener("pointerup", up); };
+    ruler.addEventListener("pointermove", mv); ruler.addEventListener("pointerup", up);
+  }
+  ruler.addEventListener("pointerdown", (e) => scrubStart(e));
+  $$(".track", inner).forEach((tr) => tr.addEventListener("pointerdown", (e) => scrubStart(e, true)));
+  $("#vZoom").addEventListener("input", (e) => { const c = t * pps - scroll.scrollLeft; pps = +e.target.value; renderTL(); scroll.scrollLeft = t * pps - c; });
+
+  /* ---- bin & inspector ---- */
+  function renderBin() {
+    const b = $("#vBin"); b.innerHTML = "";
+    if (!media.size) { b.innerHTML = '<p class="note" style="grid-column:1/-1">Файлы не покидают твоё устройство — всё монтируется прямо в браузере.</p>'; return; }
+    media.forEach((m) => {
+      const d = document.createElement("div"); d.className = "mi";
+      const bg = m.type === "audio" ? (m.wave ? `background-image:url(${m.wave});background-size:100% 60%;background-color:#0d2a20` : "") : m.thumb ? `background-image:url(${m.thumb})` : "";
+      d.innerHTML = `<div class="th" style="${bg}">${m.type === "audio" && !m.wave ? "♪" : !m.thumb && m.type !== "audio" ? "⏳" : ""}</div><div class="nm" title="${esc(m.name)}">${esc(m.name)}</div>${m.type !== "image" && m.duration ? `<span class="du">${fmtT(m.duration)}</span>` : m.type === "image" ? '<span class="du">фото</span>' : ""}<div class="ad"><button type="button" title="На таймлайн">+</button><button type="button" class="x" title="Убрать">✕</button></div>`;
+      const [add, rm] = $$(".ad button", d); add.onclick = () => toTimeline(m); rm.onclick = () => removeMedia(m.id);
+      d.ondblclick = () => toTimeline(m);
+      b.appendChild(d);
+    });
+  }
+  function renderInsp() {
+    const root = $("#vInsp"), x = find(sel);
+    const actions = '<div class="btnrow"><button class="btn sm" type="button" data-v="split">✂ Разрезать</button><button class="btn sm" type="button" data-v="dup">Копия</button><button class="btn sm danger" type="button" data-v="del">Удалить</button></div>';
+    const live = () => { renderTL(); if (!playing) { sync(); draw(); } };
+    if (!x) {
+      layout();
+      root.innerHTML = `<div class="ititle" style="margin-top:0">Проект</div>
+        <label class="row two"><span>Формат</span><select data-k="fmt">${Object.entries(FORMATS).map(([k, f]) => `<option value="${k}">${f[2]}</option>`).join("")}</select></label>
+        <label class="row two"><span>Фон</span><input type="color" data-k="bg"></label>
+        <p class="note">Длительность: <b>${fmtT(total())}</b> · клипов: ${clips.length} · титров: ${texts.length} · звук: ${audios.length}</p>
+        <div class="btnrow"><button class="btn sm" type="button" id="vT2">+ Титр</button></div>
+        <div class="ititle">Как монтировать</div>
+        <p class="note">• Импортируй файлы — они встанут на таймлайн.<br>• Тяни клип, чтобы поменять порядок; края клипа — обрезка.<br>• S — разрезать, Delete — удалить, Пробел — плей, ←/→ — по кадрам.<br>• Нажми на клип — справа появятся скорость, громкость, переходы и фильтры.<br>• «Экспорт видео» записывает ролик в реальном времени — не сворачивай вкладку.</p>`;
+      bindForm(root, proj, (k) => { if (k === "fmt") { setFormat(proj.fmt); live(); } else reqDraw(); }, commit);
+      $("#vT2").onclick = addTitle; return;
+    }
+    if (sel.kind === "clip") {
+      const m = M(x), img = m.type === "image";
+      root.innerHTML = `<div class="ititle" style="margin-top:0">${img ? "Фото" : "Видео"}: ${esc(m.name)}</div>
+        ${img ? '<div class="grid2"><label>Длительность, с<input type="number" step="0.1" min="0.2" data-k="out"></label></div><label class="chk"><input type="checkbox" data-k="kb"> Плавный наезд камеры</label>'
+          : `<div class="grid2"><label>Начало, с<input type="number" step="0.1" min="0" data-k="in"></label><label>Конец, с<input type="number" step="0.1" data-k="out"></label></div><p class="note">Исходник: ${fmtT(m.duration)}</p>
+          <label class="row two"><span>Скорость</span><select data-k="speed" data-num>${[.25, .5, .75, 1, 1.25, 1.5, 2, 3, 4].map((v) => `<option value="${v}">${v}×</option>`).join("")}</select></label>
+          ${rng("Громкость", "volume", 0, 200, 1, "%")}<label class="chk"><input type="checkbox" data-k="mute"> Без звука</label>`}
+        <label class="row two"><span>Кадр</span><select data-k="fit"><option value="cover">Заполнить экран</option><option value="contain">Вписать целиком</option></select></label>
+        <div class="ititle">Переходы</div>${rng("Появление", "fadeIn", 0, 3, .1, "с")}${rng("Затухание", "fadeOut", 0, 3, .1, "с")}${actions}
+        <div class="ititle">Цвет и фильтры</div><div class="fxbox"></div>`;
+      bindForm(root, x, () => { if (!img) { x.in = clamp(x.in || 0, 0, maxOut(x) - .1); x.out = clamp(x.out || 0, x.in + .1, maxOut(x)); } else x.out = clamp(x.out || 0, .2, 600); x.in = img ? 0 : x.in; live(); }, commit);
+      const thumb = img ? m.img : (els.get(x.id) && els.get(x.id).readyState >= 2 ? els.get(x.id) : null);
+      fxPanel($(".fxbox", root), x.fx, thumb, () => { if (!playing) draw(); }, commit);
+    } else if (sel.kind === "text") {
+      root.innerHTML = `<div class="ititle" style="margin-top:0">Титр</div><textarea data-k="text" rows="2"></textarea>
+        <div class="grid2"><label>Начало, с<input type="number" step="0.1" min="0" data-k="start"></label><label>Длительность, с<input type="number" step="0.1" min="0.2" data-k="dur"></label></div>
+        <label class="row two"><span>Шрифт</span><select data-k="font">${fontOpts()}</select></label>${rng("Размер", "size", 2, 30, .5, "%")}
+        <label class="row two"><span>Начертание</span><select data-k="weight" data-num><option value="400">Обычный</option><option value="700">Жирный</option><option value="900">Чёрный</option></select></label>
+        <label class="chk"><input type="checkbox" data-k="italic"> Курсив</label>
+        <label class="row two"><span>Цвет</span><input type="color" data-k="color"></label><label class="row two"><span>Обводка</span><input type="color" data-k="stroke"></label>${rng("Толщина", "strokeW", 0, 20, .5, "")}
+        <label class="chk"><input type="checkbox" data-k="shadow"> Тень</label><label class="chk"><input type="checkbox" data-k="bg"> Плашка</label><label class="row two"><span>Цвет плашки</span><input type="color" data-k="bgColor"></label>
+        <label class="row two"><span>Положение</span><select data-k="pos"><option value="top">Сверху</option><option value="center">По центру</option><option value="bottom">Снизу</option></select></label>
+        <label class="row two"><span>Анимация</span><select data-k="anim"><option value="none">Без анимации</option><option value="fade">Проявление</option><option value="slide">Выезд снизу</option><option value="pop">Пружинка</option><option value="type">Печатная машинка</option></select></label>${actions}`;
+      bindForm(root, x, (k) => { x.start = Math.max(0, x.start || 0); x.dur = Math.max(.2, x.dur || .2); if (k === "font" || k === "weight") loadFont(`${x.weight} 40px ${x.font}`).then(() => { if (!playing) draw(); }); if (k === "start" || k === "dur" || k === "text") live(); else if (!playing) draw(); }, commit);
+    } else {
+      const m = M(x);
+      root.innerHTML = `<div class="ititle" style="margin-top:0">Звук: ${esc(m.name)}</div>
+        <div class="grid2"><label>Старт на таймлайне, с<input type="number" step="0.1" min="0" data-k="start"></label><label>С какого места, с<input type="number" step="0.1" min="0" data-k="in"></label></div>
+        ${rng("Громкость", "volume", 0, 200, 1, "%")}${rng("Нарастание", "fadeIn", 0, 5, .1, "с")}${rng("Затухание", "fadeOut", 0, 5, .1, "с")}
+        <div class="btnrow"><button class="btn sm" type="button" data-v="fitlen">Подогнать под видео</button></div>${actions}`;
+      bindForm(root, x, () => { x.start = Math.max(0, x.start || 0); x.in = clamp(x.in || 0, 0, x.out - .1); live(); }, commit);
+      $("[data-v=fitlen]", root).onclick = () => { const v = layout(); if (!v) return toast("Нет видео на таймлайне"); x.start = 0; x.out = Math.min(maxOut(x), x.in + v); x.fadeOut = Math.min(2, v / 4); renderAll(); commit(); };
+    }
+    $$("[data-v=split]", root).forEach((b) => b.onclick = split); $$("[data-v=dup]", root).forEach((b) => b.onclick = dup); $$("[data-v=del]", root).forEach((b) => b.onclick = del);
+  }
+  function renderAll() { gcEls(); renderTL(); renderInsp(); if (!playing) { sync(); draw(); } }
+
+  /* ---- export ---- */
+  function pickMime() {
+    const L = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4;codecs=avc1,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+    return L.find((m) => { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } }) || "";
+  }
+  async function exportVideo() {
+    if (!window.MediaRecorder || !pv.captureStream) return toast("Этот браузер не умеет записывать видео. Попробуй Chrome, Edge или Safari 15+", 4000);
+    const T = total(); if (T <= 0) return toast("Таймлайн пуст — добавь клипы");
+    pause(); ensureAudio(); if (actx) await actx.resume().catch(() => {});
+    t = 0; sync(); draw();
+    await new Promise((r) => { const s = performance.now(); (function w() { if ([...els.values()].every((e) => !e.seeking) || performance.now() - s > 2000) r(); else setTimeout(w, 50); })(); });
+    const mime = pickMime(), stream = pv.captureStream(30);
+    if (recDest) recDest.stream.getAudioTracks().forEach((tr) => stream.addTrack(tr));
+    let rec; try { rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: Math.round(proj.w * proj.h * 30 * .15) } : {}); } catch (e) { return toast("Не удалось начать запись: " + e.message, 4000); }
+    const ext = /mp4/.test(mime) ? "mp4" : "webm";
+    exporting = { rec, chunks: [], T, cancel: false };
+    const ov = modal("Экспорт видео", `<p class="note">Ролик проигрывается и записывается в реальном времени (${fmtT(T)}). Не сворачивай вкладку.</p><div class="prog"><i id="exBar"></i></div><p class="note" id="exTxt">0%</p><p class="note">Формат: ${ext.toUpperCase()} · ${proj.w}×${proj.h} · 30 к/с</p>`, [{ label: "Отменить", fn: () => { if (exporting) { exporting.cancel = true; playing = false; exporting.rec.stop(); } } }]);
+    ov.onpointerdown = null;
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) exporting && exporting.chunks.push(e.data); };
+    rec.onstop = () => {
+      const ex = exporting; exporting = null; ov.remove(); stream.getVideoTracks().forEach((tr) => tr.stop()); pause();
+      if (!ex || ex.cancel) return toast("Экспорт отменён");
+      const blob = new Blob(ex.chunks, { type: (mime || "video/webm").split(";")[0] });
+      download(blob, `TribbleV-montage-${Date.now()}.${ext}`); toast(`Видео сохранено ✓ (${(blob.size / 1048576).toFixed(1)} МБ)`, 3500);
+    };
+    rec.start(250); playing = true; last = performance.now(); updPlay(); loop();
+  }
+  function finishExport() { const ex = exporting; setTimeout(() => { if (ex && ex.rec.state !== "inactive") ex.rec.stop(); }, 200); }
+
+  /* ---- wiring ---- */
+  const fin = (id) => { const i = $(id); i.onchange = () => { addFiles([...i.files]); i.value = ""; }; };
+  fin("#vFile"); fin("#vFile2");
+  $("#video").addEventListener("dragover", (e) => e.preventDefault());
+  $("#video").addEventListener("drop", (e) => { e.preventDefault(); addFiles([...e.dataTransfer.files]); });
+  $("#vPlay").onclick = () => playing ? pause() : play();
+  pv.onclick = () => playing ? pause() : play();
+  $("#vStart").onclick = () => { seek(0); scroll.scrollLeft = 0; };
+  $("#vSplit").onclick = split; $("#vDel").onclick = del; $("#vDup").onclick = dup; $("#vAddText").onclick = addTitle;
+  $("#vUndo").onclick = undo; $("#vRedo").onclick = redo; $("#vExport").onclick = exportVideo;
+  addEventListener("resize", () => { if (!$("#video").hidden) renderTL(); });
+  function key(e) {
+    if (typing(e) || exporting) return;
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if (mod && k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+    if (mod && k === "y") { e.preventDefault(); redo(); return; }
+    if (mod && k === "d") { e.preventDefault(); dup(); return; }
+    if (mod) return;
+    if (k === " ") { e.preventDefault(); playing ? pause() : play(); }
+    else if (k === "s") split();
+    else if (k === "delete" || k === "backspace") { e.preventDefault(); del(); }
+    else if (k === "home") seek(0);
+    else if (k === "end") seek(total());
+    else if (k === "arrowleft") { e.preventDefault(); seek(t - (e.shiftKey ? 1 : 1 / 30)); }
+    else if (k === "arrowright") { e.preventDefault(); seek(t + (e.shiftKey ? 1 : 1 / 30)); }
+    else if (k === "escape") { sel = null; renderTL(); renderInsp(); }
+  }
+  return {
+    init() { setCanvas(); renderBin(); renderAll(); commit(); },
+    enter() { renderTL(); reqDraw(); },
+    leave() { pause(); },
+    key, addFiles,
+    frameBlob: () => new Promise((r) => { sync(); draw(); pv.toBlob(r, "image/png"); }),
+  };
+})();
+
+/* ================= app shell ================= */
+let mode = "photo";
+function setMode(m) {
+  if (m === mode) return;
+  if (mode === "video") Video.leave();
+  mode = m;
+  $$("#modes button").forEach((b) => b.classList.toggle("on", b.dataset.mode === m));
+  $("#photo").hidden = m !== "photo"; $("#video").hidden = m !== "video";
+  $("#hactPhoto").hidden = m !== "photo"; $("#hactVideo").hidden = m !== "video";
+  (m === "photo" ? Photo : Video).enter();
+  try { history.replaceState(null, "", "#" + m); } catch (e) {}
+}
+$$("#modes button").forEach((b) => b.onclick = () => setMode(b.dataset.mode));
+addEventListener("keydown", (e) => { if ($(".modal")) { if (e.key === "Escape" && !$(".modal .prog")) $(".modal").remove(); return; } (mode === "photo" ? Photo : Video).key(e); });
+addEventListener("paste", (e) => {
+  if (typing(e)) return;
+  const files = [...(e.clipboardData || {}).files || []]; if (!files.length) return;
+  e.preventDefault(); mode === "photo" ? Photo.paste(files.filter((f) => f.type.startsWith("image/"))) : Video.addFiles(files);
+});
+$("#pToVideo").onclick = async () => {
+  if (!Photo.hasLayers()) return toast("Сначала сделай картинку");
+  const b = await Photo.toBlob(); setMode("video"); Video.addFiles([new File([b], "Фото TribbleV.png", { type: "image/png" })]);
+};
+$("#vToPhoto").onclick = async () => {
+  const b = await Video.frameBlob(); if (!b) return;
+  const img = await loadImage(URL.createObjectURL(b)); setMode("photo"); Photo.openCanvas(img, "Кадр из видео"); toast("Кадр открыт в фоторедакторе");
+};
+Photo.init(); Video.init();
+if (location.hash === "#video") setMode("video");
+document.fonts && document.fonts.ready.then(() => { Photo.enter(); });
+</script>
+</body>
+</html>
