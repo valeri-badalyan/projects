@@ -103,6 +103,23 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-full > div b { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vi-full > div button { padding: 7px 12px; border-radius: 10px; border: 1px solid #1fb6c9; background: rgba(31,182,201,.15); color: #fff; font-weight: 800; cursor: pointer; }
 .vi-full iframe { flex: 1; width: 100%; border: 0; background: #000; }
+.vi-secp { margin-bottom: 10px; padding: 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.vi-secp h3 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; } .vi-secp h3 span { flex: 1; }
+.vi-secp p { margin: 0; color: var(--muted); font-size: 13px; }
+.vi-secrow { display: flex; flex-direction: column; gap: 6px; padding: 10px; border-radius: 12px; background: var(--panel-2); }
+.vi-secrow b { font-size: 14px; } .vi-secrow small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+.vi-seg { display: flex; gap: 4px; } .vi-seg button { flex: 1; padding: 7px 4px; border-radius: 10px; border: 2px solid var(--line); background: transparent; color: var(--fg); font-weight: 800; font-size: 12.5px; cursor: pointer; }
+.vi-seg button[aria-pressed="true"] { border-color: #2ad1ff; background: rgba(42,209,255,.16); }
+.vi-switch { padding: 7px 12px; border-radius: 999px; border: 0; font-weight: 800; cursor: pointer; background: #1f9d6a; color: #fff; } .vi-switch[aria-pressed="false"] { background: #6b6f8f; }
+.vi-sec { position: fixed; inset: 0; z-index: 97; display: grid; place-items: center; padding: 16px; background: rgba(2,6,14,.78); }
+.vi-sec > div { width: min(380px, 100%); padding: 20px 18px 16px; border-radius: 20px; background: linear-gradient(180deg, #0c2236, #0b1324); border: 1px solid #1fb6c9; box-shadow: 0 20px 60px rgba(0,0,0,.6); text-align: center; }
+.vi-sec .ico { font-size: 44px; line-height: 1; } .vi-sec h3 { margin: 8px 0 4px; font-size: 18px; color: #7dffcf; } .vi-sec p { margin: 6px 0; font-size: 14px; } .vi-sec small { display: block; color: var(--muted); font-size: 12.5px; line-height: 1.4; }
+.vi-sec label { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 12px 0 14px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.vi-sec .row { display: flex; gap: 8px; } .vi-sec .row button { flex: 1; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; border: 0; }
+.vi-sec .no { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line) !important; } .vi-sec .yes { background: linear-gradient(135deg, #0a84ff, #00c2a8); color: #fff; }
+.vi-gate { display: grid; place-items: center; align-content: center; gap: 10px; height: 100%; padding: 16px; text-align: center; color: #fff; background: radial-gradient(circle at 50% 35%, #0d4a5a, #04141f); }
+.vi-gate b { font-size: 17px; } .vi-gate small { color: #9ad; font-size: 12.5px; max-width: 280px; }
+.vi-gate button { padding: 11px 18px; border-radius: 999px; border: 0; background: linear-gradient(135deg, #0a84ff, #00c2a8); color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -115,10 +132,12 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     <div class="chip"><span>Вопросов</span><b id="viCount">0</b></div>
   </header>
   <div class="vi-models" id="viModels" hidden></div>
+  <div class="vi-secp" id="viSecPanel" hidden></div>
   <div id="viWrap">
       <div class="vi-head">
         <div class="vi-orb" id="viOrb" aria-hidden="true">V3</div>
         <div class="vi-who"><b>V3AI</b><small id="viStatus">готов помочь</small></div>
+        <button type="button" id="viSecBtn" aria-label="EngineSecure: защита" aria-expanded="false">🛡</button>
         <button type="button" id="viHist" aria-label="Мои чаты">🗂</button>
         <button type="button" id="viNew">＋ Новый</button>
       </div>
@@ -196,6 +215,80 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const list = document.getElementById("viModels"); list.hidden = !list.hidden; e.currentTarget.setAttribute("aria-expanded", String(!list.hidden));
     });
     renderModels();
+
+    /* ---- EngineSecure: asks the person before anything that runs foreign code, saves files, or uses the camera roll or microphone ---- */
+    const Secure = (() => {
+      const ACT = {
+        game: { ico: "🕹", n: "Запуск игр WattAI", d: "Игра — это программа, которую написал ИИ. Она работает в изолированной рамке без доступа к твоим чатам, но всё равно запускает код." },
+        download: { ico: "💾", n: "Скачивание файлов", d: "Картинки, GIF, видео и игры сохраняются на твоё устройство." },
+        photo: { ico: "📷", n: "Отправка фото ИИ", d: "Фото, которое ты прикрепил, будет отправлено ИИ, чтобы он ответил на вопрос о нём." },
+        voice: { ico: "🎙", n: "Голосовой ввод", d: "Микрофон слушает тебя, пока ты говоришь, и превращает речь в текст." },
+      };
+      let perms = store.get("secure", {}); if (!perms || typeof perms !== "object") perms = {};
+      let on = store.get("secureOn", true) !== false, open = null;
+      const keep = () => { store.set("secure", perms); store.set("secureOn", on); };
+      const state = (a) => (!on ? "allow" : perms[a] === "allow" || perms[a] === "deny" ? perms[a] : "ask");
+      function dialog(a) {
+        return new Promise((res) => {
+          const A = ACT[a], ov = document.createElement("div"); ov.className = "vi-sec"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true"); ov.setAttribute("aria-label", "EngineSecure");
+          ov.innerHTML = '<div><div class="ico"></div><h3>🛡 EngineSecure</h3><p></p><small></small><label><input type="checkbox" checked> Запомнить мой выбор</label><div class="row"><button type="button" class="no">Отмена</button><button type="button" class="yes">Разрешить</button></div></div>';
+          ov.querySelector(".ico").textContent = A.ico; ov.querySelector("p").textContent = "V3AI просит разрешение: «" + A.n + "»."; ov.querySelector("small").textContent = A.d;
+          const fin = (ok) => {
+            if (ov.querySelector("input").checked) { perms[a] = ok ? "allow" : "deny"; keep(); renderPanel(); }
+            ov.remove(); document.removeEventListener("keydown", key); open = null; res(ok);
+            setStatus(ok ? "EngineSecure: разрешено" : "EngineSecure: отменено", false);
+          };
+          const key = (e) => { if (e.key === "Escape") fin(false); };
+          ov.querySelector(".no").addEventListener("click", () => fin(false)); ov.querySelector(".yes").addEventListener("click", () => fin(true));
+          ov.addEventListener("click", (e) => { if (e.target === ov) fin(false); });
+          document.addEventListener("keydown", key); document.body.appendChild(ov); ov.querySelector(".yes").focus();
+        });
+      }
+      // resolves true when the action may go ahead
+      async function ask(a) {
+        const st = state(a);
+        if (st === "allow") return true;
+        if (st === "deny") { setStatus("🛡 запрещено в EngineSecure", false); return false; }
+        if (open) return open; // one question at a time
+        open = dialog(a); return open;
+      }
+      function renderPanel() {
+        const P = document.getElementById("viSecPanel");
+        P.innerHTML = '<h3><span>🛡 EngineSecure</span><button type="button" class="vi-switch"></button></h3><p>Защита V3AI: перед действиями ниже я спрашиваю твоё разрешение. Выбор можно поменять в любой момент.</p>';
+        const sw = P.querySelector(".vi-switch"); sw.setAttribute("aria-pressed", String(on)); sw.textContent = on ? "Включена" : "Выключена";
+        sw.addEventListener("click", async () => {
+          if (on && !(await confirmOff())) return;
+          on = !on; keep(); renderPanel(); setStatus(on ? "EngineSecure включена" : "EngineSecure выключена", false);
+        });
+        Object.keys(ACT).forEach((a) => {
+          const A = ACT[a], row = document.createElement("div"); row.className = "vi-secrow";
+          row.innerHTML = "<b></b><small></small><div class=\"vi-seg\" role=\"group\"></div>";
+          row.querySelector("b").textContent = A.ico + " " + A.n; row.querySelector("small").textContent = A.d;
+          const seg = row.querySelector(".vi-seg"), cur = perms[a] === "allow" || perms[a] === "deny" ? perms[a] : "ask";
+          [["ask", "Спрашивать"], ["allow", "Разрешено"], ["deny", "Запрещено"]].forEach(([v, t]) => {
+            const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.disabled = !on; b.setAttribute("aria-pressed", String(cur === v));
+            b.addEventListener("click", () => { if (v === "ask") delete perms[a]; else perms[a] = v; keep(); renderPanel(); });
+            seg.appendChild(b);
+          });
+          P.appendChild(row);
+        });
+      }
+      // switching the whole protection off is itself confirmed
+      function confirmOff() {
+        return new Promise((res) => {
+          const ov = document.createElement("div"); ov.className = "vi-sec"; ov.setAttribute("role", "dialog"); ov.setAttribute("aria-modal", "true");
+          ov.innerHTML = '<div><div class="ico">⚠️</div><h3>Выключить EngineSecure?</h3><small>V3AI перестанет спрашивать разрешение перед запуском игр, скачиванием, отправкой фото и голосовым вводом.</small><div class="row" style="margin-top:14px"><button type="button" class="no">Оставить защиту</button><button type="button" class="yes">Выключить</button></div></div>';
+          const fin = (ok) => { ov.remove(); res(ok); };
+          ov.querySelector(".no").addEventListener("click", () => fin(false)); ov.querySelector(".yes").addEventListener("click", () => fin(true));
+          ov.addEventListener("click", (e) => { if (e.target === ov) fin(false); });
+          document.body.appendChild(ov); ov.querySelector(".no").focus();
+        });
+      }
+      document.getElementById("viSecBtn").addEventListener("click", (e) => {
+        const P = document.getElementById("viSecPanel"); P.hidden = !P.hidden; e.currentTarget.setAttribute("aria-expanded", String(!P.hidden)); if (!P.hidden) renderPanel();
+      });
+      return { ask, state };
+    })();
     const OFF = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
     const samplePromise = (window.claude && typeof window.claude.use === "function")
       ? Promise.resolve(window.claude.use("sample")).catch(() => null)
@@ -354,6 +447,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     async function send(textIn, forceArt) {
       const text = String(textIn == null ? input.value : textIn).trim();
       if (busy || (!text && !pending)) return;
+      if (pending && !(await Secure.ask("photo"))) { clearImg(); if (!text) return; }
       const M = modeOf(mode);
       let c = chat();
       if (!c) { c = { id: "c" + Date.now().toString(36), mode: M.id, title: "", msgs: [], at: Date.now() }; chats.unshift(c); cur = c.id; }
@@ -476,6 +570,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     }
     let dl = null, dlAsked = false;
     async function download(m, btn) {
+      if (!(await Secure.ask("download"))) { btn.textContent = "🛡 Отменено"; return; }
       try {
         if (m.scenes && !videoCache.has(m)) { btn.textContent = "Сначала собери видео ▶"; return; }
         const blob = m.scenes ? (await videoOf(m)).blob : m.gif ? (await gifOf(m)).blob : await new Promise(async (r) => (await toCanvas(m.svg)).toBlob(r, "image/png"));
@@ -1115,22 +1210,37 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       el.classList.add("wide");
       if (!m.game) { const b = document.createElement("div"); b.className = "vi-body"; b.innerHTML = md((m.t ? m.t + "\n\n" : "") + "🕹 Старая игра не хранится — нажми «Ещё вариант»."); el.appendChild(b); }
       else {
-        const box = document.createElement("div"); box.className = "vi-game";
-        const f = frameFor(m); box.appendChild(f); el.appendChild(box);
+        const box = document.createElement("div"); box.className = "vi-game"; el.appendChild(box);
         const err = document.createElement("div"); err.className = "vi-gerr"; err.hidden = true; el.appendChild(err);
-        f.addEventListener("load", () => gameFrames.set(f.contentWindow, (msg) => {
-          if (!err.hidden) return;
-          err.hidden = false; err.innerHTML = "<span></span><button type=\"button\">🛠 Исправить</button>";
-          err.firstChild.textContent = "⚠️ В игре ошибка: " + msg;
-          err.lastChild.addEventListener("click", () => send("Исправь ошибку в игре: " + msg, "game"));
-        }));
+        const run = () => {
+          box.innerHTML = ""; const f = frameFor(m); box.appendChild(f);
+          f.addEventListener("load", () => gameFrames.set(f.contentWindow, (msg) => {
+            if (!err.hidden) return;
+            err.hidden = false; err.innerHTML = "<span></span><button type=\"button\">🛠 Исправить</button>";
+            err.firstChild.textContent = "⚠️ В игре ошибка: " + msg;
+            err.lastChild.addEventListener("click", () => send("Исправь ошибку в игре: " + msg, "game"));
+          }));
+        };
+        const gate = () => {
+          const st = Secure.state("game");
+          if (st === "allow") { run(); return; }
+          box.innerHTML = '<div class="vi-gate"><div style="font-size:40px">🛡</div><b></b><small></small><button type="button"></button></div>';
+          box.querySelector("b").textContent = st === "deny" ? "Запуск игр запрещён" : (m.title ? "Игра «" + m.title + "» готова" : "Игра готова");
+          box.querySelector("small").textContent = st === "deny" ? "EngineSecure не даёт запускать игры. Изменить можно в настройках 🛡." : "EngineSecure спросит разрешение: игра запускает код, написанный ИИ.";
+          const b = box.querySelector("button"); b.textContent = st === "deny" ? "🛡 Открыть EngineSecure" : "▶ Запустить игру";
+          b.addEventListener("click", async () => {
+            if (st === "deny") { document.getElementById("viSecBtn").click(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+            if (await Secure.ask("game")) run(); else gate();
+          });
+        };
+        el._gate = gate; gate();
         if (m.t) { const cap = document.createElement("div"); cap.className = "vi-body"; cap.innerHTML = md(m.t); el.appendChild(cap); }
       }
       const bar = document.createElement("div"); bar.className = "vi-tools";
       const btn = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.addEventListener("click", (e) => fn(e.currentTarget)); bar.appendChild(b); return b; };
       if (m.game) {
-        btn("⛶ На весь экран", () => fullGame(m));
-        btn("🔄 Заново", () => { const old = el.querySelector(".vi-game iframe"); if (old) { gameFrames.delete(old.contentWindow); const f = frameFor(m); old.replaceWith(f); el.querySelector(".vi-gerr").hidden = true; f.addEventListener("load", () => gameFrames.set(f.contentWindow, () => {})); } });
+        btn("⛶ На весь экран", async () => { if (await Secure.ask("game")) fullGame(m); else el._gate(); });
+        btn("🔄 Заново", async () => { if (!(await Secure.ask("game"))) { el._gate(); return; } if (!el.querySelector(".vi-game iframe")) { el._gate(); return; } const old = el.querySelector(".vi-game iframe"); if (old) { gameFrames.delete(old.contentWindow); const f = frameFor(m); old.replaceWith(f); el.querySelector(".vi-gerr").hidden = true; f.addEventListener("load", () => gameFrames.set(f.contentWindow, () => {})); } });
         btn("💾 Скачать", (b) => saveGame(m, b));
         let code = null;
         btn("</> Код", () => { if (code) { code.remove(); code = null; return; } code = document.createElement("pre"); code.className = "vi-code"; code.textContent = m.game; bar.after(code); });
@@ -1140,6 +1250,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       el.appendChild(bar);
     }
     async function saveGame(m, btn) {
+      if (!(await Secure.ask("download"))) { btn.textContent = "🛡 Отменено"; return; }
       try {
         const blob = new Blob([m.game], { type: "text/html" });
         const name = "WattAI-" + (m.title || m.q || "game").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + ".html";
@@ -1459,8 +1570,9 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
     let rec = null;
     if (SR) {
       $("#viMic").hidden = false;
-      $("#viMic").addEventListener("click", () => {
+      $("#viMic").addEventListener("click", async () => {
         if (rec) { rec.stop(); return; }
+        if (!(await Secure.ask("voice"))) return;
         try {
           rec = new SR(); rec.lang = "ru-RU"; rec.interimResults = true;
           rec.onresult = (ev) => { input.value = Array.from(ev.results).map((r) => r[0].transcript).join(""); fitInput(); };
