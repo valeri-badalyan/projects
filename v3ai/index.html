@@ -133,6 +133,16 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-used { margin-top: 6px; font-size: 11.5px; color: #7dffcf; }
 .vi-mem { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.25); font-size: 12.5px; }
 .vi-mem ul { margin: 4px 0; padding-left: 18px; }
+.vi-repobar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; background: rgba(125,255,207,.08); border: 1px solid rgba(125,255,207,.35); font-size: 13px; font-weight: 700; }
+.vi-repobar span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .vi-repobar button { border: 0; background: none; color: var(--muted); cursor: pointer; font-weight: 800; }
+.vi-repo { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; border: 1px solid var(--line); background: linear-gradient(160deg, rgba(125,255,207,.08), rgba(0,0,0,0)); margin-bottom: 6px; }
+.vi-repo .hd { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; } .vi-repo .hd a { color: #7dffcf; text-decoration: none; overflow-wrap: anywhere; }
+.vi-repo .sub { font-size: 12px; color: var(--muted); }
+.vi-files { display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.vi-files button { display: flex; gap: 8px; align-items: center; text-align: left; padding: 7px 10px; border: 0; border-top: 1px solid var(--line); background: var(--panel-2); color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
+.vi-files button:first-child { border-top: 0; } .vi-files button small { margin-left: auto; color: var(--muted); font-size: 11px; } .vi-files .crumb { background: rgba(0,0,0,.25); font-weight: 800; }
+.vi-readme { max-height: 220px; overflow: auto; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.22); font-size: 13px; }
+.vi-commits { margin: 0; padding-left: 18px; font-size: 12.5px; } .vi-commits a { color: var(--fg); } .vi-commits small { color: var(--muted); }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -156,6 +166,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       </div>
       <div class="vi-modes" id="viModes" role="group" aria-label="Режим V3AI"></div>
       <div class="vi-agents" id="viAgents" hidden></div>
+      <div class="vi-repobar" id="viRepo" hidden></div>
       <div class="vi-drawer" id="viDrawer" hidden></div>
       <div class="vi-log" id="viLog" aria-live="polite"></div>
       <div class="vi-sugg" id="viSugg"></div>
@@ -234,6 +245,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     /* ---- EngineSecure: asks the person before anything that runs foreign code, saves files, or uses the camera roll or microphone ---- */
     const Secure = (() => {
       const ACT = {
+        github: { ico: "🐙", n: "Доступ к GitHub", d: "V3AI прочитает подключённый репозиторий через твой аккаунт GitHub: файлы, коммиты, ветки, issues и pull requests. Только чтение — ничего не меняет." },
         game: { ico: "🕹", n: "Запуск игр WattAI", d: "Игра — это программа, которую написал ИИ. Она работает в изолированной рамке без доступа к твоим чатам, но всё равно запускает код." },
         download: { ico: "💾", n: "Скачивание файлов", d: "Картинки, GIF, видео и игры сохраняются на твоё устройство." },
         photo: { ico: "📷", n: "Отправка фото ИИ", d: "Фото, которое ты прикрепил, будет отправлено ИИ, чтобы он ответил на вопрос о нём." },
@@ -373,6 +385,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
         el.appendChild(document.createTextNode(m.t));
       } else {
+        if (m.repoCard) { repoCard(el, m); log.appendChild(el); return el; }
         if (m.agentCard) { agentCard(el, m); log.appendChild(el); return el; }
         if (m.game || m.gameGone) { gameCard(el, m); log.appendChild(el); return el; }
         if (m.svg || m.gone || m.scenes) { art(el, m); log.appendChild(el); return el; }
@@ -396,7 +409,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       $("#viWhoName").textContent = A ? A.name : "V3AI";
       input.placeholder = A ? "Напиши " + A.name + "…" : "Спроси V3AI о чём угодно…";
       orb.textContent = A ? A.emoji : "V3"; orb.style.background = A ? A.color : ""; orb.style.fontSize = A ? "22px" : "";
-      renderAgents(c);
+      renderAgents(c); renderRepoBar(c);
       log.innerHTML = "";
       if (!c || !c.msgs.length) {
         log.innerHTML = `<div class="vi-hello"><div class="vi-orb">V3</div><b>Привет! Я V3AI ${M.ico}</b>${esc(M.hi)}</div>`;
@@ -487,13 +500,21 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
       const AG = c.agent ? agentById(c.agent) : null;
       if (AG) { await agentChat(c, q, img, AG); return; }
-      if (!img && (forceArt === "agent" || (!forceArt && M.id === "agents"))) { await makeAgent(c, q); return; }
-      if (!img && (forceArt === "game" || forceArt === "game-new" || (!forceArt && wantsGame(q, M)))) { await makeGame(c, q, forceArt === "game-new"); return; }
-      if (!img && (forceArt === "video3d" || (!forceArt && M.id === "video3d"))) { await film(c, q, true); return; }
-      if (!img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
-      if (!img && !forceArt && wantsVideo(q, M)) { await film(c, q, !/2d|2д|рисованн|мульт/i.test(q)); return; }
-      if (!img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
-      if (!img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
+      const RL = img ? null : parseRepoUrl(q);
+      let repoQ = false;
+      if (RL) { // a GitHub link connects that repository to this chat
+        const ok = await connectRepo(c, RL), rest = q.replace(RL.url, "").replace(/^[\s,.:;!-]+|[\s,.:;!-]+$/g, "");
+        if (!ok || rest.length < 6) { done(await samplePromise); return; }
+        repoQ = true; setStatus("думает…", true);
+      }
+      if (repoQ) { /* the question that came with the link goes straight to the chat below */ }
+      else if (!img && (forceArt === "agent" || (!forceArt && M.id === "agents"))) { await makeAgent(c, q); return; }
+      if (!repoQ && !img && (forceArt === "game" || forceArt === "game-new" || (!forceArt && wantsGame(q, M)))) { await makeGame(c, q, forceArt === "game-new"); return; }
+      if (!repoQ && !img && (forceArt === "video3d" || (!forceArt && M.id === "video3d"))) { await film(c, q, true); return; }
+      if (!repoQ && !img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
+      if (!repoQ && !img && !forceArt && wantsVideo(q, M)) { await film(c, q, !/2d|2д|рисованн|мульт/i.test(q)); return; }
+      if (!repoQ && !img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
+      if (!repoQ && !img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
       setStatus("думает…", true);
       const el = bubble({ r: "a", t: "" });
       el.querySelector(".vi-tools").remove();
@@ -502,18 +523,20 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       log.scrollTop = log.scrollHeight;
 
       let reply = "";
+      const used = [];
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.game || m.gameGone ? `(WattAI сделал игру по запросу «${m.q}».) ` : "") + (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.repoCard ? `(Подключён GitHub-репозиторий ${m.repoCard.owner}/${m.repoCard.repo}.) ` : "") + (m.game || m.gameGone ? `(WattAI сделал игру по запросу «${m.q}».) ` : "") + (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
-        hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
+        hist[0] = { role: "user", content: rules(M) + (c.repo ? repoRules(c) : "") + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
         const opts = {
           modelTier: tierOf(mdl()), cache: false, signal: ctl.signal,
           onText: ({ text: t }) => { if (t) { body.innerHTML = md(t); log.scrollTop = log.scrollHeight; setStatus("пишет…", true); } },
         };
         if (img) opts.images = [img.blob];
+        if (c.repo) { opts.tools = repoTools(c, used); delete opts.cache; }
         try {
           const res = await sample(hist, opts);
           reply = (res.text || "").trim();
@@ -530,7 +553,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         ctl = null;
       }
       if (!reply) { await new Promise((r) => setTimeout(r, 450)); reply = offline(q, M); }
-      const am = { r: "a", t: reply }; if (sample && !aiOff) am.by = mdl().n;
+      const am = { r: "a", t: reply }; if (sample && !aiOff) am.by = mdl().n; if (used.length) am.used = used.slice();
       body.innerHTML = md(reply); tools(el, am);
       c.msgs.push(am); save();
       done(sample);
@@ -1598,6 +1621,165 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       body.innerHTML = md(reply); tools(el, am);
       c.msgs.push(am); save();
       done(sample);
+    }
+
+    /* ---- GitHub: paste a repository link and V3AI connects it through the viewer's own GitHub connector
+       (read-only). The chat then answers with tools that list folders and read files, commits, branches, issues, PRs. ---- */
+    const GH = "GitHub";
+    let mcpP = null;
+    const mcpApi = () => mcpP || (mcpP = window.claude && typeof window.claude.use === "function" ? Promise.resolve(window.claude.use("mcp")).catch(() => null) : Promise.resolve(null));
+    const ghOk = new Set(); // chats where the person allowed GitHub this session
+    async function gh(tool, input) {
+      const m = await mcpApi();
+      if (!m) throw { code: "no_mcp" };
+      return m.callTool(GH, tool, input);
+    }
+    const ghList = (res) => (res && Array.isArray(res.payload) ? res.payload : []);
+    function ghText(res) { // a file comes back as a resource block after a short "downloaded" note
+      const blocks = (res && res.content) || [];
+      const rb = blocks.find((b) => b && b.type === "resource" && b.resource);
+      if (rb) return typeof rb.resource.text === "string" ? rb.resource.text : null; // null: a binary file
+      return blocks.filter((b) => b && b.type === "text").map((b) => b.text).join("\n");
+    }
+    function ghWhy(e) {
+      switch (e && e.code) {
+        case "no_mcp": case "not_granted": case "capability_disabled": case "capability_removed": return "🐙 GitHub здесь недоступен. Открой V3AI по ссылке в приложении Claude (войдя в свой аккаунт).";
+        case "server_not_connected": case "server_not_found": return "🐙 GitHub ещё не подключён. Подключи его в claude.ai: **Настройки → Коннекторы → GitHub**, затем снова пришли ссылку.";
+        case "needs_reauth": return "🐙 Нужно заново войти в GitHub: **Настройки → Коннекторы → GitHub** в claude.ai.";
+        case "selection_required": return "🐙 У тебя несколько коннекторов GitHub — выбери один в окне Claude и пришли ссылку снова.";
+        case "not_in_manifest": case "approval_required": case "consent_required": return "🐙 Доступ к GitHub для этой страницы не разрешён. Пришли ссылку ещё раз и нажми «Разрешить», когда Claude спросит.";
+        case "blocked_by_policy": return "🐙 Твоя организация запретила этот доступ к GitHub.";
+        case "server_unavailable": case "rate_limited": return "🐙 GitHub сейчас не отвечает — попробуй через минуту.";
+        case "tool_error": return "🐙 GitHub ответил ошибкой: репозиторий не найден или у твоего аккаунта нет к нему доступа. Проверь ссылку.";
+        default: return "🐙 Не получилось подключить репозиторий" + (e && e.code ? " (" + e.code + ")" : "") + ".";
+      }
+    }
+    const NOT_OWNER = ["orgs", "settings", "marketplace", "features", "topics", "collections", "sponsors", "login", "about", "pricing", "explore", "notifications", "search", "apps", "enterprise"];
+    function parseRepoUrl(text) {
+      const m = String(text).match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([A-Za-z0-9-]{1,39})\/([A-Za-z0-9._-]{1,100})(?:\/(tree|blob)\/([^\s/?#]+)(\/[^\s?#]*)?)?[^\s]*/i);
+      if (!m || NOT_OWNER.includes(m[1].toLowerCase())) return null;
+      const repo = m[2].replace(/\.git$/i, "");
+      if (!repo || repo === "." || repo === "..") return null;
+      return { url: m[0], owner: m[1], repo, ref: m[4] ? decodeURIComponent(m[4]) : "", path: m[5] ? decodeURIComponent(m[5]).replace(/^\/+/, "") : "" };
+    }
+    const refArg = (R) => (R.ref ? { ref: "refs/heads/" + R.ref } : {});
+    async function ghAllowed(c) {
+      const st = Secure.state("github");
+      if (st === "deny") return false;
+      if (st === "allow" || ghOk.has(c.id)) return true;
+      const ok = await Secure.ask("github"); if (ok) ghOk.add(c.id); return ok;
+    }
+    async function connectRepo(c, R) {
+      setStatus("подключаю GitHub…", true);
+      const el = document.createElement("div"); el.className = "vi-m a"; el.innerHTML = '<div class="vi-body"><span class="vi-dots"></span> 🐙 Подключаю </div>';
+      el.querySelector(".vi-body").append(R.owner + "/" + R.repo + "…"); log.appendChild(el); log.scrollTop = log.scrollHeight;
+      let card = null, err = "";
+      if (!(await ghAllowed(c))) err = "🛡 Доступ к GitHub отменён в EngineSecure. Изменить можно в настройках 🛡.";
+      else {
+        try {
+          const base = { owner: R.owner, repo: R.repo, ...refArg(R) };
+          const [root, commits] = await Promise.all([
+            gh("get_file_contents", { ...base, path: "/", fields: ["type", "name", "path", "size"] }),
+            gh("list_commits", { owner: R.owner, repo: R.repo, perPage: 5, fields: ["sha", "html_url", "commit"], ...(R.ref ? { sha: R.ref } : {}) }).catch(() => null),
+          ]);
+          const files = ghList(root).map((f) => ({ n: String(f.name), p: String(f.path), t: f.type === "dir" ? "dir" : "file", s: f.size | 0 }))
+            .sort((a, b) => (a.t === b.t ? a.n.localeCompare(b.n) : a.t === "dir" ? -1 : 1)).slice(0, 300);
+          const rd = files.find((f) => f.t === "file" && /^readme(\.(md|markdown|txt|rst))?$/i.test(f.n));
+          let readme = "";
+          if (rd) { try { readme = (ghText(await gh("get_file_contents", { ...base, path: rd.p })) || "").slice(0, 6000); } catch (e) { /* the card works without it */ } }
+          card = { owner: R.owner, repo: R.repo, ref: R.ref, files, readme,
+            commits: ghList(commits).slice(0, 5).map((x) => ({ m: String((x.commit && x.commit.message) || "").split("\n")[0].slice(0, 140), d: (x.commit && x.commit.author && x.commit.author.date) || "", u: String(x.html_url || "") })) };
+        } catch (e) { err = ghWhy(e); }
+      }
+      el.remove();
+      if (card) { c.repo = { owner: R.owner, repo: R.repo, ref: R.ref }; c.title = "🐙 " + R.owner + "/" + R.repo; ghOk.add(c.id); }
+      const am = card ? { r: "a", t: "", repoCard: card } : { r: "a", t: err };
+      bubble(am); c.msgs.push(am); save(); render();
+      return !!card;
+    }
+    function renderRepoBar(c) {
+      const bar = $("#viRepo");
+      if (!c || !c.repo) { bar.hidden = true; return; }
+      bar.hidden = false; bar.innerHTML = "<span></span><button type=\"button\" aria-label=\"Отключить репозиторий\">✕ Отключить</button>";
+      bar.firstChild.textContent = "🐙 Подключён " + c.repo.owner + "/" + c.repo.repo + (c.repo.ref ? " · " + c.repo.ref : "");
+      bar.lastChild.addEventListener("click", () => { c.repo = null; save(); render(); setStatus("репозиторий отключён", false); });
+    }
+    const fmtSize = (n) => (n > 1048576 ? (n / 1048576).toFixed(1) + " МБ" : n > 1024 ? Math.round(n / 1024) + " КБ" : n + " Б");
+    function repoCard(el, m) {
+      el.classList.add("wide");
+      const C = m.repoCard, chatOf = () => chats.find((x) => x.msgs.includes(m));
+      const box = document.createElement("div"); box.className = "vi-repo";
+      const url = "https://github.com/" + encodeURIComponent(C.owner) + "/" + encodeURIComponent(C.repo);
+      box.innerHTML = '<div class="hd">🐙 <a target="_blank" rel="noopener noreferrer"></a></div><div class="sub"></div><div class="vi-files"></div>';
+      const a = box.querySelector("a"); a.href = url; a.textContent = C.owner + "/" + C.repo;
+      box.querySelector(".sub").textContent = "Подключён к этому чату · только чтение" + (C.ref ? " · ветка " + C.ref : "") + " · в корне: " + C.files.length;
+      const list = box.querySelector(".vi-files");
+      // a little file explorer: folders open in place, files open in a code viewer
+      const show = async (path, entries) => {
+        list.innerHTML = "";
+        if (path) { const up = document.createElement("button"); up.type = "button"; up.className = "crumb"; up.textContent = "⬆ /" + path; up.addEventListener("click", () => { const parent = path.split("/").slice(0, -1).join("/"); parent ? open(parent) : show("", C.files); }); list.appendChild(up); }
+        entries.slice(0, 80).forEach((f) => {
+          const b = document.createElement("button"); b.type = "button"; b.innerHTML = "<span></span><span></span><small></small>";
+          b.children[0].textContent = f.t === "dir" ? "📁" : "📄"; b.children[1].textContent = f.n; b.children[2].textContent = f.t === "dir" ? "" : fmtSize(f.s);
+          b.addEventListener("click", () => (f.t === "dir" ? open(f.p) : view(f)));
+          list.appendChild(b);
+        });
+        if (entries.length > 80) { const more = document.createElement("button"); more.type = "button"; more.disabled = true; more.textContent = "… и ещё " + (entries.length - 80); list.appendChild(more); }
+      };
+      const fail = (e) => { list.innerHTML = ""; const d = document.createElement("div"); d.className = "vi-body"; d.style.padding = "8px"; d.innerHTML = md(ghWhy(e)); list.appendChild(d); };
+      const open = async (path) => {
+        const c = chatOf(); if (c && !(await ghAllowed(c))) return;
+        list.innerHTML = '<button type="button" disabled>⏳ Открываю…</button>';
+        try { const res = await gh("get_file_contents", { owner: C.owner, repo: C.repo, path, fields: ["type", "name", "path", "size"], ...refArg(C) }); show(path, ghList(res).map((f) => ({ n: String(f.name), p: String(f.path), t: f.type === "dir" ? "dir" : "file", s: f.size | 0 })).sort((x, y) => (x.t === y.t ? x.n.localeCompare(y.n) : x.t === "dir" ? -1 : 1))); } catch (e) { fail(e); }
+      };
+      let codeBox = null;
+      const view = async (f) => {
+        const c = chatOf(); if (c && !(await ghAllowed(c))) return;
+        if (codeBox) codeBox.remove();
+        codeBox = document.createElement("pre"); codeBox.className = "vi-code"; codeBox.textContent = "⏳ " + f.p; box.appendChild(codeBox);
+        try { const t = ghText(await gh("get_file_contents", { owner: C.owner, repo: C.repo, path: f.p, ...refArg(C) })); codeBox.textContent = t == null ? "Это двоичный файл (картинка, видео или архив) — показать нельзя." : "// " + f.p + "\n" + t.slice(0, 80000) + (t.length > 80000 ? "\n\n… файл обрезан" : ""); }
+        catch (e) { codeBox.textContent = ghWhy(e).replace(/\*\*/g, ""); }
+      };
+      show("", C.files);
+      if (C.readme) { const rm = document.createElement("div"); rm.className = "vi-readme"; rm.innerHTML = "<b>📖 README</b>" + md(C.readme.slice(0, 2500) + (C.readme.length > 2500 ? "\n\n…" : "")); box.appendChild(rm); }
+      if (C.commits && C.commits.length) {
+        const ul = document.createElement("ul"); ul.className = "vi-commits";
+        C.commits.forEach((x) => { const li = document.createElement("li"), lk = document.createElement("a"); lk.textContent = x.m || "(без описания)"; if (/^https:\/\/github\.com\//.test(x.u)) { lk.href = x.u; lk.target = "_blank"; lk.rel = "noopener noreferrer"; } li.appendChild(lk); if (x.d) { const sm = document.createElement("small"); sm.textContent = " · " + new Date(x.d).toLocaleDateString("ru-RU"); li.appendChild(sm); } ul.appendChild(li); });
+        const h = document.createElement("b"); h.textContent = "🕒 Последние коммиты"; box.append(h, ul);
+      }
+      el.appendChild(box);
+      const bar = document.createElement("div"); bar.className = "vi-tools";
+      const btn = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.addEventListener("click", fn); bar.appendChild(b); };
+      btn("💬 Спросить о проекте", () => { input.placeholder = "Спроси про " + C.repo + "…"; input.focus(); });
+      btn("🔄 Обновить", () => send("https://github.com/" + C.owner + "/" + C.repo + (C.ref ? "/tree/" + C.ref : "")));
+      el.appendChild(bar);
+    }
+    function repoRules(c) {
+      const card = c.msgs.slice().reverse().find((m) => m.repoCard && m.repoCard.owner === c.repo.owner && m.repoCard.repo === c.repo.repo);
+      return "\n" + [
+        `К этому чату подключён GitHub-репозиторий ${c.repo.owner}/${c.repo.repo}${c.repo.ref ? " (ветка " + c.repo.ref + ")" : ""} — только чтение.`,
+        card ? "Корень репозитория: " + card.repoCard.files.map((f) => f.n + (f.t === "dir" ? "/" : "")).join(", ").slice(0, 1500) : "",
+        "Прежде чем отвечать на вопросы о проекте, смотри его сам инструментами: list_dir (папки), read_file (файлы, большие — частями через offset), list_commits, list_branches, list_issues, list_pull_requests. Называй пути файлов, цитируй короткие куски кода. Не выдумывай то, чего не читал. Изменять репозиторий ты не можешь — если просят, предложи готовый код.",
+      ].filter(Boolean).join("\n");
+    }
+    function repoTools(c, used) {
+      const R = c.repo, base = { owner: R.owner, repo: R.repo }, note = (x) => { if (!used.includes(x)) used.push(x); setStatus(x + "…", true); };
+      const guard = async () => { if (!(await ghAllowed(c))) throw new Error("доступ к GitHub не разрешён пользователем"); };
+      const call = async (tool, input) => { await guard(); try { return await gh(tool, input); } catch (e) { throw new Error(ghWhy(e).replace(/\*\*/g, "")); } };
+      return [
+        { name: "list_dir", description: "Список файлов и папок в репозитории. path — путь к папке, пустой — корень.", inputSchema: { type: "object", properties: { path: { type: "string" } } },
+          execute: async ({ path }) => { note("📁 смотрю папки"); const res = await call("get_file_contents", { ...base, path: path ? String(path) : "/", fields: ["type", "name", "path", "size"], ...refArg(R) }); return { entries: ghList(res).slice(0, 300).map((f) => ({ name: f.name, type: f.type, path: f.path, size: f.size })) }; } },
+        { name: "read_file", description: "Прочитать текстовый файл. Длинный файл читай частями: offset — с какого символа (по 30000).", inputSchema: { type: "object", properties: { path: { type: "string" }, offset: { type: "integer" } }, required: ["path"] },
+          execute: async ({ path, offset }) => { note("📄 читаю файлы"); const t = ghText(await call("get_file_contents", { ...base, path: String(path || ""), ...refArg(R) })); if (t == null) return { path, binary: true }; const o = Math.max(0, offset | 0); return { path, total_chars: t.length, offset: o, text: t.slice(o, o + 30000), more: o + 30000 < t.length }; } },
+        { name: "list_commits", description: "Последние коммиты (можно только по одному файлу через path).", inputSchema: { type: "object", properties: { path: { type: "string" }, count: { type: "integer" } } },
+          execute: async ({ path, count }) => { note("🕒 смотрю коммиты"); const res = await call("list_commits", { ...base, perPage: Math.min(30, Math.max(1, count | 0 || 10)), fields: ["sha", "html_url", "commit"], ...(path ? { path: String(path) } : {}), ...(R.ref ? { sha: R.ref } : {}) }); return { commits: ghList(res).map((x) => ({ sha: String(x.sha || "").slice(0, 7), message: String((x.commit && x.commit.message) || "").split("\n")[0], date: x.commit && x.commit.author && x.commit.author.date, author: x.commit && x.commit.author && x.commit.author.name })) }; } },
+        { name: "list_branches", description: "Ветки репозитория.", inputSchema: { type: "object", properties: {} },
+          execute: async () => { note("🌿 смотрю ветки"); const res = await call("list_branches", { ...base, perPage: 50 }); return { branches: ghList(res).map((b) => b.name) }; } },
+        { name: "list_issues", description: "Issues (задачи) репозитория. state: OPEN или CLOSED, по умолчанию все.", inputSchema: { type: "object", properties: { state: { type: "string", enum: ["OPEN", "CLOSED"] } } },
+          execute: async ({ state }) => { note("📝 смотрю issues"); const res = await call("list_issues", { ...base, perPage: 20, fields: ["number", "title", "state", "created_at"], ...(state ? { state } : {}) }); const p = res && res.payload; return { total: p && p.totalCount, issues: (p && Array.isArray(p.issues) ? p.issues : []).map((i) => ({ number: i.number, title: i.title, state: i.state })) }; } },
+        { name: "list_pull_requests", description: "Pull requests. state: open, closed или all.", inputSchema: { type: "object", properties: { state: { type: "string", enum: ["open", "closed", "all"] } } },
+          execute: async ({ state }) => { note("🔀 смотрю pull requests"); const res = await call("list_pull_requests", { ...base, perPage: 20, state: state || "open", fields: ["number", "title", "state", "merged", "created_at"] }); return { pulls: ghList(res).map((x) => ({ number: x.number, title: x.title, state: x.state, merged: x.merged })) }; } },
+      ];
     }
 
     // Why the AI could not help, in words a viewer understands.
