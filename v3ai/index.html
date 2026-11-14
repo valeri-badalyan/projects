@@ -1625,14 +1625,73 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
 
     /* ---- GitHub: paste a repository link and V3AI connects it through the viewer's own GitHub connector
        (read-only). The chat then answers with tools that list folders and read files, commits, branches, issues, PRs. ---- */
-    const GH = "GitHub";
-    let mcpP = null;
+    // The connector can be listed under either name; the page finds whichever this viewer has.
+    const GH_NAMES = ["github", "GitHub"];
+    let mcpP = null, ghServer = null, ghVia = "";
     const mcpApi = () => mcpP || (mcpP = window.claude && typeof window.claude.use === "function" ? Promise.resolve(window.claude.use("mcp")).catch(() => null) : Promise.resolve(null));
     const ghOk = new Set(); // chats where the person allowed GitHub this session
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+    async function ghCandidates(m) {
+      try {
+        const r = await m.listTools(), avail = ((r && r.servers) || []).filter((x) => GH_NAMES.includes(x.server) && x.tools && x.tools.length);
+        avail.sort((a, b) => (a.authStatus === "connected" ? -1 : 0) - (b.authStatus === "connected" ? -1 : 0));
+        const names = avail.map((x) => x.server);
+        return names.concat(GH_NAMES.filter((n) => !names.includes(n)));
+      } catch (e) { return GH_NAMES.slice(); }
+    }
+    async function callOnce(m, name, tool, input) {
+      try { return await m.callTool(name, tool, input); }
+      catch (e) { // one retry, only when the runtime says it may help (e.g. the consent prompt was busy)
+        if (e && e.retryable) { await sleep(Math.min(8000, (e.retryAfterMs || 1200) + Math.random() * 600)); return m.callTool(name, tool, input); }
+        throw e;
+      }
+    }
+    const SWITCH = ["server_not_connected", "server_not_found", "not_in_manifest"]; // try the other name
+    const PUBLIC_OK = ["no_mcp", "not_granted", "capability_disabled", "capability_removed", "server_not_connected", "server_not_found", "selection_required", "not_in_manifest", "approval_required", "consent_required", "needs_reauth"];
     async function gh(tool, input) {
-      const m = await mcpApi();
-      if (!m) throw { code: "no_mcp" };
-      return m.callTool(GH, tool, input);
+      const m = await mcpApi(); let err = null;
+      if (m) {
+        const names = ghServer ? [ghServer] : await ghCandidates(m);
+        for (const name of names) {
+          try { const res = await callOnce(m, name, tool, input); ghServer = name; ghVia = "connector"; return res; }
+          catch (e) { if (!err || (err.code === "server_not_connected" && e.code !== "server_not_connected")) err = e || { code: "upstream_error" }; if (!SWITCH.includes(e && e.code)) break; }
+        }
+      } else err = { code: "no_mcp" };
+      // public repositories still open without the connector, straight from the GitHub API
+      if (PUBLIC_OK.includes(err.code)) {
+        try { const res = await ghRest(tool, input); ghVia = "public"; return res; }
+        catch (e2) { if (e2 && (e2.code === "rest_404" || e2.code === "rest_limit")) err = { code: e2.code, prev: err.code }; }
+      }
+      throw err;
+    }
+    // Same shapes as the connector returns, built from the public REST API.
+    async function ghRest(tool, input) {
+      const base = "https://api.github.com/repos/" + encodeURIComponent(input.owner) + "/" + encodeURIComponent(input.repo);
+      const get = async (path) => {
+        let res;
+        try { res = await fetch(base + path, { headers: { Accept: "application/vnd.github+json" } }); } catch (e) { throw { code: "rest_blocked" }; }
+        if (res.status === 404) throw { code: "rest_404" };
+        if (res.status === 403 || res.status === 429) throw { code: "rest_limit" };
+        if (!res.ok) throw { code: "rest_" + res.status };
+        return res.json();
+      };
+      const wrap = (v) => ({ content: [{ type: "text", text: JSON.stringify(v) }], payload: v });
+      const qs = (o) => { const u = new URLSearchParams(); Object.keys(o).forEach((k) => { if (o[k] != null && o[k] !== "") u.set(k, o[k]); }); const t = u.toString(); return t ? "?" + t : ""; };
+      const ref = input.ref ? String(input.ref).replace(/^refs\/heads\//, "") : "";
+      if (tool === "get_file_contents") {
+        const path = String(input.path || "").replace(/^\/+/, "").split("/").map(encodeURIComponent).join("/");
+        const j = await get("/contents/" + path + qs({ ref }));
+        if (Array.isArray(j)) return wrap(j.map((f) => ({ type: f.type, name: f.name, path: f.path, size: f.size })));
+        let text = null;
+        if (j && j.content && j.encoding === "base64") { const bin = atob(j.content.replace(/\s/g, "")), bytes = Uint8Array.from(bin, (ch) => ch.charCodeAt(0)); if (!bytes.includes(0)) text = new TextDecoder().decode(bytes); }
+        else if (j && j.download_url) { try { const rr = await fetch(j.download_url); const t = await rr.text(); if (!t.includes("\u0000")) text = t; } catch (e) { /* stays null */ } }
+        return { content: [{ type: "text", text: "downloaded file" }, { type: "resource", resource: text == null ? { uri: j.html_url || "", blob: "" } : { uri: j.html_url || "", text } }], payload: "downloaded file" };
+      }
+      if (tool === "list_commits") return wrap(await get("/commits" + qs({ per_page: input.perPage || 10, sha: input.sha, path: input.path })));
+      if (tool === "list_branches") return wrap(await get("/branches" + qs({ per_page: input.perPage || 50 })));
+      if (tool === "list_issues") { const st = input.state ? String(input.state).toLowerCase() : "all"; const arr = (await get("/issues" + qs({ state: st, per_page: input.perPage || 20 }))).filter((i) => !i.pull_request); return wrap({ issues: arr.map((i) => ({ number: i.number, title: i.title, state: String(i.state).toUpperCase(), created_at: i.created_at })), totalCount: arr.length }); }
+      if (tool === "list_pull_requests") return wrap((await get("/pulls" + qs({ state: input.state || "open", per_page: input.perPage || 20 }))).map((x) => ({ number: x.number, title: x.title, state: x.state, merged: !!x.merged_at, created_at: x.created_at, html_url: x.html_url })));
+      throw { code: "rest_unknown" };
     }
     const ghList = (res) => (res && Array.isArray(res.payload) ? res.payload : []);
     function ghText(res) { // a file comes back as a resource block after a short "downloaded" note
@@ -1641,8 +1700,11 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       if (rb) return typeof rb.resource.text === "string" ? rb.resource.text : null; // null: a binary file
       return blocks.filter((b) => b && b.type === "text").map((b) => b.text).join("\n");
     }
-    function ghWhy(e) {
+    function ghWhy(e) { return ghWhyText(e) + (e && e.code ? " (код: " + e.code + (e.prev ? ", " + e.prev : "") + ")" : ""); }
+    function ghWhyText(e) {
       switch (e && e.code) {
+        case "rest_404": return "🐙 Репозиторий не найден. Проверь ссылку. Если он **закрытый** — подключи GitHub в claude.ai (**Настройки → Коннекторы → GitHub**), открой V3AI в приложении Claude и пришли ссылку снова.";
+        case "rest_limit": return "🐙 GitHub временно ограничил чтение без входа. Подключи GitHub в claude.ai (**Настройки → Коннекторы → GitHub**) или попробуй позже.";
         case "no_mcp": case "not_granted": case "capability_disabled": case "capability_removed": return "🐙 GitHub здесь недоступен. Открой V3AI по ссылке в приложении Claude (войдя в свой аккаунт).";
         case "server_not_connected": case "server_not_found": return "🐙 GitHub ещё не подключён. Подключи его в claude.ai: **Настройки → Коннекторы → GitHub**, затем снова пришли ссылку.";
         case "needs_reauth": return "🐙 Нужно заново войти в GitHub: **Настройки → Коннекторы → GitHub** в claude.ai.";
@@ -1678,22 +1740,20 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       else {
         try {
           const base = { owner: R.owner, repo: R.repo, ...refArg(R) };
-          const [root, commits] = await Promise.all([
-            gh("get_file_contents", { ...base, path: "/", fields: ["type", "name", "path", "size"] }),
-            gh("list_commits", { owner: R.owner, repo: R.repo, perPage: 5, fields: ["sha", "html_url", "commit"], ...(R.ref ? { sha: R.ref } : {}) }).catch(() => null),
-          ]);
+          const root = await gh("get_file_contents", { ...base, path: "/", fields: ["type", "name", "path", "size"] }); // alone: it may ask for consent
+          const commits = await gh("list_commits", { owner: R.owner, repo: R.repo, perPage: 5, fields: ["sha", "html_url", "commit"], ...(R.ref ? { sha: R.ref } : {}) }).catch(() => null);
           const files = ghList(root).map((f) => ({ n: String(f.name), p: String(f.path), t: f.type === "dir" ? "dir" : "file", s: f.size | 0 }))
             .sort((a, b) => (a.t === b.t ? a.n.localeCompare(b.n) : a.t === "dir" ? -1 : 1)).slice(0, 300);
           const rd = files.find((f) => f.t === "file" && /^readme(\.(md|markdown|txt|rst))?$/i.test(f.n));
           let readme = "";
           if (rd) { try { readme = (ghText(await gh("get_file_contents", { ...base, path: rd.p })) || "").slice(0, 6000); } catch (e) { /* the card works without it */ } }
-          card = { owner: R.owner, repo: R.repo, ref: R.ref, files, readme,
+          card = { owner: R.owner, repo: R.repo, ref: R.ref, files, readme, via: ghVia,
             commits: ghList(commits).slice(0, 5).map((x) => ({ m: String((x.commit && x.commit.message) || "").split("\n")[0].slice(0, 140), d: (x.commit && x.commit.author && x.commit.author.date) || "", u: String(x.html_url || "") })) };
         } catch (e) { err = ghWhy(e); }
       }
       el.remove();
       if (card) { c.repo = { owner: R.owner, repo: R.repo, ref: R.ref }; c.title = "🐙 " + R.owner + "/" + R.repo; ghOk.add(c.id); }
-      const am = card ? { r: "a", t: "", repoCard: card } : { r: "a", t: err };
+      const am = card ? { r: "a", t: "", repoCard: card } : { r: "a", t: err + "\n\nКогда исправишь — просто пришли ссылку ещё раз." };
       bubble(am); c.msgs.push(am); save(); render();
       return !!card;
     }
@@ -1712,7 +1772,7 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       const url = "https://github.com/" + encodeURIComponent(C.owner) + "/" + encodeURIComponent(C.repo);
       box.innerHTML = '<div class="hd">🐙 <a target="_blank" rel="noopener noreferrer"></a></div><div class="sub"></div><div class="vi-files"></div>';
       const a = box.querySelector("a"); a.href = url; a.textContent = C.owner + "/" + C.repo;
-      box.querySelector(".sub").textContent = "Подключён к этому чату · только чтение" + (C.ref ? " · ветка " + C.ref : "") + " · в корне: " + C.files.length;
+      box.querySelector(".sub").textContent = (C.via === "public" ? "Публичный доступ без входа" : "Через твой аккаунт GitHub") + " · только чтение" + (C.ref ? " · ветка " + C.ref : "") + " · в корне: " + C.files.length;
       const list = box.querySelector(".vi-files");
       // a little file explorer: folders open in place, files open in a code viewer
       const show = async (path, entries) => {
