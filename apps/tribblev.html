@@ -306,6 +306,31 @@ function toast(msg, ms = 2400) { const t = $("#toast"); t.textContent = msg; t.c
 function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
 function fmtT(s) { s = Math.max(0, s || 0); const m = Math.floor(s / 60); const r = s - m * 60; return m + ":" + (r < 10 ? "0" : "") + r.toFixed(1); }
 function rr(c, x, y, w, h, r) { r = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2)); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif|tiff?)$/i;
+const isImageFile = (f) => /^image\//.test(f.type) || IMG_EXT.test(f.name) || !f.type;
+// Phones produce 48–200 MP photos, but mobile browsers refuse canvases above ~16 MP, so big photos are scaled down.
+// Each way of reading the file is tried in turn, because some in-app viewers block blob: URLs.
+async function decodeImage(file) {
+  let src = null, url = null;
+  try { url = URL.createObjectURL(file); src = await loadImage(url); } catch (e) { src = null; }
+  if (!src) { try { const d = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(file); }); src = await loadImage(d); } catch (e) { src = null; } }
+  if (!src && window.createImageBitmap) { try { src = await createImageBitmap(file); } catch (e) { src = null; } }
+  if (url) setTimeout(() => URL.revokeObjectURL(url), 4000);
+  const w = src && srcW(src), h = src && srcH(src);
+  if (!w || !h) throw new Error(/heic|heif/i.test(file.type + file.name) ? "heic" : "decode");
+  const k = Math.min(1, 4096 / Math.max(w, h), Math.sqrt(16e6 / (w * h)));
+  const c = newCanvas(w * k, h * k), x = c.getContext("2d");
+  if (!x) throw new Error("memory");
+  x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, c.width, c.height);
+  if (src.close) src.close();
+  c.scaled = k < 1; c.origW = w; c.origH = h;
+  return c;
+}
+function imgError(f, e) {
+  const r = e && e.message;
+  return r === "heic" ? `Фото ${f.name} в формате HEIC — этот браузер его не читает. Открой TribbleV в Safari или в настройках камеры выбери «Наиболее совместимый».`
+    : r === "memory" ? `Фото ${f.name} слишком большое для памяти телефона.` : `Не удалось прочитать ${f.name}. Попробуй другое фото или открой приложение в Chrome/Safari.`;
+}
 function loadImage(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
 function modal(title, html, acts) {
   const m = document.createElement("div"); m.className = "modal";
@@ -808,10 +833,15 @@ const Photo = (() => {
 
   /* ---- files ---- */
   async function openFiles(files, forceLayer) {
+    if (!files.length) return toast("Фото не выбрано");
     for (const f of files) {
-      if (!f.type.startsWith("image/")) { toast("Это не картинка: " + f.name); continue; }
-      try { const img = await loadImage(URL.createObjectURL(f)); addImage(img, f.name.replace(/\.[^.]+$/, "").slice(0, 30), !forceLayer && !layers.length); }
-      catch (e) { toast("Не удалось открыть " + f.name); }
+      if (!isImageFile(f)) { toast("Это не картинка: " + f.name, 3500); continue; }
+      toast("Загружаю " + f.name + "…", 8000);
+      try {
+        const c = await decodeImage(f);
+        addImage(c, f.name.replace(/\.[^.]+$/, "").slice(0, 30) || "Фото", !forceLayer && !layers.length);
+        toast(c.scaled ? `Фото открыто (уменьшено с ${c.origW}×${c.origH} до ${c.width}×${c.height}, чтобы телефон справился)` : "Фото открыто ✓", 3500);
+      } catch (e) { toast(imgError(f, e), 6000); }
     }
   }
   const fileIn = (id, layer) => { const i = $(id); i.onchange = () => { openFiles([...i.files], layer); i.value = ""; }; };
@@ -1057,7 +1087,7 @@ const Video = (() => {
     return new Promise((res, rej) => {
       const to = setTimeout(() => res(), 8000);
       const done = () => { clearTimeout(to); res(); };
-      if (m.type === "image") { const img = new Image(); img.onload = () => { m.img = img; m.w = img.naturalWidth; m.h = img.naturalHeight; m.duration = Infinity; m.thumb = thumbOf(img, m.w, m.h); done(); }; img.onerror = () => { clearTimeout(to); rej(); }; img.src = m.url; }
+      if (m.type === "image") { decodeImage(m.file).then((c) => { m.img = c; m.w = c.width; m.h = c.height; m.duration = Infinity; m.thumb = thumbOf(c, m.w, m.h); done(); }, (e) => { clearTimeout(to); rej(e); }); }
       else if (m.type === "video") {
         const v = document.createElement("video"); v.muted = true; v.preload = "auto"; v.playsInline = true; let fixing = false;
         v.onloadedmetadata = () => { m.w = v.videoWidth; m.h = v.videoHeight; if (!isFinite(v.duration)) { fixing = true; v.currentTime = 1e7; } else { m.duration = v.duration; v.currentTime = Math.min(1, v.duration * .1); } };
@@ -1073,9 +1103,9 @@ const Video = (() => {
       const ext = (f.name.split(".").pop() || "").toLowerCase();
       const type = /^video\//.test(f.type) || /^(mp4|mov|m4v|webm|mkv|3gp|avi)$/.test(ext) ? "video" : /^image\//.test(f.type) || /^(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/.test(ext) ? "image" : /^audio\//.test(f.type) || /^(mp3|m4a|aac|wav|ogg|oga|opus|flac)$/.test(ext) ? "audio" : null;
       if (!type) { toast("Неподдерживаемый файл: " + f.name); continue; }
-      const m = { id: uid(), type, name: f.name, url: URL.createObjectURL(f), duration: 0, w: 0, h: 0, thumb: "" };
+      const m = { id: uid(), type, name: f.name, file: f, url: URL.createObjectURL(f), duration: 0, w: 0, h: 0, thumb: "" };
       media.set(m.id, m); renderBin();
-      try { await probe(m); } catch (e) { media.delete(m.id); renderBin(); toast(/heic|heif|hevc|mov/i.test(ext) ? "Этот браузер не умеет открывать " + f.name + " (формат Apple). Открой в Safari или выбери «Совместимый» формат в настройках камеры" : "Браузер не смог открыть " + f.name, 5000); continue; }
+      try { await probe(m); } catch (e) { media.delete(m.id); renderBin(); if (type === "image") { toast(imgError(f, e), 6000); continue; } toast(/heic|heif|hevc|mov/i.test(ext) ? "Этот браузер не умеет открывать " + f.name + " (формат Apple). Открой в Safari или выбери «Совместимый» формат в настройках камеры" : "Браузер не смог открыть " + f.name, 5000); continue; }
       if (type === "video" && !m.duration) m.duration = 10;
       if (!clips.length && type !== "audio" && m.w && m.h) autoFormat(m.w, m.h);
       toTimeline(m, true); added++; renderBin();
