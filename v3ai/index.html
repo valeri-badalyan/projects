@@ -1647,7 +1647,7 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       }
     }
     const SWITCH = ["server_not_connected", "server_not_found", "not_in_manifest"]; // try the other name
-    const PUBLIC_OK = ["no_mcp", "not_granted", "capability_disabled", "capability_removed", "server_not_connected", "server_not_found", "selection_required", "not_in_manifest", "approval_required", "consent_required", "needs_reauth"];
+    const PUBLIC_OK = ["no_mcp", "not_granted", "capability_disabled", "capability_removed", "server_not_connected", "server_not_found", "selection_required", "not_in_manifest", "approval_required", "consent_required", "needs_reauth", "upstream_error", "server_unavailable", "cancelled"];
     async function gh(tool, input) {
       const m = await mcpApi(); let err = null;
       if (m) {
@@ -1713,7 +1713,8 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
         case "blocked_by_policy": return "🐙 Твоя организация запретила этот доступ к GitHub.";
         case "server_unavailable": case "rate_limited": return "🐙 GitHub сейчас не отвечает — попробуй через минуту.";
         case "tool_error": return "🐙 GitHub ответил ошибкой: репозиторий не найден или у твоего аккаунта нет к нему доступа. Проверь ссылку.";
-        default: return "🐙 Не получилось подключить репозиторий" + (e && e.code ? " (" + e.code + ")" : "") + ".";
+        case "upstream_error": return "🐙 Коннектор GitHub не ответил: скорее всего, окно «Разрешить доступ» в Claude закрылось без выбора, или GitHub временно сбоит. Пришли ссылку ещё раз и нажми «Разрешить». Если повторится — переподключи GitHub в claude.ai (**Настройки → Коннекторы → GitHub**).";
+        default: return "🐙 Не получилось подключить репозиторий.";
       }
     }
     const NOT_OWNER = ["orgs", "settings", "marketplace", "features", "topics", "collections", "sponsors", "login", "about", "pricing", "explore", "notifications", "search", "apps", "enterprise"];
