@@ -1378,6 +1378,20 @@ $("#vToPhoto").onclick = async () => {
   const b = await Video.frameBlob(); if (!b) return;
   const img = await loadImage(URL.createObjectURL(b)); setMode("photo"); Photo.openCanvas(img, "Кадр из видео"); toast("Кадр открыт в фоторедакторе");
 };
+// Gallery access: ask once in the app before the first file picker opens, then remember the answer.
+const Gallery = (() => {
+  const KEY = "tribblev-gallery-ok";
+  let ok = false; try { ok = localStorage.getItem(KEY) === "1"; } catch (e) {}
+  document.addEventListener("click", (e) => {
+    const inp = e.target;
+    if (ok || !(inp instanceof HTMLInputElement) || inp.type !== "file") return;
+    e.preventDefault();
+    if ($(".modal")) return;
+    modal("Доступ к галерее", '<p class="note" style="font-size:13.5px">TribbleV Studio просит доступ к твоим фото и видео, чтобы их можно было редактировать и монтировать.</p><p class="note">Файлы остаются на твоём устройстве и никуда не загружаются. Телефон может дополнительно показать своё окно с разрешением.</p>',
+      [{ label: "Не сейчас" }, { label: "Разрешить", pri: true, fn: () => { ok = true; try { localStorage.setItem(KEY, "1"); } catch (err) {} inp.click(); } }]);
+  }, true);
+  return { granted: () => ok };
+})();
 Photo.init(); Video.init();
 if (location.hash === "#video") setMode("video");
 document.fonts && document.fonts.ready.then(() => { Photo.enter(); });
