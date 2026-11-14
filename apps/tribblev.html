@@ -47,7 +47,7 @@ main{flex:1;min-height:0;position:relative}
 .row select,.row input[type=text],.row input[type=number]{width:100%}
 input[type=range]{width:100%;accent-color:var(--acc);min-width:0}
 input[type=color]{width:38px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
-input[type=text],input[type=number],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
+input[type=text],input[type=number],input[type=password],select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
 textarea{width:100%;resize:vertical}
 .chk{display:flex;align-items:center;gap:8px;font-size:12.5px;margin:7px 0;cursor:pointer}
 .chk input{accent-color:var(--acc)}
@@ -107,6 +107,30 @@ textarea{width:100%;resize:vertical}
 .mi .ad button.x{background:rgba(0,0,0,.7)}
 .dropz{border:1px dashed #5b3fa0;border-radius:10px;padding:14px;text-align:center;color:var(--mute);font-size:12.5px;margin-bottom:10px}
 .dropz .btn{color:var(--text)}
+.btn.ai{background:linear-gradient(135deg,#ec4899,#8b5cf6 55%,#3b82f6);border-color:transparent;color:#fff}
+.btn.wide{width:100%;justify-content:center;margin-bottom:10px;padding:10px}
+#vJobs{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+#vJobs:empty{display:none}
+.job{background:var(--panel2);border:1px solid #5b3fa0;border-radius:10px;padding:9px 10px;font-size:12px}
+.job.done{border-color:var(--ok)}.job.error{border-color:var(--danger)}
+.job .jt{display:flex;flex-direction:column;gap:2px}
+.job .jt b{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.job .jt span,.job .js{color:var(--mute);font-size:11.5px}
+.job .js{margin-top:4px}
+.job .prog{margin:7px 0 2px;height:5px}
+.prog i.ind{width:35%;animation:ind 1.4s ease-in-out infinite}
+@keyframes ind{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}
+@media (prefers-reduced-motion:reduce){.prog i.ind{animation:none;width:100%;opacity:.5}}
+.seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:3px;margin-bottom:10px}
+.seg button{flex:1;border:0;background:none;padding:7px;border-radius:7px;font-weight:800;color:var(--mute)}
+.seg button.on{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px #4a3f63}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0}
+.chips button{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:4px 10px;font-size:11.5px}
+.chips button:hover{border-color:var(--acc)}
+.aiimg{aspect-ratio:16/9;max-width:100%;background:var(--bg);border:1px dashed #5b3fa0;border-radius:9px;display:grid;place-items:center;overflow:hidden;color:var(--mute);font-size:12px}
+.aiimg img{width:100%;height:100%;object-fit:contain}
+.aikey{margin:8px 0;font-size:12.5px}.aikey summary{cursor:pointer;font-weight:700}
+.modal a{color:var(--acc2)}
 .vtl{grid-column:1/4;display:flex;flex-direction:column;background:var(--panel);border-top:1px solid var(--line);min-height:0}
 .tlbar{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);overflow-x:auto;flex:none;scrollbar-width:thin}
 .tlbar .time{font:700 13px/1 ui-monospace,Menlo,monospace;color:#e9e3f7;min-width:116px;text-align:center}
@@ -202,6 +226,7 @@ textarea{width:100%;resize:vertical}
     <button class="btn" id="vUndo" type="button" title="Отменить (Ctrl+Z)">↶</button>
     <button class="btn" id="vRedo" type="button" title="Повторить (Ctrl+Shift+Z)">↷</button>
     <button class="btn" id="vToPhoto" type="button" title="Открыть текущий кадр в фоторедакторе">Кадр → Фото</button>
+    <button class="btn ai" id="vAI" type="button" title="Создать видео нейросетью">✨ AI Видео</button>
     <button class="btn pri" id="vExport" type="button">Экспорт видео</button>
   </div>
 </header>
@@ -261,6 +286,8 @@ textarea{width:100%;resize:vertical}
         <label class="btn sm">♪ Музыка<input type="file" id="vFileA2" accept="audio/*" multiple hidden></label>
         <label class="btn sm">📁 Файлы<input type="file" id="vFileAny" multiple hidden></label>
       </div><p class="note" style="margin-bottom:0">На телефоне «Из галереи» открывает фото и видео. Если браузер спросит доступ к медиатеке — разреши.</p></div>
+      <button class="btn ai wide" id="vAI2" type="button">✨ Создать видео нейросетью</button>
+      <div id="vJobs"></div>
       <div class="bin" id="vBin"></div>
     </aside>
     <div class="vprev"><canvas id="vCanvas" width="1280" height="720" title="Нажми — воспроизвести/пауза"></canvas></div>
@@ -1800,6 +1827,165 @@ const Video = (() => {
     frameBlob: () => new Promise((r) => { noSel = true; sync(); draw(); pv.toBlob((b) => { noSel = false; reqDraw(); r(b); }, "image/png"); }),
   };
 })();
+
+/* ================= AI video generation (fal.ai) ================= */
+// Runs on fal.ai with the viewer's own API key; the key stays in this browser and is sent only to fal.ai.
+const AIGen = (() => {
+  const KEY_LS = "tribblev-fal-key", JOBS_LS = "tribblev-ai-jobs";
+  const MODELS = [
+    { id: "kling16", name: "Kling 1.6 — качественно и недорого", t2v: "fal-ai/kling-video/v1.6/standard/text-to-video", i2v: "fal-ai/kling-video/v1.6/standard/image-to-video", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
+    { id: "kling21", name: "Kling 2.1 Master — лучшее качество", t2v: "fal-ai/kling-video/v2.1/master/text-to-video", i2v: "fal-ai/kling-video/v2.1/master/image-to-video", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
+    { id: "hailuo", name: "MiniMax Hailuo 02", t2v: "fal-ai/minimax/hailuo-02/standard/text-to-video", i2v: "fal-ai/minimax/hailuo-02/standard/image-to-video", durs: ["6", "10"], params: (o) => ({ duration: o.dur, prompt_optimizer: true }) },
+    { id: "luma", name: "Luma Ray 2", t2v: "fal-ai/luma-dream-machine/ray-2", i2v: "fal-ai/luma-dream-machine/ray-2/image-to-video", durs: ["5", "9"], params: (o) => ({ duration: o.dur + "s", aspect_ratio: o.ar }) },
+    { id: "wan", name: "Wan 2.1 — самый дешёвый", t2v: "fal-ai/wan-t2v", i2v: "fal-ai/wan-i2v", durs: ["5"], params: (o) => ({ aspect_ratio: o.ar }) },
+    { id: "custom", name: "Своя модель fal.ai…", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
+  ];
+  const STYLES = [["Кино", "cinematic, film grain, dramatic lighting"], ["Реализм", "photorealistic, natural light, 4k"], ["Аниме", "anime style, vibrant colors"], ["3D мульт", "3D animated cartoon, Pixar-like"], ["Слоу-мо", "slow motion"], ["Дрон", "aerial drone shot"], ["Неон", "neon lights, night, cyberpunk"], ["Акварель", "watercolor painting style"]];
+  const ls = { get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+  let jobs = []; try { jobs = JSON.parse(ls.get(JOBS_LS, "[]")) || []; } catch (e) { jobs = []; }
+  let ticker = 0;
+  const saveJobs = () => ls.set(JOBS_LS, JSON.stringify(jobs.filter((j) => j.state === "queue" || j.state === "run").map(({ el, shown, ...j }) => j)));
+
+  async function fal(url, key, opts = {}) {
+    let r;
+    try { r = await fetch(url, { ...opts, headers: { Authorization: "Key " + key, "Content-Type": "application/json" } }); }
+    catch (e) { const err = new Error("net"); err.net = true; throw err; }
+    let j = null; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) { const d = j && (j.detail || j.error || j.message); const err = new Error(typeof d === "string" ? d : d ? JSON.stringify(d).slice(0, 300) : r.statusText || "HTTP " + r.status); err.status = r.status; throw err; }
+    return j;
+  }
+  function explain(e) {
+    if (e.net) return "Не удалось связаться с fal.ai: нет интернета, или встроенный просмотрщик блокирует запросы. Открой файл в обычном браузере (Chrome, Safari).";
+    if (e.status === 401) { ls.set(KEY_LS, ""); return "Ключ fal.ai не подошёл — вставь правильный ключ в окне «✨ AI Видео»."; }
+    if (e.status === 402 || e.status === 403) return "fal.ai отказал: скорее всего, на балансе нет денег или у ключа нет доступа. " + e.message;
+    if (e.status === 404) return "Модель не найдена на fal.ai — проверь ID модели. " + e.message;
+    if (e.status === 422) return "Модель не приняла параметры: " + e.message;
+    return "Ошибка fal.ai: " + e.message;
+  }
+  function findVideo(o) {
+    if (!o || typeof o !== "object") return null;
+    if (o.video && typeof o.video.url === "string") return o.video.url;
+    if (Array.isArray(o.videos) && o.videos[0]) return o.videos[0].url || o.videos[0];
+    if (typeof o.url === "string" && /\.(mp4|webm|mov)(\?|$)/i.test(o.url)) return o.url;
+    for (const k in o) { const v = findVideo(o[k]); if (v) return v; }
+    return null;
+  }
+  async function imageDataUrl(src) {
+    const w = srcW(src), h = srcH(src), k = Math.min(1, 1280 / Math.max(w, h)), c = newCanvas(w * k, h * k);
+    c.getContext("2d").drawImage(src, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .9);
+  }
+
+  /* ---- jobs ---- */
+  function renderJobs() {
+    const box = $("#vJobs"); box.innerHTML = "";
+    jobs.forEach((j) => {
+      const d = document.createElement("div"); d.className = "job " + j.state;
+      d.innerHTML = `<div class="jt"><b>✨ ${esc(j.prompt || "Оживление картинки")}</b><span>${esc(j.modelName)}</span></div><div class="js">${statusText(j)}</div>${j.state === "queue" || j.state === "run" ? '<div class="prog"><i class="ind"></i></div>' : ""}${j.msg ? `<p class="note">${esc(j.msg)}</p>` : ""}${j.state === "link" ? `<a class="btn sm" href="${esc(j.url)}" target="_blank" rel="noopener">Открыть ролик</a>` : ""}<div class="btnrow" style="margin-bottom:0"><button class="btn sm" type="button">${j.state === "queue" || j.state === "run" ? "Отменить" : "Убрать"}</button></div>`;
+      $("button", d).onclick = () => { if (j.state === "queue" || j.state === "run") cancel(j); jobs = jobs.filter((x) => x !== j); saveJobs(); renderJobs(); };
+      box.appendChild(d); j.el = d; j.shown = j.state;
+    });
+    const live = jobs.some((j) => j.state === "queue" || j.state === "run");
+    if (live && !ticker) ticker = setInterval(tick, 1000); else if (!live && ticker) { clearInterval(ticker); ticker = 0; }
+  }
+  function statusText(j) {
+    const secs = Math.round((Date.now() - j.started) / 1000), live = j.state === "queue" || j.state === "run";
+    const st = j.state === "queue" ? (j.pos > 0 ? `В очереди: ${j.pos}-й` : "В очереди…") : j.state === "run" ? "Генерируется…" : j.state === "load" ? "Скачиваю ролик…" : j.state === "done" ? "Готово — ролик на таймлайне ✓" : j.state === "link" ? "Готово, но скачать не вышло" : "Ошибка";
+    return st + (live ? " · " + fmtT(secs).replace(/\.\d$/, "") : "");
+  }
+  // once a second: refresh only the status line, so the progress animation keeps running
+  function tick() { if (jobs.some((j) => !j.el || j.shown !== j.state)) return renderJobs(); jobs.forEach((j) => { const e = $(".js", j.el); if (e) e.textContent = statusText(j); }); }
+  async function cancel(j) { const key = ls.get(KEY_LS, ""); if (j.cancel_url && key) fal(j.cancel_url, key, { method: "PUT" }).catch(() => {}); j.state = "error"; }
+  async function poll(j) {
+    const key = ls.get(KEY_LS, "");
+    while (jobs.includes(j) && (j.state === "queue" || j.state === "run")) {
+      await new Promise((r) => setTimeout(r, 4000));
+      if (!jobs.includes(j) || j.state === "error") return;
+      try {
+        const s = await fal(j.status_url, key);
+        if (s.status === "IN_QUEUE") { j.state = "queue"; j.pos = s.queue_position ?? -1; }
+        else if (s.status === "IN_PROGRESS") j.state = "run";
+        else if (s.status === "COMPLETED") { await finish(j, key); return; }
+      } catch (e) { if (e.net && Date.now() - j.started < 15 * 60e3) continue; j.state = "error"; j.msg = explain(e); }
+      saveJobs(); renderJobs();
+    }
+  }
+  async function finish(j, key) {
+    try {
+      const res = await fal(j.response_url, key), url = findVideo(res);
+      if (!url) throw new Error("в ответе нет ссылки на видео");
+      j.url = url; j.state = "load"; saveJobs(); renderJobs();
+      let blob;
+      try { const r = await fetch(url); if (!r.ok) throw new Error(); blob = await r.blob(); }
+      catch (e) { j.state = "link"; j.msg = "Открой ролик по кнопке, сохрани его и добавь через «Галерея»."; renderJobs(); return; }
+      const name = "AI — " + (j.prompt || "оживление").slice(0, 40).replace(/[\\/:*?"<>|]/g, "") + ".mp4";
+      await Video.addFiles([new File([blob], name, { type: blob.type || "video/mp4" })]);
+      j.state = "done"; toast("AI-видео готово и добавлено на таймлайн ✨", 4000);
+    } catch (e) { j.state = "error"; j.msg = e.status || e.net ? explain(e) : "Не удалось получить результат: " + e.message; }
+    saveJobs(); renderJobs();
+  }
+  async function start(o) {
+    const key = ls.get(KEY_LS, ""), m = MODELS.find((x) => x.id === o.model);
+    const endpoint = (o.model === "custom" ? o.custom : o.image ? m.i2v : m.t2v).trim().replace(/^https?:\/\/[^/]+\//, "");
+    const body = { prompt: o.prompt || "natural smooth motion, cinematic", ...m.params(o) };
+    if (o.image) body.image_url = o.image;
+    const j = { id: uid(), prompt: o.promptShown, modelName: o.model === "custom" ? endpoint : m.name, started: Date.now(), state: "queue", pos: -1 };
+    jobs.unshift(j); renderJobs();
+    try {
+      const r = await fal("https://queue.fal.run/" + endpoint, key, { method: "POST", body: JSON.stringify(body) });
+      Object.assign(j, { status_url: r.status_url || `https://queue.fal.run/${endpoint}/requests/${r.request_id}/status`, response_url: r.response_url || `https://queue.fal.run/${endpoint}/requests/${r.request_id}`, cancel_url: r.cancel_url });
+      saveJobs(); renderJobs(); toast("Генерация запущена — можно продолжать монтаж", 3500); poll(j);
+    } catch (e) { j.state = "error"; j.msg = explain(e); renderJobs(); }
+  }
+
+  /* ---- dialog ---- */
+  function open() {
+    const key = ls.get(KEY_LS, ""), W = $("#vCanvas").width, H = $("#vCanvas").height, r = W / H;
+    const o = { mode: "text", model: ls.get("tribblev-ai-model", "kling16"), custom: ls.get("tribblev-ai-custom", ""), dur: "5", ar: r < .8 ? "9:16" : r < 1.2 ? "1:1" : "16:9", image: null };
+    const m = modal("✨ AI Видео", `
+      <div class="seg" id="aiMode"><button type="button" data-m="text" class="on">Из текста</button><button type="button" data-m="image">Оживить картинку</button></div>
+      <div id="aiImgBox" hidden><div class="aiimg" id="aiImg"><span>Картинка не выбрана</span></div>
+        <div class="btnrow"><button class="btn sm" type="button" id="aiFrame">Кадр из монтажа</button><button class="btn sm" type="button" id="aiPhoto">Из фоторедактора</button><label class="btn sm">Из галереи<input type="file" id="aiFile" accept="image/*" hidden></label></div></div>
+      <textarea id="aiPrompt" rows="4" placeholder="Опиши сцену: кто, где, что происходит, как движется камера. Например: a red fox running through a snowy forest at sunrise, slow motion"></textarea>
+      <div class="chips" id="aiChips">${STYLES.map(([n, v]) => `<button type="button" data-s="${esc(v)}">+ ${n}</button>`).join("")}</div>
+      <p class="note">Лучше всего модели понимают английский. Русский тоже работает, но хуже.</p>
+      <label class="row two"><span>Модель</span><select id="aiModel">${MODELS.map((x) => `<option value="${x.id}">${x.name}</option>`).join("")}</select></label>
+      <input type="text" id="aiCustom" placeholder="ID модели, например fal-ai/kling-video/v1.6/standard/text-to-video" hidden style="width:100%;margin-bottom:6px">
+      <div class="grid2"><label>Длительность, с<select id="aiDur"></select></label><label>Формат<select id="aiAR"><option value="16:9">16:9 горизонтально</option><option value="9:16">9:16 вертикально</option><option value="1:1">1:1 квадрат</option></select></label></div>
+      <details class="aikey"${key ? "" : " open"}><summary>Ключ fal.ai ${key ? "✓ сохранён" : "— нужен для генерации"}</summary>
+        <input type="password" id="aiKey" placeholder="Вставь ключ fal.ai" autocomplete="off" style="width:100%;margin:6px 0">
+        <p class="note">Ключ создаётся на <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">fal.ai/dashboard/keys</a>. Он хранится только в этом браузере и отправляется только в fal.ai.</p></details>
+      <p class="note">Ролик создаётся на серверах fal.ai и оплачивается с твоего баланса там (обычно 0,2–1,5 $ за ролик, зависит от модели и длины). Генерация занимает 1–5 минут — монтаж в это время можно продолжать.</p>`,
+      [{ label: "Отмена" }, { label: "✨ Создать видео", pri: true, fn: (m) => {
+        const k = $("#aiKey", m).value.trim(); if (k) ls.set(KEY_LS, k);
+        if (!ls.get(KEY_LS, "")) { toast("Вставь ключ fal.ai — без него генерация не запустится", 4000); $(".aikey", m).open = true; $("#aiKey", m).focus(); return false; }
+        o.prompt = $("#aiPrompt", m).value.trim(); o.promptShown = o.prompt;
+        if (o.mode === "text" && !o.prompt) { toast("Опиши, что должно быть в видео"); $("#aiPrompt", m).focus(); return false; }
+        if (o.mode === "image" && !o.image) { toast("Выбери картинку, которую нужно оживить"); return false; }
+        if (o.model === "custom" && !/^[\w.-]+\/[\w./-]+$/.test(o.custom.trim())) { toast("Впиши ID модели fal.ai, например fal-ai/wan-t2v"); return false; }
+        if (o.mode === "text") o.image = null;
+        ls.set("tribblev-ai-model", o.model); ls.set("tribblev-ai-custom", o.custom);
+        start(o);
+      } }], { sticky: true });
+    const setDurs = () => { const md = MODELS.find((x) => x.id === o.model) || MODELS[0]; if (!md.durs.includes(o.dur)) o.dur = md.durs[0]; $("#aiDur", m).innerHTML = md.durs.map((d) => `<option value="${d}"${d === o.dur ? " selected" : ""}>${d}</option>`).join(""); $("#aiCustom", m).hidden = o.model !== "custom"; };
+    $("#aiModel", m).value = MODELS.some((x) => x.id === o.model) ? o.model : "kling16"; o.model = $("#aiModel", m).value; setDurs();
+    $("#aiModel", m).onchange = (e) => { o.model = e.target.value; setDurs(); };
+    $("#aiCustom", m).value = o.custom; $("#aiCustom", m).oninput = (e) => o.custom = e.target.value;
+    $("#aiDur", m).onchange = (e) => o.dur = e.target.value;
+    $("#aiAR", m).value = o.ar; $("#aiAR", m).onchange = (e) => o.ar = e.target.value;
+    $$("#aiMode button", m).forEach((b) => b.onclick = () => { o.mode = b.dataset.m; $$("#aiMode button", m).forEach((q) => q.classList.toggle("on", q === b)); $("#aiImgBox", m).hidden = o.mode !== "image"; $("#aiPrompt", m).placeholder = o.mode === "image" ? "Что должно произойти с картинкой? Например: the person smiles and waves, camera slowly zooms in" : "Опиши сцену: кто, где, что происходит, как движется камера."; });
+    $$("#aiChips button", m).forEach((b) => b.onclick = () => { const ta = $("#aiPrompt", m); ta.value = (ta.value.trim() ? ta.value.trim().replace(/[,.]?$/, ", ") : "") + b.dataset.s; ta.focus(); });
+    const setImg = async (src) => { if (!src) return toast("Картинка не загрузилась"); o.image = await imageDataUrl(src); $("#aiImg", m).innerHTML = `<img src="${o.image}" alt="Картинка для оживления">`; };
+    $("#aiFrame", m).onclick = async () => { const b = await Video.frameBlob(); if (!b) return; setImg(await loadImage(URL.createObjectURL(b))); };
+    $("#aiPhoto", m).onclick = async () => { if (!Photo.hasLayers()) return toast("В фоторедакторе пока пусто"); const b = await Photo.toBlob(); setImg(await loadImage(URL.createObjectURL(b))); };
+    $("#aiFile", m).onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { setImg(await decodeImage(f)); } catch (err) { toast(imgError(f, err), 5000); } };
+    setTimeout(() => $("#aiPrompt", m).focus(), 50);
+  }
+  // resume generations that were running when the page was closed
+  jobs.forEach((j) => { j.state = j.state || "queue"; poll(j); });
+  renderJobs();
+  return { open };
+})();
+$("#vAI").onclick = AIGen.open; $("#vAI2").onclick = AIGen.open;
 
 /* ================= app shell ================= */
 let mode = "photo";
