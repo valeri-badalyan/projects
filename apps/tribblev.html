@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lobster&family=Montserrat:ital,wght@0,400;0,700;0,900;1,700&family=Russo+One&family=Pacifico&family=Rubik+Mono+One&display=swap">
 <style>
-:root{--bg:#0c0a11;--panel:#15121c;--panel2:#1d1927;--line:#2b2538;--text:#ece8f5;--mute:#978fab;--acc:#8b5cf6;--acc2:#c084fc;--danger:#f43f5e;--ok:#22c55e;--r:10px}
+:root{color-scheme:dark;--bg:#0c0a11;--panel:#15121c;--panel2:#1d1927;--line:#2b2538;--text:#ece8f5;--mute:#978fab;--acc:#8b5cf6;--acc2:#c084fc;--danger:#f43f5e;--ok:#22c55e;--r:10px}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.35 Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 body{display:flex;flex-direction:column;overflow:hidden}
@@ -226,7 +226,7 @@ textarea{width:100%;resize:vertical}
     <button class="btn" id="vUndo" type="button" title="Отменить (Ctrl+Z)">↶</button>
     <button class="btn" id="vRedo" type="button" title="Повторить (Ctrl+Shift+Z)">↷</button>
     <button class="btn" id="vToPhoto" type="button" title="Открыть текущий кадр в фоторедакторе">Кадр → Фото</button>
-    <button class="btn ai" id="vAI" type="button" title="Создать видео нейросетью">✨ AI Видео</button>
+    <button class="btn ai" id="vAI" type="button" title="Создать видео с помощью Claude">✨ AI Видео</button>
     <button class="btn pri" id="vExport" type="button">Экспорт видео</button>
   </div>
 </header>
@@ -286,7 +286,7 @@ textarea{width:100%;resize:vertical}
         <label class="btn sm">♪ Музыка<input type="file" id="vFileA2" accept="audio/*" multiple hidden></label>
         <label class="btn sm">📁 Файлы<input type="file" id="vFileAny" multiple hidden></label>
       </div><p class="note" style="margin-bottom:0">На телефоне «Из галереи» открывает фото и видео. Если браузер спросит доступ к медиатеке — разреши.</p></div>
-      <button class="btn ai wide" id="vAI2" type="button">✨ Создать видео нейросетью</button>
+      <button class="btn ai wide" id="vAI2" type="button">✨ Создать видео с Claude</button>
       <div id="vJobs"></div>
       <div class="bin" id="vBin"></div>
     </aside>
@@ -340,7 +340,16 @@ const srcH = (s) => s.naturalHeight || s.videoHeight || s.height;
 const typing = (e) => /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
 let toastT = 0;
 function toast(msg, ms = 2400) { const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), ms); }
-function download(blob, name) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); }
+// Inside claude.ai the page cannot start downloads itself; the `downloads` capability asks the viewer to save instead.
+let dlCap = null;
+if (window.claude && typeof claude.use === "function") claude.use("downloads").then((d) => { dlCap = d; }).catch(() => {});
+async function download(blob, name) {
+  if (dlCap) {
+    try { await dlCap.save({ filename: name, data: blob }); return true; }
+    catch (e) { if (e && e.code === "declined") { toast("Сохранение отменено"); return false; } if (e && !/unavailable|not_granted|capability_/.test(e.code)) { toast("Не удалось сохранить файл (" + e.code + ")", 4000); return false; } }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 10000); return true;
+}
 function fmtT(s) { s = Math.max(0, s || 0); const m = Math.floor(s / 60); const r = s - m * 60; return m + ":" + (r < 10 ? "0" : "") + r.toFixed(1); }
 function rr(c, x, y, w, h, r) { r = Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2)); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 const IMG_EXT = /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif|tiff?)$/i;
@@ -893,7 +902,7 @@ const Photo = (() => {
       ${rng("Качество", "q", 30, 100, 1, "%")}<label class="row two"><span>Масштаб</span><select id="exS"><option value="0.5">50%</option><option value="1" selected>100%</option><option value="2">200%</option></select></label><p class="note" id="exInfo"></p>`,
       [{ label: "Отмена" }, { label: "Скачать", pri: true, fn: (m) => {
         const type = $("#exF", m).value, s = +$("#exS", m).value, ext = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" }[type];
-        renderTo(s, type === "image/jpeg" ? "#ffffff" : null).toBlob((b) => { if (!b) return toast("Не удалось сохранить"); download(b, "TribbleV-" + Date.now() + "." + ext); toast("Сохранено ✓"); }, type, opts.q / 100);
+        renderTo(s, type === "image/jpeg" ? "#ffffff" : null).toBlob((b) => { if (!b) return toast("Не удалось сохранить"); download(b, "TribbleV-" + Date.now() + "." + ext).then((ok) => ok && toast("Сохранено ✓")); }, type, opts.q / 100);
       } }]);
     const opts = { q: 92 }; bindForm(m, opts);
     const info = () => { const s = +$("#exS", m).value; $("#exInfo", m).textContent = `Итог: ${Math.round(doc.w * s)}×${Math.round(doc.h * s)} px`; };
@@ -1042,8 +1051,8 @@ const Video = (() => {
     try {
       const ids = new Set();
       for (const m of media.values()) {
-        ids.add(m.id); if (m._saved || !m.file) continue;
-        await Store.put("media", { id: m.id, type: m.type, name: m.name, file: m.file, w: m.w, h: m.h, duration: isFinite(m.duration) ? m.duration : -1, thumb: m.thumb, wave: m.wave || "" });
+        ids.add(m.id); if (m._saved || (!m.file && !m.scene)) continue;
+        await Store.put("media", { id: m.id, type: m.type, name: m.name, file: m.file || null, w: m.w, h: m.h, duration: isFinite(m.duration) ? m.duration : -1, thumb: m.thumb, wave: m.wave || "", scene: m.scene || null, prompt: m.prompt || "", tier: m.tier || "" });
         m._saved = true;
       }
       for (const r of await Store.all("media")) if (!ids.has(r.id)) await Store.del("media", r.id);
@@ -1062,8 +1071,10 @@ const Video = (() => {
     toast("Загружаю проект…", 8000);
     let recs = []; try { recs = await Store.all("media"); } catch (e) {}
     for (const r of recs) {
-      const m = { id: r.id, type: r.type, name: r.name, file: r.file, url: URL.createObjectURL(r.file), w: r.w, h: r.h, duration: r.duration < 0 ? Infinity : r.duration, thumb: r.thumb, wave: r.wave, _saved: true };
-      if (m.type === "image") { try { m.img = await decodeImage(r.file); } catch (e) { continue; } }
+      const m = { id: r.id, type: r.type, name: r.name, file: r.file, url: r.file ? URL.createObjectURL(r.file) : "", w: r.w, h: r.h, duration: r.duration < 0 ? Infinity : r.duration, thumb: r.thumb, wave: r.wave, _saved: true };
+      if (m.type === "gen") { m.scene = r.scene; m.prompt = r.prompt; m.tier = r.tier; if (r.file) { try { m.ref = await decodeImage(r.file); } catch (e) {} } }
+      else if (!r.file) continue;
+      else if (m.type === "image") { try { m.img = await decodeImage(r.file); } catch (e) { continue; } }
       media.set(m.id, m);
       if (!m.wave && m.type === "audio") waveform(m).then(() => renderTL());
     }
@@ -1135,9 +1146,17 @@ const Video = (() => {
 
   /* ---- drawing ---- */
   const tiny = newCanvas(24, 24), tinyX = tiny.getContext("2d");
-  function srcOf(it) { const m = M(it); if (!m) return null; if (m.type === "image") return m.img; const e = els.get(it.id); return e && e.readyState >= 2 ? e : null; }
+  // st = time inside the source; used by Claude scenes, which are drawn for that moment
+  function srcOf(it, st = 0) { const m = M(it); if (!m) return null; if (m.type === "image") return m.img; if (m.type === "gen") return genFrame(m, st); const e = els.get(it.id); return e && e.readyState >= 2 ? e : null; }
+  function genFrame(m, st) {
+    if (!m.cv) m.cv = newCanvas(proj.w, proj.h);
+    if (m.cv.width !== proj.w || m.cv.height !== proj.h) { m.cv.width = proj.w; m.cv.height = proj.h; }
+    m.w = proj.w; m.h = proj.h;
+    try { Scene.render(m.cv.getContext("2d"), m.scene, clamp(st, 0, m.duration), proj.w, proj.h, m.ref); } catch (e) {}
+    return m.cv;
+  }
   function drawClip(L, mul = 1) {
-    const c = L.c, m = M(c), src = srcOf(c); if (!src) return;
+    const c = L.c, m = M(c), src = srcOf(c, c.in + L.lt * (isImg(c) ? 1 : c.speed)); if (!src) return;
     const W = proj.w, H = proj.h, sw = m.w || srcW(src), sh = m.h || srcH(src), d = cdur(c), p = clamp(L.lt / d, 0, 1);
     const a = mul * env(c.fadeIn, c.fadeOut, L.lt, d); if (a <= 0) return;
     const rot = (((c.rot || 0) % 360) + 360) % 360, r90 = rot % 180 !== 0, ew = r90 ? sh : sw, eh = r90 ? sw : sh;
@@ -1202,7 +1221,7 @@ const Video = (() => {
     keyX.putImageData(d, 0, 0); return keyC;
   }
   function drawOv(o, lt) {
-    const m = M(o), src = srcOf(o); if (!src) return;
+    const m = M(o), src = srcOf(o, o.in + lt); if (!src) return;
     const W = proj.w, H = proj.h, sw = m.w || srcW(src), sh = m.h || srcH(src), d = adur(o), pin = clamp(lt / .4, 0, 1);
     const still = editing(o); // the item being edited shows its final look while paused
     const a = o.opacity / 100 * (still ? 1 : env(o.fadeIn, o.fadeOut, lt, d)); let sc = 1, dy = 0;
@@ -1364,7 +1383,7 @@ const Video = (() => {
   function autoFormat(w, h) { const r = w / h; const f = r < .8 ? "9:16" : r < 1.15 ? "1:1" : "16:9"; if (f !== proj.fmt) { setFormat(f); toast("Формат проекта: " + FORMATS[f][2]); } }
   function newClip(m, extra) {
     const ar = m.w && m.h ? (m.w / m.h) / (proj.w / proj.h) : 1;
-    return normClip(Object.assign({ id: uid(), mediaId: m.id, in: 0, out: m.type === "image" ? 4 : m.duration, fit: ar > .75 && ar < 1.33 ? "cover" : "blur", motion: m.type === "image" ? "in" : "none" }, extra || {}));
+    return normClip(Object.assign({ id: uid(), mediaId: m.id, in: 0, out: m.type === "image" ? 4 : m.duration, fit: m.type === "gen" || (ar > .75 && ar < 1.33) ? "cover" : "blur", motion: m.type === "image" ? "in" : "none" }, extra || {}));
   }
   function toTimeline(m, silent) {
     if (m.type === "audio") {
@@ -1442,7 +1461,7 @@ const Video = (() => {
   }
   function freeze() {
     layout(); const cur = clipAt(t); if (!cur) return toast("Поставь плейхед на клип");
-    const c = cur.c, m = M(c), src = srcOf(c);
+    const c = cur.c, m = M(c), src = srcOf(c, c.in + cur.lt * (isImg(c) ? 1 : c.speed));
     if (!src) return toast("Кадр ещё загружается — попробуй через секунду");
     const sw = m.w || srcW(src), sh = m.h || srcH(src), k = Math.min(1, 1920 / Math.max(sw, sh)), cv = newCanvas(sw * k, sh * k);
     cv.getContext("2d").drawImage(src, 0, 0, cv.width, cv.height);
@@ -1558,7 +1577,7 @@ const Video = (() => {
     const T = total(), seen = new Set(); renderRuler(T);
     clips.forEach((c, i) => {
       const m = M(c), d = cdur(c);
-      upsert("clip", c, c._s, d, `${m.type === "image" ? "🖼" : "🎬"} ${m.name} · ${fmtT(d)}${!isImg(c) && c.speed !== 1 ? " · " + c.speed + "×" : ""}${c.mute ? " · 🔇" : ""}`, { backgroundImage: m.thumb ? `url(${m.thumb})` : "none", zIndex: 1 + i }, seen);
+      upsert("clip", c, c._s, d, `${m.type === "image" ? "🖼" : m.type === "gen" ? "" : "🎬"} ${m.name} · ${fmtT(d)}${!isImg(c) && c.speed !== 1 ? " · " + c.speed + "×" : ""}${c.mute ? " · 🔇" : ""}`, { backgroundImage: m.thumb ? `url(${m.thumb})` : "none", zIndex: 1 + i }, seen);
       if (i === 0) return;
       const key = "tb_" + c.id; let b = tlEls.get(key);
       if (!b) { b = document.createElement("button"); b.type = "button"; b.className = "tbtn"; track("clip").appendChild(b); tlEls.set(key, b); b.addEventListener("pointerdown", (e) => e.stopPropagation()); }
@@ -1641,7 +1660,7 @@ const Video = (() => {
     media.forEach((m) => {
       const d = document.createElement("div"); d.className = "mi";
       const bg = m.type === "audio" ? (m.wave ? `background-image:url(${m.wave});background-size:100% 60%;background-color:#0d2a20` : "") : m.thumb ? `background-image:url(${m.thumb})` : "";
-      d.innerHTML = `<div class="th" style="${bg}">${m.type === "audio" && !m.wave ? "♪" : !m.thumb && m.type !== "audio" ? "⏳" : ""}</div><div class="nm" title="${esc(m.name)}">${esc(m.name)}</div>${m.type !== "image" && m.duration ? `<span class="du">${fmtT(m.duration)}</span>` : m.type === "image" ? '<span class="du">фото</span>' : ""}<div class="ad"><button type="button" title="На таймлайн" data-b="add">+</button>${m.type !== "audio" ? '<button type="button" title="Поверх видео (картинка в картинке)" data-b="ov">⧉</button>' : ""}<button type="button" class="x" title="Убрать" data-b="rm">✕</button></div>`;
+      d.innerHTML = `<div class="th" style="${bg}">${m.type === "audio" && !m.wave ? "♪" : !m.thumb && m.type !== "audio" ? "⏳" : ""}</div><div class="nm" title="${esc(m.name)}">${esc(m.name)}</div>${m.type !== "image" && m.duration ? `<span class="du">${m.type === "gen" ? "✨ " : ""}${fmtT(m.duration)}</span>` : m.type === "image" ? '<span class="du">фото</span>' : ""}<div class="ad"><button type="button" title="На таймлайн" data-b="add">+</button>${m.type !== "audio" ? '<button type="button" title="Поверх видео (картинка в картинке)" data-b="ov">⧉</button>' : ""}<button type="button" class="x" title="Убрать" data-b="rm">✕</button></div>`;
       $("[data-b=add]", d).onclick = () => toTimeline(m); $("[data-b=rm]", d).onclick = () => removeMedia(m.id);
       const ob = $("[data-b=ov]", d); if (ob) ob.onclick = () => toOverlay(m);
       d.ondblclick = () => toTimeline(m);
@@ -1669,13 +1688,14 @@ const Video = (() => {
       $("#vTrAll").onclick = () => { if (clips.length < 2) return toast("Нужно хотя бы два клипа"); transDlg(clips[1]); setTimeout(() => { const c = $("#trAll"); if (c) c.checked = true; }, 0); };
     } else if (sel.kind === "clip") {
       const m = M(x), img = m.type === "image", idx = clips.indexOf(x);
-      root.innerHTML = `<div class="ititle" style="margin-top:0">${img ? "Фото" : "Видео"}: ${esc(m.name)}</div>
+      root.innerHTML = `<div class="ititle" style="margin-top:0">${img ? "Фото" : m.type === "gen" ? "Сцена Claude" : "Видео"}: ${esc(m.name)}</div>
         ${img ? '<div class="grid2"><label>Длительность, с<input type="number" step="0.1" min="0.2" data-k="out"></label></div>'
           : `<div class="grid2"><label>Начало, с<input type="number" step="0.1" min="0" data-k="in"></label><label>Конец, с<input type="number" step="0.1" data-k="out"></label></div><p class="note">Исходник: ${fmtT(m.duration)}</p>
           <label class="row two"><span>Скорость</span><select data-k="speed" data-num>${[.25, .5, .75, 1, 1.25, 1.5, 2, 3, 4].map((v) => `<option value="${v}">${v}×</option>`).join("")}</select></label>
-          ${rng("Громкость", "volume", 0, 200, 1, "%")}<label class="chk"><input type="checkbox" data-k="mute"> Без звука</label>`}
+          ${m.type === "video" ? `${rng("Громкость", "volume", 0, 200, 1, "%")}<label class="chk"><input type="checkbox" data-k="mute"> Без звука</label>` : ""}`}
+        ${m.type === "gen" ? genBox(m) : ""}
         ${trimBtns}
-        <div class="btnrow"><button class="btn sm" type="button" data-v="freeze" title="F">❄ Стоп-кадр</button>${img ? "" : '<button class="btn sm" type="button" data-v="detach">🔊 Отделить звук</button>'}</div>
+        <div class="btnrow"><button class="btn sm" type="button" data-v="freeze" title="F">❄ Стоп-кадр</button>${m.type === "video" ? '<button class="btn sm" type="button" data-v="detach">🔊 Отделить звук</button>' : ""}</div>
         ${actions}
         <div class="ititle">Кадр</div>
         <label class="row two"><span>Размещение</span><select data-k="fit"><option value="cover">Заполнить экран</option><option value="contain">Вписать целиком</option><option value="blur">Вписать с размытым фоном</option></select></label>
@@ -1687,7 +1707,7 @@ const Video = (() => {
         ${rng("Появление", "fadeIn", 0, 3, .1, "с")}${rng("Затухание", "fadeOut", 0, 3, .1, "с")}
         <div class="ititle">Цвет и фильтры</div><div class="fxbox"></div>`;
       bindForm(root, x, () => { if (!img) { x.in = clamp(x.in || 0, 0, maxOut(x) - .1); x.out = clamp(x.out || 0, x.in + .1, maxOut(x)); } else { x.in = 0; x.out = clamp(x.out || 0, .2, 600); } live(); }, commit);
-      const thumb = img ? m.img : srcOf(x);
+      const thumb = img ? m.img : srcOf(x, x.in);
       fxPanel($(".fxbox", root), x.fx, thumb, () => { if (!playing) draw(); }, commit);
       const tf = (fn) => () => { fn(); live(); commit(); };
       $("[data-v=rl]", root).onclick = tf(() => x.rot = ((x.rot || 0) + 270) % 360);
@@ -1707,7 +1727,8 @@ const Video = (() => {
         <label class="chk"><input type="checkbox" data-k="shadow"> Тень</label>
         <label class="row two"><span>Появление</span><select data-k="anim"><option value="none">Просто</option><option value="pop">Пружинка</option><option value="slide">Выезд снизу</option></select></label>
         ${rng("Проявление", "fadeIn", 0, 3, .1, "с")}${rng("Затухание", "fadeOut", 0, 3, .1, "с")}
-        ${img ? "" : `${rng("Громкость", "volume", 0, 200, 1, "%")}<label class="chk"><input type="checkbox" data-k="mute"> Без звука</label>`}
+        ${m.type === "video" ? `${rng("Громкость", "volume", 0, 200, 1, "%")}<label class="chk"><input type="checkbox" data-k="mute"> Без звука</label>` : ""}
+        ${m.type === "gen" ? genBox(m) : ""}
         ${trimBtns}${actions}
         <div class="ititle">Хромакей (убрать фон)</div>
         <label class="chk"><input type="checkbox" data-k="key"> Убрать однотонный фон</label>
@@ -1715,7 +1736,7 @@ const Video = (() => {
         <div class="btnrow"><button class="btn sm" type="button" data-kc="#00ff00">Зелёный</button><button class="btn sm" type="button" data-kc="#0047ff">Синий</button><button class="btn sm" type="button" data-kc="#ffffff">Белый</button><button class="btn sm" type="button" data-kc="#000000">Чёрный</button></div>
         <div class="ititle">Цвет и фильтры</div><div class="fxbox"></div>`;
       bindForm(root, x, () => { x.start = Math.max(0, x.start || 0); if (img) { x.in = 0; x.out = clamp(x.out || 0, .2, 600); } else { x.in = clamp(x.in || 0, 0, maxOut(x) - .1); x.out = clamp(x.out || 0, x.in + .1, maxOut(x)); } live(); }, commit);
-      fxPanel($(".fxbox", root), x.fx, img ? m.img : srcOf(x), () => { if (!playing) draw(); }, commit);
+      fxPanel($(".fxbox", root), x.fx, img ? m.img : srcOf(x, x.in), () => { if (!playing) draw(); }, commit);
       $$("[data-p]", root).forEach((b) => b.onclick = () => {
         const p = b.dataset.p, W = proj.w, H = proj.h, w = x.size / 100 * W, h = w * (m.h || 1) / (m.w || 1), mx = w / 2 / W + .04, my = h / 2 / H + .04 * W / H;
         if (p === "full") Object.assign(x, { size: 100, x: .5, y: .5, rot: 0, radius: 0 }); else if (p === "c") Object.assign(x, { x: .5, y: .5 });
@@ -1744,7 +1765,32 @@ const Video = (() => {
       $("[data-v=fitlen]", root).onclick = () => { const v = layout(); if (!v) return toast("Нет видео на таймлайне"); x.start = 0; x.out = Math.min(maxOut(x), x.in + v); x.fadeOut = Math.min(2, v / 4); renderAll(); commit(); };
     }
     const on = (v, fn) => $$(`[data-v=${v}]`, root).forEach((b) => b.onclick = fn);
+    const gm = x && M(x);
+    if (gm && gm.type === "gen") {
+      on("genEdit", () => { const ta = $("#genReq", root), q = ta.value.trim(); if (!q) { toast("Напиши, что изменить в сцене"); ta.focus(); return; } ta.value = ""; ClaudeGen.edit(gm, q); });
+      on("genAgain", () => ClaudeGen.edit(gm, "Make a fresh new variation of this scene for the same idea: different composition, motion and palette."));
+    }
     on("split", split); on("dup", dup); on("del", del); on("trl", () => trim("l")); on("trr", () => trim("r"));
+  }
+  function genBox(m) {
+    return `<div class="ititle">✨ Сцена от Claude</div>${m.prompt ? `<p class="note">Запрос: «${esc(m.prompt)}»</p>` : ""}
+      <textarea id="genReq" rows="2" placeholder="Что изменить? Например: сделай ночь, добавь падающие звёзды, лиса пусть прыгнет в конце"></textarea>
+      <div class="btnrow"><button class="btn sm ai" type="button" data-v="genEdit">✨ Изменить сцену</button><button class="btn sm" type="button" data-v="genAgain">Другой вариант</button></div>`;
+  }
+  function genThumb(m) { const c = genFrame(m, m.duration * .45); return thumbOf(c, c.width, c.height); }
+  function addGen(o) {
+    const m = { id: uid(), type: "gen", name: "✨ " + o.scene.title, scene: o.scene, duration: o.scene.duration, prompt: o.prompt || "", tier: o.tier, ref: o.ref || null, file: o.refBlob ? new File([o.refBlob], "claude-ref.jpg", { type: "image/jpeg" }) : null, url: "" };
+    m.thumb = genThumb(m); media.set(m.id, m);
+    let it;
+    if (o.overlay) { it = normOv({ id: uid(), mediaId: m.id, start: clamp(t, 0, Math.max(0, total())), in: 0, out: m.duration, size: 100, x: .5, y: .5, radius: 0, shadow: false, anim: "none", fadeIn: 0, fadeOut: 0 }); ovs.push(it); sel = { kind: "ov", id: it.id }; }
+    else { it = newClip(m); clips.push(it); sel = { kind: "clip", id: it.id }; }
+    layout(); t = o.overlay ? it.start : it._s; renderBin(); renderAll(); commit(); follow();
+  }
+  function updateGen(id, scene) {
+    const m = media.get(id); if (!m) return;
+    m.scene = scene; m.duration = scene.duration; m.name = "✨ " + scene.title; m.thumb = genThumb(m); m._saved = false;
+    [...clips, ...ovs].forEach((c) => { if (c.mediaId === id) { c.in = Math.min(c.in, Math.max(0, m.duration - .5)); c.out = clamp(c.out, c.in + .1, m.duration); if (c.out < m.duration && c.in === 0) c.out = m.duration; } });
+    renderBin(); renderAll(); commit();
   }
   function renderAll() { gcEls(); renderTL(); renderInsp(); if (!playing) { sync(); draw(); } }
 
@@ -1783,7 +1829,7 @@ const Video = (() => {
       const ex = exporting; exporting = null; noSel = false; ov.remove(); stream.getVideoTracks().forEach((tr) => tr.stop()); pause();
       if (!ex || ex.cancel) return toast("Экспорт отменён");
       const blob = new Blob(ex.chunks, { type: (mime || "video/webm").split(";")[0] });
-      download(blob, `TribbleV-montage-${Date.now()}.${ext}`); toast(`Видео сохранено ✓ (${(blob.size / 1048576).toFixed(1)} МБ)`, 3500);
+      download(blob, `TribbleV-montage-${Date.now()}.${ext}`).then((ok) => ok && toast(`Видео сохранено ✓ (${(blob.size / 1048576).toFixed(1)} МБ)`, 3500));
     };
     rec.start(250); playing = true; last = performance.now(); updPlay(); loop();
   }
@@ -1823,169 +1869,387 @@ const Video = (() => {
     init() { setCanvas(); renderBin(); renderAll(); commit(); },
     enter() { renderTL(); reqDraw(); if (!restoreAsked) askRestore(); },
     leave() { pause(); },
-    key, addFiles,
+    key, addFiles, addGen, updateGen,
+    size: () => ({ w: proj.w, h: proj.h }),
     frameBlob: () => new Promise((r) => { noSel = true; sync(); draw(); pv.toBlob((b) => { noSel = false; reqDraw(); r(b); }, "image/png"); }),
   };
 })();
 
-/* ================= AI video generation (fal.ai) ================= */
-// Runs on fal.ai with the viewer's own API key; the key stays in this browser and is sent only to fal.ai.
-const AIGen = (() => {
-  const KEY_LS = "tribblev-fal-key", JOBS_LS = "tribblev-ai-jobs";
-  const MODELS = [
-    { id: "kling16", name: "Kling 1.6 — качественно и недорого", t2v: "fal-ai/kling-video/v1.6/standard/text-to-video", i2v: "fal-ai/kling-video/v1.6/standard/image-to-video", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
-    { id: "kling21", name: "Kling 2.1 Master — лучшее качество", t2v: "fal-ai/kling-video/v2.1/master/text-to-video", i2v: "fal-ai/kling-video/v2.1/master/image-to-video", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
-    { id: "hailuo", name: "MiniMax Hailuo 02", t2v: "fal-ai/minimax/hailuo-02/standard/text-to-video", i2v: "fal-ai/minimax/hailuo-02/standard/image-to-video", durs: ["6", "10"], params: (o) => ({ duration: o.dur, prompt_optimizer: true }) },
-    { id: "luma", name: "Luma Ray 2", t2v: "fal-ai/luma-dream-machine/ray-2", i2v: "fal-ai/luma-dream-machine/ray-2/image-to-video", durs: ["5", "9"], params: (o) => ({ duration: o.dur + "s", aspect_ratio: o.ar }) },
-    { id: "wan", name: "Wan 2.1 — самый дешёвый", t2v: "fal-ai/wan-t2v", i2v: "fal-ai/wan-i2v", durs: ["5"], params: (o) => ({ aspect_ratio: o.ar }) },
-    { id: "custom", name: "Своя модель fal.ai…", durs: ["5", "10"], params: (o) => ({ duration: o.dur, aspect_ratio: o.ar }) },
-  ];
-  const STYLES = [["Кино", "cinematic, film grain, dramatic lighting"], ["Реализм", "photorealistic, natural light, 4k"], ["Аниме", "anime style, vibrant colors"], ["3D мульт", "3D animated cartoon, Pixar-like"], ["Слоу-мо", "slow motion"], ["Дрон", "aerial drone shot"], ["Неон", "neon lights, night, cyberpunk"], ["Акварель", "watercolor painting style"]];
-  const ls = { get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
-  let jobs = []; try { jobs = JSON.parse(ls.get(JOBS_LS, "[]")) || []; } catch (e) { jobs = []; }
+/* ================= Scene engine: renders the animated scenes Claude designs ================= */
+// Claude answers with a JSON description (layers, keyframes, camera); nothing it writes is ever run as code.
+const Scene = (() => {
+  const FONT = { display: "'Russo One', sans-serif", sans: "Montserrat, sans-serif", serif: "Georgia, 'Times New Roman', serif", script: "Pacifico, cursive", hand: "Lobster, cursive", mono: "'Courier New', monospace", heavy: "'Rubik Mono One', sans-serif" };
+  const num = (v, d, a, b) => { v = +v; if (!isFinite(v)) v = d; return clamp(v, a, b); };
+  const col = (v, d) => typeof v === "string" && /^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%deg]+\))$/i.test(v.trim()) ? v.trim() : d;
+  const cols = (v, d) => { const a = (Array.isArray(v) ? v : [v]).map((x) => col(x, null)).filter(Boolean).slice(0, 6); return a.length ? a : d; };
+  const str = (v, d, n = 200) => typeof v === "string" ? v.slice(0, n) : d;
+  const pick = (v, list, d) => list.includes(v) ? v : d;
+  const EASES = ["linear", "in", "out", "inOut", "back", "bounce", "elastic"];
+  const EASE = {
+    linear: (p) => p, in: (p) => p * p * p, out: (p) => 1 - Math.pow(1 - p, 3), inOut: (p) => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2,
+    back: (p) => { const c = 1.70158; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); },
+    bounce: (p) => { const n = 7.5625, d = 2.75; if (p < 1 / d) return n * p * p; if (p < 2 / d) return n * (p -= 1.5 / d) * p + .75; if (p < 2.5 / d) return n * (p -= 2.25 / d) * p + .9375; return n * (p -= 2.625 / d) * p + .984375; },
+    elastic: (p) => p === 0 || p === 1 ? p : Math.pow(2, -10 * p) * Math.sin((p * 10 - .75) * (2 * Math.PI / 3)) + 1,
+  };
+  const KEYP = ["x", "y", "scale", "rotate", "opacity"];
+  const LIM = { x: [-2, 3], y: [-2, 3], scale: [0, 20], rotate: [-3600, 3600], opacity: [0, 1] };
+  const DEF = { x: .5, y: .5, scale: 1, rotate: 0, opacity: 1 };
+
+  /* ---- sanitize whatever Claude wrote into a safe, complete scene ---- */
+  function sanitize(s, wantDur) {
+    if (!s || typeof s !== "object") throw new Error("ответ не похож на сцену");
+    const dur = num(s.duration, wantDur || 6, 1, 30);
+    const bg = s.background && typeof s.background === "object" ? s.background : {};
+    const out = {
+      title: str(s.title, "Сцена Claude", 60), duration: dur,
+      background: { type: pick(bg.type, ["solid", "gradient", "radial", "image", "none"], "gradient"), color: col(bg.color, "#101024"), colors: cols(bg.colors, ["#1e1b4b", "#7c3aed"]), angle: num(bg.angle, 90, -360, 360), shift: num(bg.shift, 0, 0, 2) },
+      camera: { keys: keys((s.camera || {}).keys, ["zoom", "x", "y", "rotate"], { zoom: [.2, 6], x: [-1, 1], y: [-1, 1], rotate: [-360, 360] }), shake: num((s.camera || {}).shake, 0, 0, 1) },
+      post: { vignette: num((s.post || {}).vignette, .25, 0, 1), letterbox: !!(s.post || {}).letterbox },
+      layers: [],
+    };
+    (Array.isArray(s.layers) ? s.layers : []).slice(0, 60).forEach((L) => { try { const l = layer(L, dur); if (l) out.layers.push(l); } catch (e) {} });
+    if (!out.layers.length && out.background.type !== "image") throw new Error("в сцене нет ни одного слоя");
+    return out;
+  }
+  function keys(list, props, lim) {
+    return (Array.isArray(list) ? list : []).slice(0, 40).filter((k) => k && typeof k === "object").map((k) => {
+      const o = { t: num(k.t, 0, 0, 60) }; if (k.ease) o.ease = pick(k.ease, EASES, "inOut");
+      props.forEach((p) => { if (k[p] !== undefined && isFinite(+k[p])) o[p] = clamp(+k[p], lim[p][0], lim[p][1]); });
+      return o;
+    }).sort((a, b) => a.t - b.t);
+  }
+  function layer(L, dur) {
+    if (!L || typeof L !== "object") return null;
+    const type = pick(L.type, ["shape", "text", "emoji", "particles", "landscape", "image"], null); if (!type) return null;
+    const o = { type, start: num(L.start, 0, 0, 60), end: num(L.end, dur, 0, 60), fadeIn: num(L.fadeIn, type === "landscape" ? 0 : .25, 0, 10), fadeOut: num(L.fadeOut, .25, 0, 10),
+      ease: pick(L.ease, EASES, "inOut"), keys: keys(L.keys, KEYP, LIM),
+      float: num(L.float, 0, 0, .5), spin: num(L.spin, 0, -1440, 1440), pulse: num(L.pulse, 0, 0, .8), wiggle: num(L.wiggle, 0, 0, 90), glow: num(L.glow, 0, 0, 1) };
+    KEYP.forEach((p) => o[p] = num(L[p], DEF[p], LIM[p][0], LIM[p][1]));
+    if (type === "shape") Object.assign(o, { shape: pick(L.shape, ["circle", "ellipse", "rect", "triangle", "star", "ring", "polygon", "heart", "line"], "circle"), size: num(L.size, .2, 0, 4), w: num(L.w, NaN, 0, 6), h: num(L.h, NaN, 0, 6), fill: L.fill === "none" ? null : cols(L.fill, ["#8b5cf6"]), stroke: col(L.stroke, null), strokeWidth: num(L.strokeWidth, .008, 0, .3), radius: num(L.radius, 0, 0, .5), points: Math.round(num(L.points, 5, 3, 12)), sides: Math.round(num(L.sides, 6, 3, 12)) });
+    if (type === "text") Object.assign(o, { text: str(L.text, "", 160), font: FONT[L.font] ? L.font : "sans", size: num(L.size, .09, .01, .6), color: col(L.color, "#ffffff"), stroke: col(L.stroke, null), strokeWidth: num(L.strokeWidth, .008, 0, .1), weight: [400, 700, 900].includes(+L.weight) ? +L.weight : 900, anim: pick(L.anim, ["type", "pop", "fade", "slide", "wave", "none"], "fade"), maxWidth: num(L.maxWidth, .9, .1, 1), shadow: L.shadow !== false });
+    if (type === "emoji") Object.assign(o, { char: str(L.char, "⭐", 16), size: num(L.size, .2, .01, 3), flip: !!L.flip });
+    if (type === "particles") Object.assign(o, { kind: pick(L.kind, ["snow", "rain", "stars", "confetti", "bubbles", "sparks", "fireflies", "bokeh", "emoji"], "snow"), count: Math.round(num(L.count, 60, 1, 400)), color: col(L.color, "#ffffff"), colors: cols(L.colors, null), size: num(L.size, 1, .1, 6), speed: num(L.speed, 1, 0, 6), wind: num(L.wind, 0, -3, 3), char: str(L.char, "❤️", 16) });
+    if (type === "landscape") Object.assign(o, { kind: pick(L.kind, ["mountains", "hills", "waves", "city", "forest", "dunes"], "hills"), color: col(L.color, "#1f2937"), y: num(L.y, .65, -.5, 1.5), height: num(L.height, .3, .02, 1.5), layers: Math.round(num(L.layers, 2, 1, 5)), scroll: num(L.scroll, 0, -2, 2), seed: num(L.seed, 1, 0, 9999) });
+    if (type === "image") Object.assign(o, { w: num(L.w, .6, .02, 4), cover: !!L.cover, radius: num(L.radius, 0, 0, .5) });
+    return o;
+  }
+
+  /* ---- helpers ---- */
+  const hash = (i, k) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
+  const noise = (x, s) => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return hash(i, s) * (1 - u) + hash(i + 1, s) * u; };
+  function val(L, p, t) {
+    let prev = null, next = null;
+    for (const k of L.keys) { if (k[p] === undefined) continue; if (k.t <= t) prev = k; else { next = k; break; } }
+    if (!prev && !next) return L[p]; if (!prev) return next[p]; if (!next) return prev[p];
+    const e = EASE[next.ease || L.ease] || EASE.inOut; return prev[p] + (next[p] - prev[p]) * e(clamp((t - prev.t) / ((next.t - prev.t) || 1), 0, 1));
+  }
+  function fillStyle(c, colors, x0, y0, x1, y1) {
+    if (!colors) return null; if (colors.length === 1) return colors[0];
+    const g = c.createLinearGradient(x0, y0, x1, y1); colors.forEach((k, i) => g.addColorStop(i / (colors.length - 1), k)); return g;
+  }
+  function mix(hex, to, k) { // blend a #rgb/#rrggbb colour toward another, for depth in landscapes
+    const p = (h) => { h = h.replace("#", ""); if (h.length === 3) h = h.split("").map((x) => x + x).join(""); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0); };
+    if (!/^#/.test(hex) || !/^#/.test(to)) return hex; const a = p(hex), b = p(to);
+    return "rgb(" + a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",") + ")";
+  }
+
+  /* ---- drawing ---- */
+  function render(c, s, t, W, H, img) {
+    c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H);
+    const b = s.background;
+    if (b.type === "solid") { c.fillStyle = b.color; c.fillRect(0, 0, W, H); }
+    else if (b.type === "gradient" || b.type === "radial") {
+      let g;
+      if (b.type === "radial") g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.hypot(W, H) / 2);
+      else { const a = (b.angle + Math.sin(t * b.shift) * 25) * D2R, r = Math.hypot(W, H) / 2; g = c.createLinearGradient(W / 2 - Math.sin(a) * r, H / 2 - Math.cos(a) * -r, W / 2 + Math.sin(a) * r, H / 2 + Math.cos(a) * -r); }
+      b.colors.forEach((k, i) => g.addColorStop(b.colors.length > 1 ? i / (b.colors.length - 1) : 0, k)); c.fillStyle = g; c.fillRect(0, 0, W, H);
+    }
+    // camera
+    const cam = { keys: s.camera.keys, zoom: 1, x: 0, y: 0, rotate: 0, ease: "inOut" };
+    const z = val(cam, "zoom", t), cx = val(cam, "x", t), cy = val(cam, "y", t), cr = val(cam, "rotate", t), sh = s.camera.shake;
+    c.translate(W / 2, H / 2); c.scale(z, z); c.rotate(cr * D2R);
+    c.translate(-W / 2 - cx * W + (sh ? (noise(t * 8, 3) - .5) * sh * H * .04 : 0), -H / 2 - cy * H + (sh ? (noise(t * 8, 7) - .5) * sh * H * .04 : 0));
+    if (b.type === "image" && img) drawCover(c, img, W, H, 1 + .08 * t / s.duration);
+    for (const L of s.layers) { if (t >= L.start && t <= L.end) drawLayer(c, L, t, W, H, img); }
+    c.restore();
+    if (s.post.vignette > 0) { const g = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.hypot(W, H) / 2); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, `rgba(0,0,0,${s.post.vignette * .85})`); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+    if (s.post.letterbox) { c.fillStyle = "#000"; const bh = H * .1; c.fillRect(0, 0, W, bh); c.fillRect(0, H - bh, W, bh); }
+  }
+  function drawCover(c, img, W, H, k) { const sw = srcW(img), sh = srcH(img), s = Math.max(W / sw, H / sh) * k; c.drawImage(img, (W - sw * s) / 2, (H - sh * s) / 2, sw * s, sh * s); }
+  function drawLayer(c, L, t, W, H, img) {
+    const lt = t - L.start, d = L.end - L.start;
+    let a = val(L, "opacity", t);
+    if (L.fadeIn > 0) a *= clamp(lt / L.fadeIn, 0, 1); if (L.fadeOut > 0) a *= clamp((d - lt) / L.fadeOut, 0, 1);
+    if (a <= 0) return;
+    if (L.type === "particles") { c.save(); c.globalAlpha = a; particles(c, L, t, W, H); c.restore(); return; }
+    if (L.type === "landscape") { c.save(); c.globalAlpha = a; landscape(c, L, t, W, H); c.restore(); return; }
+    let x = val(L, "x", t) * W, y = val(L, "y", t) * H, sc = val(L, "scale", t), r = val(L, "rotate", t);
+    if (L.float) y += Math.sin(t * 2.2 + L.start) * L.float * H * .1;
+    if (L.spin) r += L.spin * t; if (L.wiggle) r += Math.sin(t * 9) * L.wiggle;
+    if (L.pulse) sc *= 1 + Math.sin(t * 5) * L.pulse * .5;
+    if (sc <= 0) return;
+    c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(r * D2R); c.scale(sc, sc);
+    if (L.glow) { c.shadowColor = (L.fill && L.fill[0]) || L.color || "#fff"; c.shadowBlur = L.glow * H * .08; }
+    if (L.type === "shape") shape(c, L, H);
+    else if (L.type === "emoji") { c.font = `${L.size * H}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; if (L.flip) c.scale(-1, 1); c.fillText(L.char, 0, L.size * H * .06); }
+    else if (L.type === "text") text(c, L, lt, W, H);
+    else if (L.type === "image" && img) {
+      const sw = srcW(img), sh = srcH(img);
+      if (L.cover) { c.translate(-x, -y); drawCover(c, img, W, H, 1); }
+      else { const w = L.w * H, h = w * sh / sw; if (L.radius) { c.beginPath(); rr(c, -w / 2, -h / 2, w, h, L.radius * Math.min(w, h)); c.clip(); } c.drawImage(img, -w / 2, -h / 2, w, h); }
+    }
+    c.restore();
+  }
+  function shape(c, L, H) {
+    const w = (isFinite(L.w) ? L.w : L.size) * H, h = (isFinite(L.h) ? L.h : L.size) * H;
+    c.beginPath();
+    switch (L.shape) {
+      case "circle": c.arc(0, 0, w / 2, 0, Math.PI * 2); break;
+      case "ellipse": c.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2); break;
+      case "rect": rr(c, -w / 2, -h / 2, w, h, L.radius * Math.min(w, h)); break;
+      case "triangle": c.moveTo(0, -h / 2); c.lineTo(w / 2, h / 2); c.lineTo(-w / 2, h / 2); c.closePath(); break;
+      case "ring": c.arc(0, 0, w / 2, 0, Math.PI * 2); c.moveTo(w * .3, 0); c.arc(0, 0, w * .3, 0, Math.PI * 2, true); break;
+      case "star": for (let i = 0; i < L.points * 2; i++) { const rad = i % 2 ? w * .2 : w / 2, an = i * Math.PI / L.points - Math.PI / 2; c.lineTo(Math.cos(an) * rad, Math.sin(an) * rad); } c.closePath(); break;
+      case "polygon": for (let i = 0; i < L.sides; i++) { const an = i * 2 * Math.PI / L.sides - Math.PI / 2; c.lineTo(Math.cos(an) * w / 2, Math.sin(an) * h / 2); } c.closePath(); break;
+      case "heart": { const s = w / 2; c.moveTo(0, s * .7); c.bezierCurveTo(-s * 1.2, -s * .1, -s * .6, -s * .95, 0, -s * .4); c.bezierCurveTo(s * .6, -s * .95, s * 1.2, -s * .1, 0, s * .7); c.closePath(); break; }
+      case "line": c.moveTo(-w / 2, 0); c.lineTo(w / 2, 0); break;
+    }
+    const f = L.shape !== "line" && fillStyle(c, L.fill, 0, -h / 2, 0, h / 2);
+    if (f) { c.fillStyle = f; c.fill("evenodd"); }
+    if (L.stroke || L.shape === "line") { c.shadowColor = "transparent"; c.lineWidth = Math.max(1, L.strokeWidth * H); c.strokeStyle = L.stroke || (L.fill && L.fill[0]) || "#fff"; c.lineCap = "round"; c.stroke(); }
+  }
+  function wrap(c, s, max) {
+    const out = []; String(s).split("\n").forEach((para) => { let line = ""; para.split(" ").forEach((w) => { const tst = line ? line + " " + w : w; if (c.measureText(tst).width > max && line) { out.push(line); line = w; } else line = tst; }); out.push(line); });
+    return out;
+  }
+  function text(c, L, lt, W, H) {
+    const fs = L.size * H; c.font = `${L.weight} ${fs}px ${FONT[L.font]}`; c.textAlign = "center"; c.textBaseline = "middle";
+    let lines = wrap(c, L.text, L.maxWidth * W), shown = Infinity;
+    const pin = clamp(lt / .6, 0, 1);
+    if (L.anim === "pop") { const s = pin < 1 ? Math.max(.01, EASE.back(pin)) : 1; c.scale(s, s); }
+    else if (L.anim === "slide") { c.translate(0, (1 - EASE.out(pin)) * fs * 1.2); c.globalAlpha *= pin; }
+    else if (L.anim === "fade") c.globalAlpha *= pin;
+    else if (L.anim === "type") shown = Math.floor(lt * 18);
+    const lh = fs * 1.2, total = lines.length * lh;
+    if (L.shadow) { c.shadowColor = "rgba(0,0,0,.55)"; c.shadowBlur = fs * .18; c.shadowOffsetY = fs * .05; }
+    let used = 0;
+    lines.forEach((ln, i) => {
+      let s = ln; if (shown < Infinity) { s = ln.slice(0, Math.max(0, shown - used)); used += ln.length; } if (!s) return;
+      const y = -total / 2 + lh * (i + .5);
+      if (L.anim === "wave") {
+        const full = c.measureText(s).width; let px = -full / 2; c.textAlign = "left";
+        [...s].forEach((ch, j) => { const yy = y + Math.sin(lt * 6 - j * .5) * fs * .12; if (L.stroke) { c.lineWidth = L.strokeWidth * H * 2; c.strokeStyle = L.stroke; c.lineJoin = "round"; c.strokeText(ch, px, yy); } c.fillStyle = L.color; c.fillText(ch, px, yy); px += c.measureText(ch).width; });
+        c.textAlign = "center"; return;
+      }
+      if (L.stroke) { c.lineWidth = L.strokeWidth * H * 2; c.strokeStyle = L.stroke; c.lineJoin = "round"; c.strokeText(s, 0, y); }
+      c.fillStyle = L.color; c.fillText(s, 0, y);
+    });
+  }
+  function particles(c, L, t, W, H) {
+    const n = L.count, sp = L.speed, sz = L.size, palette = L.colors || [L.color], A = c.globalAlpha;
+    for (let i = 0; i < n; i++) {
+      const r1 = hash(i, 1), r2 = hash(i, 2), r3 = hash(i, 3), r4 = hash(i, 4), colr = palette[i % palette.length];
+      c.fillStyle = c.strokeStyle = colr;
+      switch (L.kind) {
+        case "snow": { const v = (.04 + .08 * r2) * sp, y = ((r1 + t * v) % 1.1) - .05, x = (r3 + t * v * L.wind * .3 + Math.sin(t * (.6 + r4) + i) * .015) % 1; c.globalAlpha = A * (.5 + .5 * r4); c.beginPath(); c.arc(((x % 1) + 1) % 1 * W, y * H, (.002 + .005 * r2) * H * sz, 0, 7); c.fill(); break; }
+        case "rain": { const v = (.9 + .6 * r2) * sp, y = ((r1 + t * v) % 1.2) - .1, x = ((r3 + y * L.wind * .2) % 1 + 1) % 1, len = .035 * H * sz; c.globalAlpha = A * (.35 + .3 * r4); c.lineWidth = Math.max(1, H * .0018 * sz); c.beginPath(); c.moveTo(x * W, y * H); c.lineTo(x * W - L.wind * len * .3, y * H + len); c.stroke(); break; }
+        case "stars": { c.globalAlpha = A * (clamp(.35 + .65 * Math.abs(Math.sin(t * (.6 + 2.5 * r4) * sp + i * 7)), 0, 1)); const s = (.0015 + .004 * r2) * H * sz; c.beginPath(); c.arc(r1 * W, r3 * H, s, 0, 7); c.fill(); break; }
+        case "confetti": { const v = (.12 + .15 * r2) * sp, y = ((r1 + t * v) % 1.15) - .08, x = ((r3 + Math.sin(t * 2 + i) * .02 + t * L.wind * .03) % 1 + 1) % 1, s = (.008 + .008 * r4) * H * sz; c.save(); c.translate(x * W, y * H); c.rotate(t * (2 + 4 * r4) + i); c.scale(1, Math.cos(t * 5 + i)); c.fillRect(-s / 2, -s / 3, s, s * .66); c.restore(); break; }
+        case "bubbles": { const v = (.06 + .1 * r2) * sp, y = 1.08 - ((r1 + t * v) % 1.15), x = r3 + Math.sin(t * 1.5 + i) * .02, s = (.008 + .02 * r4) * H * sz; c.globalAlpha = A * (.55); c.lineWidth = Math.max(1, H * .002); c.beginPath(); c.arc(x * W, y * H, s, 0, 7); c.stroke(); break; }
+        case "sparks": { const life = (t * sp * .8 + r1) % 1, an = r2 * Math.PI * 2, dist = life * (.15 + .25 * r3) * H, x = val(L, "x", t) * W + Math.cos(an) * dist, y = val(L, "y", t) * H + Math.sin(an) * dist + life * life * H * .08; c.globalAlpha = A * (1 - life); c.beginPath(); c.arc(x, y, (.002 + .004 * r4) * H * sz * (1 - life * .5), 0, 7); c.fill(); break; }
+        case "fireflies": { const x = r1 + Math.sin(t * .5 * sp * (1 + r2) + i) * .05, y = r3 + Math.cos(t * .4 * sp * (1 + r4) + i * 2) * .04; c.globalAlpha = A * (.3 + .7 * Math.abs(Math.sin(t * (1 + r4) + i))); c.shadowColor = colr; c.shadowBlur = H * .02; c.beginPath(); c.arc(x * W, y * H, .004 * H * sz, 0, 7); c.fill(); c.shadowBlur = 0; break; }
+        case "bokeh": { const x = (r1 + t * .01 * sp * (r2 - .5)) % 1, y = r3 + Math.sin(t * .3 + i) * .02, s = (.02 + .06 * r4) * H * sz; c.globalAlpha = A * (.12 + .15 * r2); c.beginPath(); c.arc(x * W, y * H, s, 0, 7); c.fill(); break; }
+        case "emoji": { const v = (.06 + .1 * r2) * sp, y = ((r1 + t * v) % 1.2) - .1, x = r3 + Math.sin(t + i) * .02, s = (.03 + .03 * r4) * H * sz; c.save(); c.globalAlpha = A * (.9); c.translate(x * W, y * H); c.rotate(Math.sin(t * 2 + i) * .4); c.font = `${s}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText(L.char, 0, 0); c.restore(); break; }
+      }
+    }
+  }
+  function landscape(c, L, t, W, H) {
+    for (let j = L.layers - 1; j >= 0; j--) { // far layers first, lighter and slower
+      const depth = L.layers === 1 ? 0 : j / (L.layers - 1), colr = mix(L.color, "#ffffff", depth * .35), base = (L.y + (1 - depth) * L.height * .35) * H;
+      const amp = L.height * H * (1 - depth * .4), off = t * L.scroll * W * (1 - depth * .6), seed = L.seed + j * 13;
+      c.fillStyle = colr; c.beginPath(); c.moveTo(-10, H + 10);
+      const step = W / 48;
+      if (L.kind === "city") {
+        let x = -((off % (W * .08)) + W * .08), k = Math.floor(off / (W * .08)) - 1;
+        c.lineTo(-10, base + amp);
+        while (x < W + W * .1) { const bw = W * (.04 + .05 * hash(k, seed)), bh = amp * (.3 + .7 * hash(k, seed + 1)); c.lineTo(x, base + amp - bh); c.lineTo(x + bw, base + amp - bh); c.lineTo(x + bw, base + amp); x += bw; k++; }
+        c.lineTo(W + 10, H + 10); c.closePath(); c.fill();
+        if (depth < .5) { c.fillStyle = "rgba(255,214,102,.75)"; let x2 = -((off % (W * .08)) + W * .08), k2 = Math.floor(off / (W * .08)) - 1; while (x2 < W + W * .1) { const bw = W * (.04 + .05 * hash(k2, seed)), bh = amp * (.3 + .7 * hash(k2, seed + 1)); for (let wy = base + amp - bh + H * .015; wy < base + amp - H * .01; wy += H * .03) for (let wx = x2 + bw * .15; wx < x2 + bw * .85; wx += bw * .25) if (hash(Math.floor(wx), Math.floor(wy)) > .55) c.fillRect(wx, wy, bw * .1, H * .012); x2 += bw; k2++; } }
+        continue;
+      }
+      for (let x = -step; x <= W + step; x += step) {
+        const u = (x + off) / W; let yv;
+        if (L.kind === "mountains") yv = base - amp * (.25 + .75 * (noise(u * 4, seed) * .7 + noise(u * 11, seed + 5) * .3));
+        else if (L.kind === "waves") yv = base - amp * .25 * (Math.sin(u * 9 + t * 1.6 * (1 + j * .3) + j) + 1);
+        else if (L.kind === "dunes") yv = base - amp * .6 * (.5 + .5 * Math.sin(u * 4 + seed) * noise(u * 2, seed));
+        else yv = base - amp * .5 * (noise(u * 2.5, seed) * .8 + .2); // hills & forest
+        c.lineTo(x, yv);
+      }
+      c.lineTo(W + 10, H + 10); c.closePath(); c.fill();
+      if (L.kind === "forest") { // trees standing on the hill line
+        c.fillStyle = mix(L.color, "#000000", .25 * (1 - depth));
+        for (let k = Math.floor(off / (W * .035)) - 1, x = -((off % (W * .035)) + W * .035); x < W + W * .04; x += W * .035, k++) {
+          if (hash(k, seed + 9) < .35) continue; const u = (x + off) / W, gy = base - amp * .5 * (noise(u * 2.5, seed) * .8 + .2), th = H * (.06 + .08 * hash(k, seed + 3)) * (1 - depth * .4);
+          c.beginPath(); c.moveTo(x, gy - th); c.lineTo(x + th * .3, gy + 2); c.lineTo(x - th * .3, gy + 2); c.closePath(); c.fill();
+        }
+      }
+    }
+  }
+
+  /* ---- what Claude is told ---- */
+  const SPEC = `Coordinates: "x","y" are fractions of the frame (0,0 = top-left, 1,1 = bottom-right). Sizes ("size","w","h","strokeWidth", text "size", landscape "height") are fractions of the frame HEIGHT. Times are seconds. Colors are "#rrggbb". Gradient "angle" is CSS-style degrees (180 = top to bottom, 90 = left to right).
+
+{
+ "title": "short title",
+ "duration": seconds,
+ "background": {"type":"gradient","colors":["#hex","#hex"],"angle":90,"shift":0.2} | {"type":"radial","colors":[...]} | {"type":"solid","color":"#hex"} | {"type":"image"} | {"type":"none"},
+ "camera": {"keys":[{"t":0,"zoom":1,"x":0,"y":0,"rotate":0,"ease":"inOut"}], "shake":0},
+ "post": {"vignette":0.3, "letterbox":false},
+ "layers": [ drawn in order, later layers on top ]
+}
+
+Every layer may have: "start","end" (seconds visible), "fadeIn","fadeOut", base "x","y","scale"(1),"rotate"(degrees),"opacity"(0-1), "keys":[{"t":seconds, any of "x","y","scale","rotate","opacity", "ease":"linear|in|out|inOut|back|bounce|elastic"}], looping motion "float"(0-0.5), "spin"(deg/s), "pulse"(0-0.8), "wiggle"(deg), "glow"(0-1).
+Layer types:
+- {"type":"shape","shape":"circle|ellipse|rect|triangle|star|ring|polygon|heart|line","size":0.2,"w":0.3,"h":0.1,"fill":"#hex" or ["#top","#bottom"] or "none","stroke":"#hex","strokeWidth":0.01,"radius":0.2,"points":5,"sides":6}
+- {"type":"text","text":"...","font":"display|sans|serif|script|hand|mono|heavy","size":0.09,"color":"#hex","stroke":"#hex","strokeWidth":0.008,"weight":900,"anim":"type|pop|fade|slide|wave|none","maxWidth":0.9}
+- {"type":"emoji","char":"🦊","size":0.25,"flip":false} — characters, animals, people, vehicles, objects. Make them act with keys: walk across, jump (y keys with "bounce"/"out"), fly, grow. "flip":true faces right-to-left emoji the other way.
+- {"type":"particles","kind":"snow|rain|stars|confetti|bubbles|sparks|fireflies|bokeh|emoji","count":80,"color":"#hex","colors":["#hex",...],"size":1,"speed":1,"wind":0,"char":"❤️"} — fills the frame (sparks burst from the layer's x,y).
+- {"type":"landscape","kind":"mountains|hills|waves|city|forest|dunes","color":"#hex","y":0.65,"height":0.3,"layers":3,"scroll":0.05,"seed":3} — ground/scenery filling below y; "scroll" moves it sideways (parallax) to fake travel.
+- {"type":"image","w":0.6,"radius":0.05} or {"type":"image","cover":true} — the viewer's photo (only if one is attached).`;
+  const RULES = `Make it feel like a real short animated film: 2-4 story beats spread over the whole duration, real motion with keys (entrances, travel, exits, reactions), a camera move, depth (sky → far scenery → near scenery → characters → particles → text). Use 8-30 layers. Pick a cohesive palette that fits the mood. Add on-screen text only if the request asks for words or a title clearly helps; write it in the language of the request. Keep important things inside the frame. Reply with ONLY the JSON object, no commentary.`;
+  function prompt(req, dur, W, H, hasImg) {
+    return `You are a motion designer. Design an animated video scene for TribbleV Studio, which renders it with a 2D canvas engine (no video files, no external images, no code). Answer with one JSON object in the schema below.
+
+Request from the viewer: """${req}"""
+Duration: ${dur} seconds. Frame: ${W}x${H} (${W > H ? "horizontal" : W < H ? "vertical" : "square"}).
+${hasImg ? 'The viewer attached a photo (shown to you). Build the video around it: use {"type":"image"} as a layer or background {"type":"image"}, and animate around it.\n' : ""}
+${SPEC}
+
+${RULES}`;
+  }
+  function editPrompt(scene, req, W, H, hasImg) {
+    return `You are a motion designer editing an animated scene for TribbleV Studio (2D canvas engine). Here is the current scene JSON:
+
+${JSON.stringify(scene)}
+
+Change request from the viewer: """${req}"""
+Frame: ${W}x${H}.${hasImg ? " The viewer's photo is available as the image layer." : ""}
+Apply the change and keep everything else that still fits. Reply with the FULL updated scene JSON in the same schema:
+
+${SPEC}
+
+${RULES}`;
+  }
+  return { sanitize, render, prompt, editPrompt };
+})();
+
+/* ================= AI video by Claude ================= */
+// Inside claude.ai the page may ask Claude (the `sample` capability) on the viewer's own account: no API key.
+// Claude writes a scene; the Scene engine draws it, and it becomes an ordinary clip on the timeline.
+const ARTIFACT_URL = "https://claude.ai/artifact/9x8SKAm41UUxguKjQCooXj";
+const ClaudeGen = (() => {
+  let sample = null, limits = null, resolved = false;
+  const ready = (window.claude && typeof claude.use === "function" ? claude.use("sample").catch(() => null) : Promise.resolve(null))
+    .then(async (s) => { sample = s; resolved = true; if (s && s.limits) limits = await s.limits().catch(() => null); return s; });
+  const jobs = [];
   let ticker = 0;
-  const saveJobs = () => ls.set(JOBS_LS, JSON.stringify(jobs.filter((j) => j.state === "queue" || j.state === "run").map(({ el, shown, ...j }) => j)));
+  const IDEAS = ["Лиса бежит по зимнему лесу на закате, падает снег", "Ракета взлетает в космос, звёзды и планеты", "Неоновый ночной город, едет машина, дождь", "Поздравление с днём рождения: торт, конфетти, надпись", "Подводный мир: рыбы, пузыри, медуза", "Интро для YouTube-канала с названием TribbleV"];
+  const ERR = {
+    not_granted: "Приложению не разрешено обращаться к Claude. Разрешение можно включить в меню этой страницы на claude.ai.",
+    sampling_disabled: "Claude недоступен для этого аккаунта.", not_declared: "Эта версия страницы не может обращаться к Claude.",
+    rate_limited: "Слишком много запросов или закончился лимит Claude. Попробуй чуть позже.", session_expired: "Войди в claude.ai заново и попробуй ещё раз.",
+    refused: "Claude отказался делать такую сцену — опиши её иначе.", invalid_json: "Claude ответил не в том формате — нажми «Создать» ещё раз.",
+    empty_completion: "Claude ничего не ответил — попробуй описать проще.", images_unavailable: "Здесь нельзя отправить картинку Claude — попробуй без неё.",
+    image_rejected: "Claude не принял эту картинку — выбери другую (JPG или PNG).", prompt_too_large: "Запрос слишком большой — опиши короче.", cancelled: "Отменено.",
+  };
+  const errText = (e) => ERR[e && e.code] || (e && e.code ? "Связь с Claude прервалась — попробуй ещё раз." : "Не получилось собрать сцену: " + ((e && e.message) || e));
 
-  async function fal(url, key, opts = {}) {
-    let r;
-    try { r = await fetch(url, { ...opts, headers: { Authorization: "Key " + key, "Content-Type": "application/json" } }); }
-    catch (e) { const err = new Error("net"); err.net = true; throw err; }
-    let j = null; try { j = await r.json(); } catch (e) {}
-    if (!r.ok) { const d = j && (j.detail || j.error || j.message); const err = new Error(typeof d === "string" ? d : d ? JSON.stringify(d).slice(0, 300) : r.statusText || "HTTP " + r.status); err.status = r.status; throw err; }
-    return j;
+  /* ---- job cards (left panel) ---- */
+  function statusText(j) {
+    const secs = Math.round((Date.now() - j.started) / 1000), tm = " · " + fmtT(secs).replace(/\.\d$/, "");
+    return j.state === "think" ? "Claude придумывает сцену…" + tm : j.state === "write" ? `Claude пишет сцену… ${j.chars} симв.` + tm : j.state === "done" ? "Готово — клип на таймлайне ✓" : "Не получилось";
   }
-  function explain(e) {
-    if (e.net) return "Не удалось связаться с fal.ai: нет интернета, или встроенный просмотрщик блокирует запросы. Открой файл в обычном браузере (Chrome, Safari).";
-    if (e.status === 401) { ls.set(KEY_LS, ""); return "Ключ fal.ai не подошёл — вставь правильный ключ в окне «✨ AI Видео»."; }
-    if (e.status === 402 || e.status === 403) return "fal.ai отказал: скорее всего, на балансе нет денег или у ключа нет доступа. " + e.message;
-    if (e.status === 404) return "Модель не найдена на fal.ai — проверь ID модели. " + e.message;
-    if (e.status === 422) return "Модель не приняла параметры: " + e.message;
-    return "Ошибка fal.ai: " + e.message;
-  }
-  function findVideo(o) {
-    if (!o || typeof o !== "object") return null;
-    if (o.video && typeof o.video.url === "string") return o.video.url;
-    if (Array.isArray(o.videos) && o.videos[0]) return o.videos[0].url || o.videos[0];
-    if (typeof o.url === "string" && /\.(mp4|webm|mov)(\?|$)/i.test(o.url)) return o.url;
-    for (const k in o) { const v = findVideo(o[k]); if (v) return v; }
-    return null;
-  }
-  async function imageDataUrl(src) {
-    const w = srcW(src), h = srcH(src), k = Math.min(1, 1280 / Math.max(w, h)), c = newCanvas(w * k, h * k);
-    c.getContext("2d").drawImage(src, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .9);
-  }
-
-  /* ---- jobs ---- */
   function renderJobs() {
     const box = $("#vJobs"); box.innerHTML = "";
     jobs.forEach((j) => {
-      const d = document.createElement("div"); d.className = "job " + j.state;
-      d.innerHTML = `<div class="jt"><b>✨ ${esc(j.prompt || "Оживление картинки")}</b><span>${esc(j.modelName)}</span></div><div class="js">${statusText(j)}</div>${j.state === "queue" || j.state === "run" ? '<div class="prog"><i class="ind"></i></div>' : ""}${j.msg ? `<p class="note">${esc(j.msg)}</p>` : ""}${j.state === "link" ? `<a class="btn sm" href="${esc(j.url)}" target="_blank" rel="noopener">Открыть ролик</a>` : ""}<div class="btnrow" style="margin-bottom:0"><button class="btn sm" type="button">${j.state === "queue" || j.state === "run" ? "Отменить" : "Убрать"}</button></div>`;
-      $("button", d).onclick = () => { if (j.state === "queue" || j.state === "run") cancel(j); jobs = jobs.filter((x) => x !== j); saveJobs(); renderJobs(); };
+      const live = j.state === "think" || j.state === "write", d = document.createElement("div"); d.className = "job " + (live ? "run" : j.state);
+      d.innerHTML = `<div class="jt"><b>✨ ${esc(j.title)}</b><span>${esc(j.sub)}</span></div><div class="js">${statusText(j)}</div>${live ? '<div class="prog"><i class="ind"></i></div>' : ""}${j.msg ? `<p class="note">${esc(j.msg)}</p>` : ""}<div class="btnrow" style="margin-bottom:0"><button class="btn sm" type="button">${live ? "Остановить" : "Убрать"}</button></div>`;
+      $("button", d).onclick = () => { if (live) j.ctl.abort(); jobs.splice(jobs.indexOf(j), 1); renderJobs(); };
       box.appendChild(d); j.el = d; j.shown = j.state;
     });
-    const live = jobs.some((j) => j.state === "queue" || j.state === "run");
+    const live = jobs.some((j) => j.state === "think" || j.state === "write");
     if (live && !ticker) ticker = setInterval(tick, 1000); else if (!live && ticker) { clearInterval(ticker); ticker = 0; }
   }
-  function statusText(j) {
-    const secs = Math.round((Date.now() - j.started) / 1000), live = j.state === "queue" || j.state === "run";
-    const st = j.state === "queue" ? (j.pos > 0 ? `В очереди: ${j.pos}-й` : "В очереди…") : j.state === "run" ? "Генерируется…" : j.state === "load" ? "Скачиваю ролик…" : j.state === "done" ? "Готово — ролик на таймлайне ✓" : j.state === "link" ? "Готово, но скачать не вышло" : "Ошибка";
-    return st + (live ? " · " + fmtT(secs).replace(/\.\d$/, "") : "");
-  }
-  // once a second: refresh only the status line, so the progress animation keeps running
-  function tick() { if (jobs.some((j) => !j.el || j.shown !== j.state)) return renderJobs(); jobs.forEach((j) => { const e = $(".js", j.el); if (e) e.textContent = statusText(j); }); }
-  async function cancel(j) { const key = ls.get(KEY_LS, ""); if (j.cancel_url && key) fal(j.cancel_url, key, { method: "PUT" }).catch(() => {}); j.state = "error"; }
-  async function poll(j) {
-    const key = ls.get(KEY_LS, "");
-    while (jobs.includes(j) && (j.state === "queue" || j.state === "run")) {
-      await new Promise((r) => setTimeout(r, 4000));
-      if (!jobs.includes(j) || j.state === "error") return;
-      try {
-        const s = await fal(j.status_url, key);
-        if (s.status === "IN_QUEUE") { j.state = "queue"; j.pos = s.queue_position ?? -1; }
-        else if (s.status === "IN_PROGRESS") j.state = "run";
-        else if (s.status === "COMPLETED") { await finish(j, key); return; }
-      } catch (e) { if (e.net && Date.now() - j.started < 15 * 60e3) continue; j.state = "error"; j.msg = explain(e); }
-      saveJobs(); renderJobs();
+  function tick() { if (jobs.some((j) => j.shown !== j.state)) return renderJobs(); jobs.forEach((j) => { const e = j.el && $(".js", j.el); if (e) e.textContent = statusText(j); }); }
+
+  async function ask(job, input, o) {
+    jobs.unshift(job); renderJobs();
+    try {
+      const raw = await sample.json(input, { signal: job.ctl.signal, modelTier: o.tier, cache: false, ...(o.imgBlob ? { images: [o.imgBlob] } : {}), onText: ({ text }) => { job.state = "write"; job.chars = text.length; } });
+      const scene = Scene.sanitize(raw, o.dur);
+      job.state = "done"; renderJobs(); return scene;
+    } catch (e) {
+      job.state = "error"; job.msg = errText(e); renderJobs(); if (e && e.code !== "cancelled") toast(job.msg, 5000); return null;
     }
   }
-  async function finish(j, key) {
-    try {
-      const res = await fal(j.response_url, key), url = findVideo(res);
-      if (!url) throw new Error("в ответе нет ссылки на видео");
-      j.url = url; j.state = "load"; saveJobs(); renderJobs();
-      let blob;
-      try { const r = await fetch(url); if (!r.ok) throw new Error(); blob = await r.blob(); }
-      catch (e) { j.state = "link"; j.msg = "Открой ролик по кнопке, сохрани его и добавь через «Галерея»."; renderJobs(); return; }
-      const name = "AI — " + (j.prompt || "оживление").slice(0, 40).replace(/[\\/:*?"<>|]/g, "") + ".mp4";
-      await Video.addFiles([new File([blob], name, { type: blob.type || "video/mp4" })]);
-      j.state = "done"; toast("AI-видео готово и добавлено на таймлайн ✨", 4000);
-    } catch (e) { j.state = "error"; j.msg = e.status || e.net ? explain(e) : "Не удалось получить результат: " + e.message; }
-    saveJobs(); renderJobs();
+  async function generate(o) {
+    const { w, h } = Video.size();
+    const req = o.prompt + (o.overlay ? "\n\nThis clip goes OVER another video: use background {\"type\":\"none\"} and no landscape that covers the frame; only characters, effects, particles and text on a transparent frame." : "");
+    const job = { title: o.prompt || "Оживление картинки", sub: `${o.dur} с · ${o.overlay ? "поверх видео" : "на таймлайн"}`, state: "think", chars: 0, started: Date.now(), ctl: new AbortController() };
+    const scene = await ask(job, Scene.prompt(req || "Animate this photo beautifully", o.dur, w, h, !!o.imgBlob), o);
+    if (scene) { Video.addGen({ scene, ref: o.imgCanvas, refBlob: o.imgBlob, prompt: o.prompt, tier: o.tier, overlay: o.overlay }); toast("Claude сделал видео ✨ Оно на таймлайне", 3500); }
   }
-  async function start(o) {
-    const key = ls.get(KEY_LS, ""), m = MODELS.find((x) => x.id === o.model);
-    const endpoint = (o.model === "custom" ? o.custom : o.image ? m.i2v : m.t2v).trim().replace(/^https?:\/\/[^/]+\//, "");
-    const body = { prompt: o.prompt || "natural smooth motion, cinematic", ...m.params(o) };
-    if (o.image) body.image_url = o.image;
-    const j = { id: uid(), prompt: o.promptShown, modelName: o.model === "custom" ? endpoint : m.name, started: Date.now(), state: "queue", pos: -1 };
-    jobs.unshift(j); renderJobs();
-    try {
-      const r = await fal("https://queue.fal.run/" + endpoint, key, { method: "POST", body: JSON.stringify(body) });
-      Object.assign(j, { status_url: r.status_url || `https://queue.fal.run/${endpoint}/requests/${r.request_id}/status`, response_url: r.response_url || `https://queue.fal.run/${endpoint}/requests/${r.request_id}`, cancel_url: r.cancel_url });
-      saveJobs(); renderJobs(); toast("Генерация запущена — можно продолжать монтаж", 3500); poll(j);
-    } catch (e) { j.state = "error"; j.msg = explain(e); renderJobs(); }
+  async function edit(m, request) {
+    if (!sample) return toast("Изменять сцену можно, когда TribbleV открыт на claude.ai", 4000);
+    const { w, h } = Video.size();
+    const job = { title: "Изменение: " + request, sub: m.name, state: "think", chars: 0, started: Date.now(), ctl: new AbortController() };
+    const scene = await ask(job, Scene.editPrompt(m.scene, request, w, h, !!m.ref), { tier: m.tier || "default", dur: m.scene.duration });
+    if (scene) { Video.updateGen(m.id, scene); toast("Сцена обновлена ✨", 3000); }
   }
 
   /* ---- dialog ---- */
-  function open() {
-    const key = ls.get(KEY_LS, ""), W = $("#vCanvas").width, H = $("#vCanvas").height, r = W / H;
-    const o = { mode: "text", model: ls.get("tribblev-ai-model", "kling16"), custom: ls.get("tribblev-ai-custom", ""), dur: "5", ar: r < .8 ? "9:16" : r < 1.2 ? "1:1" : "16:9", image: null };
-    const m = modal("✨ AI Видео", `
-      <div class="seg" id="aiMode"><button type="button" data-m="text" class="on">Из текста</button><button type="button" data-m="image">Оживить картинку</button></div>
+  async function open() {
+    if (!resolved && window.claude) { toast("Подключаюсь к Claude…", 2000); await ready; }
+    if (!sample) {
+      modal("✨ AI Видео от Claude", `<p class="note" style="font-size:13.5px">Видео создаёт Claude прямо через твой аккаунт claude.ai — ключи и API не нужны. Для этого TribbleV Studio должен быть открыт на claude.ai.</p>${ARTIFACT_URL ? `<p><a class="btn pri" href="${ARTIFACT_URL}" target="_blank" rel="noopener">Открыть TribbleV Studio на claude.ai</a></p>` : ""}<p class="note">Сейчас файл открыт отдельно от claude.ai, поэтому Claude отсюда недоступен. Всё остальное в приложении работает и так.</p>`, [{ label: "Понятно", pri: true }]);
+      return;
+    }
+    const canImg = !!(limits && limits.images), { w, h } = Video.size();
+    const o = { mode: "text", dur: 8, tier: "default", overlay: false, imgBlob: null, imgCanvas: null };
+    const m = modal("✨ AI Видео от Claude", `
+      ${canImg ? '<div class="seg" id="aiMode"><button type="button" data-m="text" class="on">Из текста</button><button type="button" data-m="image">По картинке</button></div>' : ""}
       <div id="aiImgBox" hidden><div class="aiimg" id="aiImg"><span>Картинка не выбрана</span></div>
-        <div class="btnrow"><button class="btn sm" type="button" id="aiFrame">Кадр из монтажа</button><button class="btn sm" type="button" id="aiPhoto">Из фоторедактора</button><label class="btn sm">Из галереи<input type="file" id="aiFile" accept="image/*" hidden></label></div></div>
-      <textarea id="aiPrompt" rows="4" placeholder="Опиши сцену: кто, где, что происходит, как движется камера. Например: a red fox running through a snowy forest at sunrise, slow motion"></textarea>
-      <div class="chips" id="aiChips">${STYLES.map(([n, v]) => `<button type="button" data-s="${esc(v)}">+ ${n}</button>`).join("")}</div>
-      <p class="note">Лучше всего модели понимают английский. Русский тоже работает, но хуже.</p>
-      <label class="row two"><span>Модель</span><select id="aiModel">${MODELS.map((x) => `<option value="${x.id}">${x.name}</option>`).join("")}</select></label>
-      <input type="text" id="aiCustom" placeholder="ID модели, например fal-ai/kling-video/v1.6/standard/text-to-video" hidden style="width:100%;margin-bottom:6px">
-      <div class="grid2"><label>Длительность, с<select id="aiDur"></select></label><label>Формат<select id="aiAR"><option value="16:9">16:9 горизонтально</option><option value="9:16">9:16 вертикально</option><option value="1:1">1:1 квадрат</option></select></label></div>
-      <details class="aikey"${key ? "" : " open"}><summary>Ключ fal.ai ${key ? "✓ сохранён" : "— нужен для генерации"}</summary>
-        <input type="password" id="aiKey" placeholder="Вставь ключ fal.ai" autocomplete="off" style="width:100%;margin:6px 0">
-        <p class="note">Ключ создаётся на <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">fal.ai/dashboard/keys</a>. Он хранится только в этом браузере и отправляется только в fal.ai.</p></details>
-      <p class="note">Ролик создаётся на серверах fal.ai и оплачивается с твоего баланса там (обычно 0,2–1,5 $ за ролик, зависит от модели и длины). Генерация занимает 1–5 минут — монтаж в это время можно продолжать.</p>`,
-      [{ label: "Отмена" }, { label: "✨ Создать видео", pri: true, fn: (m) => {
-        const k = $("#aiKey", m).value.trim(); if (k) ls.set(KEY_LS, k);
-        if (!ls.get(KEY_LS, "")) { toast("Вставь ключ fal.ai — без него генерация не запустится", 4000); $(".aikey", m).open = true; $("#aiKey", m).focus(); return false; }
-        o.prompt = $("#aiPrompt", m).value.trim(); o.promptShown = o.prompt;
-        if (o.mode === "text" && !o.prompt) { toast("Опиши, что должно быть в видео"); $("#aiPrompt", m).focus(); return false; }
-        if (o.mode === "image" && !o.image) { toast("Выбери картинку, которую нужно оживить"); return false; }
-        if (o.model === "custom" && !/^[\w.-]+\/[\w./-]+$/.test(o.custom.trim())) { toast("Впиши ID модели fal.ai, например fal-ai/wan-t2v"); return false; }
-        if (o.mode === "text") o.image = null;
-        ls.set("tribblev-ai-model", o.model); ls.set("tribblev-ai-custom", o.custom);
-        start(o);
-      } }], { sticky: true });
-    const setDurs = () => { const md = MODELS.find((x) => x.id === o.model) || MODELS[0]; if (!md.durs.includes(o.dur)) o.dur = md.durs[0]; $("#aiDur", m).innerHTML = md.durs.map((d) => `<option value="${d}"${d === o.dur ? " selected" : ""}>${d}</option>`).join(""); $("#aiCustom", m).hidden = o.model !== "custom"; };
-    $("#aiModel", m).value = MODELS.some((x) => x.id === o.model) ? o.model : "kling16"; o.model = $("#aiModel", m).value; setDurs();
-    $("#aiModel", m).onchange = (e) => { o.model = e.target.value; setDurs(); };
-    $("#aiCustom", m).value = o.custom; $("#aiCustom", m).oninput = (e) => o.custom = e.target.value;
-    $("#aiDur", m).onchange = (e) => o.dur = e.target.value;
-    $("#aiAR", m).value = o.ar; $("#aiAR", m).onchange = (e) => o.ar = e.target.value;
-    $$("#aiMode button", m).forEach((b) => b.onclick = () => { o.mode = b.dataset.m; $$("#aiMode button", m).forEach((q) => q.classList.toggle("on", q === b)); $("#aiImgBox", m).hidden = o.mode !== "image"; $("#aiPrompt", m).placeholder = o.mode === "image" ? "Что должно произойти с картинкой? Например: the person smiles and waves, camera slowly zooms in" : "Опиши сцену: кто, где, что происходит, как движется камера."; });
-    $$("#aiChips button", m).forEach((b) => b.onclick = () => { const ta = $("#aiPrompt", m); ta.value = (ta.value.trim() ? ta.value.trim().replace(/[,.]?$/, ", ") : "") + b.dataset.s; ta.focus(); });
-    const setImg = async (src) => { if (!src) return toast("Картинка не загрузилась"); o.image = await imageDataUrl(src); $("#aiImg", m).innerHTML = `<img src="${o.image}" alt="Картинка для оживления">`; };
-    $("#aiFrame", m).onclick = async () => { const b = await Video.frameBlob(); if (!b) return; setImg(await loadImage(URL.createObjectURL(b))); };
-    $("#aiPhoto", m).onclick = async () => { if (!Photo.hasLayers()) return toast("В фоторедакторе пока пусто"); const b = await Photo.toBlob(); setImg(await loadImage(URL.createObjectURL(b))); };
-    $("#aiFile", m).onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { setImg(await decodeImage(f)); } catch (err) { toast(imgError(f, err), 5000); } };
+        <div class="btnrow"><button class="btn sm" type="button" id="aiFrame">Кадр из монтажа</button><button class="btn sm" type="button" id="aiPhoto">Из фоторедактора</button><label class="btn sm">Из галереи<input type="file" id="aiFile" accept="image/jpeg,image/png,image/webp" hidden></label></div></div>
+      <textarea id="aiPrompt" rows="4" placeholder="Опиши видео: что происходит, где, настроение, нужна ли надпись. Например: лиса бежит по зимнему лесу на закате, падает снег"></textarea>
+      <div class="chips" id="aiChips">${IDEAS.map((x) => `<button type="button">${esc(x)}</button>`).join("")}</div>
+      <div class="grid2"><label>Длительность<select id="aiDur">${[4, 6, 8, 10, 15].map((d) => `<option value="${d}"${d === 8 ? " selected" : ""}>${d} секунд</option>`).join("")}</select></label>
+        <label>Качество<select id="aiTier"><option value="quick">Быстро</option><option value="default" selected>Обычно</option><option value="complex">Максимум (дольше)</option></select></label></div>
+      <label class="row two"><span>Куда добавить</span><select id="aiPlace"><option value="main">На видеодорожку</option><option value="over">Поверх видео (прозрачный фон)</option></select></label>
+      <p class="note">Claude придумывает и «режиссирует» анимацию: фон, пейзажи, персонажей-эмодзи, фигуры, частицы, надписи и движения камеры. TribbleV рисует её как обычный клип ${w}×${h} — его можно резать, красить фильтрами и экспортировать. Это анимация, а не фотореалистичное видео. Запрос расходует лимит твоего аккаунта Claude; ответ приходит за 20–90 секунд.</p>`,
+      [{ label: "Отмена" }, { label: "✨ Создать", pri: true, fn: (m) => {
+        o.prompt = $("#aiPrompt", m).value.trim(); o.dur = +$("#aiDur", m).value; o.tier = $("#aiTier", m).value; o.overlay = $("#aiPlace", m).value === "over";
+        if (o.mode === "image" && !o.imgBlob) { toast("Выбери картинку"); return false; }
+        if (o.mode === "text" && !o.prompt) { toast("Опиши, какое видео нужно"); $("#aiPrompt", m).focus(); return false; }
+        if (o.mode === "text") { o.imgBlob = null; o.imgCanvas = null; }
+        generate(o);
+      } }]);
+    $$("#aiMode button", m).forEach((b) => b.onclick = () => { o.mode = b.dataset.m; $$("#aiMode button", m).forEach((q) => q.classList.toggle("on", q === b)); $("#aiImgBox", m).hidden = o.mode !== "image"; });
+    $$("#aiChips button", m).forEach((b) => b.onclick = () => { $("#aiPrompt", m).value = b.textContent; $("#aiPrompt", m).focus(); });
+    const setImg = async (src) => {
+      const sw = srcW(src), sh = srcH(src), k = Math.min(1, 1600 / Math.max(sw, sh)), c = newCanvas(sw * k, sh * k); c.getContext("2d").drawImage(src, 0, 0, c.width, c.height);
+      o.imgCanvas = c; o.imgBlob = await new Promise((r) => c.toBlob(r, "image/jpeg", .9));
+      $("#aiImg", m).innerHTML = ""; const im = document.createElement("img"); im.alt = "Картинка для видео"; im.src = c.toDataURL("image/jpeg", .8); $("#aiImg", m).appendChild(im);
+    };
+    if (canImg) {
+      $("#aiFrame", m).onclick = async () => { const b = await Video.frameBlob(); if (b) setImg(await loadImage(URL.createObjectURL(b))); };
+      $("#aiPhoto", m).onclick = async () => { if (!Photo.hasLayers()) return toast("В фоторедакторе пока пусто"); setImg(await loadImage(URL.createObjectURL(await Photo.toBlob()))); };
+      $("#aiFile", m).onchange = async (e) => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; try { setImg(await decodeImage(f)); } catch (err) { toast(imgError(f, err), 5000); } };
+    }
     setTimeout(() => $("#aiPrompt", m).focus(), 50);
   }
-  // resume generations that were running when the page was closed
-  jobs.forEach((j) => { j.state = j.state || "queue"; poll(j); });
-  renderJobs();
-  return { open };
+  return { open, edit, available: () => !!sample };
 })();
-$("#vAI").onclick = AIGen.open; $("#vAI2").onclick = AIGen.open;
+$("#vAI").onclick = ClaudeGen.open; $("#vAI2").onclick = ClaudeGen.open;
 
 /* ================= app shell ================= */
 let mode = "photo";
