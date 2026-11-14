@@ -90,6 +90,19 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-models b { font-size: 15px; } .vi-models i { font-style: normal; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: rgba(125,255,207,.15); color: #7dffcf; align-self: center; }
 .vi-models small { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; line-height: 1.35; }
 .vi-tools .vi-by { font-size: 11px; color: var(--muted); align-self: center; padding: 0 4px; }
+.vi-m.wide { max-width: 100%; width: 100%; }
+.vi-game { position: relative; width: 100%; aspect-ratio: 3 / 4; max-height: 68dvh; border-radius: 14px; overflow: hidden; background: #000; margin-bottom: 6px; }
+.vi-game iframe { display: block; width: 100%; height: 100%; border: 0; background: #000; }
+.vi-game.wait { display: grid; place-items: center; color: #fff; font-weight: 800; text-align: center; padding: 12px; background: linear-gradient(110deg, #0d2a3a 30%, #0d4a5a 50%, #0d2a3a 70%); background-size: 300% 100%; animation: viGameWait 1.4s linear infinite; }
+@keyframes viGameWait { to { background-position: -300% 0; } }
+.vi-gerr { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 6px; padding: 8px 10px; border-radius: 12px; background: rgba(255,107,122,.15); border: 1px solid rgba(255,107,122,.5); font-size: 13px; }
+.vi-gerr button { padding: 6px 10px; border-radius: 10px; border: 0; background: var(--coral); color: #fff; font-weight: 800; cursor: pointer; }
+.vi-code { max-height: 300px; overflow: auto; margin: 6px 0; padding: 10px; border-radius: 10px; background: #0a0b1a; font-family: var(--mono); font-size: 11.5px; white-space: pre; }
+.vi-full { position: fixed; inset: 0; z-index: 96; background: #000; display: flex; flex-direction: column; }
+.vi-full > div { display: flex; align-items: center; gap: 8px; padding: max(8px, env(safe-area-inset-top, 0px)) 12px 8px; background: #04141f; color: #7dffcf; font-weight: 800; }
+.vi-full > div b { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vi-full > div button { padding: 7px 12px; border-radius: 10px; border: 1px solid #1fb6c9; background: rgba(31,182,201,.15); color: #fff; font-weight: 800; cursor: pointer; }
+.vi-full iframe { flex: 1; width: 100%; border: 0; background: #000; }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -143,6 +156,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
       { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
+      { id: "game", ico: "🕹", n: "WattAI", hi: "Я WattAI — создатель игр! Опиши игру, и я её сделаю: играй прямо здесь, на весь экран, проси доработки и скачивай.", p: "Режим «WattAI»: создаёшь браузерные игры по описанию.", s: ["Космический шутер с метеоритами", "Раннер: кот прыгает через кактусы", "Игра «Лови фрукты» с бонусами"] },
       { id: "video3d", ico: "🧊", n: "3D-видео", hi: "Опиши сюжет — и я сниму 3D-мультфильм: объёмные герои, свет и тени, полёт камеры, субтитры и музыка. Его можно скачать.", p: "Режим «3D-видео»: снимаешь 3D-мультфильмы по описанию.", s: ["Робот танцует на Луне", "Кот плывёт на лодке к острову", "Динозавр собирает подарки под ёлкой"] },
       { id: "video", ico: "🎬", n: "Мульт 2D", hi: "Опиши сюжет — и я сниму рисованный 2D-мультик: несколько сцен, движение, субтитры и музыка. Его можно скачать.", p: "Режим «Видео»: снимаешь короткие видео по описанию.", s: ["Кот летит в космос и находит планету из сыра", "День из жизни робота-повара", "Рыбка ищет друзей в океане"] },
       { id: "school", ico: "📚", n: "Учёба", hi: "Объясню любую тему шаг за шагом.", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения. В конце можно задать один короткий вопрос на проверку.", s: ["Объясни дроби на примере пиццы", "Как решить 3x + 5 = 20?", "Кратко о Солнечной системе"] },
@@ -199,8 +213,8 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
     function save() {
       chats = chats.slice(0, 30);
       chats.forEach((c) => { c.msgs = c.msgs.slice(-40); });
-      let pics = 0; // keep only the 15 newest drawings in storage
-      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if ((m.svg || m.scenes) && ++pics > 15) { delete m.svg; delete m.anim; delete m.scenes; m.gone = 1; } } });
+      let pics = 0, games = 0; // keep only the 15 newest drawings and the 8 newest games in storage
+      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if ((m.svg || m.scenes) && ++pics > 15) { delete m.svg; delete m.anim; delete m.scenes; m.gone = 1; } if (m.game && ++games > 8) { delete m.game; m.gameGone = 1; } } });
       store.set("v3aiChats", chats); store.set("v3aiCur", cur); store.set("v3aiMode", mode); store.set("v3aiAsked", asked);
     }
 
@@ -251,6 +265,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
         el.appendChild(document.createTextNode(m.t));
       } else {
+        if (m.game || m.gameGone) { gameCard(el, m); log.appendChild(el); return el; }
         if (m.svg || m.gone || m.scenes) { art(el, m); log.appendChild(el); return el; }
         const body = document.createElement("div"); body.className = "vi-body"; body.innerHTML = md(m.t); el.appendChild(body);
         tools(el, m);
@@ -353,6 +368,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       save(); render();
 
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
+      if (!img && (forceArt === "game" || forceArt === "game-new" || (!forceArt && wantsGame(q, M)))) { await makeGame(c, q, forceArt === "game-new"); return; }
       if (!img && (forceArt === "video3d" || (!forceArt && M.id === "video3d"))) { await film(c, q, true); return; }
       if (!img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
       if (!img && !forceArt && wantsVideo(q, M)) { await film(c, q, !/2d|2д|рисованн|мульт/i.test(q)); return; }
@@ -369,7 +385,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.game || m.gameGone ? `(WattAI сделал игру по запросу «${m.q}».) ` : "") + (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
         hist[0] = { role: "user", content: rules(M) + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
@@ -411,6 +427,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (M.id === "art") return true;
       const t = q.toLowerCase().replace(/ё/g, "е");
       return /^(пожалуйста,?\s*)?(нарисуй|изобрази|намалюй)/.test(t) || /(сгенерируй|создай|сделай|покажи|придумай)\s+(мне\s+)?(картин|рисун|изображен|арт|аватар|аватарк|логотип|обои|иконк)/.test(t) || /^(draw|generate an? (image|picture))/.test(t);
+    }
+    function wantsGame(q, M) {
+      if (M.id === "game") return true;
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      return /wattai|ватт ?аи/.test(t) || /(сделай|создай|напиши|придумай|разработай|собери|запрограммируй)\s+(мне\s+)?(\S+\s+){0,2}(игру|игрушку|мини-игру|game)/.test(t);
     }
     function wantsVideo(q, M) {
       if (M.id === "video" || M.id === "video3d") return true;
@@ -1043,6 +1064,191 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (!blob.size) throw new Error("empty");
       return { blob, url: URL.createObjectURL(blob) };
     }
+    /* ---- WattAI: Claude writes a whole HTML game; it runs in a sandboxed frame with no access to the app ---- */
+    // Every game gets this first: errors are reported to the card (for the "Fix" button), and storage is a
+    // harmless in-memory stand-in, because a sandboxed frame has none.
+    const GAME_GUARD = '<script>(function(){var sent=0;function s(m){if(sent++>2)return;try{parent.postMessage({v3game:"error",msg:String(m).slice(0,300)},"*")}catch(e){}}' +
+      'window.addEventListener("error",function(e){s((e.message||"Ошибка")+(e.lineno?" (строка "+e.lineno+")":""))});' +
+      'window.addEventListener("unhandledrejection",function(e){s(e.reason&&e.reason.message||e.reason)});' +
+      'var ok=true;try{window.localStorage.getItem("x")}catch(e){ok=false}if(!ok){var m={},st={getItem:function(k){return k in m?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null},get length(){return Object.keys(m).length}};' +
+      'try{Object.defineProperty(window,"localStorage",{value:st,configurable:true})}catch(e){}try{Object.defineProperty(window,"sessionStorage",{value:st,configurable:true})}catch(e){}}})();<\/script>';
+    function gameDoc(html) {
+      let h = String(html);
+      if (!/<meta[^>]+viewport/i.test(h)) h = h.replace(/<head[^>]*>/i, (x) => x + '<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">');
+      return /<head[^>]*>/i.test(h) ? h.replace(/<head[^>]*>/i, (x) => x + GAME_GUARD) : GAME_GUARD + h;
+    }
+    function cleanGame(text) {
+      const t = String(text);
+      const m = t.match(/```html\s*([\s\S]*?)(```|$)/i) || t.match(/(<!doctype html[\s\S]*<\/html>)/i) || t.match(/(<html[\s\S]*<\/html>)/i);
+      if (!m) return "";
+      const h = m[1].trim();
+      return h.length > 200 && h.length < 160000 && /<script/i.test(h) ? h : "";
+    }
+    const gameFrames = new Map(); // frame window -> card, to route error reports
+    window.addEventListener("message", (e) => {
+      const d = e.data;
+      if (!d || d.v3game !== "error") return;
+      const card = gameFrames.get(e.source);
+      if (card) card(String(d.msg || "Ошибка"));
+    });
+    function frameFor(m) {
+      const f = document.createElement("iframe");
+      f.setAttribute("sandbox", "allow-scripts allow-pointer-lock");
+      f.setAttribute("allow", "fullscreen; autoplay");
+      f.title = "Игра: " + (m.title || m.q || "WattAI");
+      f.srcdoc = gameDoc(m.game);
+      return f;
+    }
+    function fullGame(m) {
+      const ov = document.createElement("div"); ov.className = "vi-full"; ov.setAttribute("role", "dialog");
+      const bar = document.createElement("div"), name = document.createElement("b"), close = document.createElement("button");
+      name.textContent = "🕹 " + (m.title || m.q || "Игра"); close.type = "button"; close.textContent = "✕ Закрыть";
+      bar.append(name, close); ov.appendChild(bar);
+      const f = frameFor(m); ov.appendChild(f);
+      const shut = () => { gameFrames.delete(f.contentWindow); ov.remove(); document.removeEventListener("keydown", esc); };
+      const esc = (e) => { if (e.key === "Escape") shut(); };
+      close.addEventListener("click", shut); document.addEventListener("keydown", esc);
+      document.body.appendChild(ov);
+      f.addEventListener("load", () => { gameFrames.set(f.contentWindow, () => {}); f.focus(); });
+    }
+    function gameCard(el, m) {
+      el.classList.add("wide");
+      if (!m.game) { const b = document.createElement("div"); b.className = "vi-body"; b.innerHTML = md((m.t ? m.t + "\n\n" : "") + "🕹 Старая игра не хранится — нажми «Ещё вариант»."); el.appendChild(b); }
+      else {
+        const box = document.createElement("div"); box.className = "vi-game";
+        const f = frameFor(m); box.appendChild(f); el.appendChild(box);
+        const err = document.createElement("div"); err.className = "vi-gerr"; err.hidden = true; el.appendChild(err);
+        f.addEventListener("load", () => gameFrames.set(f.contentWindow, (msg) => {
+          if (!err.hidden) return;
+          err.hidden = false; err.innerHTML = "<span></span><button type=\"button\">🛠 Исправить</button>";
+          err.firstChild.textContent = "⚠️ В игре ошибка: " + msg;
+          err.lastChild.addEventListener("click", () => send("Исправь ошибку в игре: " + msg, "game"));
+        }));
+        if (m.t) { const cap = document.createElement("div"); cap.className = "vi-body"; cap.innerHTML = md(m.t); el.appendChild(cap); }
+      }
+      const bar = document.createElement("div"); bar.className = "vi-tools";
+      const btn = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.addEventListener("click", (e) => fn(e.currentTarget)); bar.appendChild(b); return b; };
+      if (m.game) {
+        btn("⛶ На весь экран", () => fullGame(m));
+        btn("🔄 Заново", () => { const old = el.querySelector(".vi-game iframe"); if (old) { gameFrames.delete(old.contentWindow); const f = frameFor(m); old.replaceWith(f); el.querySelector(".vi-gerr").hidden = true; f.addEventListener("load", () => gameFrames.set(f.contentWindow, () => {})); } });
+        btn("💾 Скачать", (b) => saveGame(m, b));
+        let code = null;
+        btn("</> Код", () => { if (code) { code.remove(); code = null; return; } code = document.createElement("pre"); code.className = "vi-code"; code.textContent = m.game; bar.after(code); });
+      }
+      if (m.by) { const by = document.createElement("span"); by.className = "vi-by"; by.textContent = m.by; bar.appendChild(by); }
+      btn("🔁 Ещё вариант", () => send(m.q, "game-new"));
+      el.appendChild(bar);
+    }
+    async function saveGame(m, btn) {
+      try {
+        const blob = new Blob([m.game], { type: "text/html" });
+        const name = "WattAI-" + (m.title || m.q || "game").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + ".html";
+        if (!dlAsked) { dlAsked = true; try { dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch (e) { dl = null; } }
+        if (dl) { await dl.save({ filename: name, data: blob }); btn.textContent = "✓ Сохранено"; return; }
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); btn.textContent = "✓ Скачивается";
+      } catch (e) { btn.textContent = e && e.code === "declined" ? "Отменено" : "Не вышло"; }
+    }
+    // Without the AI: a ready "catch it" game themed by the words of the request.
+    function offlineGame(q) {
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      const THEMES = [
+        [/космос|ракет|звезд|планет|метеор/, "🚀", ["⭐", "🌟", "💎"], ["☄️", "🪨"], "#05061a", "#1a1a5e", "Собирай звёзды, уворачивайся от метеоритов!", "Звёздный сборщик"],
+        [/кот|кош/, "🐱", ["🐟", "🥛", "🧶"], ["🐶", "💧"], "#ffd6e7", "#fff4d6", "Лови рыбку, не попадись собаке!", "Котик-рыбак"],
+        [/собак|пес|щен/, "🐶", ["🦴", "🥩", "🎾"], ["🐱", "🧽"], "#d6f0ff", "#e8ffe0", "Лови косточки и мячики!", "Пёсик-ловкач"],
+        [/фрукт|ягод|яблок|еда/, "🧺", ["🍎", "🍌", "🍓", "🍇"], ["🐛", "💣"], "#e8ffd6", "#fff6d6", "Лови фрукты, не лови червяков!", "Фруктовая корзина"],
+        [/зим|снег|елк|новый год|подар/, "🎅", ["🎁", "⭐", "🍬"], ["❄️", "🧊"], "#cfe6ff", "#ffffff", "Лови подарки, а сосульки — мимо!", "Новогодний улов"],
+        [/мор|рыб|океан|подвод/, "🐠", ["🫧", "🦐", "🐚"], ["🦈", "🪝"], "#0a4d8c", "#3aa0e0", "Собирай ракушки и пузырьки, берегись акулы!", "Морской охотник"],
+      ];
+      const th = THEMES.find((x) => x[0].test(t)) || [0, "🧑‍🚀", ["💎", "⭐", "🪙"], ["💣", "👾"], "#1b1f4a", "#3a2a7a", "Лови сокровища, уворачивайся от бомб!", "Охотник за сокровищами"];
+      const title = th[7];
+      const cfg = JSON.stringify({ hero: th[1], good: th[2], bad: th[3], c1: th[4], c2: th[5], tip: th[6], title });
+      return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>${esc(title)}</title><style>html,body{margin:0;height:100%;overflow:hidden;touch-action:none;font-family:system-ui,sans-serif;user-select:none}canvas{display:block;width:100%;height:100%}</style></head><body><canvas id="c"></canvas><script>
+const C=${cfg.replace(/</g, "\\u003c")};const cv=document.getElementById("c"),g=cv.getContext("2d");let W,H,D=Math.min(2,devicePixelRatio||1);
+function fit(){W=innerWidth;H=innerHeight;cv.width=W*D;cv.height=H*D;g.setTransform(D,0,0,D,0,0)}addEventListener("resize",fit);fit();
+let st="menu",x=W/2,tx=x,items=[],score=0,lives=3,best=+(localStorage.getItem("best")||0),t=0,spawn=0,parts=[],keys={};
+const S=()=>Math.min(W,H)/9;
+function start(){st="play";score=0;lives=3;items=[];parts=[];t=0;spawn=0;x=tx=W/2}
+function boom(px,py,col){for(let i=0;i<14;i++)parts.push({x:px,y:py,vx:(Math.random()-.5)*6,vy:(Math.random()-.8)*6,l:1,col})}
+function beep(f){try{const a=beep.a||(beep.a=new (window.AudioContext||window.webkitAudioContext)()),o=a.createOscillator(),v=a.createGain();o.frequency.value=f;v.gain.setValueAtTime(.12,a.currentTime);v.gain.exponentialRampToValueAtTime(.001,a.currentTime+.18);o.connect(v);v.connect(a.destination);o.start();o.stop(a.currentTime+.2)}catch(e){}}
+function down(e){const p=e.touches?e.touches[0]:e;tx=p.clientX;if(st!=="play")start()}
+cv.addEventListener("pointerdown",down);cv.addEventListener("pointermove",e=>{if(e.buttons||e.pointerType==="touch")tx=e.clientX});
+addEventListener("keydown",e=>{keys[e.key]=1;if((e.key===" "||e.key==="Enter")&&st!=="play")start()});addEventListener("keyup",e=>{keys[e.key]=0});
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;t+=dt;
+const gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,C.c1);gr.addColorStop(1,C.c2);g.fillStyle=gr;g.fillRect(0,0,W,H);
+const s=S();g.textAlign="center";g.textBaseline="middle";
+if(st==="play"){if(keys.ArrowLeft||keys.a)tx-=600*dt;if(keys.ArrowRight||keys.d)tx+=600*dt;tx=Math.max(s/2,Math.min(W-s/2,tx));x+=(tx-x)*Math.min(1,dt*14);
+const lvl=1+score/15;spawn-=dt;if(spawn<=0){spawn=Math.max(.28,.9/lvl);const bad=Math.random()<Math.min(.45,.2+lvl*.04);items.push({x:s/2+Math.random()*(W-s),y:-s,v:(120+Math.random()*80)*Math.sqrt(lvl),bad,e:bad?C.bad[Math.random()*C.bad.length|0]:C.good[Math.random()*C.good.length|0],r:Math.random()*6})}
+for(const it of items){it.y+=it.v*dt;it.r+=dt*2;const hy=H-s*1.1;if(!it.hit&&Math.abs(it.y-hy)<s*.7&&Math.abs(it.x-x)<s*.8){it.hit=1;if(it.bad){lives--;boom(it.x,it.y,"#ff4d6d");beep(140);if(lives<=0){st="over";if(score>best){best=score;localStorage.setItem("best",best)}}}else{score++;boom(it.x,it.y,"#ffd84d");beep(660+score*8)}}}
+items=items.filter(it=>!it.hit&&it.y<H+s);}
+for(const it of items){g.save();g.translate(it.x,it.y);g.rotate(Math.sin(it.r)*.3);g.font=s*.8+"px serif";g.fillText(it.e,0,0);g.restore()}
+for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.l-=dt*1.6;g.globalAlpha=Math.max(0,p.l);g.fillStyle=p.col;g.beginPath();g.arc(p.x,p.y,4,0,7);g.fill()}g.globalAlpha=1;parts=parts.filter(p=>p.l>0);
+g.font=s*1.1+"px serif";g.fillText(C.hero,x,H-s*1.1+Math.sin(t*10)*(st==="play"?3:0));
+g.fillStyle="#fff";g.strokeStyle="rgba(0,0,0,.5)";g.lineWidth=5;g.lineJoin="round";g.miterLimit=2;g.font="800 "+Math.round(s*.42)+"px system-ui";
+const txt=(m,yy)=>{g.strokeText(m,W/2,yy);g.fillText(m,W/2,yy)};
+if(st==="play"){g.textAlign="left";g.strokeText("⭐ "+score,14,s*.5);g.fillText("⭐ "+score,14,s*.5);g.textAlign="right";g.fillText("❤️".repeat(Math.max(0,lives)),W-14,s*.5);g.textAlign="center"}
+else{g.font="900 "+Math.round(s*.62)+"px system-ui";txt(st==="menu"?C.title:"Игра окончена!",H*.32);g.font="700 "+Math.round(s*.34)+"px system-ui";txt(st==="menu"?C.tip:"Счёт: "+score+" · Рекорд: "+best,H*.42);txt("Нажми, чтобы "+(st==="menu"?"начать":"сыграть ещё"),H*.5);g.font="600 "+Math.round(s*.28)+"px system-ui";txt("Двигай пальцем или стрелками",H*.57)}
+requestAnimationFrame(loop)}requestAnimationFrame(loop);
+<\/script></body></html>`;
+    }
+    async function makeGame(c, q, fresh) {
+      setStatus("пишет игру…", true);
+      const el = document.createElement("div"); el.className = "vi-m a wide";
+      const box = document.createElement("div"); box.className = "vi-game wait"; box.textContent = "🕹 WattAI придумывает игру…"; el.appendChild(box);
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      const prev = fresh ? null : c.msgs.slice(0, -1).reverse().find((m) => m.game);
+      const sample = aiOff ? null : await samplePromise;
+      let html = "", cap = "", title = "", errCode = "", stopped = false;
+      if (sample) {
+        ctl = new AbortController();
+        const prompt = [
+          "Ты — WattAI, создатель игр внутри приложения V3AI. Напиши по запросу пользователя готовую браузерную игру — ОДИН полный HTML-документ.",
+          "Требования:",
+          "- Всё в одном файле: HTML, CSS и JavaScript внутри. Никаких внешних файлов, библиотек, шрифтов, картинок по ссылкам и сетевых запросов. Графика — canvas 2D (фигуры, градиенты, эмодзи) или DOM/CSS; звук — только Web Audio API, после первого нажатия.",
+          "- Игра занимает всё окно и подстраивается под любой размер (resize, devicePixelRatio). Сначала стартовый экран с названием, коротким правилом и «Нажми, чтобы начать»; потом игра; в конце экран «Игра окончена» со счётом, рекордом и перезапуском.",
+          "- Управление и пальцем на телефоне (касания, свайпы или экранные кнопки), и с клавиатуры. Без alert/prompt/confirm, без открытия окон и ссылок.",
+          "- Игра живая и красивая: анимации, частицы, нарастающая сложность, счёт, понятная цель. Тексты в игре по-русски.",
+          "- Код аккуратный и рабочий: requestAnimationFrame с dt, никаких ошибок в консоли. Рекорд можно хранить в localStorage.",
+          "- Только добрые игры, подходящие детям: без крови и жестокости. На неподходящую просьбу сделай милую игру на похожую безопасную тему.",
+          "- Размер — до ~25 000 символов.",
+          prev ? `\nВ этом чате уже есть игра «${prev.title || prev.q}». Её код ниже. Если новый запрос — правка или исправление этой игры, верни ВЕСЬ исправленный документ целиком; если просят другую игру — сделай новую с нуля.\n\`\`\`html\n${prev.game}\n\`\`\`` : "",
+          "\nОтвет: сначала строка «Название: …», затем весь код в блоке ```html, затем одна-две короткие фразы по-русски: как играть.",
+          "Запрос: " + q,
+        ].filter(Boolean).join("\n");
+        try {
+          const res = await sample(prompt, {
+            modelTier: tierOf(mdl()), cache: false, signal: ctl.signal,
+            onText: ({ text: t }) => { if (t) { box.textContent = `🕹 WattAI пишет код… ${(t.length / 1000).toFixed(1)} тыс. символов`; setStatus("пишет игру…", true); } },
+          });
+          const text = res.text || "";
+          html = cleanGame(text);
+          if (!html && !errCode) errCode = res.truncated ? "truncated" : "no_game";
+          const tm = text.match(/Название:\s*([^\n]+)/i); title = tm ? tm[1].replace(/[*«»"]/g, "").trim().slice(0, 50) : "";
+          cap = text.replace(/```[\s\S]*?(```|$)/g, "").replace(/Название:[^\n]*\n?/i, "").trim().slice(0, 400);
+        } catch (e) {
+          const code = (e && e.code) || "error";
+          if (OFF.includes(code)) aiOff = true;
+          if (code === "cancelled") stopped = true;
+          errCode = code;
+          if (e && e.text) html = cleanGame(e.text);
+        }
+        ctl = null;
+      }
+      let off = false;
+      if (!html && !stopped) {
+        html = offlineGame(q); off = true; title = "";
+        cap = (errCode === "truncated" ? "📴 Игра получилась слишком длинной и обрезалась — попроси попроще. " : "📴 Это готовая офлайн-игра. ") + (errCode === "truncated" ? "" : whyOff(errCode, sample));
+      }
+      el.remove();
+      if (off) { const tm = html.match(/<title>([^<]*)<\/title>/); title = tm ? tm[1] : ""; }
+      const am = html ? { r: "a", t: cap || "Готово! Играй 🕹", q, game: html, title } : { r: "a", t: "Создание игры остановлено." };
+      if (html && !off) am.by = "WattAI · " + mdl().n;
+      if (off) am.off = 1;
+      bubble(am);
+      c.msgs.push(am); save();
+      done(sample);
+    }
+
     // Why the AI could not help, in words a viewer understands.
     function whyOff(code, sample) {
       if (!sample) return "ИИ не подключён в этом окне — открой V3AI по ссылке в приложении Claude.";
