@@ -120,6 +120,19 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-gate { display: grid; place-items: center; align-content: center; gap: 10px; height: 100%; padding: 16px; text-align: center; color: #fff; background: radial-gradient(circle at 50% 35%, #0d4a5a, #04141f); }
 .vi-gate b { font-size: 17px; } .vi-gate small { color: #9ad; font-size: 12.5px; max-width: 280px; }
 .vi-gate button { padding: 11px 18px; border-radius: 999px; border: 0; background: linear-gradient(135deg, #0a84ff, #00c2a8); color: #fff; font-weight: 800; font-size: 15px; cursor: pointer; }
+.vi-agents { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0; scrollbar-width: none; align-items: center; } .vi-agents::-webkit-scrollbar { display: none; }
+.vi-agents > span { flex: none; font-size: 12px; font-weight: 800; color: var(--muted); }
+.vi-agents button { flex: none; display: flex; align-items: center; gap: 6px; padding: 5px 11px 5px 5px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 700; font-size: 13px; cursor: pointer; }
+.vi-agents button[aria-pressed="true"] { border-color: #2ad1ff; background: rgba(42,209,255,.16); }
+.vi-av { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; }
+.vi-acard { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: linear-gradient(160deg, rgba(42,209,255,.10), rgba(0,0,0,0)); border: 1px solid var(--line); margin-bottom: 6px; }
+.vi-acard .top2 { display: flex; align-items: center; gap: 10px; } .vi-acard .vi-av { width: 52px; height: 52px; font-size: 28px; box-shadow: 0 6px 20px rgba(0,0,0,.35); }
+.vi-acard .nm { display: flex; flex-direction: column; min-width: 0; } .vi-acard .nm b { font-size: 17px; } .vi-acard .nm small { color: var(--muted); font-size: 13px; }
+.vi-acard .sk { display: flex; flex-wrap: wrap; gap: 5px; } .vi-acard .sk span { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(125,255,207,.12); color: #7dffcf; }
+.vi-acard p { margin: 0; font-size: 13px; color: var(--muted); }
+.vi-used { margin-top: 6px; font-size: 11.5px; color: #7dffcf; }
+.vi-mem { margin: 6px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.25); font-size: 12.5px; }
+.vi-mem ul { margin: 4px 0; padding-left: 18px; }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -136,12 +149,13 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
   <div id="viWrap">
       <div class="vi-head">
         <div class="vi-orb" id="viOrb" aria-hidden="true">V3</div>
-        <div class="vi-who"><b>V3AI</b><small id="viStatus">готов помочь</small></div>
+        <div class="vi-who"><b id="viWhoName">V3AI</b><small id="viStatus">готов помочь</small></div>
         <button type="button" id="viSecBtn" aria-label="EngineSecure: защита" aria-expanded="false">🛡</button>
         <button type="button" id="viHist" aria-label="Мои чаты">🗂</button>
         <button type="button" id="viNew">＋ Новый</button>
       </div>
       <div class="vi-modes" id="viModes" role="group" aria-label="Режим V3AI"></div>
+      <div class="vi-agents" id="viAgents" hidden></div>
       <div class="vi-drawer" id="viDrawer" hidden></div>
       <div class="vi-log" id="viLog" aria-live="polite"></div>
       <div class="vi-sugg" id="viSugg"></div>
@@ -175,6 +189,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
       { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
+      { id: "agents", ico: "🩺", n: "Dr. Agents", hi: "Я Dr. Agents — создаю ИИ-агентов! Опиши, какой помощник тебе нужен, и я соберу агента с именем, характером и навыками: память, список дел, калькулятор, время, случайности.", p: "Режим «Dr. Agents»: создаёшь ИИ-агентов.", s: ["Агент-репетитор английского, который проверяет слова", "Агент-повар: подбирает рецепты из того, что есть дома", "Агент-планировщик: ведёт мой список дел и напоминает"] },
       { id: "game", ico: "🕹", n: "WattAI", hi: "Я WattAI — создатель игр! Опиши игру, и я её сделаю: играй прямо здесь, на весь экран, проси доработки и скачивай.", p: "Режим «WattAI»: создаёшь браузерные игры по описанию.", s: ["Космический шутер с метеоритами", "Раннер: кот прыгает через кактусы", "Игра «Лови фрукты» с бонусами"] },
       { id: "video3d", ico: "🧊", n: "3D-видео", hi: "Опиши сюжет — и я сниму 3D-мультфильм: объёмные герои, свет и тени, полёт камеры, субтитры и музыка. Его можно скачать.", p: "Режим «3D-видео»: снимаешь 3D-мультфильмы по описанию.", s: ["Робот танцует на Луне", "Кот плывёт на лодке к острову", "Динозавр собирает подарки под ёлкой"] },
       { id: "video", ico: "🎬", n: "Мульт 2D", hi: "Опиши сюжет — и я сниму рисованный 2D-мультик: несколько сцен, движение, субтитры и музыка. Его можно скачать.", p: "Режим «Видео»: снимаешь короткие видео по описанию.", s: ["Кот летит в космос и находит планету из сыра", "День из жизни робота-повара", "Рыбка ищет друзей в океане"] },
@@ -358,6 +373,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
         el.appendChild(document.createTextNode(m.t));
       } else {
+        if (m.agentCard) { agentCard(el, m); log.appendChild(el); return el; }
         if (m.game || m.gameGone) { gameCard(el, m); log.appendChild(el); return el; }
         if (m.svg || m.gone || m.scenes) { art(el, m); log.appendChild(el); return el; }
         const body = document.createElement("div"); body.className = "vi-body"; body.innerHTML = md(m.t); el.appendChild(body);
@@ -373,9 +389,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       bar.querySelector('[data-a="copy"]').addEventListener("click", (e) => copy(m.t, e.currentTarget));
       if (m.by) { const by = document.createElement("span"); by.className = "vi-by"; by.textContent = m.by; bar.appendChild(by); }
       el.appendChild(bar);
+      if (m.used && m.used.length) { const u = document.createElement("div"); u.className = "vi-used"; u.textContent = "🧰 " + m.used.join(" · "); el.appendChild(u); }
     }
     function render() {
-      const c = chat(), M = modeOf(c ? c.mode : mode);
+      const c = chat(), M = modeOf(c ? c.mode : mode), A = c && c.agent ? agentById(c.agent) : null;
+      $("#viWhoName").textContent = A ? A.name : "V3AI";
+      input.placeholder = A ? "Напиши " + A.name + "…" : "Спроси V3AI о чём угодно…";
+      orb.textContent = A ? A.emoji : "V3"; orb.style.background = A ? A.color : ""; orb.style.fontSize = A ? "22px" : "";
+      renderAgents(c);
       log.innerHTML = "";
       if (!c || !c.msgs.length) {
         log.innerHTML = `<div class="vi-hello"><div class="vi-orb">V3</div><b>Привет! Я V3AI ${M.ico}</b>${esc(M.hi)}</div>`;
@@ -383,7 +404,8 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       $("#viModes").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === M.id)));
       const sg = $("#viSugg");
       sg.innerHTML = "";
-      if (!c || !c.msgs.length) M.s.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
+      if (A && c.msgs.length <= 1) (A.starters || []).forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
+      else if (!c || !c.msgs.length) M.s.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
       $("#viCount").textContent = asked;
       log.scrollTop = log.scrollHeight;
       if (!drawer.hidden) renderDrawer();
@@ -394,7 +416,8 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       chats.forEach((c) => {
         const row = document.createElement("div"); row.className = "vi-ch" + (c.id === cur ? " on" : "");
         row.innerHTML = `<button type="button" class="vi-open"></button><button type="button" aria-label="Удалить чат">🗑</button>`;
-        row.firstChild.textContent = modeOf(c.mode).ico + " " + (c.title || "Новый чат");
+        const ag = c.agent ? agentById(c.agent) : null;
+        row.firstChild.textContent = (ag ? ag.emoji : modeOf(c.mode).ico) + " " + (c.title || "Новый чат");
         row.firstChild.addEventListener("click", () => { stop(); cur = c.id; mode = c.mode; drawer.hidden = true; save(); render(); });
         row.lastChild.addEventListener("click", () => { chats = chats.filter((x) => x.id !== c.id); if (cur === c.id) cur = null; save(); render(); renderDrawer(); });
         drawer.appendChild(row);
@@ -462,6 +485,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       save(); render();
 
       busy = true; sendBtn.dataset.stop = "1"; sendBtn.textContent = "■"; sendBtn.setAttribute("aria-label", "Остановить");
+      const AG = c.agent ? agentById(c.agent) : null;
+      if (AG) { await agentChat(c, q, img, AG); return; }
+      if (!img && (forceArt === "agent" || (!forceArt && M.id === "agents"))) { await makeAgent(c, q); return; }
       if (!img && (forceArt === "game" || forceArt === "game-new" || (!forceArt && wantsGame(q, M)))) { await makeGame(c, q, forceArt === "game-new"); return; }
       if (!img && (forceArt === "video3d" || (!forceArt && M.id === "video3d"))) { await film(c, q, true); return; }
       if (!img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
@@ -1356,6 +1382,220 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
       if (html && !off) am.by = "WattAI · " + mdl().n;
       if (off) am.off = 1;
       bubble(am);
+      c.msgs.push(am); save();
+      done(sample);
+    }
+
+    /* ---- Dr. Agents: Claude designs an agent (name, look, character, instructions, skills); the agent then chats
+       using real page tools — memory, to-do list, calculator, clock, dice — kept per agent in this browser ---- */
+    const SKILLS = {
+      memory: { ico: "🧠", n: "Память" }, tasks: { ico: "✅", n: "Список дел" }, calc: { ico: "🧮", n: "Калькулятор" },
+      time: { ico: "🕐", n: "Дата и время" }, dice: { ico: "🎲", n: "Случайности" },
+    };
+    let agents = store.get("agents", []); if (!Array.isArray(agents)) agents = [];
+    const agentById = (id) => agents.find((a) => a.id === id) || null;
+    const saveAgents = () => store.set("agents", agents.slice(0, 40));
+    const memOf = (A) => { const m = store.get("agentMem_" + A.id, null); return m && typeof m === "object" ? { notes: Array.isArray(m.notes) ? m.notes : [], tasks: Array.isArray(m.tasks) ? m.tasks : [] } : { notes: [], tasks: [] }; };
+    const setMem = (A, m) => store.set("agentMem_" + A.id, { notes: m.notes.slice(-60), tasks: m.tasks.slice(-60) });
+    function normAgent(j, old) {
+      if (!j || typeof j !== "object") return null;
+      const str = (v, d, n) => (typeof v === "string" && v.trim() ? v.trim().slice(0, n) : d);
+      const name = str(j.name, "", 40); if (!name) return null;
+      const skills = (Array.isArray(j.skills) ? j.skills : []).filter((k) => SKILLS[k]);
+      return {
+        id: old ? old.id : "a" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        name, emoji: str(j.emoji, "🤖", 8), color: colr(j.color, "#0a84ff"), role: str(j.role, "ИИ-агент", 90),
+        greeting: str(j.greeting, "Привет! Я " + name + ". Чем помочь?", 300), instructions: str(j.instructions, "", 2500),
+        skills: skills.length ? Array.from(new Set(skills)) : ["time"], starters: (Array.isArray(j.starters) ? j.starters : []).filter((x) => typeof x === "string").map((x) => x.slice(0, 80)).slice(0, 3),
+        at: old ? old.at : Date.now(),
+      };
+    }
+    function renderAgents(c) {
+      const bar = $("#viAgents"), show = (c ? c.mode : mode) === "agents";
+      bar.hidden = !show; if (!show) return;
+      bar.innerHTML = "";
+      const lab = document.createElement("span"); lab.textContent = agents.length ? "Мои агенты:" : "Агентов пока нет — опиши первого 👇"; bar.appendChild(lab);
+      agents.forEach((A) => {
+        const b = document.createElement("button"); b.type = "button"; b.setAttribute("aria-pressed", String(!!(c && c.agent === A.id)));
+        b.innerHTML = '<span class="vi-av"></span><span></span>'; b.firstChild.textContent = A.emoji; b.firstChild.style.background = A.color; b.lastChild.textContent = A.name;
+        b.addEventListener("click", () => openAgent(A)); bar.appendChild(b);
+      });
+      if (c && c.agent) { const nb = document.createElement("button"); nb.type = "button"; nb.textContent = "＋ Новый агент"; nb.addEventListener("click", () => { stop(); cur = null; mode = "agents"; save(); render(); input.focus(); }); bar.appendChild(nb); }
+    }
+    function openAgent(A) {
+      stop(); drawer.hidden = true;
+      const ex = chats.find((x) => x.agent === A.id);
+      if (ex) { cur = ex.id; mode = "agents"; save(); render(); return; }
+      const c = { id: "c" + Date.now().toString(36), mode: "agents", agent: A.id, title: A.emoji + " " + A.name, msgs: [{ r: "a", t: A.greeting }], at: Date.now() };
+      chats.unshift(c); cur = c.id; mode = "agents"; save(); render(); input.focus();
+    }
+    function agentCard(el, m) {
+      el.classList.add("wide");
+      const A = agentById(m.agentCard);
+      if (m.t) { const b = document.createElement("div"); b.className = "vi-body"; b.innerHTML = md(m.t); el.appendChild(b); }
+      if (!A) { const b = document.createElement("div"); b.className = "vi-body"; b.textContent = "🗑 Этот агент удалён."; el.appendChild(b); return; }
+      const card = document.createElement("div"); card.className = "vi-acard";
+      card.innerHTML = '<div class="top2"><div class="vi-av"></div><div class="nm"><b></b><small></small></div></div><div class="sk"></div><p></p>';
+      card.querySelector(".vi-av").textContent = A.emoji; card.querySelector(".vi-av").style.background = A.color;
+      card.querySelector("b").textContent = A.name; card.querySelector("small").textContent = A.role;
+      A.skills.forEach((k) => { const sp = document.createElement("span"); sp.textContent = SKILLS[k].ico + " " + SKILLS[k].n; card.querySelector(".sk").appendChild(sp); });
+      card.querySelector("p").textContent = "«" + A.greeting + "»";
+      el.appendChild(card);
+      const bar = document.createElement("div"); bar.className = "vi-tools";
+      const btn = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.addEventListener("click", (e) => fn(e.currentTarget)); bar.appendChild(b); return b; };
+      btn("💬 Начать чат", () => openAgent(A));
+      btn("✏️ Изменить", () => { input.value = `Измени агента «${A.name}»: `; fitInput(); input.focus(); });
+      let memBox = null;
+      btn("🧠 Память", () => {
+        if (memBox) { memBox.remove(); memBox = null; return; }
+        const M2 = memOf(A); memBox = document.createElement("div"); memBox.className = "vi-mem";
+        const list = (arr, f) => (arr.length ? "<ul>" + arr.map((x) => "<li>" + esc(f(x)) + "</li>").join("") + "</ul>" : "<div>пусто</div>");
+        memBox.innerHTML = "<b>🧠 Заметки</b>" + list(M2.notes, (n) => (n.k ? n.k + ": " : "") + n.t) + "<b>✅ Дела</b>" + list(M2.tasks, (t) => (t.done ? "✔ " : "☐ ") + t.t) + '<button type="button" class="vi-switch" style="margin-top:6px">Очистить память</button>';
+        memBox.querySelector("button").addEventListener("click", () => { setMem(A, { notes: [], tasks: [] }); memBox.remove(); memBox = null; setStatus("память агента очищена", false); });
+        bar.after(memBox);
+      });
+      btn("🗑 Удалить", (b) => {
+        if (b.dataset.sure) { agents = agents.filter((x) => x.id !== A.id); saveAgents(); try { localStorage.removeItem("v3ai:agentMem_" + A.id); } catch (e) { /* fine */ } chats = chats.filter((x) => x.agent !== A.id); save(); render(); return; }
+        b.dataset.sure = "1"; b.textContent = "Точно удалить?"; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = "🗑 Удалить"; } }, 3000);
+      });
+      if (m.by) { const by = document.createElement("span"); by.className = "vi-by"; by.textContent = m.by; bar.appendChild(by); }
+      el.appendChild(bar);
+    }
+    // Without the AI: assemble an agent from the words of the request.
+    function offlineAgent(q) {
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      const KIND = [
+        [/англ|язык|слов|перевод/, "Мисс Вордс", "🦉", "#7d5cff", "Репетитор английского"], [/повар|рецепт|еда|готов|кухн/, "Шеф Ложкин", "🧑‍🍳", "#ff8a3d", "Помощник на кухне"],
+        [/план|дел|напомин|расписан|задач/, "Планировщик Тик", "🗓", "#2fc97a", "Помощник по делам"], [/математ|счит|задач|урок|учеб|школ/, "Профессор Плюс", "🧮", "#4dabff", "Помощник по учёбе"],
+        [/спорт|трениров|фитнес/, "Тренер Мяч", "🏋️", "#ff5d8f", "Личный тренер"], [/игр|кубик|загад|весел/, "Шутник Дзынь", "🎲", "#ffc93d", "Весёлый игровой ведущий"],
+      ];
+      const k = KIND.find((x) => x[0].test(t)) || [0, "Агент Помогайка", "🤖", "#0a84ff", "Универсальный помощник"];
+      const skills = ["time", "memory"];
+      if (/дел|план|задач|напомин|список/.test(t)) skills.push("tasks");
+      if (/счит|математ|деньг|бюджет|калор|рецепт/.test(t)) skills.push("calc");
+      if (/игр|кубик|случайн|жреб|загад/.test(t)) skills.push("dice");
+      return normAgent({ name: k[1], emoji: k[2], color: k[3], role: k[4], greeting: `Привет! Я ${k[1]} ${k[2]} — ${k[4].toLowerCase()}. С чего начнём?`, instructions: "Задача, которую дал создатель: " + q, skills, starters: ["Что ты умеешь?", "Запомни: меня зовут…", "Помоги мне с делом"] });
+    }
+    async function makeAgent(c, q) {
+      setStatus("собирает агента…", true);
+      const el = document.createElement("div"); el.className = "vi-m a"; el.innerHTML = '<div class="vi-body"><span class="vi-dots"></span> 🩺 Dr. Agents собирает агента…</div>';
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      const prevCard = c.msgs.slice(0, -1).reverse().find((m) => m.agentCard && agentById(m.agentCard));
+      const old = prevCard ? agentById(prevCard.agentCard) : null;
+      const sample = aiOff ? null : await samplePromise;
+      let A = null, cap = "", errCode = "", stopped = false, edited = false;
+      if (sample) {
+        ctl = new AbortController();
+        try {
+          const j = await sample.json([
+            "Ты — Dr. Agents, конструктор ИИ-агентов в приложении V3AI. По просьбе пользователя спроектируй агента — ИИ-помощника с характером.",
+            "Навыки (инструменты), которые агент сможет вызывать: memory — запоминать и вспоминать факты о пользователе; tasks — вести список дел; calc — точно считать; time — узнавать дату и время; dice — случайные числа, жребий, кубики. Выбери только нужные (1–5).",
+            old ? `В этом чате уже есть агент:\n${JSON.stringify(old)}\nЕсли новый запрос — правка этого агента, верни его изменённую версию; если просят другого агента — сделай нового.` : "",
+            "Агент должен быть добрым и подходить детям. На неподходящую просьбу сделай безопасного агента на похожую тему.",
+            'Ответь ТОЛЬКО JSON: {"name":"короткое запоминающееся имя","emoji":"один эмодзи-аватар","color":"#hex — фон аватара","role":"роль до 60 символов","greeting":"первое сообщение агента пользователю, 1–2 предложения, в его характере","instructions":"подробная инструкция агенту 6–12 предложений: кто он, как говорит, что делает шаг за шагом, когда и как использует свои навыки, чего не делает","skills":["memory","tasks"],"starters":["3 примера первых сообщений пользователя этому агенту"],"edit":true|false,"comment":"одна весёлая фраза по-русски о созданном агенте"}',
+            "Запрос: " + q,
+          ].filter(Boolean).join("\n"), { modelTier: tierOf(mdl()), cache: false, signal: ctl.signal });
+          edited = !!(old && j && j.edit);
+          A = normAgent(j, edited ? old : null);
+          if (A) cap = typeof j.comment === "string" ? j.comment.slice(0, 200) : "";
+          else errCode = "no_agent";
+        } catch (e) { const code = (e && e.code) || "error"; if (OFF.includes(code)) aiOff = true; if (code === "cancelled") stopped = true; errCode = code; }
+        ctl = null;
+      }
+      let off = false;
+      if (!A && !stopped) { A = offlineAgent(q); off = true; cap = "📴 Собрал простого агента без ИИ. " + whyOff(errCode, sample); }
+      el.remove();
+      if (A) {
+        if (edited) agents = agents.map((x) => (x.id === A.id ? A : x)); else agents.unshift(A);
+        saveAgents();
+        if (edited) chats.forEach((x) => { if (x.agent === A.id) x.title = A.emoji + " " + A.name; });
+      }
+      const am = A ? { r: "a", t: cap || (edited ? `Готово! Агент «${A.name}» обновлён ✨` : `Готово! Знакомься: ${A.name} ${A.emoji}`), q, agentCard: A.id } : { r: "a", t: "Создание агента остановлено." };
+      if (A && !off) am.by = "Dr. Agents · " + mdl().n;
+      bubble(am); c.msgs.push(am); save(); render();
+      done(sample);
+    }
+    // The tools an agent may call, wired to its own memory in this browser.
+    function agentTools(A, used) {
+      const T = [], note = (x) => { if (!used.includes(x)) used.push(x); setStatus(x + "…", true); };
+      const has = (k) => A.skills.includes(k);
+      if (has("memory")) {
+        T.push({ name: "remember", description: "Запомнить факт о пользователе или важную информацию надолго.", inputSchema: { type: "object", properties: { key: { type: "string", description: "короткая тема, например «имя» или «любимый цвет»" }, text: { type: "string" } }, required: ["text"] },
+          execute: ({ key, text }) => { note("🧠 запомнил"); const m = memOf(A), k = String(key || "").slice(0, 40); m.notes = m.notes.filter((n) => !k || n.k !== k); m.notes.push({ k, t: String(text || "").slice(0, 300), at: Date.now() }); setMem(A, m); return { ok: true, saved: m.notes.length }; } });
+        T.push({ name: "recall", description: "Вспомнить сохранённые заметки. Пустой запрос — все заметки.", inputSchema: { type: "object", properties: { query: { type: "string" } } },
+          execute: ({ query }) => { note("🧠 вспомнил"); const qq = String(query || "").toLowerCase(), m = memOf(A); return { notes: m.notes.filter((n) => !qq || (n.k + " " + n.t).toLowerCase().includes(qq)).slice(-20).map((n) => ({ key: n.k, text: n.t })) }; } });
+      }
+      if (has("tasks")) {
+        T.push({ name: "add_task", description: "Добавить дело в список.", inputSchema: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
+          execute: ({ text }) => { note("✅ добавил дело"); const m = memOf(A); m.tasks.push({ t: String(text || "").slice(0, 200), done: false }); setMem(A, m); return { ok: true, count: m.tasks.length }; } });
+        T.push({ name: "list_tasks", description: "Показать список дел с номерами.", inputSchema: { type: "object", properties: {} },
+          execute: () => { note("✅ проверил дела"); return { tasks: memOf(A).tasks.map((t, i) => ({ n: i + 1, text: t.t, done: t.done })) }; } });
+        T.push({ name: "complete_task", description: "Отметить дело выполненным по номеру.", inputSchema: { type: "object", properties: { n: { type: "integer" } }, required: ["n"] },
+          execute: ({ n }) => { note("✅ отметил дело"); const m = memOf(A), t = m.tasks[(n | 0) - 1]; if (!t) throw new Error("нет такого дела"); t.done = true; setMem(A, m); return { ok: true }; } });
+        T.push({ name: "clear_done", description: "Убрать выполненные дела из списка.", inputSchema: { type: "object", properties: {} },
+          execute: () => { note("✅ убрал готовое"); const m = memOf(A), before = m.tasks.length; m.tasks = m.tasks.filter((t) => !t.done); setMem(A, m); return { removed: before - m.tasks.length }; } });
+      }
+      if (has("calc")) T.push({ name: "calculate", description: "Точно вычислить арифметическое выражение: + - * / ^ % и скобки.", inputSchema: { type: "object", properties: { expression: { type: "string" } }, required: ["expression"] },
+        execute: ({ expression }) => {
+          note("🧮 посчитал"); const e = String(expression || "").replace(/,/g, ".").replace(/[x×]/g, "*").replace(/[÷:]/g, "/");
+          if (!/^[\d\s.+\-*/()%^]+$/.test(e)) throw new Error("можно только числа и + - * / ^ % ( )");
+          const v = Function('"use strict";return (' + e.replace(/\^/g, "**") + ")")(); if (!isFinite(v)) throw new Error("не число"); return { result: Math.round(v * 1e10) / 1e10 };
+        } });
+      if (has("time")) T.push({ name: "get_time", description: "Текущие дата, время и день недели пользователя.", inputSchema: { type: "object", properties: {} },
+        execute: () => { note("🕐 посмотрел время"); const d = new Date(); return { date: d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }), time: d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }), weekday: d.toLocaleDateString("ru-RU", { weekday: "long" }) }; } });
+      if (has("dice")) T.push({ name: "random", description: "Случайные целые числа от min до max (кубики, жребий, выбор).", inputSchema: { type: "object", properties: { min: { type: "integer" }, max: { type: "integer" }, count: { type: "integer" } }, required: ["min", "max"] },
+        execute: ({ min, max, count }) => { note("🎲 бросил кубик"); const a = Math.ceil(Math.min(min, max)), b = Math.floor(Math.max(min, max)), n = Math.min(20, Math.max(1, count | 0 || 1)); return { numbers: Array.from({ length: n }, () => a + Math.floor(Math.random() * (b - a + 1))) }; } });
+      return T;
+    }
+    async function agentChat(c, q, img, A) {
+      setStatus(A.name + " думает…", true);
+      const el = bubble({ r: "a", t: "" }); el.querySelector(".vi-tools").remove();
+      const body = el.querySelector(".vi-body"); body.innerHTML = '<span class="vi-dots"></span>'; log.scrollTop = log.scrollHeight;
+      const sample = aiOff ? null : await samplePromise, used = [];
+      let reply = "";
+      if (sample) {
+        ctl = new AbortController();
+        const d = new Date();
+        const rulesA = [
+          `Ты — ${A.name} ${A.emoji}, ИИ-агент, созданный в конструкторе Dr. Agents (приложение V3AI). Твоя роль: ${A.role}.`,
+          A.instructions,
+          "Твои навыки — инструменты: " + A.skills.map((k) => SKILLS[k].n).join(", ") + ". Пользуйся ими сам, когда они помогают: точные расчёты — только через калькулятор, важные факты о пользователе — запоминай, а в начале разговора можно вспомнить заметки.",
+          "Отвечай на языке пользователя (по умолчанию по-русски), живо и в своём характере, до " + mdl().len + " слов. Можно **жирный** и списки, без таблиц.",
+          "С тобой могут говорить дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не проси пароли и личные данные (адрес, телефон).",
+          "Сегодня " + d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ".",
+        ].filter(Boolean).join("\n");
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: m.t || "…" }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        if (hist.length) hist[0] = { role: "user", content: rulesA + "\n\n---\n" + hist[0].content };
+        const opts = { modelTier: tierOf(mdl()), signal: ctl.signal, tools: agentTools(A, used),
+          onText: ({ text: t }) => { if (t) { body.innerHTML = md(t); log.scrollTop = log.scrollHeight; setStatus(A.name + " пишет…", true); } } };
+        if (img) { opts.images = [img.blob]; hist[hist.length - 1].content += "\n(Пользователь прикрепил фото.)"; }
+        try {
+          const res = await sample(hist, opts);
+          reply = (res.text || "").trim();
+          if (res.truncated) reply += "\n\n(ответ обрезан — напиши «продолжи»)";
+        } catch (e) {
+          const code = e && e.code;
+          if (OFF.includes(code)) aiOff = true;
+          if (code === "cancelled") reply = (e.text || "").trim() || "Остановлено.";
+          else if (code === "rate_limited") reply = "Слишком много сообщений подряд 😅 Подожди немного.";
+          else if (code === "tools_unavailable") reply = "Мои навыки сейчас недоступны в этом окне 😔 Попробуй позже.";
+          else reply = (e && e.text ? e.text.trim() : "");
+        }
+        ctl = null;
+      }
+      if (!reply) { // offline: a couple of skills still work without the AI
+        const t = q.toLowerCase();
+        const mm = q.match(/^запомни[:,]?\s*(.+)/i);
+        if (mm && A.skills.includes("memory")) { const m = memOf(A); m.notes.push({ k: "", t: mm[1].slice(0, 300), at: Date.now() }); setMem(A, m); used.push("🧠 запомнил"); reply = `${A.emoji} Запомнил! Заметок в памяти: ${m.notes.length}.`; }
+        else if (/что ты (помнишь|знаешь обо мне)/.test(t) && A.skills.includes("memory")) { const n = memOf(A).notes; used.push("🧠 вспомнил"); reply = n.length ? `${A.emoji} Я помню:\n` + n.map((x) => "- " + x.t).join("\n") : `${A.emoji} Пока ничего не помню. Скажи «Запомни: …»`; }
+        else if (/кто ты|как тебя зовут|что ты умеешь/.test(t)) reply = `${A.emoji} Я **${A.name}** — ${A.role.toLowerCase()}. Мои навыки: ${A.skills.map((k) => SKILLS[k].ico + " " + SKILLS[k].n.toLowerCase()).join(", ")}. Сейчас я в офлайн-режиме, но запоминать («Запомни: …») и вести дела («Добавь дело: …», «Мои дела») уже умею!`;
+        else if (A.skills.includes("tasks") && /^(добавь|запиши) (дело|задачу)[:,]?\s*(.+)/i.test(q)) { const m = memOf(A), tx = q.replace(/^(добавь|запиши) (дело|задачу)[:,]?\s*/i, ""); m.tasks.push({ t: tx.slice(0, 200), done: false }); setMem(A, m); used.push("✅ добавил дело"); reply = `${A.emoji} Добавил: «${tx}». Дел в списке: ${m.tasks.length}.`; }
+        else if (A.skills.includes("tasks") && /(мои|список) дел|какие дела/.test(t)) { const ts = memOf(A).tasks; used.push("✅ проверил дела"); reply = ts.length ? `${A.emoji} Твои дела:\n` + ts.map((x, i) => `${i + 1}. ${x.done ? "✔" : "☐"} ${x.t}`).join("\n") : `${A.emoji} Список дел пуст. Скажи «Добавь дело: …»`; }
+        else reply = `${A.emoji} ` + offline(q, modeOf("help")).replace(/Я \*\*V3AI\*\*[^.]*\.[^.]*\./, `Я **${A.name}** — ${A.role.toLowerCase()}.`).replace("Открой V3AI внутри Claude — и я смогу", `Открой V3AI внутри Claude — и я, ${A.name}, смогу`);
+      }
+      const am = { r: "a", t: reply }; if (used.length) am.used = used.slice(); if (sample && !aiOff) am.by = A.name + " · " + mdl().n;
+      body.innerHTML = md(reply); tools(el, am);
       c.msgs.push(am); save();
       done(sample);
     }
