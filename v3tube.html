@@ -20,6 +20,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { min-height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); -webkit-tap-highlight-color: transparent; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
@@ -74,6 +75,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-cap { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); max-width: 90%; background: rgba(0,0,0,.72); color: #fff; font: 800 clamp(12px, 3.4vw, 18px) var(--body); padding: 3px 9px; border-radius: 6px; text-align: center; pointer-events: none; }
 .vt-cap:empty { display: none; }
 .vt-big { position: absolute; inset: 0; margin: auto; width: 68px; height: 48px; border-radius: 14px; border: 0; background: #ff2d55; color: #fff; font-size: 22px; cursor: pointer; }
+.vt-yt { position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%); padding: 10px 18px; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 900; font-size: 15px; text-decoration: none; white-space: nowrap; }
 .vt-next { position: absolute; inset: 0; background: rgba(0,0,0,.75); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #fff; text-align: center; padding: 10px; }
 .vt-next b { font-size: 15px; max-width: 90%; } .vt-next div { display: flex; gap: 8px; }
 .vt-ctrl { display: flex; align-items: center; gap: 6px; }
@@ -145,6 +147,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <video id="vtVideo" playsinline preload="metadata" hidden></video>
           <div class="vt-cap" id="vtCap" aria-live="polite"></div>
           <button class="vt-big" id="vtBig" type="button" aria-label="Смотреть">▶</button>
+          <a class="vt-yt" id="vtYt" href="https://youtu.be/" target="_blank" rel="noopener" hidden>▶ Смотреть на YouTube</a>
           <div class="vt-next" id="vtNext" hidden></div>
         </div>
         <div class="vt-ctrl">
@@ -496,12 +499,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     /* ---------- catalog ---------- */
     const CATS = { all: "Все", games: "Игры", music: "Музыка", animals: "Животные", space: "Космос", sport: "Спорт", food: "Еда", auto: "Авто", nature: "Природа", show: "Шоу" };
     const CH = {
+      yt: { n: "С YouTube", col: "#e62117", subs: 0 },
       v3: { n: "V3 Games", col: "#ff2d55", subs: 1240000 }, cosmo: { n: "КосмоЛаб", col: "#3a5cff", subs: 845000 }, kot: { n: "Котопёс", col: "#ff8a3d", subs: 2300000 },
       race: { n: "ГонкиТВ", col: "#e0302a", subs: 412000 }, lofi: { n: "LoFi V3", col: "#8a5cff", subs: 1100000 }, sea: { n: "Подводный мир", col: "#1fa8d6", subs: 268000 },
       foot: { n: "Футбол Шоу", col: "#2a9a4a", subs: 990000 }, petya: { n: "Летсплеи Пети", col: "#6ab83a", subs: 156000 }, boom: { n: "Салют-ТВ", col: "#e0a020", subs: 73000 },
       baba: { n: "Кухня Бабушки", col: "#d65a8a", subs: 534000 }, dino: { n: "Дино Ран", col: "#5a8a3a", subs: 321000 },
     };
     const CAT = [
+      { id: "yt_q0xd", t: "Видео с YouTube", ch: "yt", sc: "logo", logo: "YouTube", yt: "https://youtu.be/Q0XdF2_3J0g", dur: 0, views: 0, ago: 0.5, likes: 0, cat: "show", d: "Это видео с YouTube. Нажми «Смотреть на YouTube» — оно откроется в новой вкладке." },
       { id: "v3orig", t: "V3 Original — заставка", ch: "v3", sc: "logo", logo: "V3 ORIGINAL", src: "media/v3-original", dur: 10, views: 482000, ago: 30, likes: 31000, cat: "games", d: "Официальная заставка V3 Original. Её можно увидеть при входе в MORGER." },
       { id: "doctr", t: "Doccer — официальный трейлер ⚽", ch: "v3", sc: "logo", logo: "DOCCER", src: "media/doccer-trailer", dur: 45, views: 1730000, ago: 200, likes: 96000, cat: "sport", d: "Футбол «как по телевизору»: Месси, Роналду, Ямаль и Я со 113 OVR. Играй в Doccer в меню приставки!" },
       { id: "sat60", t: "Полёт к кольцам Сатурна за 60 секунд", ch: "cosmo", sc: "space", dur: 60, views: 2140000, ago: 340, likes: 88000, cat: "space", d: "Летим на ракете мимо звёзд к планете с кольцами.", cap: [[1, "Старт! Ракета покидает орбиту"], [12, "Впереди — газовый гигант"], [26, "Кольца состоят изо льда и камней"], [40, "Их ширина — почти 300 000 км"], [52, "Подписывайся на КосмоЛаб 🚀"]] },
@@ -584,7 +589,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (short) box.style.aspectRatio = "9 / 16";
       if (v.thumb) { const im = new Image(); im.src = v.thumb; im.alt = ""; im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block"; box.appendChild(im); }
       else { const c = document.createElement("canvas"); c.width = short ? 180 : 320; c.height = short ? 320 : 180; SC[v.file ? "upload" : v.sc](c.getContext("2d"), c.width, c.height, v.dur * 0.35 + 3, P(v)); box.appendChild(c); }
-      if (!short) { const d = document.createElement("span"); d.className = "vt-dur"; d.textContent = fmtT(v.dur); box.appendChild(d); }
+      if (!short) { const d = document.createElement("span"); d.className = "vt-dur"; d.textContent = v.yt ? "YouTube ↗" : fmtT(v.dur); box.appendChild(d); }
       const pr = S.prog[v.id]; if (pr && v.dur) { const b = document.createElement("span"); b.className = "vt-bar"; b.style.width = Math.min(100, pr / v.dur * 100) + "%"; box.appendChild(b); }
       return box;
     }
@@ -617,7 +622,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const q = query.trim().toLowerCase();
       let list = allVids().filter((v) => !v.short && (cat === "all" || v.cat === cat));
       if (q) list = allVids().filter((v) => (v.t + " " + chOf(v).n + " " + (CATS[v.cat] || "")).toLowerCase().includes(q));
-      else list.sort((a, b) => (hashS(a.id + new Date().getDate()) % 100) - (hashS(b.id + new Date().getDate()) % 100));
+      else list.sort((a, b) => ((b.yt ? 1 : 0) - (a.yt ? 1 : 0)) || (hashS(a.id + new Date().getDate()) % 100) - (hashS(b.id + new Date().getDate()) % 100));
       if (q) { const h = document.createElement("p"); h.className = "vt-empty"; h.style.gridColumn = "1 / -1"; h.textContent = list.length ? `Найдено: ${list.length}` : `По запросу «${query.trim()}» ничего не найдено`; f.appendChild(h); }
       list.forEach((v, i) => {
         f.appendChild(card(v));
@@ -664,7 +669,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         else { const b = await getFile(v.id); if (cur !== v) return; if (!b) { real = false; cv.hidden = false; vid.hidden = true; msg("Файл этого видео не найден на устройстве — показываю заставку."); } else vid.src = URL.createObjectURL(b); }
         if (real) { const t0 = time; vid.onloadedmetadata = () => { if (t0) vid.currentTime = t0; }; vid.muted = S.muted; vid.playbackRate = speed; vid.play().then(() => { playing = true; ui(); }).catch(() => { playing = false; $("#vtBig").hidden = false; ui(); }); }
       }
-      if (!real) playing = true;
+      if (!real) playing = !v.yt;
+      $("#vtYt").hidden = !v.yt; $("#vtCap").textContent = ""; if (v.yt) $("#vtYt").href = v.yt;
       ui(); Hero.say("v3tube", "start", pick2(["Приятного просмотра!", "Не забудь лайк 👍", "Классный канал!", "Включаю звук 🔊"]));
     }
     const pick2 = (a) => a[Math.floor(Math.random() * a.length)];
@@ -717,7 +723,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       box.dataset.id = nx.id;
     }
     function toggle() {
-      if (!cur) return;
+      if (!cur || cur.yt) return;
       $("#vtNext").hidden = true; clearInterval(nextT);
       if (real) { if (vid.paused) { if (vid.ended) vid.currentTime = 0; vid.play().catch(() => {}); } else vid.pause(); return; }
       if (!playing && time >= cur.dur - 0.05) time = 0;
