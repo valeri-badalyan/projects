@@ -15,6 +15,9 @@
   --muted: #a39cb2;
   --accent: #ff2d55;
   --gold: #ffb547;
+  --ok: #3ad07a;
+  --warn: #ffb547;
+  --bad: #ff4d5e;
   --body: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: dark;
@@ -135,6 +138,61 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-short video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
 .vt-short canvas { position: relative; z-index: 1; }
 .vt-short .vt-sinfo, .vt-short .vt-sside, .vt-short .vt-sbar { z-index: 2; }
+.vt-shield { position: relative; flex: none; width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--line); background: var(--panel); cursor: pointer; display: grid; place-items: center; padding: 0; }
+.vt-shield svg { width: 20px; height: 20px; }
+.vt-shield i { position: absolute; right: -3px; top: -3px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--bg); background: var(--muted); }
+.vt-shield.ok i { background: var(--ok); } .vt-shield.warn i { background: var(--warn); } .vt-shield.bad i { background: var(--bad); }
+.vt-shield[aria-pressed="true"] { border-color: var(--accent); }
+.vt-sechero { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px; border-radius: 18px; background: radial-gradient(circle at 15% 30%, rgba(58,208,122,.12), transparent 60%), var(--panel); border: 2px solid var(--line); }
+.vt-sechero.warn { background: radial-gradient(circle at 15% 30%, rgba(255,181,71,.13), transparent 60%), var(--panel); }
+.vt-sechero.bad { background: radial-gradient(circle at 15% 30%, rgba(255,77,94,.14), transparent 60%), var(--panel); }
+.vt-ring { width: 116px; height: 116px; display: block; }
+.vt-ring circle { fill: none; stroke-width: 10; }
+.vt-ring .trk { stroke: var(--panel-2); }
+.vt-ring .val { stroke: var(--ok); stroke-linecap: round; transform: rotate(-90deg); transform-origin: 60px 60px; transition: stroke-dashoffset .6s ease; }
+.warn .vt-ring .val { stroke: var(--warn); } .bad .vt-ring .val { stroke: var(--bad); }
+.vt-ring text { fill: var(--fg); font: 900 28px var(--mono); }
+.vt-ring .pct { font-size: 12px; fill: var(--muted); font-weight: 700; }
+.vt-secinfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; align-items: flex-start; }
+.vt-eyebrow { font: 800 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.vt-secinfo h2 { margin: 0; font: 900 19px/1.2 var(--body); text-wrap: balance; }
+.vt-secinfo p { margin: 0; color: var(--muted); font-size: 13px; }
+.vt-scan { display: flex; flex-direction: column; gap: 6px; }
+.vt-scanbar { height: 8px; border-radius: 99px; background: var(--panel-2); overflow: hidden; }
+.vt-scanbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--ok), #5ce1e6); transition: width .25s; }
+.vt-scan p { margin: 0; font: 700 12px var(--mono); color: var(--muted); }
+.vt-results, .vt-log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.vt-results li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 9px 10px; border-radius: 12px; background: var(--panel); border-left: 4px solid var(--ok); }
+.vt-results li.warn { border-left-color: var(--warn); } .vt-results li.bad { border-left-color: var(--bad); }
+.vt-results b { display: block; font-size: 13.5px; } .vt-results small { color: var(--muted); font-size: 12px; }
+.vt-results button, .vt-setrow .vt-sbtn { border: 2px solid var(--line); background: var(--panel-2); color: var(--fg); border-radius: 10px; padding: 6px 10px; font: 800 12.5px var(--body); cursor: pointer; white-space: nowrap; }
+.vt-set { display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; border: 2px solid var(--line); }
+.vt-setrow { display: flex; align-items: center; gap: 10px; padding: 11px 12px; background: var(--panel); }
+.vt-setrow + .vt-setrow { border-top: 1px solid var(--line); }
+.vt-setrow > span { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.vt-setrow b { font-size: 14px; } .vt-setrow small { color: var(--muted); font-size: 12px; }
+.vt-setrow.pin { flex-wrap: wrap; } .vt-setrow.pin > span { flex-basis: 100%; } .vt-setrow.pin .vt-sbtns { width: 100%; justify-content: flex-start; }
+.vt-setrow .vt-sbtns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.vt-sw { flex: none; width: 48px; height: 28px; border-radius: 99px; border: 0; background: var(--line); position: relative; cursor: pointer; padding: 0; transition: background .2s; }
+.vt-sw i { position: absolute; left: 3px; top: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.vt-sw[aria-checked="true"] { background: var(--ok); } .vt-sw[aria-checked="true"] i { transform: translateX(20px); }
+.vt-sw:disabled { opacity: .4; cursor: default; }
+.vt-log li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; font-size: 13px; padding: 6px 2px; border-bottom: 1px dashed var(--line); }
+.vt-log time { color: var(--muted); font: 600 11px var(--mono); white-space: nowrap; }
+.vt-lockcard { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 34px 18px; border-radius: 18px; background: var(--panel); border: 2px solid var(--line); }
+.vt-lockcard h3 { margin: 0; font: 900 19px var(--body); } .vt-lockcard p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 34ch; }
+.vt-dots { display: flex; gap: 14px; margin: 4px 0; }
+.vt-dots i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); }
+.vt-dots i.on { background: var(--fg); border-color: var(--fg); }
+.vt-dots.shake { animation: vtshake .35s; }
+@keyframes vtshake { 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-4px); } }
+.vt-pinerr { margin: 0; min-height: 1.3em; color: var(--bad); font-weight: 800; font-size: 13px; }
+.vt-pad { display: grid; grid-template-columns: repeat(3, 64px); gap: 10px; justify-content: center; }
+.vt-pad button { height: 54px; border-radius: 16px; border: 0; background: var(--bg); color: var(--fg); font: 800 22px var(--mono); cursor: pointer; }
+.vt-pad button.sm { font-size: 14px; font-family: var(--body); background: transparent; }
+.vt-pad button:active { background: var(--line); }
+@media (max-width: 380px) { .vt-sechero { grid-template-columns: 1fr; justify-items: center; text-align: center; } .vt-secinfo { align-items: center; } }
+@media (prefers-reduced-motion: reduce) { .vt-dots.shake { animation: none; } .vt-ring .val, .vt-sw, .vt-sw i { transition: none; } }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -162,6 +220,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       <div class="vt-head">
         <h1 class="vt-logo"><i aria-hidden="true">▶</i>V3Tube</h1>
         <form class="vt-search" id="vtSearch" role="search"><input id="vtQ" type="search" placeholder="Поиск видео" aria-label="Поиск видео" autocomplete="off"><button type="submit" aria-label="Найти">🔍</button></form>
+        <button type="button" class="vt-shield" id="vtSecBtn" aria-label="EngineSecure — центр безопасности" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z" fill="#3ad07a" fill-opacity=".18" stroke="#3ad07a" stroke-width="2" stroke-linejoin="round"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#f3f0f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><i></i></button>
         <span class="vt-coins" title="Монеты"><b id="vtCoins">0</b> ◎</span><span id="vtSubsChip" hidden>0</span>
       </div>
       <div class="vt-tabs" id="vtTabs" role="tablist">
@@ -235,7 +294,33 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <div class="vt-list" id="vtLikedList"></div>
       </div>
 
+      <div class="vt-panel" id="vtSec" hidden>
+        <div class="vt-sechero" id="vtSecHero">
+          <svg class="vt-ring" viewBox="0 0 120 120" role="img" aria-labelledby="vtSecLvl"><circle class="trk" cx="60" cy="60" r="52"></circle><circle class="val" id="vtRing" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"></circle><text x="60" y="64" text-anchor="middle" id="vtRingN">0</text><text class="pct" x="60" y="82" text-anchor="middle">из 100</text></svg>
+          <div class="vt-secinfo">
+            <span class="vt-eyebrow">EngineSecure</span>
+            <h2 id="vtSecLvl">Защита</h2>
+            <p id="vtSecHint"></p>
+            <button type="button" class="btn" id="vtScan">Проверить сейчас</button>
+          </div>
+        </div>
+        <div class="vt-scan" id="vtScanBox" hidden><div class="vt-scanbar"><i id="vtScanProg"></i></div><p id="vtScanStep"></p></div>
+        <ul class="vt-results" id="vtResults"></ul>
+        <h3 class="vt-h">Настройки защиты</h3>
+        <div class="vt-set" id="vtSet"></div>
+        <h3 class="vt-h">Журнал событий</h3>
+        <ul class="vt-log" id="vtLog"></ul>
+        <p class="hint">EngineSecure защищает V3Tube на этом устройстве. PIN-код хранится только в этом браузере и только в виде хеша, а не цифрами.</p>
+      </div>
+
       <div class="vt-panel" id="vtStudio" hidden>
+        <div class="vt-lockcard" id="vtLock" hidden>
+          <div class="vt-permico" aria-hidden="true">🔒</div>
+          <h3>Канал защищён EngineSecure</h3>
+          <p>Введи PIN-код, чтобы выкладывать видео, удалять их и забирать монеты.</p>
+          <button type="button" class="btn" id="vtUnlock">Ввести PIN</button>
+        </div>
+        <div class="vt-panel" id="vtStudioBody">
         <div class="vt-mych">
           <span class="vt-av big" id="vtMyAv"></span>
           <span class="vt-chinfo"><input id="vtMyName" maxlength="24" aria-label="Название канала"><small id="vtMyStats"></small></span>
@@ -282,9 +367,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <p class="vt-msg" id="vtStMsg" aria-live="polite"></p>
         <h3 class="vt-h">📂 Мои видео</h3>
         <div class="vt-list" id="vtMine"></div>
+        </div>
       </div>
     </div>
-    <p class="hint">▶ Нажми на ролик, чтобы смотреть. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+    <p class="hint">▶ Нажми на ролик, чтобы смотреть. Щит 🛡 вверху открывает EngineSecure — центр безопасности. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
 </div>
 <div class="vt-perm" id="vtPerm" role="dialog" aria-modal="true" aria-labelledby="vtPermH" hidden>
   <div class="vt-permbox">
@@ -293,6 +379,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <p>V3Tube откроет галерею твоего телефона. Ты сам выберешь видео, и приложение увидит только его.</p>
     <button type="button" class="btn wide" id="vtPermYes">Разрешить</button>
     <button type="button" class="btn ghost wide" id="vtPermNo">Не разрешать</button>
+  </div>
+</div>
+<div class="vt-perm" id="vtPin" role="dialog" aria-modal="true" aria-labelledby="vtPinH" hidden>
+  <div class="vt-permbox">
+    <div class="vt-permico" aria-hidden="true">🛡️</div>
+    <h3 id="vtPinH">Введите PIN</h3>
+    <p id="vtPinSub"></p>
+    <div class="vt-dots" id="vtPinDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p class="vt-pinerr" id="vtPinErr" aria-live="assertive"></p>
+    <div class="vt-pad" id="vtPad"><button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" class="sm" data-k="x">Отмена</button><button type="button" data-k="0">0</button><button type="button" class="sm" data-k="b" aria-label="Стереть">⌫</button></div>
   </div>
 </div>
 <div class="vt-toast off" id="vtToast" role="status" aria-live="polite"></div>
@@ -710,8 +806,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (t !== "shorts") stopSVid();
       tab = t;
       $$("#vtTabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t || (t === "watch" && b.dataset.tab === "home"))));
-      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio";
-      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI);
+      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio"; $("#vtSec").hidden = t !== "sec";
+      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI); if (t === "sec") renderSec(); updateShield();
       window.scrollTo(0, 0);
     }
     function renderHome() {
@@ -791,13 +887,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       for (let i = 0; i < n; i++) out.push({ n: NAMES[Math.floor(p.R(i + 900) * NAMES.length)], x: pool[Math.floor(p.R(i + 950) * pool.length)], h: v.mine ? Math.max(0, (Date.now() - v.mine.at) / 3600000 * (1 - i / 9)) : v.ago * p.R(i + 980), l: Math.floor(p.R(i + 990) * (v.mine ? 12 : 4000)), k: "s" + i });
       return out;
     }
+    function showCom(x) { const r = secText(x); return r.ok ? r.text : "🛡 Комментарий скрыт EngineSecure"; }
     function renderComs() {
       const v = cur, mine = (S.coms[v.id] || []).map((c, i) => ({ n: c.n, x: c.x, h: (Date.now() - c.t) / 3600000, l: 0, k: "u" + i, me: true, rep: c.rep }));
       const list = mine.slice().reverse().concat(seedComs(v));
       $("#vtComH").textContent = `Комментарии · ${list.length}`;
       $("#vtComs").innerHTML = list.map((c) => {
         const liked = S.cl[v.id + c.k];
-        return `<li>${avHTML({ n: c.n, col: c.me ? S.my.col : `hsl(${hashS(c.n) % 360},55%,45%)` })}<div><small>${esc(c.n)} · ${ago(c.h)}</small><p>${esc(c.x)}</p><button type="button" data-cl="${c.k}" class="${liked ? "on" : ""}">👍 ${c.l + (liked ? 1 : 0) || ""}</button>${c.rep ? `<small style="display:block;margin-top:4px">❤️ ${esc(chOf(v).n)}: ${esc(c.rep)}</small>` : ""}</div></li>`;
+        return `<li>${avHTML({ n: c.n, col: c.me ? S.my.col : `hsl(${hashS(c.n) % 360},55%,45%)` })}<div><small>${esc(c.n)} · ${ago(c.h)}</small><p>${esc(c.me ? showCom(c.x) : c.x)}</p><button type="button" data-cl="${c.k}" class="${liked ? "on" : ""}">👍 ${c.l + (liked ? 1 : 0) || ""}</button>${c.rep ? `<small style="display:block;margin-top:4px">❤️ ${esc(chOf(v).n)}: ${esc(c.rep)}</small>` : ""}</div></li>`;
       }).join("");
     }
     function recList() {
@@ -852,8 +949,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       try { if (navigator.share) { await navigator.share({ title: cur.t, text }); return; } await navigator.clipboard.writeText(text); msg("🔗 Ссылка скопирована"); } catch (e) { msg("Не удалось поделиться"); }
     });
     $("#vtComForm").addEventListener("submit", (e) => {
-      e.preventDefault(); const x = $("#vtComIn").value.trim(); if (!x || !cur) return;
+      e.preventDefault(); const raw = $("#vtComIn").value.trim(); if (!raw || !cur) return;
       const v = cur, arr = S.coms[v.id] = S.coms[v.id] || [];
+      const chk = secText(raw);
+      if (!chk.ok || (SEC.filter && arr.slice(-2).filter((c) => c.x === raw).length === 2)) { const why = chk.ok ? "похоже на спам" : chk.why; msg(`🛡 EngineSecure: комментарий не опубликован — ${why}`); slog("💬", `Комментарий не опубликован: ${why}`); return; }
+      if (chk.n) slog("💬", `В комментарии скрыто слов: ${chk.n}`);
+      const x = chk.text;
       arr.push({ n: myName(), x: x.slice(0, 200), t: Date.now() }); if (arr.length > 30) arr.shift();
       $("#vtComIn").value = ""; save(); renderComs();
       if (v.ch !== "me") setTimeout(() => { const c = arr[arr.length - 1]; if (!c || c.rep) return; c.rep = pick2(["Спасибо! ❤️", "Рад, что понравилось!", "Скоро новое видео 😉", "Огонь коммент 🔥", "Спасибо за поддержку!"]); save(); if (cur === v && tab === "watch") renderComs(); }, 2500);
@@ -900,6 +1001,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     /* ---------- studio ---------- */
     function renderStudio() {
+      const locked = secLocked(); $("#vtLock").hidden = !locked; $("#vtStudioBody").hidden = locked; if (locked) return;
       $("#vtMyName").value = myName();
       const av = $("#vtMyAv"); av.style.background = S.my.col; av.textContent = myName()[0] || "?";
       $("#vtColors").innerHTML = ["#ff2d55", "#ff8a3d", "#ffd84d", "#2a9a4a", "#1fa8d6", "#3a5cff", "#8a5cff", "#d65a8a"].map((c) => `<button type="button" data-col="${c}" style="background:${c}" aria-label="Цвет ${c}" aria-pressed="${c === S.my.col}"></button>`).join("");
@@ -960,7 +1062,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $("#vtAddPhoto").addEventListener("change", async (e) => {
       const files = Array.from(e.target.files || []); e.target.value = ""; let n = 0;
       for (const f of files) {
-        if (!/^image\//.test(f.type)) continue;
+        if (!/^image\//.test(f.type) && !SEC.upload) continue;
+        const chk = await secFile(f, "image"); if (!chk.ok) { stMsg(chk.why); continue; }
         try {
           const url = URL.createObjectURL(f), im = new Image(); im.src = url; await im.decode();
           const z = Math.min(1, 640 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * z); c.height = Math.round(im.naturalHeight * z);
@@ -987,14 +1090,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       S.mine.push(m);
       if (!trySave()) { S.mine.pop(); stMsg("Не хватает места в памяти браузера. Убери пару фото или удали старые видео и попробуй снова."); return false; }
       if (S.mine.length > 40) { const old = S.mine.shift(); if (old.file) delFile(old.id); save(); }
-      Hero.earn(10); renderStudio(); updateHub();
+      Hero.earn(10); slog("📤", `Опубликовано видео «${m.t}»`); renderStudio(); updateHub();
       $("#vtStMsg").textContent = `🚀 «${m.t}» опубликовано! +10 ◎. Просмотры начнут расти — загляните позже.`;
       Hero.say("v3tube", "good", "Новое видео на канале! 🎬"); note(784, 0.1, "square", 0.04); setTimeout(() => note(1175, 0.15, "square", 0.04), 110);
       return true;
     }
     $("#vtPublish").addEventListener("click", () => {
       const combo = draft.length > 0, firstTitle = draft.find((k) => k.k === "title" && k.txt && k.txt.trim());
-      const t = ($("#vtNewTitle").value.trim() || (firstTitle && firstTitle.txt.trim()) || (combo ? "Мой монтаж" : `${SCN[sc].slice(2)} — моё видео`)).slice(0, 70);
+      const t0 = ($("#vtNewTitle").value.trim() || (firstTitle && firstTitle.txt.trim()) || (combo ? "Мой монтаж" : `${SCN[sc].slice(2)} — моё видео`)).slice(0, 70);
+      const tc = secText(t0); if (!tc.ok) { stMsg(`🛡 EngineSecure: в названии ${tc.why}.`); return; }
+      const t = tc.text;
       const short = $("#vtNewShort").checked, dur = combo ? draftDur() : short ? 12 : +$("#vtNewLen").value;
       const id = "m" + Date.now().toString(36), mus = $("#vtMus").value;
       const own = combo ? draft.filter((k) => k.k === "photo").length * 250 + draft.filter((k) => k.cap || k.k === "title").length * 120 + draft.length * 80 : 0;
@@ -1019,20 +1124,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function openPerm() { $("#vtPerm").hidden = false; $("#vtPermYes").focus(); }
     function closePerm() { $("#vtPerm").hidden = true; $("#vtGalBtn").focus(); }
     $("#vtGalBtn").addEventListener("click", () => { if (S.gallery === "yes") $("#vtFile").click(); else openPerm(); });
-    $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); closePerm(); galState(); $("#vtFile").click(); });
-    $("#vtPermNo").addEventListener("click", () => { S.gallery = "no"; save(); closePerm(); galState(); stMsg("Без доступа к галерее видео не выложить. Разрешить можно в любой момент."); });
+    $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); slog("🖼️", "Доступ к галерее разрешён"); closePerm(); galState(); $("#vtFile").click(); });
+    $("#vtPermNo").addEventListener("click", () => { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); closePerm(); galState(); stMsg("Без доступа к галерее видео не выложить. Разрешить можно в любой момент."); });
     $("#vtPerm").addEventListener("click", (e) => { if (e.target.id === "vtPerm") closePerm(); });
     $("#vtPerm").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); closePerm(); } });
-    $("#vtGalState").addEventListener("click", (e) => { if (e.target.id === "vtGalOff") { S.gallery = "no"; save(); galState(); } });
+    $("#vtGalState").addEventListener("click", (e) => { if (e.target.id === "vtGalOff") { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); galState(); } });
     function closeReview() { if (pend) URL.revokeObjectURL(pend.url); pend = null; const v = $("#vtRevVid"); v.pause(); v.removeAttribute("src"); try { v.load(); } catch (e) { /* optional */ } $("#vtReview").hidden = true; }
     $("#vtFile").addEventListener("change", async (e) => {
       const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
-      if (f.size > 300 * 1024 * 1024) { stMsg("Это видео больше 300 МБ. Выбери видео покороче."); return; }
-      closeReview(); stMsg("⏳ Открываю видео…");
+      if (f.size > 300 * 1024 * 1024) { stMsg("Это видео больше 300 МБ. Выбери видео покороче."); slog("⛔", `Отклонён файл ${f.name}: больше 300 МБ`); return; }
+      closeReview(); stMsg("🛡 EngineSecure проверяет файл…");
+      const chk = await secFile(f, "video"); if (!chk.ok) { stMsg(chk.why); return; }
+      stMsg("⏳ Открываю видео…");
       const url = URL.createObjectURL(f), v = $("#vtRevVid"); v.src = url;
       try { await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; setTimeout(rej, 10000); }); }
       catch (err) { URL.revokeObjectURL(url); v.removeAttribute("src"); stMsg("Этот формат видео браузер не может открыть. Попробуй MP4."); return; }
       const dur = isFinite(v.duration) ? v.duration : 0, w = v.videoWidth, h = v.videoHeight;
+      if (SEC.upload && (dur > 900 || (!w && !h))) { URL.revokeObjectURL(url); v.removeAttribute("src"); const why = dur > 900 ? "видео длиннее 15 минут" : "в файле нет изображения"; slog("⛔", `Отклонён файл ${f.name}: ${why}`); stMsg(`EngineSecure не пустил файл «${f.name}»: ${why}.`); return; }
       pend = { f, url, dur, w, h };
       $("#vtRevInfo").textContent = `${f.name} · ${fmtT(dur)}${w ? ` · ${w}×${h}` : ""} · ${(f.size / 1048576).toFixed(1).replace(".", ",")} МБ`;
       $("#vtRevTitle").value = ($("#vtNewTitle").value.trim() || f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ")).slice(0, 70);
@@ -1055,7 +1163,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const { f, url, dur, w, h } = pend, short = $("#vtRevShort").checked;
       let thumbURL = ""; try { thumbURL = await frameOf(url, dur, h > w); } catch (err) { /* thumbnail is optional */ }
       const id = "u" + Date.now().toString(36), saved = await putFile(id, f);
-      const t = ($("#vtRevTitle").value.trim() || "Моё видео").slice(0, 70);
+      const tc = secText(($("#vtRevTitle").value.trim() || "Моё видео").slice(0, 70)); if (!tc.ok) { btn.disabled = false; stMsg(`🛡 EngineSecure: в названии ${tc.why}.`); return; }
+      const t = tc.text;
       const ok = publish({ id, t, d: $("#vtRevDesc").value.trim().slice(0, 200), sc: "upload", file: true, thumb: thumbURL, dur: Math.max(1, Math.round(dur)), short, at: Date.now(), pot: Math.floor(600 + Math.random() * 3000 + (short ? 800 : 0)) });
       btn.disabled = false; if (!ok) { delFile(id); return; }
       closeReview();
@@ -1063,14 +1172,196 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       else stMsg($("#vtStMsg").textContent + (short ? " Оно уже в Shorts." : ""));
     });
 
+    /* ---------- EngineSecure: security centre ---------- */
+    const SEC = Object.assign({ pin: "", lock: true, auto: true, filter: true, upload: true, log: [], scanAt: 0 }, store.get("tubeSec", {}) || {});
+    if (!Array.isArray(SEC.log)) SEC.log = [];
+    let unlocked = false, pinTries = 0, pinWait = 0, scanRes = [];
+    const saveSec = () => store.set("tubeSec", SEC);
+    function slog(ic, msg) { SEC.log.unshift({ t: Date.now(), ic, msg: String(msg).slice(0, 140) }); if (SEC.log.length > 40) SEC.log.length = 40; saveSec(); if (tab === "sec") renderLog(); }
+    const secLocked = () => !!(SEC.pin && SEC.lock && !unlocked);
+    function secScore() { let n = 0; if (SEC.pin) { n += 30; if (SEC.lock) n += 15; if (SEC.auto) n += 10; } if (SEC.filter) n += 25; if (SEC.upload) n += 20; return n; }
+    const LEVELS = [[90, "Максимальная", "ok"], [65, "Высокая", "ok"], [35, "Средняя", "warn"], [0, "Слабая", "bad"]];
+    const level = () => LEVELS.find((l) => secScore() >= l[0]);
+    function updateShield() { const b = $("#vtSecBtn"); b.classList.remove("ok", "warn", "bad"); b.classList.add(level()[2]); b.setAttribute("aria-pressed", String(tab === "sec")); }
+    async function sha(txt) {
+      try { const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("v3tube-pin:" + txt)); return Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, "0")).join(""); }
+      catch (e) { return "h" + hashS("v3tube-pin:" + txt).toString(16) + hashS(txt + ":salt").toString(16); }
+    }
+
+    // text filter: swear words become stars, links and spam are refused
+    const BAD = /(^|[^а-яёa-z])(бля\S*|ху[йеёияю]\S*|пизд\S*|[её]ба[нлтш]\S*|[её]бл\S*|сук[аиеу]\S*|муда[кч]\S*|дебил\S*|идиот\S*|урод\S*|тупиц\S*|лох(?:а|и|у|ом)?|дура(?:к|ки|ка|чок)?)(?=$|[^а-яёa-z])/giu;
+    const LINK = /(https?:\/\/|www\.|t\.me\/|\b[a-zа-я0-9-]{2,}\.(ru|com|net|org|io|xyz|рф|su|me|ly|gg)\b)/i, REP = /(.)\1{6,}/u;
+    function secText(x) {
+      let text = String(x); if (!SEC.filter) return { ok: true, text, n: 0 };
+      if (LINK.test(text)) return { ok: false, why: "ссылки запрещены" };
+      if (REP.test(text)) return { ok: false, why: "похоже на спам" };
+      const letters = text.replace(/[^a-zа-яё]/giu, ""), caps = letters.replace(/[^A-ZА-ЯЁ]/gu, "");
+      if (letters.length >= 12 && caps.length / letters.length > 0.8) text = text.toLowerCase();
+      let n = 0; text = text.replace(BAD, (m, p, w) => { n++; return p + w[0] + "*".repeat(Math.max(2, w.length - 1)); });
+      return { ok: true, text, n };
+    }
+
+    // upload check: the file must really be a video or an image
+    const VEXT = /\.(mp4|m4v|mov|webm|mkv|3gp|3g2|avi|ogv)$/i, IEXT = /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp)$/i;
+    async function secFile(f, kind) {
+      if (!SEC.upload) return { ok: true };
+      const name = f.name || "файл", isV = kind === "video", what = isV ? "видео" : "фото";
+      const bad = (why) => { slog("⛔", `Отклонён файл ${name}: ${why}`); return { ok: false, why: `EngineSecure не пустил файл «${name}»: ${why}.` }; };
+      if (!(f.type || "").startsWith(isV ? "video/" : "image/") && !(isV ? VEXT : IEXT).test(name)) return bad(`это не ${what}`);
+      if (!f.size) return bad("файл пустой");
+      let h; try { h = new Uint8Array(await f.slice(0, 16).arrayBuffer()); } catch (e) { return bad("файл не читается"); }
+      const box = String.fromCharCode(...h.slice(4, 8)), hex = Array.from(h.slice(0, 4), (b) => b.toString(16).padStart(2, "0")).join(""), riff = String.fromCharCode(...h.slice(8, 12));
+      const sig = isV
+        ? box === "ftyp" || ["moov", "mdat", "wide", "free", "skip"].includes(box) || hex === "1a45dfa3" || (hex === "52494646" && riff.startsWith("AVI")) || hex === "4f676753"
+        : hex.startsWith("ffd8ff") || hex === "89504e47" || hex.startsWith("474946") || (hex === "52494646" && riff === "WEBP") || box === "ftyp" || hex.startsWith("424d");
+      if (!sig) return bad(`внутри не ${what}, хотя файл так называется`);
+      slog("✅", `Проверен файл ${name}: безопасно`); return { ok: true };
+    }
+
+    // PIN pad dialog
+    let pinState = null;
+    function pinDots() { $$("#vtPinDots i").forEach((d, i) => d.classList.toggle("on", i < pinState.code.length)); }
+    function pinAsk(title, sub, check) {
+      return new Promise((res) => {
+        pinState = { code: "", res, check, busy: false, last: document.activeElement };
+        $("#vtPinH").textContent = title; $("#vtPinSub").textContent = sub; $("#vtPinErr").textContent = Date.now() < pinWait ? waitTxt() : "";
+        pinDots(); $("#vtPin").hidden = false; $("#vtPad [data-k='1']").focus();
+      });
+    }
+    const waitTxt = () => `Слишком много попыток. Подожди ${Math.ceil((pinWait - Date.now()) / 1000)} с.`;
+    function pinClose(val) { const st = pinState; if (!st) return; pinState = null; $("#vtPin").hidden = true; if (st.last && st.last.focus) st.last.focus(); st.res(val); }
+    async function pinKey(k) {
+      const st = pinState; if (!st || st.busy) return;
+      if (k === "x") return pinClose(null);
+      if (Date.now() < pinWait) { $("#vtPinErr").textContent = waitTxt(); return; }
+      if (k === "b") { st.code = st.code.slice(0, -1); pinDots(); return; }
+      if (!/^\d$/.test(k) || st.code.length >= 4) return;
+      st.code += k; pinDots(); $("#vtPinErr").textContent = "";
+      if (st.code.length < 4) return;
+      st.busy = true; const err = st.check ? await st.check(st.code) : null; st.busy = false;
+      if (pinState !== st) return;
+      if (!err) return pinClose(st.code);
+      st.code = ""; pinDots(); $("#vtPinErr").textContent = err; const d = $("#vtPinDots"); d.classList.remove("shake"); void d.offsetWidth; d.classList.add("shake");
+    }
+    $("#vtPad").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) pinKey(b.dataset.k); });
+    $("#vtPin").addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { e.stopPropagation(); pinClose(null); }
+      else if (/^\d$/.test(e.key)) { e.preventDefault(); pinKey(e.key); }
+      else if (e.key === "Backspace") { e.preventDefault(); pinKey("b"); }
+    });
+    const checkPin = async (code) => {
+      if (Date.now() < pinWait) return waitTxt();
+      if ((await sha(code)) === SEC.pin) { pinTries = 0; return null; }
+      pinTries++; slog("⚠️", `Неверный PIN-код (попытка ${pinTries})`);
+      if (pinTries >= 5) { pinTries = 0; pinWait = Date.now() + 30000; slog("⛔", "5 неверных попыток подряд: ввод PIN закрыт на 30 секунд"); return waitTxt(); }
+      return `Неверный PIN. Осталось попыток: ${5 - pinTries}`;
+    };
+    const verify = (why) => pinAsk("Введите PIN", why, checkPin);
+    async function setPin() {
+      if (SEC.pin && !(await verify("Сначала введи текущий PIN-код."))) return;
+      const a = await pinAsk("Придумай PIN", "4 цифры. Он закроет «Мой канал» на этом устройстве.", null); if (!a) return;
+      const b = await pinAsk("Повтори PIN", "Введи те же 4 цифры ещё раз.", async (c) => c === a ? null : "Не совпадает с первым вводом. Попробуй ещё раз."); if (!b) return;
+      const had = !!SEC.pin; SEC.pin = await sha(a); unlocked = true; saveSec(); slog("🔐", had ? "PIN-код канала изменён" : "Установлен PIN-код канала");
+      Hero.say("v3tube", "good", "🔐 PIN-код сохранён"); afterSec();
+    }
+    async function removePin() {
+      if (!(await verify("Введи PIN-код, чтобы убрать его."))) return;
+      SEC.pin = ""; unlocked = false; saveSec(); slog("🔓", "PIN-код канала убран"); afterSec();
+    }
+    async function unlock() {
+      if (!(await verify("Введи PIN-код, чтобы открыть «Мой канал»."))) return;
+      unlocked = true; slog("🔓", "Вход в «Мой канал» по PIN-коду"); renderStudio();
+    }
+    function lockNow() { if (!SEC.pin) return; unlocked = false; slog("🔒", "Канал заблокирован"); afterSec(); }
+    $("#vtUnlock").addEventListener("click", unlock);
+    function afterSec() { updateShield(); if (tab === "sec") renderSec(); if (tab === "studio") renderStudio(); }
+
+    const SETS = {
+      lock: ["🔒 Блокировка «Моего канала»", "Без PIN-кода нельзя выкладывать и удалять видео и забирать монеты", true],
+      auto: ["⏱ Автоблокировка", "Канал снова закрывается, когда уходишь со страницы", true],
+      filter: ["💬 Фильтр комментариев", "Мат заменяется звёздочками, ссылки и спам не публикуются", false],
+      upload: ["📁 Проверка загрузок", "Проверяет формат, содержимое и длину файлов из галереи", false],
+    };
+    async function toggleSet(k) {
+      const on = !SEC[k];
+      if (!on && SEC.pin && !(await verify(`Введи PIN, чтобы выключить «${SETS[k][0].slice(2).trim()}».`))) return;
+      SEC[k] = on; saveSec(); slog(on ? "🟢" : "🟠", `${SETS[k][0].slice(2).trim()}: ${on ? "включено" : "выключено"}`); afterSec();
+    }
+    function renderSec() {
+      const n = secScore(), L = level(), hero = $("#vtSecHero");
+      hero.classList.remove("ok", "warn", "bad"); hero.classList.add(L[2]);
+      $("#vtRing").setAttribute("stroke-dashoffset", String(326.7 * (1 - n / 100))); $("#vtRingN").textContent = n;
+      $("#vtSecLvl").textContent = `Защита: ${L[1].toLowerCase()}`;
+      const tips = []; if (!SEC.pin) tips.push("установи PIN-код канала"); else { if (!SEC.lock) tips.push("включи блокировку канала"); if (!SEC.auto) tips.push("включи автоблокировку"); } if (!SEC.filter) tips.push("включи фильтр комментариев"); if (!SEC.upload) tips.push("включи проверку загрузок");
+      $("#vtSecHint").textContent = (tips.length ? `Чтобы усилить защиту: ${tips.join(", ")}.` : "Все функции защиты включены.") + (SEC.scanAt ? ` Последняя проверка: ${ago((Date.now() - SEC.scanAt) / 3600000)}.` : " Проверка ещё не проводилась.");
+      const rows = [];
+      rows.push(`<div class="vt-setrow pin"><span><b>🔐 PIN-код канала</b><small>${SEC.pin ? (secLocked() ? "Установлен · канал заблокирован" : "Установлен · канал открыт") : "Не установлен"}</small></span><div class="vt-sbtns">${SEC.pin ? `${SEC.lock && !secLocked() ? '<button type="button" class="vt-sbtn" data-act="locknow">Заблокировать</button>' : ""}<button type="button" class="vt-sbtn" data-act="pin">Сменить</button><button type="button" class="vt-sbtn" data-act="unpin">Убрать</button>` : '<button type="button" class="vt-sbtn" data-act="pin">Установить</button>'}</div></div>`);
+      for (const [k, [t, d, needPin]] of Object.entries(SETS)) {
+        const dis = needPin && !SEC.pin;
+        rows.push(`<div class="vt-setrow"><span><b>${t}</b><small>${dis ? "Сначала установи PIN-код" : d}</small></span><button type="button" class="vt-sw" role="switch" data-sw="${k}" aria-checked="${!!SEC[k] && !dis}" aria-label="${t.slice(2).trim()}"${dis ? " disabled" : ""}><i></i></button></div>`);
+      }
+      rows.push(`<div class="vt-setrow"><span><b>🖼 Доступ к галерее</b><small>${S.gallery === "yes" ? "Разрешён: V3Tube открывает галерею без вопроса" : "Не разрешён: V3Tube спросит перед открытием галереи"}</small></span>${S.gallery === "yes" ? '<button type="button" class="vt-sbtn" data-act="galoff">Запретить</button>' : ""}</div>`);
+      $("#vtSet").innerHTML = rows.join("");
+      renderResults(); renderLog(); updateShield();
+    }
+    function renderLog() {
+      const fmt = (t) => { const d = new Date(t), today = new Date().toDateString() === d.toDateString(); return today ? d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) : d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }); };
+      $("#vtLog").innerHTML = SEC.log.length ? SEC.log.slice(0, 25).map((l) => `<li><span aria-hidden="true">${l.ic}</span><span>${esc(l.msg)}</span><time>${fmt(l.t)}</time></li>`).join("") + (SEC.log.length ? '<li><span></span><span><button type="button" class="vt-sbtn" data-act="clearlog" style="border:2px solid var(--line);background:var(--panel-2);color:var(--fg);border-radius:10px;padding:5px 10px;font:800 12px var(--body);cursor:pointer">Очистить журнал</button></span><span></span></li>' : "") : '<li><span>🛡</span><span>Здесь появятся события: входы по PIN, отклонённые файлы и комментарии, изменения настроек.</span><span></span></li>';
+    }
+    function renderResults() {
+      $("#vtResults").innerHTML = scanRes.map((r) => `<li class="${r.st}"><span aria-hidden="true">${r.st === "ok" ? "✅" : r.st === "warn" ? "⚠️" : "⛔"}</span><div><b>${esc(r.t)}</b><small>${esc(r.d)}</small></div>${r.fix ? `<button type="button" data-fix="${r.fix}">${esc(r.fl || "Исправить")}</button>` : "<span></span>"}</li>`).join("");
+    }
+    async function brokenVideos() { const out = []; for (const m of S.mine) if (m.file && !(await getFile(m.id))) out.push(m); return out; }
+    async function scan() {
+      const btn = $("#vtScan"); btn.disabled = true; $("#vtScanBox").hidden = false; scanRes = []; renderResults();
+      const steps = ["PIN-код канала", "Блокировка канала", "Фильтр комментариев", "Проверка загрузок", "Файлы видео", "Память браузера", "Комментарии", "Доступ к галерее"];
+      const res = [], wait = (ms) => new Promise((r) => setTimeout(r, ms));
+      for (let i = 0; i < steps.length; i++) {
+        $("#vtScanStep").textContent = `Проверяю: ${steps[i]}…`; $("#vtScanProg").style.width = ((i + 0.5) / steps.length * 100) + "%"; await wait(260);
+        if (i === 0) res.push(SEC.pin ? { st: "ok", t: "PIN-код установлен", d: "Канал можно закрыть от чужих рук" } : { st: "bad", t: "PIN-код не установлен", d: "Любой, кто возьмёт телефон, сможет удалить твои видео", fix: "pin", fl: "Установить" });
+        if (i === 1 && SEC.pin) res.push(SEC.lock ? { st: "ok", t: "Блокировка канала включена", d: SEC.auto ? "И закрывается сама, когда уходишь" : "Автоблокировка выключена" , fix: SEC.auto ? "" : "auto", fl: "Включить" } : { st: "warn", t: "Блокировка канала выключена", d: "PIN-код есть, но канал открыт", fix: "lock", fl: "Включить" });
+        if (i === 2) res.push(SEC.filter ? { st: "ok", t: "Фильтр комментариев работает", d: "Мат скрывается, ссылки и спам не проходят" } : { st: "warn", t: "Фильтр комментариев выключен", d: "Под видео может появиться мат и спам", fix: "filter", fl: "Включить" });
+        if (i === 3) res.push(SEC.upload ? { st: "ok", t: "Проверка загрузок работает", d: "Файлы из галереи проверяются перед публикацией" } : { st: "warn", t: "Проверка загрузок выключена", d: "Можно случайно выложить битый или чужой файл", fix: "upload", fl: "Включить" });
+        if (i === 4) { const b = await brokenVideos(); res.push(b.length ? { st: "warn", t: `${b.length} ${plural(b.length, ["видео", "видео", "видео"])} без файла`, d: "Файл удалён из памяти браузера, такое видео не откроется", fix: "broken", fl: "Удалить" } : { st: "ok", t: "Файлы видео на месте", d: `${S.mine.filter((m) => m.file).length} из галереи, все открываются` }); }
+        if (i === 5) {
+          let used = 0, quota = 0; try { const e = await navigator.storage.estimate(); used = e.usage || 0; quota = e.quota || 0; } catch (e) { /* not available */ }
+          let ls = 0; try { ls = (localStorage.getItem("v3:v3tube") || "").length * 2; } catch (e) { /* storage blocked */ }
+          const mb = (x) => (x / 1048576).toFixed(1).replace(".", ",") + " МБ", full = (quota && used / quota > 0.8) || ls > 4 * 1048576;
+          res.push({ st: full ? "warn" : "ok", t: full ? "Память почти заполнена" : "Памяти достаточно", d: quota ? `Занято ${mb(used)} из ${mb(quota)}` : `Данные канала: ${mb(ls)}` });
+        }
+        if (i === 6) { let n = 0; for (const k in S.coms) for (const c of S.coms[k]) { const r = secText(c.x); if (!r.ok || r.n) n++; } res.push(n ? { st: SEC.filter ? "ok" : "warn", t: `Нарушений в комментариях: ${n}`, d: SEC.filter ? "Они скрыты фильтром" : "Включи фильтр, чтобы их скрыть", fix: SEC.filter ? "" : "filter", fl: "Включить" } : { st: "ok", t: "Комментарии чистые", d: "Мата, ссылок и спама не найдено" }); }
+        if (i === 7) res.push({ st: "ok", t: S.gallery === "yes" ? "Галерея: доступ разрешён" : "Галерея: доступ по запросу", d: "V3Tube видит только те видео и фото, которые ты сам выбрал" });
+      }
+      $("#vtScanProg").style.width = "100%"; await wait(200); $("#vtScanBox").hidden = true; btn.disabled = false;
+      scanRes = res; SEC.scanAt = Date.now(); const w = res.filter((r) => r.st !== "ok").length;
+      slog(w ? "⚠️" : "✅", w ? `Проверка завершена: проблем — ${w}` : "Проверка завершена: проблем нет"); renderSec();
+    }
+    $("#vtScan").addEventListener("click", scan);
+    $("#vtResults").addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-fix]"); if (!b) return; const f = b.dataset.fix;
+      if (f === "pin") await setPin();
+      else if (f === "broken") { const bad = await brokenVideos(); if (SEC.pin && SEC.lock && !(await verify("Введи PIN, чтобы удалить видео без файлов."))) return; S.mine = S.mine.filter((m) => !bad.includes(m)); save(); slog("🗑️", `Удалено видео без файлов: ${bad.length}`); updateHub(); }
+      else { SEC[f] = true; saveSec(); slog("🟢", `${SETS[f][0].slice(2).trim()}: включено`); }
+      const r = scanRes.find((x) => x.fix === f); if (r) { r.st = "ok"; r.fix = ""; r.d = "Исправлено"; } renderSec();
+    });
+    $("#vtSet").addEventListener("click", (e) => {
+      const sw = e.target.closest("[data-sw]"); if (sw) { toggleSet(sw.dataset.sw); return; }
+      const a = e.target.closest("[data-act]"); if (!a) return;
+      const k = a.dataset.act;
+      if (k === "pin") setPin(); else if (k === "unpin") removePin(); else if (k === "locknow") lockNow();
+      else if (k === "galoff") { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); renderSec(); }
+    });
+    $("#vtLog").addEventListener("click", (e) => { if (e.target.closest("[data-act='clearlog']")) { SEC.log = []; saveSec(); renderLog(); } });
+    $("#vtSecBtn").addEventListener("click", () => setTab(tab === "sec" ? "home" : "sec"));
+
     $("#vtMyName").addEventListener("change", (e) => { S.my.n = e.target.value.trim().slice(0, 24); save(); renderStudio(); });
     $("#vtColors").addEventListener("click", (e) => { const b = e.target.closest("[data-col]"); if (!b) return; S.my.col = b.dataset.col; save(); renderStudio(); });
     $("#vtScenes").addEventListener("click", (e) => { const b = e.target.closest("[data-sc]"); if (!b) return; sc = b.dataset.sc; prevT = 0; lastStep = -1; $$("#vtScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
-    $("#vtCash").addEventListener("click", () => { const n = earnable(); if (!n) return; S.cashed += n; save(); Hero.earn(n); stats(); $("#vtStMsg").textContent = `💰 Выведено ${n} ◎ с монетизации!`; note(1318, 0.12, "triangle", 0.05); });
+    $("#vtCash").addEventListener("click", () => { const n = earnable(); if (!n) return; S.cashed += n; save(); Hero.earn(n); slog("💰", `Выведено ${n} ◎ с монетизации`); stats(); $("#vtStMsg").textContent = `💰 Выведено ${n} ◎ с монетизации!`; note(1318, 0.12, "triangle", 0.05); });
     $("#vtMine").addEventListener("click", (e) => {
       const d = e.target.closest("[data-del]"); if (!d) return; e.stopPropagation();
       if (delArm !== d.dataset.del) { delArm = d.dataset.del; renderMine(); return; }
-      const i = S.mine.findIndex((m) => m.id === delArm); if (i >= 0) { const [m] = S.mine.splice(i, 1); if (m.file) delFile(m.id); delete S.prog[m.id]; S.later = S.later.filter((x) => x !== m.id); }
+      const i = S.mine.findIndex((m) => m.id === delArm); if (i >= 0) { const [m] = S.mine.splice(i, 1); slog("🗑️", `Удалено видео «${m.t}»`); if (m.file) delFile(m.id); delete S.prog[m.id]; S.later = S.later.filter((x) => x !== m.id); }
       delArm = null; save(); renderStudio(); updateHub();
     });
 
@@ -1122,7 +1413,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         if (tab === "watch" && cur) { fillInfo(); ui(); } else setTab(tab === "watch" ? "home" : tab);
         if (tab !== "watch") Hero.say("v3tube", "start", S.mine.length ? `У канала уже ${fmtN(mySubs())} подписчиков!` : "Что посмотрим сегодня?");
       },
-      leave() { visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); svid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
+      leave() { if (SEC.auto && SEC.pin && unlocked) { unlocked = false; slog("🔒", "Канал заблокирован автоматически"); } visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); svid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
       key(e) {
         if (tab === "watch" && (e.code === "Space" || e.key === "k")) { e.preventDefault(); toggle(); }
         else if (tab === "watch" && (e.key === "ArrowRight" || e.key === "ArrowLeft") && cur) { const d = e.key === "ArrowRight" ? 5 : -5; if (real) vid.currentTime = Math.max(0, vid.currentTime + d); else time = Math.max(0, Math.min(cur.dur - 0.01, time + d)); }
