@@ -551,8 +551,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     const fmtT = (s) => { s = Math.max(0, Math.floor(s)); const m = Math.floor(s / 60); return m + ":" + String(s % 60).padStart(2, "0"); };
     const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b >= 2 && b <= 4 ? 1 : 2]; };
+    const subsTxt = (n) => { n = Math.max(0, Math.round(n)); return `${fmtN(n)} ${n >= 1000 ? "подписчиков" : plural(n, ["подписчик", "подписчика", "подписчиков"])}`; };
     function fmtN(n) {
       n = Math.max(0, Math.round(n));
+      if (n >= 1e9) return (n / 1e9).toFixed(n >= 1e10 ? 0 : 1).replace(".", ",").replace(",0", "") + " млрд";
       if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(".", ",").replace(",0", "") + " млн";
       if (n >= 1e3) return (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace(".", ",").replace(",0", "") + " тыс.";
       return String(n);
@@ -812,15 +814,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const CATS = { all: "Все", games: "Игры", music: "Музыка", animals: "Животные", space: "Космос", sport: "Спорт", food: "Еда", auto: "Авто", nature: "Природа", show: "Шоу" };
     const CH = {
       yt: { n: "С YouTube", col: "#e62117", subs: 0 },
-      v3: { n: "V3 Games", col: "#ff2d55", subs: 1240000 }, cosmo: { n: "КосмоЛаб", col: "#3a5cff", subs: 845000 }, kot: { n: "Котопёс", col: "#ff8a3d", subs: 2300000 },
+      v3: { n: "V3 Games", col: "#ff2d55", subs: 1000000000, own: true }, md1: { n: "MD1", col: "#2a6ad8", subs: 20 }, cosmo: { n: "КосмоЛаб", col: "#3a5cff", subs: 845000 }, kot: { n: "Котопёс", col: "#ff8a3d", subs: 2300000 },
       race: { n: "ГонкиТВ", col: "#e0302a", subs: 412000 }, lofi: { n: "LoFi V3", col: "#8a5cff", subs: 1100000 }, sea: { n: "Подводный мир", col: "#1fa8d6", subs: 268000 },
       foot: { n: "Футбол Шоу", col: "#2a9a4a", subs: 990000 }, petya: { n: "Летсплеи Пети", col: "#6ab83a", subs: 156000 }, boom: { n: "Салют-ТВ", col: "#e0a020", subs: 73000 },
       baba: { n: "Кухня Бабушки", col: "#d65a8a", subs: 534000 }, dino: { n: "Дино Ран", col: "#5a8a3a", subs: 321000 },
     };
     const CAT = [
       { id: "yt_q0xd", t: "Видео с YouTube", ch: "yt", sc: "logo", logo: "YouTube", yt: "https://youtu.be/Q0XdF2_3J0g", dur: 0, views: 0, ago: 0.5, likes: 0, cat: "show", d: "Это видео с YouTube. Нажми «Смотреть на YouTube» — оно откроется в новой вкладке." },
-      { id: "v3orig", t: "V3 Original — заставка", ch: "v3", sc: "logo", logo: "V3 ORIGINAL", src: "media/v3-original", dur: 10, views: 482000, ago: 30, likes: 31000, cat: "games", d: "Официальная заставка V3 Original. Её можно увидеть при входе в MORGER." },
-      { id: "doctr", t: "Doccer — официальный трейлер ⚽", ch: "v3", sc: "logo", logo: "DOCCER", src: "media/doccer-trailer", dur: 45, views: 1730000, ago: 200, likes: 96000, cat: "sport", d: "Футбол «как по телевизору»: Месси, Роналду, Ямаль и Я со 113 OVR. Играй в Doccer в меню приставки!" },
+      { id: "v3orig", t: "V3 Original — заставка", ch: "v3", sc: "logo", logo: "V3 ORIGINAL", src: "media/v3-original", dur: 10, views: 312000000, ago: 30, likes: 18400000, cat: "games", d: "Официальная заставка V3 Original. Её можно увидеть при входе в MORGER." },
+      { id: "doctr", t: "Doccer — официальный трейлер ⚽", ch: "v3", sc: "logo", logo: "DOCCER", src: "media/doccer-trailer", dur: 45, views: 540000000, ago: 200, likes: 31000000, cat: "sport", d: "Футбол «как по телевизору»: Месси, Роналду, Ямаль и Я со 113 OVR. Играй в Doccer в меню приставки!" },
       { id: "sat60", t: "Полёт к кольцам Сатурна за 60 секунд", ch: "cosmo", sc: "space", dur: 60, views: 2140000, ago: 340, likes: 88000, cat: "space", d: "Летим на ракете мимо звёзд к планете с кольцами.", cap: [[1, "Старт! Ракета покидает орбиту"], [12, "Впереди — газовый гигант"], [26, "Кольца состоят изо льда и камней"], [40, "Их ширина — почти 300 000 км"], [52, "Подписывайся на КосмоЛаб 🚀"]] },
       { id: "catball", t: "Кот против мячика: кто победит? 😹", ch: "kot", sc: "cat", dur: 40, views: 5600000, ago: 90, likes: 410000, cat: "animals", d: "Наш кот Барсик и его заклятый враг — красный мячик.", cap: [[2, "Барсик замечает мяч…"], [10, "Охота началась!"], [22, "Мяч опять убежал 😂"], [33, "Счёт: Мячик 1 — Барсик 0"]] },
       { id: "night", t: "Ночная гонка: три машины, одна трасса", ch: "race", sc: "race", dur: 50, views: 870000, ago: 26, likes: 41000, cat: "auto", d: "Красная, голубая и жёлтая — кто придёт первым?", cap: [[1, "Старт ночной гонки!"], [14, "Голубая идёт на обгон"], [30, "Красная отвечает!"], [44, "Кто победил? Пиши в комментариях"]] },
@@ -839,6 +841,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       { id: "s_beat", short: true, t: "Бит в стиле V3 🔥", ch: "lofi", sc: "music", dur: 15, views: 2100000, ago: 6, likes: 160000, cat: "music" },
       { id: "s_fish", short: true, t: "Рыбка-клоун 🐠", ch: "sea", sc: "ocean", dur: 12, views: 450000, ago: 100, likes: 22000, cat: "nature" },
       { id: "s_goal", short: true, t: "Гол через себя! ⚽", ch: "foot", sc: "football", dur: 10, views: 3900000, ago: 30, likes: 270000, cat: "sport" },
+      { id: "md1first", t: "Привет! Это первое видео канала MD1", ch: "md1", sc: "logo", logo: "MD1", dur: 20, views: 37, ago: 96, likes: 6, cat: "games", d: "Знакомьтесь, это MD1! Здесь будут игры из MD1 Games. Подписывайтесь 🙏" },
+      { id: "md1snake", t: "Играю в Змейку в MD1 Games", ch: "md1", sc: "snake", dur: 40, views: 21, ago: 30, likes: 4, cat: "games", d: "Пробую набрать 50 очков.", cap: [[1, "Всем привет, это MD1!"], [12, "Уже 20 очков!"], [30, "Подпишитесь, нас всего 20 😅"]] },
+      { id: "md1dino", t: "Дино из MD1 Games прыгает через кактусы", ch: "md1", sc: "dino", dur: 30, views: 14, ago: 6, likes: 3, cat: "games", d: "Новый рекорд канала!" },
+      { id: "s_md1", short: true, t: "MD1 — 20 подписчиков! 🎉", ch: "md1", sc: "fireworks", dur: 10, views: 52, ago: 3, likes: 9, cat: "show" },
       { id: "s_dino", short: true, t: "Дино-прыжок 🦖", ch: "dino", sc: "dino", dur: 12, views: 380000, ago: 60, likes: 19000, cat: "games" },
     ];
     const NAMES = ["Артём", "Лиза", "Макс_2012", "Соня", "Дима Про", "Кира", "Ваня", "Алина", "Тимур", "Ника", "Гоша", "Полина"];
@@ -854,16 +860,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     S.subs = S.subs || {}; S.likes = S.likes || {}; S.later = S.later || []; S.coms = S.coms || {}; S.cl = S.cl || {}; S.prog = S.prog || {}; S.seen = S.seen || {}; S.done = S.done || {};
     S.my = S.my || { n: "", col: "#ff2d55" }; S.mine = Array.isArray(S.mine) ? S.mine : []; S.cashed = S.cashed || 0; S.muted = !!S.muted;
     const save = () => store.set("v3tube", S);
-    const myName = () => (S.my.n || "Мой канал").slice(0, 24);
+    const myName = () => (S.my.n || "V3 Games").slice(0, 24);
     const TAUV = 25 * 60 * 1000;   // a new video reaches ~63% of its views in 25 minutes
     const mineViews = (v) => Math.floor(v.pot * (1 - Math.exp(-(Date.now() - v.at) / TAUV))) + (S.seen[v.id] || 0);
     const totalMine = () => S.mine.reduce((a, v) => a + mineViews(v), 0);
-    const mySubs = () => Math.floor(totalMine() / 18) + (S.liveFans || 0);
+    const mySubs = () => CH.v3.subs + Math.floor(totalMine() / 18) + (S.liveFans || 0);   // V3 Games is the viewer's own channel
     const earnable = () => Math.max(0, Math.floor(totalMine() / 50) - S.cashed);
     function asVideo(m) { const gif = isGif(m.d); return { id: m.id, t: m.t, ch: "me", sc: m.sc, gif, gifMute: gif && /без\s+звук/iu.test(m.d || ""), dur: gif ? Math.min(m.dur, GIFMAX) : m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
     const allVids = () => CAT.concat(S.mine.map(asVideo));
     const byId = (id) => allVids().find((v) => v.id === id);
-    const chOf = (v) => v.ch === "me" ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
+    const chOf = (v) => (v.ch === "me" || (CH[v.ch] && CH[v.ch].own)) ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
     const viewsOf = (v) => v.mine ? mineViews(v.mine) : v.views + (S.seen[v.id] || 0);
     const likesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.07) : v.likes) + (S.likes[v.id] === 1 ? 1 : 0);
     const dislikesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.004) : Math.floor(v.likes * 0.02)) + (S.likes[v.id] === -1 ? 1 : 0);
@@ -1015,10 +1021,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       });
     }
     function renderSubs() {
-      const ids = Object.keys(S.subs).filter((k) => CH[k]);
+      const ids = Object.keys(S.subs).filter((k) => CH[k] && !CH[k].own);
       $("#vtSubList").innerHTML = ids.map((k) => `<button type="button" data-chq="${esc(CH[k].n)}"><span class="vt-av" style="width:20px;height:20px;font-size:10px;display:inline-grid;vertical-align:middle;background:${CH[k].col}">${esc(CH[k].n[0])}</span> ${esc(CH[k].n)}</button>`).join("");
       const f = $("#vtSubFeed"); f.innerHTML = "";
-      const list = CAT.filter((v) => S.subs[v.ch] && !v.short).sort((a, b) => a.ago - b.ago);
+      const list = CAT.filter((v) => S.subs[v.ch] && !(CH[v.ch] && CH[v.ch].own) && !v.short).sort((a, b) => a.ago - b.ago);
       if (!list.length) f.appendChild(empty("Вы ещё ни на кого не подписаны. Откройте видео и нажмите «Подписаться»."));
       list.forEach((v) => f.appendChild(card(v)));
       const L = $("#vtLaterList"); L.innerHTML = ""; const later = S.later.map(byId).filter(Boolean);
@@ -1062,7 +1068,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!(v.gif && v.gifMute); $("#vtGifDl").hidden = !(v.gif && v.mine); $("#vtGifSnd").hidden = !(v.gif && v.mine && !v.gifMute && window.MediaRecorder);
       $("#vtMeta").textContent = `${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}`;
       const av = $("#vtChAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
-      $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${fmtN(subsOf(ch, v.ch))} подписчиков`;
+      $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${subsTxt(subsOf(ch, v.ch))}`;
       const sb = $("#vtSub"); sb.hidden = !!ch.me; sb.classList.toggle("on", !!S.subs[v.ch]); sb.textContent = S.subs[v.ch] ? "✓ Вы подписаны" : "Подписаться";
       $("#vtLike").setAttribute("aria-pressed", String(S.likes[v.id] === 1)); $("#vtLike b").textContent = fmtN(likesOf(v));
       $("#vtDis").setAttribute("aria-pressed", String(S.likes[v.id] === -1)); $("#vtDis b").textContent = fmtN(dislikesOf(v));
@@ -1202,7 +1208,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function stats() {
       const tv = totalMine();
-      $("#vtMyStats").textContent = `${fmtN(mySubs())} подписчиков · ${S.mine.length} ${plural(S.mine.length, ["видео", "видео", "видео"])} · ${fmtN(tv)} просмотров`;
+      $("#vtMyStats").textContent = `${subsTxt(mySubs())} · ${S.mine.length} ${plural(S.mine.length, ["видео", "видео", "видео"])} · ${fmtN(tv)} просмотров`;
       $("#vtEarn").textContent = earnable(); $("#vtCash").disabled = !earnable();
       $("#vtSubsChip").textContent = fmtN(mySubs());
     }
@@ -1639,7 +1645,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       liveMode("room"); $("#vtChat").innerHTML = ""; lvChatN = 0; lvAcc = 0; lvNext = 0.5; $("#vtDonRow").hidden = true;
       const ch = lv.host ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[lv.ch];
       $("#vtLiveT").textContent = lv.t; const av = $("#vtLiveAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
-      $("#vtLiveCh").textContent = ch.n; $("#vtLiveChS").textContent = `${fmtN(subsOf(ch, lv.ch))} подписчиков`;
+      $("#vtLiveCh").textContent = ch.n; $("#vtLiveChS").textContent = `${subsTxt(subsOf(ch, lv.ch))}`;
       const sb = $("#vtLiveSub"); sb.hidden = !!lv.host; sb.classList.toggle("on", !!S.subs[lv.ch]); sb.textContent = S.subs[lv.ch] ? "✓ Вы подписаны" : "Подписаться";
       $("#vtLiveHost").hidden = !lv.host; $("#vtDonate").hidden = !!lv.host;
       if (lv.host) { $("#vtLiveHostSc").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-hsc="${k}" aria-pressed="${k === stream.sc}">${n}</button>`).join(""); (stream.log || []).forEach((m) => chatAdd(m[0], m[1])); }
@@ -1704,7 +1710,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       for (let i = 0; i < 6; i++) setTimeout(() => heart("💛"), i * 150);
       setTimeout(() => { if (lv !== room || lvMode !== "room") return; chatAdd(`<span class="host">ВЕДУЩИЙ</span>${nameHTML(ch.n, ch.col)}${esc(lvPick(LCHAT.thanks).replace("{n}", me))}`); }, 1800);
     });
-    $("#vtLiveSub").addEventListener("click", () => { if (!lv || lv.host) return; const k = lv.ch; if (S.subs[k]) delete S.subs[k]; else { S.subs[k] = Date.now(); chatAdd(`🔔 ${nameHTML(myName(), S.my.col)} подписался на канал!`, "sys"); } save(); const sb = $("#vtLiveSub"); sb.classList.toggle("on", !!S.subs[k]); sb.textContent = S.subs[k] ? "✓ Вы подписаны" : "Подписаться"; $("#vtLiveChS").textContent = `${fmtN(subsOf(CH[k], k))} подписчиков`; });
+    $("#vtLiveSub").addEventListener("click", () => { if (!lv || lv.host) return; const k = lv.ch; if (S.subs[k]) delete S.subs[k]; else { S.subs[k] = Date.now(); chatAdd(`🔔 ${nameHTML(myName(), S.my.col)} подписался на канал!`, "sys"); } save(); const sb = $("#vtLiveSub"); sb.classList.toggle("on", !!S.subs[k]); sb.textContent = S.subs[k] ? "✓ Вы подписаны" : "Подписаться"; $("#vtLiveChS").textContent = `${subsTxt(subsOf(CH[k], k))}`; });
     $("#vtLiveP").addEventListener("click", (e) => {
       if (e.target.closest("[data-lback]")) { liveMode("list"); return; }
       const c = e.target.closest("[data-live]"); if (c) { openLive(c.dataset.live); return; }
@@ -1922,7 +1928,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         visible = true; lastTs = 0; if (!raf) raf = requestAnimationFrame(frame);
         $("#vtSubsChip").textContent = fmtN(mySubs());
         if (tab === "watch" && cur) { fillInfo(); ui(); } else setTab(tab === "watch" ? "home" : tab);
-        if (tab !== "watch") Hero.say("v3tube", "start", S.mine.length ? `У канала уже ${fmtN(mySubs())} подписчиков!` : "Что посмотрим сегодня?");
+        if (tab !== "watch") Hero.say("v3tube", "start", S.mine.length ? `У канала уже ${subsTxt(mySubs())}!` : "Что посмотрим сегодня?");
       },
       leave() { if (SEC.auto && SEC.pin && unlocked) { unlocked = false; slog("🔒", "Канал заблокирован автоматически"); } visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); svid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
       key(e) {
