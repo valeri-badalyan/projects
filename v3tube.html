@@ -51,7 +51,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-search { flex: 1; min-width: 0; display: flex; }
 .vt-search input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 999px 0 0 999px; border: 2px solid var(--line); border-right: 0; background: var(--bg); color: var(--fg); font: 700 15px var(--body); }
 .vt-search button { padding: 0 12px; border-radius: 0 999px 999px 0; border: 2px solid var(--line); background: var(--panel-2); color: var(--fg); cursor: pointer; }
-.vt-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+.vt-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.vt-tabs button { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; white-space: nowrap; } .vt-tabs button i { font-style: normal; font-size: 16px; }
 .vt-tabs button, .vt-cats button, .vt-chips button, .vt-colors button, .vt-acts button, .vt-ctrl button { padding: 7px 6px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12px; cursor: pointer; }
 .vt-tabs button[aria-selected="true"], .vt-cats button[aria-pressed="true"], .vt-chips button[aria-pressed="true"], .vt-acts button[aria-pressed="true"] { border-color: #ff2d55; background: rgba(255,45,85,.16); }
 .vt-panel { display: flex; flex-direction: column; gap: 10px; } .vt-panel[hidden] { display: none; }
@@ -204,6 +205,50 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-pad button:active { background: var(--line); }
 @media (max-width: 380px) { .vt-sechero { grid-template-columns: 1fr; justify-items: center; text-align: center; } .vt-secinfo { align-items: center; } }
 @media (prefers-reduced-motion: reduce) { .vt-dots.shake { animation: none; } .vt-ring .val, .vt-sw, .vt-sw i { transition: none; } }
+.vt-golive { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 14px; border-radius: 16px; border: 2px solid var(--accent); background: linear-gradient(120deg, rgba(255,45,85,.22), transparent 70%), var(--panel); color: var(--fg); text-align: left; cursor: pointer; font: inherit; }
+.vt-golive.on { background: linear-gradient(120deg, rgba(255,45,85,.4), rgba(255,45,85,.1)), var(--panel); }
+.vt-golivetxt { display: flex; flex-direction: column; min-width: 0; } .vt-golivetxt b { font-size: 16px; } .vt-golivetxt small { color: var(--muted); font-size: 12.5px; }
+.vt-livedot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(255,45,85,.6); animation: vtpulse 1.6s infinite; }
+@keyframes vtpulse { 70% { box-shadow: 0 0 0 10px rgba(255,45,85,0); } 100% { box-shadow: 0 0 0 0 rgba(255,45,85,0); } }
+.vt-livebadge { position: absolute; left: 6px; top: 6px; background: var(--accent); color: #fff; font: 900 10.5px var(--mono); letter-spacing: .06em; padding: 2px 6px; border-radius: 5px; }
+.vt-back { align-self: flex-start; border: 0; background: none; color: var(--muted); font: 800 14px var(--body); cursor: pointer; padding: 4px 0; }
+#vtLivePrev { width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; background: #000; display: block; }
+.vt-lplayer { position: relative; border-radius: 12px; overflow: hidden; background: #000; aspect-ratio: 16 / 9; }
+.vt-lplayer canvas { width: 100%; height: 100%; display: block; }
+.vt-lbadges { position: absolute; left: 8px; top: 8px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.vt-onair { background: var(--accent); color: #fff; font: 900 11px var(--mono); letter-spacing: .06em; padding: 3px 7px; border-radius: 6px; }
+.vt-lpill { background: rgba(0,0,0,.6); color: #fff; font: 700 11px var(--mono); padding: 3px 7px; border-radius: 6px; font-variant-numeric: tabular-nums; }
+.vt-hearts { position: absolute; right: 12px; bottom: 0; width: 60px; height: 100%; pointer-events: none; }
+.vt-hearts span { position: absolute; bottom: 8px; font-size: 22px; animation: vtfloat 2.2s ease-out forwards; }
+@keyframes vtfloat { 0% { transform: translate(0, 0) scale(.6); opacity: 0; } 15% { opacity: 1; transform: translate(0, -20px) scale(1); } 100% { transform: translate(var(--dx), -170px) scale(1.1); opacity: 0; } }
+.vt-lhost { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; background: var(--panel); border: 2px solid var(--accent); }
+.vt-lstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; text-align: center; }
+.vt-lstats span { display: flex; flex-direction: column; background: var(--bg); border-radius: 10px; padding: 6px 2px; font-size: 11px; color: var(--muted); }
+.vt-lstats b { font: 800 15px var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+.vt-endbtn { background: var(--accent); color: #fff; }
+.vt-react { display: flex; gap: 6px; flex-wrap: wrap; }
+.vt-react button, .vt-donrow button { padding: 7px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-size: 16px; cursor: pointer; }
+.vt-react .vt-donbtn { font: 800 13px var(--body); border-color: var(--gold); color: var(--gold); margin-left: auto; }
+.vt-donrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .vt-donrow button { font: 800 14px var(--mono); color: var(--gold); }
+.vt-chat { display: flex; flex-direction: column; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); overflow: hidden; }
+.vt-chathead { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 12px; border-bottom: 1px solid var(--line); } .vt-chathead small { color: var(--muted); font-size: 12px; }
+.vt-chatlog { list-style: none; margin: 0; padding: 8px 12px; height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; overscroll-behavior: contain; }
+.vt-chatlog li { line-height: 1.35; overflow-wrap: anywhere; } .vt-chatlog li b { margin-right: 4px; }
+.vt-chatlog li.me { background: rgba(255,45,85,.1); border-radius: 8px; padding: 2px 6px; }
+.vt-chatlog li.don { background: rgba(255,181,71,.15); border: 1px solid rgba(255,181,71,.5); border-radius: 8px; padding: 4px 8px; color: var(--gold); }
+.vt-chatlog li.sys { color: var(--muted); font-size: 12px; text-align: center; }
+.vt-chatlog .host { background: var(--accent); color: #fff; font: 800 9.5px var(--mono); padding: 1px 4px; border-radius: 4px; margin-right: 4px; vertical-align: 1px; }
+.vt-chatform { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.vt-chatform input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 999px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font: 600 16px var(--body); }
+.vt-chatform .btn { padding: 8px 14px; border-radius: 999px; }
+.vt-lsum { display: flex; flex-direction: column; gap: 10px; align-items: stretch; padding: 18px; border-radius: 18px; background: var(--panel); border: 2px solid var(--line); text-align: center; }
+.vt-lsum h2 { margin: 0; font: 900 19px var(--body); text-wrap: balance; }
+.vt-sumgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.vt-sumgrid span { display: flex; flex-direction: column; padding: 10px; border-radius: 12px; background: var(--bg); color: var(--muted); font-size: 12px; }
+.vt-sumgrid b { font: 800 20px var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+.vt-tabs button.onair::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-left: 4px; vertical-align: 2px; }
+@media (min-width: 900px) { #vtLiveRoom { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 20px; align-content: start; } #vtLiveRoom[hidden] { display: none; } #vtLiveRoom > * { grid-column: 1; } #vtLiveRoom > .vt-chat { grid-column: 2; grid-row: 2 / span 6; align-self: start; } #vtLiveRoom .vt-chatlog { height: 460px; } }
+@media (prefers-reduced-motion: reduce) { .vt-livedot, .vt-hearts span { animation: none; } }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -223,7 +268,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-cmov button:disabled { opacity: .35; cursor: default; }
 .vt-mine-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 .vt-mine-row .vt-del { border: 2px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 10px; padding: 6px 9px; cursor: pointer; }
-@media (max-width: 420px) { .vt-row2 { grid-template-columns: 128px 1fr; } .vt-tabs button { font-size: 11px; padding: 7px 2px; } }
+@media (max-width: 420px) { .vt-row2 { grid-template-columns: 128px 1fr; } .vt-tabs button { font-size: 10.5px; padding: 6px 1px; } }
 </style>
 <div class="app">
   <div id="vtWrap">
@@ -235,7 +280,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <span class="vt-coins" title="Монеты"><b id="vtCoins">0</b> ◎</span><span id="vtSubsChip" hidden>0</span>
       </div>
       <div class="vt-tabs" id="vtTabs" role="tablist">
-        <button type="button" data-tab="home">🏠 Главная</button><button type="button" data-tab="shorts">⚡ Shorts</button><button type="button" data-tab="subs">📺 Подписки</button><button type="button" data-tab="studio">🎬 Мой канал</button>
+        <button type="button" data-tab="home"><i aria-hidden="true">🏠</i>Главная</button><button type="button" data-tab="shorts"><i aria-hidden="true">⚡</i>Shorts</button><button type="button" data-tab="live"><i aria-hidden="true">🔴</i>Эфиры</button><button type="button" data-tab="subs"><i aria-hidden="true">📺</i>Подписки</button><button type="button" data-tab="studio"><i aria-hidden="true">🎬</i>Мой канал</button>
       </div>
 
     </header>
@@ -294,6 +339,61 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <div class="vt-sbar"><i id="vtSProg"></i></div>
         </div>
         <p class="hint">Листай Shorts свайпом вверх/вниз, стрелками или кнопками ▲▼. Двойное нажатие — лайк.</p>
+      </div>
+
+      <div class="vt-panel" id="vtLiveP" hidden>
+        <div class="vt-panel" id="vtLiveList">
+          <button type="button" class="vt-golive" id="vtGoLive"><span class="vt-livedot" aria-hidden="true"></span><span class="vt-golivetxt"><b id="vtGoLiveB">Начать свой эфир</b><small id="vtGoLiveS">Выбери сцену и общайся со зрителями в чате</small></span><span aria-hidden="true">→</span></button>
+          <h3 class="vt-h">Сейчас в эфире</h3>
+          <div class="vt-grid" id="vtLiveGrid"></div>
+        </div>
+        <div class="vt-panel" id="vtLiveSetup" hidden>
+          <button type="button" class="vt-back" data-lback>← Все эфиры</button>
+          <h3 class="vt-h">🔴 Новый эфир</h3>
+          <canvas id="vtLivePrev" aria-label="Предпросмотр эфира"></canvas>
+          <div class="vt-chips" id="vtLiveScenes"></div>
+          <input class="vt-in" id="vtLiveTitle" maxlength="70" placeholder="Название эфира" aria-label="Название эфира">
+          <button type="button" class="btn wide" id="vtLiveStart">🔴 Начать эфир</button>
+          <p class="vt-note">Сцену можно менять прямо во время эфира. После завершения запись можно сохранить на канал как видео.</p>
+        </div>
+        <div class="vt-panel" id="vtLiveRoom" hidden>
+          <button type="button" class="vt-back" data-lback>← Все эфиры</button>
+          <div class="vt-lplayer">
+            <canvas id="vtLiveCv" aria-label="Прямой эфир"></canvas>
+            <div class="vt-lbadges"><span class="vt-onair">● В ЭФИРЕ</span><span class="vt-lpill" id="vtLiveViews">👁 0</span><span class="vt-lpill" id="vtLiveTime">0:00</span></div>
+            <div class="vt-hearts" id="vtHearts" aria-hidden="true"></div>
+          </div>
+          <div class="vt-lhost" id="vtLiveHost" hidden>
+            <div class="vt-chips" id="vtLiveHostSc"></div>
+            <div class="vt-lstats" id="vtLiveStats"></div>
+            <button type="button" class="btn wide vt-endbtn" id="vtLiveEndBtn">⏹ Завершить эфир</button>
+          </div>
+          <h2 class="vt-title" id="vtLiveT"></h2>
+          <div class="vt-chan">
+            <span class="vt-av" id="vtLiveAv"></span>
+            <span class="vt-chinfo"><b id="vtLiveCh"></b><small id="vtLiveChS"></small></span>
+            <button type="button" class="vt-sub" id="vtLiveSub">Подписаться</button>
+          </div>
+          <div class="vt-react" id="vtReact">
+            <button type="button" data-r="❤️" aria-label="Сердечко">❤️</button><button type="button" data-r="🔥" aria-label="Огонь">🔥</button><button type="button" data-r="😂" aria-label="Смех">😂</button><button type="button" data-r="👏" aria-label="Аплодисменты">👏</button><button type="button" id="vtDonate" class="vt-donbtn">💰 Донат</button>
+          </div>
+          <div class="vt-donrow" id="vtDonRow" hidden><button type="button" data-don="10">10 ◎</button><button type="button" data-don="50">50 ◎</button><button type="button" data-don="100">100 ◎</button></div>
+          <div class="vt-chat">
+            <div class="vt-chathead"><b>Чат эфира</b><small id="vtChatN"></small></div>
+            <ul class="vt-chatlog" id="vtChat"></ul>
+            <form class="vt-chatform" id="vtChatForm"><input id="vtChatIn" maxlength="150" placeholder="Написать в чат…" aria-label="Сообщение в чат" autocomplete="off"><button type="submit" class="btn" aria-label="Отправить">➤</button></form>
+          </div>
+        </div>
+        <div class="vt-panel" id="vtLiveEnd" hidden>
+          <div class="vt-lsum">
+            <span class="vt-eyebrow">Эфир завершён</span>
+            <h2 id="vtSumT"></h2>
+            <div class="vt-sumgrid" id="vtSumGrid"></div>
+            <button type="button" class="btn wide" id="vtSumSave">💾 Сохранить запись на канал</button>
+            <button type="button" class="btn ghost wide" id="vtSumDone">Готово</button>
+            <p class="vt-msg" id="vtSumMsg" aria-live="polite"></p>
+          </div>
+        </div>
       </div>
 
       <div class="vt-panel" id="vtSubsP" hidden>
@@ -381,7 +481,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         </div>
       </div>
     </div>
-    <p class="hint">▶ Нажми на ролик, чтобы смотреть. Щит 🛡 вверху открывает EngineSecure — центр безопасности. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+    <p class="hint">▶ Нажми на ролик, чтобы смотреть. В «Эфирах» смотри прямые трансляции или запусти свою. Щит 🛡 вверху открывает EngineSecure — центр безопасности. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
 </div>
 <div class="vt-perm" id="vtPerm" role="dialog" aria-modal="true" aria-labelledby="vtPermH" hidden>
   <div class="vt-permbox">
@@ -418,6 +518,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const show = () => { $("#vtCoins").textContent = coins.toLocaleString("ru-RU"); };
     return {
       earn(n) { if (n > 0) { coins += Math.round(n); store.set("tubeCoins", coins); show(); } },
+      spend(n) { if (n > coins) return false; coins -= n; store.set("tubeCoins", coins); show(); return true; },
       say(game, kind, text) { if (!text) return; const el = $("#vtToast"); el.textContent = text; el.classList.remove("off"); clearTimeout(t); t = setTimeout(() => el.classList.add("off"), 2600); },
       name: () => "Мой",
       show,
@@ -748,7 +849,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const TAUV = 25 * 60 * 1000;   // a new video reaches ~63% of its views in 25 minutes
     const mineViews = (v) => Math.floor(v.pot * (1 - Math.exp(-(Date.now() - v.at) / TAUV))) + (S.seen[v.id] || 0);
     const totalMine = () => S.mine.reduce((a, v) => a + mineViews(v), 0);
-    const mySubs = () => Math.floor(totalMine() / 18);
+    const mySubs = () => Math.floor(totalMine() / 18) + (S.liveFans || 0);
     const earnable = () => Math.max(0, Math.floor(totalMine() / 50) - S.cashed);
     function asVideo(m) { return { id: m.id, t: m.t, ch: "me", sc: m.sc, dur: m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
     const allVids = () => CAT.concat(S.mine.map(asVideo));
@@ -817,8 +918,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (t !== "shorts") stopSVid();
       tab = t;
       $$("#vtTabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t || (t === "watch" && b.dataset.tab === "home"))));
-      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio"; $("#vtSec").hidden = t !== "sec";
-      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI); if (t === "sec") renderSec(); updateShield();
+      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio"; $("#vtSec").hidden = t !== "sec"; $("#vtLiveP").hidden = t !== "live";
+      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI); if (t === "sec") renderSec(); if (t === "live") { if (lvMode === "room" && !lv) lvMode = "list"; liveMode(lvMode); } updateShield();
       window.scrollTo(0, 0);
     }
     function renderHome() {
@@ -1385,6 +1486,191 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $("#vtLog").addEventListener("click", (e) => { if (e.target.closest("[data-act='clearlog']")) { SEC.log = []; saveSec(); renderLog(); } });
     $("#vtSecBtn").addEventListener("click", () => setTab(tab === "sec" ? "home" : "sec"));
 
+    /* ---------- live streams ---------- */
+    // Channel streams run on a shared clock, so every visit lands in the middle of the broadcast.
+    const LIVES = [
+      { id: "l_lofi", ch: "lofi", sc: "rain", t: "🎧 lofi радио 24/7 — музыка для учёбы", base: 3200, cat: "music" },
+      { id: "l_foot", ch: "foot", sc: "football", t: "⚽ V3 против FC — второй тайм", base: 12400, cat: "sport" },
+      { id: "l_cat", ch: "kot", sc: "cat", t: "🐱 Кото-камера: Барсик дома", base: 5400, cat: "animals" },
+      { id: "l_space", ch: "cosmo", sc: "space", t: "🚀 Полёт к Сатурну: прямая трансляция", base: 1800, cat: "space" },
+      { id: "l_snake", ch: "petya", sc: "snake", t: "🐍 Ставлю рекорд в Змейке, залетай!", base: 640, cat: "games" },
+      { id: "l_cook", ch: "baba", sc: "cook", t: "🍳 Готовим завтрак вместе", base: 900, cat: "food" },
+      { id: "l_fire", ch: "boom", sc: "fireworks", t: "🎆 Салют над городом", base: 300, cat: "show" },
+    ];
+    const LCHAT = {
+      any: ["Привет всем! 👋", "Кто откуда смотрит?", "Я из Москвы 🙂", "Ереван на связи!", "Лучший эфир", "🔥🔥🔥", "Ахаха 😂", "Сохраните запись потом!", "Первый раз тут, круто", "Лайк за эфир ❤️", "Звук отличный", "Какой у вас телефон?", "Я с урока смотрю 🤫", "Всем хорошего вечера", "Ура, успел на эфир!"],
+      music: ["Что за трек сейчас?", "Под это идеально делать домашку", "Включите погромче 🔊", "Чилл 😌"],
+      sport: ["ГООООЛ!", "Судья, ну как так?!", "Давай, V3! 💪", "Вратарь тащит", "Какой счёт?"],
+      animals: ["Барсик милашка 😻", "Кис-кис-кис", "Мяч опять убежал 😂", "Покажите кота поближе!"],
+      space: ["До Сатурна долго ещё?", "Красота 🪐", "Хочу в космос", "Кольца видно!"],
+      games: ["Давай рекорд! 🐍", "Осторожно, хвост!", "Сколько очков уже?", "Я бы прошёл дальше 😎"],
+      food: ["Вкусно выглядит 🤤", "А соль когда?", "Бабушка лучшая ❤️", "Я тоже жарю яичницу"],
+      show: ["Ваааау 🎆", "Красиво!", "Ещё салют!", "С праздником!"],
+      host: ["Привет, стример! 👋", "Что сегодня делаем?", "Классная сцена", "Ты лучший!", "Сделай ещё эфир завтра", "Поздоровайся со мной 🙏", "Подписался!", "Как давно ведёшь канал?", "Это твоя сцена?", "Залетел на эфир 🚀"],
+      reply: ["@{n} привет! 👋", "@{n} согласен 👍", "@{n} ахах 😂", "@{n} точно!", "@{n} и тебе привет"],
+      hostReply: ["@{n} привет, рад тебя видеть! 😊", "@{n} отличный вопрос!", "@{n} да, полностью согласен", "@{n} ахаха, спасибо 😂", "@{n} 👍"],
+      thanks: ["Спасибо за донат, {n}! ❤️", "{n}, ты лучший! Спасибо 🙏", "Ого, {n}, спасибо огромное! 🔥"],
+    };
+    const DONMSG = ["Привет из Казани!", "Лучший эфир!", "Так держать 💪", "На развитие канала", "Передаю привет маме", "Ты топ!"];
+    let lvMode = "list", lv = null, stream = null, lvSc = "music", lvAcc = 0, lvNext = 1, lvUi = 0, lvPrevT = 0, lvChatN = 0, lvRealN = 0;
+    const lcv = $("#vtLiveCv"), lcx = lcv.getContext("2d"), lpv = $("#vtLivePrev"), lpx = lpv.getContext("2d");
+    lcv.width = 640; lcv.height = 360; lpv.width = 480; lpv.height = 270;
+    const nowS = () => Date.now() / 1000;
+    function liveViews(l) {
+      if (l.host) { const el = nowS() - stream.start, base = stream.pot * (1 - Math.exp(-el / 70)); return Math.max(0, Math.round(base * (0.92 + 0.08 * Math.sin(el / 9)) + (el > 5 ? 1 : 0))); }
+      const t = nowS(); return Math.round(l.base * (0.9 + 0.07 * Math.sin(t / 37 + hashS(l.id)) + 0.03 * Math.sin(t / 7.3)));
+    }
+    const liveTime = (l) => l.host ? nowS() - stream.start : (nowS() + hashS(l.id) % 10800) % 10800 + 300;
+    const fmtLong = (s) => { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(s % 60).padStart(2, "0"); };
+    const lvPick = (a) => a[Math.floor(Math.random() * a.length)];
+    function liveMode(m) {
+      lvMode = m;
+      $("#vtLiveList").hidden = m !== "list"; $("#vtLiveSetup").hidden = m !== "setup"; $("#vtLiveRoom").hidden = m !== "room"; $("#vtLiveEnd").hidden = m !== "end";
+      if (m === "list") renderLiveList();
+      if (m === "setup") { $("#vtLiveScenes").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-lsc="${k}" aria-pressed="${k === lvSc}">${n}</button>`).join(""); if (!$("#vtLiveTitle").value) $("#vtLiveTitle").placeholder = `Эфир: ${SCN[lvSc].slice(2).trim()}`; }
+      window.scrollTo(0, 0);
+    }
+    function renderLiveList() {
+      const g = $("#vtLiveGrid"); g.innerHTML = "";
+      const b = $("#vtGoLive"); b.classList.toggle("on", !!stream);
+      $("#vtGoLiveB").textContent = stream ? "Твой эфир идёт" : "Начать свой эфир";
+      $("#vtGoLiveS").textContent = stream ? `«${stream.t}» · ${fmtLong(nowS() - stream.start)} · вернуться к эфиру` : "Выбери сцену и общайся со зрителями в чате";
+      LIVES.slice().sort((a, b) => liveViews(b) - liveViews(a)).forEach((l) => {
+        const ch = CH[l.ch], c = document.createElement("button"); c.type = "button"; c.className = "vt-card"; c.dataset.live = l.id;
+        const th = document.createElement("span"); th.className = "vt-thumb"; const cv2 = document.createElement("canvas"); cv2.width = 320; cv2.height = 180;
+        SC[l.sc](cv2.getContext("2d"), 320, 180, liveTime(l) % 600, P({ id: l.id })); th.appendChild(cv2);
+        th.insertAdjacentHTML("beforeend", `<span class="vt-livebadge">● LIVE</span><span class="vt-dur">👁 ${fmtN(liveViews(l))}</span>`);
+        c.appendChild(th);
+        const i = document.createElement("span"); i.className = "vt-cinfo"; i.innerHTML = `${avHTML(ch)}<span><b>${esc(l.t)}</b><small>${esc(ch.n)}</small><small>${fmtN(liveViews(l))} зрителей · в эфире ${fmtLong(liveTime(l))}</small></span>`;
+        c.appendChild(i); g.appendChild(c);
+      });
+    }
+    function chatAdd(html, cls) {
+      const ul = $("#vtChat"), stick = ul.scrollTop + ul.clientHeight >= ul.scrollHeight - 30;
+      const li = document.createElement("li"); if (cls) li.className = cls; li.innerHTML = html; ul.appendChild(li);
+      while (ul.children.length > 80) ul.removeChild(ul.firstChild);
+      if (stick) ul.scrollTop = ul.scrollHeight;
+      lvChatN++; $("#vtChatN").textContent = `${fmtN(lvChatN)} сообщ.`;
+    }
+    const nameHTML = (n, col) => `<b style="color:${col || `hsl(${hashS(n) % 360},70%,65%)`}">${esc(n)}</b>`;
+    function heart(e) { const box = $("#vtHearts"), s2 = document.createElement("span"); s2.textContent = e || "❤️"; s2.style.right = Math.random() * 30 + "px"; s2.style.setProperty("--dx", (Math.random() * 40 - 20) + "px"); box.appendChild(s2); setTimeout(() => s2.remove(), 2300); }
+    function openLive(id) {
+      lv = id === "me" ? { id: "me", host: true, ch: "me", sc: stream.sc, t: stream.t, cat: SCCAT[stream.sc] } : LIVES.find((l) => l.id === id); if (!lv) return;
+      liveMode("room"); $("#vtChat").innerHTML = ""; lvChatN = 0; lvAcc = 0; lvNext = 0.5; $("#vtDonRow").hidden = true;
+      const ch = lv.host ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[lv.ch];
+      $("#vtLiveT").textContent = lv.t; const av = $("#vtLiveAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
+      $("#vtLiveCh").textContent = ch.n; $("#vtLiveChS").textContent = `${fmtN(subsOf(ch, lv.ch))} подписчиков`;
+      const sb = $("#vtLiveSub"); sb.hidden = !!lv.host; sb.classList.toggle("on", !!S.subs[lv.ch]); sb.textContent = S.subs[lv.ch] ? "✓ Вы подписаны" : "Подписаться";
+      $("#vtLiveHost").hidden = !lv.host; $("#vtDonate").hidden = !!lv.host;
+      if (lv.host) { $("#vtLiveHostSc").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-hsc="${k}" aria-pressed="${k === stream.sc}">${n}</button>`).join(""); (stream.log || []).forEach((m) => chatAdd(m[0], m[1])); }
+      else { chatAdd("Добро пожаловать в чат! Будь вежлив — чат защищает EngineSecure 🛡", "sys"); for (let i = 0; i < 6; i++) botMsg(true); }
+      $("#vtChatIn").placeholder = lv.host ? "Напиши зрителям…" : "Написать в чат…";
+      Hero.say("v3tube", "start", lv.host ? "Ты в эфире! Поздоровайся со зрителями 👋" : "Ты на прямом эфире 🔴");
+    }
+    function hostLog(html, cls) { if (stream) { stream.log.push([html, cls]); if (stream.log.length > 80) stream.log.shift(); } chatAdd(html, cls); }
+    function botMsg(quiet) {
+      const n = lvPick(NAMES), cat = lv.cat;
+      if (!quiet && Math.random() < (lv.host ? 0.07 : 0.04)) {
+        const amt = lvPick([5, 10, 20, 50]), txt = lvPick(DONMSG);
+        if (lv.host) { stream.don += amt; Hero.earn(amt); hostLog(`💰 ${nameHTML(n, "#ffb547")} задонатил ${amt} ◎: ${esc(txt)}`, "don"); note(1318, 0.12, "triangle", 0.05); }
+        else chatAdd(`💰 ${nameHTML(n, "#ffb547")} задонатил ${amt} ◎: ${esc(txt)}`, "don");
+        return;
+      }
+      const pool = lv.host ? LCHAT.host.concat(LCHAT.any) : (LCHAT[cat] || []).concat(LCHAT[cat] || [], LCHAT.any);
+      const html = `${nameHTML(n)}${esc(lvPick(pool))}`; lv.host ? hostLog(html) : chatAdd(html);
+      if (!quiet && Math.random() < 0.35) { heart(lvPick(["❤️", "❤️", "🔥", "😂", "👏"])); if (lv.host) stream.likes++; }
+    }
+    function liveFrame(dt) {
+      if (lvMode === "setup") { lvPrevT += dt; SC[lvSc](lpx, lpv.width, lpv.height, lvPrevT, P({ id: "lprev" + lvSc })); return; }
+      if (lvMode === "list") { if ((lvUi += dt) > 5) { lvUi = 0; renderLiveList(); } return; }
+      if (lvMode !== "room" || !lv) return;
+      const t = liveTime(lv); SC[lv.host ? stream.sc : lv.sc](lcx, lcv.width, lcv.height, lv.host ? t : t % 3600, P({ id: lv.id }));
+      if (!lv.host) music(lv, t % 3600);
+      if ((lvUi += dt) > 0.5) {
+        lvUi = 0; const v = liveViews(lv); $("#vtLiveViews").textContent = `👁 ${fmtN(v)}`; $("#vtLiveTime").textContent = fmtLong(t);
+        if (lv.host) { stream.peak = Math.max(stream.peak, v); $("#vtLiveStats").innerHTML = `<span><b>${fmtN(v)}</b>зрители</span><span><b>${fmtN(stream.peak)}</b>пик</span><span><b>${fmtN(stream.likes)}</b>❤️</span><span><b>${stream.don}</b>◎ донаты</span>`; }
+      }
+      lvAcc += dt;
+      if (lvAcc >= lvNext) {
+        lvAcc = 0; const v = liveViews(lv);
+        lvNext = lv.host ? (v < 2 ? 6 + Math.random() * 6 : Math.max(1.2, 8 - Math.log2(v + 1)) * (0.5 + Math.random())) : Math.max(0.5, 3.2 - Math.log10(v + 1) * 0.6) * (0.5 + Math.random());
+        if (!lv.host || v > 0) botMsg(false);
+      }
+    }
+    function sendChat(text) {
+      const chk = secText(text);
+      if (!chk.ok) { chatAdd(`🛡 EngineSecure: сообщение не отправлено — ${esc(chk.why)}`, "sys"); slog("💬", `Сообщение в чат эфира не отправлено: ${chk.why}`); return; }
+      if (chk.n) slog("💬", `В чате эфира скрыто слов: ${chk.n}`);
+      const me = myName(), html = `${lv.host ? '<span class="host">ВЕДУЩИЙ</span>' : ""}${nameHTML(me, S.my.col)}${esc(chk.text)}`;
+      lv.host ? hostLog(html, "me") : chatAdd(html, "me");
+      const room = lv;
+      if (Math.random() < (lv.host ? 0.85 : 0.55)) setTimeout(() => {
+        if (lv !== room || lvMode !== "room") return;
+        const n = lvPick(NAMES), r = lvPick(lv.host ? LCHAT.reply.concat(LCHAT.host.slice(0, 3)) : LCHAT.reply).replace("{n}", me);
+        lv.host ? hostLog(`${nameHTML(n)}${esc(r)}`) : chatAdd(`${nameHTML(n)}${esc(r)}`);
+      }, 1200 + Math.random() * 1800);
+      if (!lv.host && Math.random() < 0.25) setTimeout(() => { if (lv !== room || lvMode !== "room") return; const ch = CH[lv.ch]; chatAdd(`<span class="host">ВЕДУЩИЙ</span>${nameHTML(ch.n, ch.col)}${esc(lvPick(LCHAT.hostReply).replace("{n}", me))}`); }, 2500 + Math.random() * 2500);
+    }
+    $("#vtChatForm").addEventListener("submit", (e) => { e.preventDefault(); const x = $("#vtChatIn").value.trim(); if (!x || !lv) return; $("#vtChatIn").value = ""; sendChat(x.slice(0, 150)); });
+    $("#vtReact").addEventListener("click", (e) => {
+      const r = e.target.closest("[data-r]"); if (r) { for (let i = 0; i < 3; i++) setTimeout(() => heart(r.dataset.r), i * 120); if (lv && lv.host) stream.likes++; return; }
+      if (e.target.closest("#vtDonate")) $("#vtDonRow").hidden = !$("#vtDonRow").hidden;
+    });
+    $("#vtDonRow").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-don]"); if (!b || !lv || lv.host) return; const amt = +b.dataset.don;
+      if (!Hero.spend(amt)) { chatAdd(`Не хватает монет для доната ${amt} ◎. Монеты дают за просмотр видео до конца и за свои видео.`, "sys"); return; }
+      $("#vtDonRow").hidden = true; const me = myName(), ch = CH[lv.ch], room = lv;
+      chatAdd(`💰 ${nameHTML(me, "#ffb547")} задонатил ${amt} ◎`, "don me"); slog("💰", `Донат ${amt} ◎ на эфир «${lv.t}»`); note(1318, 0.12, "triangle", 0.05);
+      for (let i = 0; i < 6; i++) setTimeout(() => heart("💛"), i * 150);
+      setTimeout(() => { if (lv !== room || lvMode !== "room") return; chatAdd(`<span class="host">ВЕДУЩИЙ</span>${nameHTML(ch.n, ch.col)}${esc(lvPick(LCHAT.thanks).replace("{n}", me))}`); }, 1800);
+    });
+    $("#vtLiveSub").addEventListener("click", () => { if (!lv || lv.host) return; const k = lv.ch; if (S.subs[k]) delete S.subs[k]; else { S.subs[k] = Date.now(); chatAdd(`🔔 ${nameHTML(myName(), S.my.col)} подписался на канал!`, "sys"); } save(); const sb = $("#vtLiveSub"); sb.classList.toggle("on", !!S.subs[k]); sb.textContent = S.subs[k] ? "✓ Вы подписаны" : "Подписаться"; $("#vtLiveChS").textContent = `${fmtN(subsOf(CH[k], k))} подписчиков`; });
+    $("#vtLiveP").addEventListener("click", (e) => {
+      if (e.target.closest("[data-lback]")) { liveMode("list"); return; }
+      const c = e.target.closest("[data-live]"); if (c) { openLive(c.dataset.live); return; }
+      const s2 = e.target.closest("[data-lsc]"); if (s2) { lvSc = s2.dataset.lsc; lvPrevT = 0; $$("#vtLiveScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === s2))); $("#vtLiveTitle").placeholder = `Эфир: ${SCN[lvSc].slice(2).trim()}`; return; }
+      const h = e.target.closest("[data-hsc]"); if (h && stream) {
+        const el = nowS() - stream.start; stream.segs.push({ sc: stream.sc, d: el - stream.segAt }); stream.segAt = el; stream.sc = h.dataset.hsc; lv.sc = stream.sc;
+        $$("#vtLiveHostSc button").forEach((x) => x.setAttribute("aria-pressed", String(x === h))); hostLog(`🎬 Ведущий переключил сцену: ${esc(SCN[stream.sc])}`, "sys");
+      }
+    });
+    $("#vtGoLive").addEventListener("click", async () => {
+      if (stream) { openLive("me"); return; }
+      if (secLocked()) { await unlock(); if (secLocked()) return; }
+      liveMode("setup");
+    });
+    $("#vtLiveStart").addEventListener("click", () => {
+      const tc = secText(($("#vtLiveTitle").value.trim() || `Эфир: ${SCN[lvSc].slice(2).trim()}`).slice(0, 70));
+      if (!tc.ok) { Hero.say("v3tube", "start", `🛡 EngineSecure: в названии ${tc.why}`); return; }
+      stream = { t: tc.text, sc: lvSc, start: nowS(), segs: [], segAt: 0, peak: 0, likes: 0, don: 0, log: [], pot: Math.round(4 + Math.sqrt(mySubs() + 1) * 6 + S.mine.length * 3 + Math.random() * 20) };
+      hostLog("🔴 Эфир начался. Зрители скоро подтянутся — поздоровайся с ними в чате!", "sys");
+      slog("🔴", `Начат эфир «${stream.t}»`); $("#vtLiveTitle").value = "";
+      $$('#vtTabs [data-tab="live"]').forEach((b) => b.classList.add("onair"));
+      note(660, 0.1, "square", 0.04); setTimeout(() => note(990, 0.15, "square", 0.04), 120);
+      openLive("me");
+    });
+    $("#vtLiveEndBtn").addEventListener("click", () => {
+      if (!stream) return; const el = nowS() - stream.start; stream.segs.push({ sc: stream.sc, d: el - stream.segAt }); stream.dur = el;
+      const fans = Math.round(stream.peak * 0.3 + stream.likes * 0.05); stream.fans = fans; S.liveFans = (S.liveFans || 0) + fans; save();
+      slog("⏹", `Эфир «${stream.t}» завершён: ${fmtLong(el)}, пик ${stream.peak} зрит.`);
+      $$('#vtTabs [data-tab="live"]').forEach((b) => b.classList.remove("onair"));
+      $("#vtSumT").textContent = stream.t;
+      $("#vtSumGrid").innerHTML = `<span><b>${fmtLong(el)}</b>длительность</span><span><b>${fmtN(stream.peak)}</b>пик зрителей</span><span><b>${fmtN(stream.likes)}</b>реакций</span><span><b>${stream.don} ◎</b>донатов получено</span><span style="grid-column:1/-1"><b>+${fmtN(fans)}</b>новых подписчиков</span>`;
+      $("#vtSumSave").hidden = el < 5; $("#vtSumMsg").textContent = el < 5 ? "Эфир был слишком коротким, чтобы сохранить запись." : "";
+      lv = null; liveMode("end");
+    });
+    $("#vtSumSave").addEventListener("click", () => {
+      if (!stream) return; let left = 600; const clips = [];
+      for (const sg of stream.segs) { const d = Math.min(left, Math.max(1, Math.round(sg.d))); if (d <= 0) break; clips.push({ k: "scene", sc: sg.sc, d, cap: "" }); left -= d; }
+      clips.unshift({ k: "title", txt: "🔴 Запись эфира: " + stream.t, col: "#ff2d55", d: 2 });
+      const id = "m" + Date.now().toString(36), dur = clips.reduce((a, k) => a + k.d, 0), t = ("🔴 Эфир: " + stream.t).slice(0, 70);
+      const m = { id, t, d: `Запись прямого эфира. Пик зрителей: ${stream.peak}, донатов: ${stream.don} ◎.`, sc: "combo", clips, dur, short: false, at: Date.now(), pot: Math.floor(200 + stream.peak * 25 + stream.likes * 4), mus: "" };
+      try { const c = document.createElement("canvas"); c.width = 320; c.height = 180; SC.combo(c.getContext("2d"), 320, 180, Math.min(dur - 0.1, 4), { clips, seed: 7, hue: 340, label: t, R: P({ id: "thumb" + id }).R }); m.thumb = c.toDataURL("image/jpeg", 0.7); } catch (e) { /* thumbnail is optional */ }
+      if (publish(m)) { $("#vtSumMsg").textContent = "💾 Запись сохранена в «Мои видео»."; $("#vtSumSave").hidden = true; }
+      else $("#vtSumMsg").textContent = $("#vtStMsg").textContent;
+    });
+    $("#vtSumDone").addEventListener("click", () => { stream = null; liveMode("list"); });
+
     $("#vtMyName").addEventListener("change", (e) => { S.my.n = e.target.value.trim().slice(0, 24); save(); renderStudio(); });
     $("#vtColors").addEventListener("click", (e) => { const b = e.target.closest("[data-col]"); if (!b) return; S.my.col = b.dataset.col; save(); renderStudio(); });
     $("#vtScenes").addEventListener("click", (e) => { const b = e.target.closest("[data-sc]"); if (!b) return; sc = b.dataset.sc; prevT = 0; lastStep = -1; $$("#vtScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
@@ -1425,6 +1711,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         hearts = hearts.filter((h) => (h.t += dt) < 0.9);
         hearts.forEach((h) => { sx.globalAlpha = 1 - h.t / 0.9; sx.font = `${60 + h.t * 60}px sans-serif`; sx.textAlign = "center"; sx.textBaseline = "middle"; sx.fillText("❤️", h.x, h.y - h.t * 60); }); sx.globalAlpha = 1;
         $("#vtSProg").style.width = Math.min(100, sTime / ((v.file && isFinite(svid.duration) && svid.duration) || v.dur) * 100) + "%";
+      } else if (tab === "live") {
+        liveFrame(dt);
       } else if (tab === "studio") {
         prevT += dt;
         if (draft.length) {
