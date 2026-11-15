@@ -119,6 +119,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-lab select { padding: 6px 8px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 14px; }
 .vt-lab input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ff2d55; }
 .vt-upl { text-align: center; cursor: pointer; }
+.vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
+.vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.vt-addrow .btn { padding: 9px 6px; font-size: 14px; text-align: center; }
+.vt-clips { display: flex; flex-direction: column; gap: 6px; }
+.vt-clip { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px; border-radius: 12px; background: var(--panel); border: 2px solid var(--line); }
+.vt-clip.on { border-color: var(--accent); }
+.vt-ci { width: 56px; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: #000; display: grid; place-items: center; font-size: 20px; }
+.vt-ci img, .vt-ci canvas { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vt-cbody { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vt-cbody b { font-size: 12.5px; }
+.vt-cbody input { width: 100%; min-width: 0; padding: 6px 8px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font: 600 16px var(--body); }
+.vt-cside { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+.vt-cside select { padding: 4px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 13px; }
+.vt-cmov { display: flex; gap: 3px; }
+.vt-cmov button { width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel-2); color: var(--fg); cursor: pointer; font-size: 12px; padding: 0; }
+.vt-cmov button:disabled { opacity: .35; cursor: default; }
 .vt-mine-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 .vt-mine-row .vt-del { border: 2px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 10px; padding: 6px 9px; cursor: pointer; }
 @media (max-width: 420px) { .vt-row2 { grid-template-columns: 128px 1fr; } .vt-tabs button { font-size: 11px; padding: 7px 2px; } }
@@ -211,13 +228,23 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <span>💰 Монетизация: <b id="vtEarn">0</b> ◎ к выводу <small>(1 ◎ за каждые 50 просмотров)</small></span>
           <button type="button" class="btn" id="vtCash">Забрать</button>
         </div>
-        <h3 class="vt-h">🎬 Снять новое видео</h3>
+        <h3 class="vt-h">🎬 Новое видео</h3>
         <canvas id="vtPrev" aria-label="Предпросмотр"></canvas>
+        <p class="vt-note" id="vtPrevNote"></p>
+        <h4 class="vt-h2">1. Из чего собрать видео</h4>
         <div class="vt-chips" id="vtScenes"></div>
+        <div class="vt-addrow">
+          <button type="button" class="btn ghost" id="vtAddScene">＋ Сцена</button>
+          <label class="btn ghost vt-upl">＋ Фото<input type="file" id="vtAddPhoto" accept="image/*" multiple hidden></label>
+          <button type="button" class="btn ghost" id="vtAddTitle">＋ Титр</button>
+        </div>
+        <div class="vt-clips" id="vtClips"></div>
+        <h4 class="vt-h2">2. Название и музыка</h4>
         <input class="vt-in" id="vtNewTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео">
         <input class="vt-in" id="vtNewDesc" maxlength="200" placeholder="Описание (необязательно)" aria-label="Описание">
         <div class="vt-row">
-          <label class="vt-lab">Длина <select id="vtNewLen"><option value="20">20 с</option><option value="45" selected>45 с</option><option value="90">1:30</option></select></label>
+          <label class="vt-lab" id="vtLenLab">Длина <select id="vtNewLen"><option value="20">20 с</option><option value="45" selected>45 с</option><option value="90">1:30</option></select></label>
+          <label class="vt-lab">Музыка <select id="vtMus"><option value="">Авто</option><option value="music">Бит</option><option value="rain">LoFi</option><option value="cat">Весёлая</option><option value="space">Космос</option><option value="race">Драйв</option><option value="fireworks">Праздник</option><option value="none">Без музыки</option></select></label>
           <label class="vt-lab"><input type="checkbox" id="vtNewShort"> Это Shorts</label>
         </div>
         <button type="button" class="btn wide" id="vtPublish">🚀 Опубликовать</button>
@@ -263,7 +290,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function P(v) {
       let p = params.get(v.id); if (p) return p;
       const seed = hashS(v.id) % 10000;
-      p = { seed, hue: seed % 360, label: v.logo || v.t, R: (i) => { const x = Math.sin(i * 127.1 + seed * 0.731) * 43758.5453; return x - Math.floor(x); } };
+      p = { seed, hue: seed % 360, label: v.logo || v.t, clips: v.clips, R: (i) => { const x = Math.sin(i * 127.1 + seed * 0.731) * 43758.5453; return x - Math.floor(x); } };
       params.set(v.id, p); return p;
     }
     const fmtT = (s) => { s = Math.max(0, Math.floor(s)); const m = Math.floor(s / 60); return m + ":" + String(s % 60).padStart(2, "0"); };
@@ -287,7 +314,36 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     /* ---------- scenes: each draws one frame at time t ---------- */
     function sky(c, W, H, a, b) { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, a); g.addColorStop(1, b); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+    const IMG = new Map();
+    function img(src) { let i = IMG.get(src); if (!i) { i = new Image(); i.src = src; IMG.set(src, i); } return i; }
+    function wrapText(c, text, maxW) {
+      const out = []; let line = "";
+      for (const w of String(text).split(/\s+/)) { const t = line ? line + " " + w : w; if (c.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t; }
+      if (line) out.push(line); return out;
+    }
+    const TCOL = ["#ff2d55", "#3a5cff", "#2a9a4a", "#8a5cff", "#e0a020", "#1fa8d6"];
+    const clipAt = (L, t) => { let acc = 0, i = 0; for (; i < L.length - 1 && t >= acc + L[i].d; i++) acc += L[i].d; return [i, Math.max(0, t - acc)]; };
     const SC = {
+      combo(c, W, H, t, p) {
+        const L = p.clips || []; if (!L.length) return SC.logo(c, W, H, t, p);
+        const [i, lt] = clipAt(L, t), k = L[i], m = Math.min(W, H);
+        if (k.k === "scene") SC[k.sc](c, W, H, lt + 3, p);
+        else if (k.k === "photo") {
+          c.fillStyle = "#000"; c.fillRect(0, 0, W, H); const im = img(k.img);
+          if (im.complete && im.naturalWidth) { const z = Math.max(W / im.naturalWidth, H / im.naturalHeight) * (1 + Math.min(1, lt / k.d) * 0.12), w = im.naturalWidth * z, h = im.naturalHeight * z; c.drawImage(im, (W - w) / 2, (H - h) / 2, w, h); }
+        } else {
+          const col = k.col || TCOL[0]; sky(c, W, H, col, "#0b0910");
+          c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle"; const fs = m * (String(k.txt).length > 24 ? 0.09 : 0.13); c.font = `900 ${fs}px Manrope, sans-serif`;
+          const lines = wrapText(c, k.txt || "", W * 0.84).slice(0, 4), sc = 0.85 + 0.15 * Math.min(1, lt / 0.5);
+          c.save(); c.translate(W / 2, H / 2); c.scale(sc, sc); lines.forEach((ln, j) => c.fillText(ln, 0, (j - (lines.length - 1) / 2) * fs * 1.15)); c.restore();
+        }
+        if (i > 0 && lt < 0.35) { c.fillStyle = `rgba(0,0,0,${1 - lt / 0.35})`; c.fillRect(0, 0, W, H); }
+        if (k.cap) {
+          const fs = Math.max(12, m * 0.055); c.font = `800 ${fs}px Manrope, sans-serif`; c.textAlign = "center"; c.textBaseline = "middle";
+          const lines = wrapText(c, k.cap, W * 0.86).slice(0, 2), lh = fs * 1.3, bw = Math.min(W * 0.92, Math.max(...lines.map((l) => c.measureText(l).width)) + fs), bh = lines.length * lh + fs * 0.4, by = H * (H > W ? 0.8 : 0.9) - bh;
+          c.fillStyle = "rgba(0,0,0,.72)"; c.fillRect((W - bw) / 2, by, bw, bh); c.fillStyle = "#fff"; lines.forEach((l, j) => c.fillText(l, W / 2, by + fs * 0.2 + lh * (j + 0.5)));
+        }
+      },
       space(c, W, H, t, p) {
         const m = Math.min(W, H); sky(c, W, H, "#050818", "#1d1048");
         for (let i = 0; i < 90; i++) { c.globalAlpha = 0.35 + 0.65 * Math.abs(Math.sin(t * 1.7 + i)); c.fillStyle = "#fff"; c.fillRect(p.R(i) * W, p.R(i + 200) * H, 1.6, 1.6); }
@@ -548,7 +604,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const totalMine = () => S.mine.reduce((a, v) => a + mineViews(v), 0);
     const mySubs = () => Math.floor(totalMine() / 18);
     const earnable = () => Math.max(0, Math.floor(totalMine() / 50) - S.cashed);
-    function asVideo(m) { return { id: m.id, t: m.t, ch: "me", sc: m.sc, dur: m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t }; }
+    function asVideo(m) { return { id: m.id, t: m.t, ch: "me", sc: m.sc, dur: m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
     const allVids = () => CAT.concat(S.mine.map(asVideo));
     const byId = (id) => allVids().find((v) => v.id === id);
     const chOf = (v) => v.ch === "me" ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
@@ -569,8 +625,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     /* ---------- sound for canvas videos ---------- */
     let AC = null, lastStep = -1;
     function note(f, d, type, vol) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d + 0.02); } catch (e) { /* optional */ } }
+    function firstScene(L) { const k = (L || []).find((x) => x.k === "scene"); return k ? k.sc : "rain"; }
     function music(v, t) {
-      const sd = SND[v.sc]; if (!sd || S.muted) return;
+      const key = v.mus === "none" ? "" : v.mus || (v.sc === "combo" ? firstScene(v.clips) : v.sc);
+      const sd = SND[key]; if (!sd || S.muted) return;
       const step = Math.floor(t * sd[0] / 30); if (step === lastStep) return; lastStep = step;
       const p = P(v), sc = sd[3], k = Math.floor(p.R(step % 16 + Math.floor(step / 64) * 3) * sc.length);
       if (p.R(step % 16 + 700) > 0.25) note(sd[1] * 2 ** (sc[k] / 12), 0.22, sd[2], 0.028);
@@ -795,7 +853,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const av = $("#vtMyAv"); av.style.background = S.my.col; av.textContent = myName()[0] || "?";
       $("#vtColors").innerHTML = ["#ff2d55", "#ff8a3d", "#ffd84d", "#2a9a4a", "#1fa8d6", "#3a5cff", "#8a5cff", "#d65a8a"].map((c) => `<button type="button" data-col="${c}" style="background:${c}" aria-label="Цвет ${c}" aria-pressed="${c === S.my.col}"></button>`).join("");
       $("#vtScenes").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-sc="${k}" aria-pressed="${k === sc}">${n}</button>`).join("");
-      stats(); renderMine();
+      stats(); renderMine(); renderClips();
     }
     function stats() {
       const tv = totalMine();
@@ -805,7 +863,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function renderMine() {
       const L = $("#vtMine"); L.innerHTML = "";
-      if (!S.mine.length) { L.appendChild(empty("У вас пока нет видео. Выберите сцену, придумайте название и нажмите «Опубликовать»!")); return; }
+      if (!S.mine.length) { L.appendChild(empty("У вас пока нет видео. Соберите его из сцен, своих фото и титров — и нажмите «Опубликовать»!")); return; }
       S.mine.slice().reverse().forEach((m) => {
         const v = asVideo(m), w = document.createElement("div"); w.className = "vt-mine-row";
         const r = row(v), sm = r.querySelectorAll("small"); sm[0].textContent = `${fmtN(mineViews(m))} просмотров · 👍 ${fmtN(likesOf(v))}${m.short ? " · Shorts" : ""}`; sm[1].textContent = agoOf(v);
@@ -814,19 +872,90 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         w.appendChild(d); L.appendChild(w);
       });
     }
+    /* ---------- montage editor ---------- */
+    let draft = store.get("tubeDraft", []); if (!Array.isArray(draft)) draft = [];
+    const MAXC = 10, MAXT = 120;
+    const draftDur = () => draft.reduce((a, k) => a + k.d, 0);
+    const saveDraft = () => { try { localStorage.setItem("v3:tubeDraft", JSON.stringify(draft)); } catch (e) { /* too big for storage: keep in memory */ } };
+    function trySave() { try { localStorage.setItem("v3:v3tube", JSON.stringify(S)); return true; } catch (e) { return false; } }
+    const stMsg = (t) => { $("#vtStMsg").textContent = t; };
+    function addClip(k) {
+      if (draft.length >= MAXC) { stMsg(`В одном видео — не больше ${MAXC} частей.`); return false; }
+      if (draftDur() + k.d > MAXT) { stMsg("Видео получится длиннее 2 минут — укороти части."); return false; }
+      draft.push(k); saveDraft(); renderClips(); prevT = draftDur() - k.d; lastStep = -1; return true;
+    }
+    function renderClips() {
+      const box = $("#vtClips"); box.innerHTML = "";
+      $("#vtLenLab").hidden = draft.length > 0;
+      $("#vtPrevNote").textContent = draft.length ? `Монтаж: ${draft.length} ${plural(draft.length, ["часть", "части", "частей"])} · ${fmtT(draftDur())}. Так видео будет выглядеть после публикации.` : "Сейчас — предпросмотр сцены. Добавь сцены, свои фото и титры, чтобы смонтировать видео. Или просто опубликуй одну сцену.";
+      draft.forEach((k, i) => {
+        const r = document.createElement("div"); r.className = "vt-clip"; r.dataset.i = i;
+        const ico = document.createElement("span"); ico.className = "vt-ci";
+        if (k.k === "photo") { const im = document.createElement("img"); im.src = k.img; im.alt = ""; ico.appendChild(im); }
+        else if (k.k === "scene") { const c = document.createElement("canvas"); c.width = 112; c.height = 63; SC[k.sc](c.getContext("2d"), 112, 63, 6, P({ id: "clip" + k.sc })); ico.appendChild(c); }
+        else { ico.style.background = k.col; ico.textContent = "Аа"; ico.style.color = "#fff"; ico.style.fontWeight = "900"; ico.style.fontSize = "14px"; }
+        const name = k.k === "photo" ? "📷 Фото" : k.k === "scene" ? SCN[k.sc] : "🔤 Титр";
+        const body = document.createElement("div"); body.className = "vt-cbody";
+        body.innerHTML = `<b>${i + 1}. ${esc(name)}</b>` + (k.k === "title"
+          ? `<input data-f="txt" maxlength="60" placeholder="Текст титра" aria-label="Текст титра ${i + 1}" value="${esc(k.txt || "")}">`
+          : `<input data-f="cap" maxlength="80" placeholder="Субтитр (необязательно)" aria-label="Субтитр к части ${i + 1}" value="${esc(k.cap || "")}">`);
+        const side = document.createElement("div"); side.className = "vt-cside";
+        side.innerHTML = `<select data-f="d" aria-label="Длительность части ${i + 1}">${[2, 3, 5, 8, 12, 20].map((d) => `<option value="${d}"${d === k.d ? " selected" : ""}>${d} с</option>`).join("")}</select><div class="vt-cmov"><button type="button" data-mv="-1" aria-label="Выше"${i ? "" : " disabled"}>↑</button><button type="button" data-mv="1" aria-label="Ниже"${i < draft.length - 1 ? "" : " disabled"}>↓</button><button type="button" data-rm aria-label="Убрать часть">✕</button></div>`;
+        r.append(ico, body, side); box.appendChild(r);
+      });
+    }
+    $("#vtAddScene").addEventListener("click", () => { if (addClip({ k: "scene", sc, d: 5, cap: "" })) stMsg(`Добавлено: ${SCN[sc]}`); });
+    $("#vtAddTitle").addEventListener("click", () => { if (addClip({ k: "title", txt: $("#vtNewTitle").value.trim() || "Моё видео", col: TCOL[draft.filter((x) => x.k === "title").length % TCOL.length], d: 3 })) { stMsg("Титр добавлен — впиши свой текст."); const ins = $$("#vtClips input"); if (ins.length) ins[ins.length - 1].focus(); } });
+    $("#vtAddPhoto").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []); e.target.value = ""; let n = 0;
+      for (const f of files) {
+        if (!/^image\//.test(f.type)) continue;
+        try {
+          const url = URL.createObjectURL(f), im = new Image(); im.src = url; await im.decode();
+          const z = Math.min(1, 640 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * z); c.height = Math.round(im.naturalHeight * z);
+          c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+          if (!addClip({ k: "photo", img: c.toDataURL("image/jpeg", 0.72), d: 5, cap: "" })) break; n++;
+        } catch (err) { stMsg("Это фото не открылось. Попробуй JPG или PNG."); }
+      }
+      if (n) stMsg(`Добавлено фото: ${n}. Можешь подписать каждое.`);
+    });
+    $("#vtClips").addEventListener("input", (e) => { const r = e.target.closest(".vt-clip"), f = e.target.dataset.f; if (!r || !f || f === "d") return; draft[+r.dataset.i][f] = e.target.value; saveDraft(); });
+    $("#vtClips").addEventListener("change", (e) => {
+      const r = e.target.closest(".vt-clip"); if (!r || e.target.dataset.f !== "d") return; const k = draft[+r.dataset.i], nd = +e.target.value;
+      if (draftDur() - k.d + nd > MAXT) { e.target.value = String(k.d); stMsg("Видео получится длиннее 2 минут."); return; }
+      k.d = nd; saveDraft(); renderClips();
+    });
+    $("#vtClips").addEventListener("click", (e) => {
+      const r = e.target.closest(".vt-clip"); if (!r) return; const i = +r.dataset.i;
+      if (e.target.closest("[data-rm]")) { draft.splice(i, 1); saveDraft(); renderClips(); prevT = 0; return; }
+      const mv = e.target.closest("[data-mv]"); if (mv) { const j = i + +mv.dataset.mv; [draft[i], draft[j]] = [draft[j], draft[i]]; saveDraft(); renderClips(); return; }
+      if (!e.target.closest("input, select, button")) { prevT = draft.slice(0, i).reduce((a, k) => a + k.d, 0); lastStep = -1; }
+    });
+
     function publish(m) {
-      S.mine.push(m); if (S.mine.length > 40) { const old = S.mine.shift(); if (old.file) delFile(old.id); }
-      save(); Hero.earn(10); renderStudio(); updateHub();
+      S.mine.push(m);
+      if (!trySave()) { S.mine.pop(); stMsg("Не хватает места в памяти браузера. Убери пару фото или удали старые видео и попробуй снова."); return false; }
+      if (S.mine.length > 40) { const old = S.mine.shift(); if (old.file) delFile(old.id); save(); }
+      Hero.earn(10); renderStudio(); updateHub();
       $("#vtStMsg").textContent = `🚀 «${m.t}» опубликовано! +10 ◎. Просмотры начнут расти — загляните позже.`;
       Hero.say("v3tube", "good", "Новое видео на канале! 🎬"); note(784, 0.1, "square", 0.04); setTimeout(() => note(1175, 0.15, "square", 0.04), 110);
+      return true;
     }
     $("#vtPublish").addEventListener("click", () => {
-      const t = ($("#vtNewTitle").value.trim() || `${SCN[sc].slice(2)} — моё видео`).slice(0, 70);
-      const short = $("#vtNewShort").checked, dur = short ? 12 : +$("#vtNewLen").value;
-      const id = "m" + Date.now().toString(36);
-      const pot = Math.floor(250 + Math.random() * 1800 + Math.min(40, t.length) * 15 + ($("#vtNewDesc").value.trim() ? 300 : 0) + (short ? 600 : 0) + S.mine.length * 60);
-      publish({ id, t, d: $("#vtNewDesc").value.trim().slice(0, 200), sc, dur, short, at: Date.now(), pot });
-      $("#vtNewTitle").value = ""; $("#vtNewDesc").value = ""; $("#vtNewShort").checked = false;
+      const combo = draft.length > 0, firstTitle = draft.find((k) => k.k === "title" && k.txt && k.txt.trim());
+      const t = ($("#vtNewTitle").value.trim() || (firstTitle && firstTitle.txt.trim()) || (combo ? "Мой монтаж" : `${SCN[sc].slice(2)} — моё видео`)).slice(0, 70);
+      const short = $("#vtNewShort").checked, dur = combo ? draftDur() : short ? 12 : +$("#vtNewLen").value;
+      const id = "m" + Date.now().toString(36), mus = $("#vtMus").value;
+      const own = combo ? draft.filter((k) => k.k === "photo").length * 250 + draft.filter((k) => k.cap || k.k === "title").length * 120 + draft.length * 80 : 0;
+      const pot = Math.floor(250 + Math.random() * 1800 + Math.min(40, t.length) * 15 + ($("#vtNewDesc").value.trim() ? 300 : 0) + (short ? 600 : 0) + S.mine.length * 60 + own);
+      const m = { id, t, d: $("#vtNewDesc").value.trim().slice(0, 200), sc: combo ? "combo" : sc, dur, short, at: Date.now(), pot, mus };
+      if (combo) {
+        m.clips = draft.map((k) => Object.assign({}, k));
+        try { const c = document.createElement("canvas"); c.width = 320; c.height = 180; const k0 = draft.findIndex((k) => k.k === "photo"); const at = k0 >= 0 ? draft.slice(0, k0).reduce((a, k) => a + k.d, 0) + draft[k0].d / 2 : Math.min(dur * 0.3, dur - 0.1); SC.combo(c.getContext("2d"), 320, 180, at, { clips: m.clips, seed: 7, hue: 340, label: t, R: P({ id: "thumb" + id }).R }); m.thumb = c.toDataURL("image/jpeg", 0.7); } catch (e) { /* thumbnail is optional */ }
+      }
+      if (!publish(m)) return;
+      if (combo) { draft = []; saveDraft(); renderClips(); }
+      $("#vtNewTitle").value = ""; $("#vtNewDesc").value = ""; $("#vtNewShort").checked = false; $("#vtMus").value = "";
     });
     $("#vtFile").addEventListener("change", async (e) => {
       const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
@@ -891,7 +1020,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         hearts.forEach((h) => { sx.globalAlpha = 1 - h.t / 0.9; sx.font = `${60 + h.t * 60}px sans-serif`; sx.textAlign = "center"; sx.textBaseline = "middle"; sx.fillText("❤️", h.x, h.y - h.t * 60); }); sx.globalAlpha = 1;
         $("#vtSProg").style.width = (sTime / v.dur * 100) + "%";
       } else if (tab === "studio") {
-        prevT += dt; SC[sc](px, pcv.width, pcv.height, prevT, { seed: 7, hue: 340, label: "", R: P({ id: "prev" + sc }).R });
+        prevT += dt;
+        if (draft.length) {
+          const D = draftDur(); if (prevT >= D) { prevT = 0; lastStep = -1; }
+          SC.combo(px, pcv.width, pcv.height, prevT, { clips: draft, seed: 7, hue: 340, label: "", R: P({ id: "prevcombo" }).R });
+          const [ci] = clipAt(draft, prevT); $$("#vtClips .vt-clip").forEach((r) => r.classList.toggle("on", +r.dataset.i === ci));
+        } else SC[sc](px, pcv.width, pcv.height, prevT, { seed: 7, hue: 340, label: "", R: P({ id: "prev" + sc }).R });
         if ((statT += dt) > 1) { statT = 0; stats(); }
       }
     }
