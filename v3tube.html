@@ -321,7 +321,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <button type="button" class="vt-sub" id="vtSub">Подписаться</button>
         </div>
         <div class="vt-acts">
-          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
+          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifSnd" hidden>🔊 Скачать со звуком</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
         </div>
         <p class="vt-msg" id="vtMsg" aria-live="polite"></p>
         <details class="vt-desc" id="vtDescBox"><summary>Описание</summary><p id="vtDesc"></p></details>
@@ -459,7 +459,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <p class="vt-note" id="vtRevInfo"></p>
           <input class="vt-in" id="vtRevTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео из галереи">
           <input class="vt-in" id="vtRevDesc" maxlength="200" placeholder="Описание (необязательно). Напиши GIF — и видео станет гифкой" aria-label="Описание видео из галереи">
-          <p class="vt-gifhint" id="vtGifHintRev" hidden>🎞 В описании есть «GIF»: видео станет гифкой — первые 6 секунд, без звука, по кругу.</p>
+          <p class="vt-gifhint" id="vtGifHintRev" hidden>🎞 В описании есть «GIF»: видео станет гифкой — первые 6 секунд по кругу, со звуком. Допиши «без звука», если звук не нужен.</p>
           <label class="vt-lab"><input type="checkbox" id="vtRevShort"> Выложить как Shorts</label>
           <div class="vt-revbtns"><button type="button" class="btn ghost" id="vtRevCancel">Отмена</button><button type="button" class="btn" id="vtRevGo">🚀 Выложить</button></div>
         </div>
@@ -477,7 +477,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <h4 class="vt-h2">2. Название и музыка</h4>
         <input class="vt-in" id="vtNewTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео">
         <input class="vt-in" id="vtNewDesc" maxlength="200" placeholder="Описание (необязательно). Напиши GIF — и видео станет гифкой" aria-label="Описание">
-        <p class="vt-gifhint" id="vtGifHintNew" hidden>🎞 В описании есть «GIF»: видео станет гифкой — до 6 секунд, без звука, по кругу. Предпросмотр выше уже в стиле GIF.</p>
+        <p class="vt-gifhint" id="vtGifHintNew" hidden>🎞 В описании есть «GIF»: видео станет гифкой — до 6 секунд по кругу, со звуком. Допиши «без звука», если звук не нужен. Предпросмотр выше уже в стиле GIF.</p>
         <div class="vt-row">
           <label class="vt-lab" id="vtLenLab">Длина <select id="vtNewLen"><option value="20">20 с</option><option value="45" selected>45 с</option><option value="90">1:30</option></select></label>
           <label class="vt-lab">Музыка <select id="vtMus"><option value="">Авто</option><option value="music">Бит</option><option value="rain">LoFi</option><option value="cat">Весёлая</option><option value="space">Космос</option><option value="race">Драйв</option><option value="fireworks">Праздник</option><option value="none">Без музыки</option></select></label>
@@ -860,7 +860,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const totalMine = () => S.mine.reduce((a, v) => a + mineViews(v), 0);
     const mySubs = () => Math.floor(totalMine() / 18) + (S.liveFans || 0);
     const earnable = () => Math.max(0, Math.floor(totalMine() / 50) - S.cashed);
-    function asVideo(m) { const gif = isGif(m.d); return { id: m.id, t: m.t, ch: "me", sc: m.sc, gif, dur: gif ? Math.min(m.dur, GIFMAX) : m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
+    function asVideo(m) { const gif = isGif(m.d); return { id: m.id, t: m.t, ch: "me", sc: m.sc, gif, gifMute: gif && /без\s+звук/iu.test(m.d || ""), dur: gif ? Math.min(m.dur, GIFMAX) : m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
     const allVids = () => CAT.concat(S.mine.map(asVideo));
     const byId = (id) => allVids().find((v) => v.id === id);
     const chOf = (v) => v.ch === "me" ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
@@ -880,11 +880,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     /* ---------- sound for canvas videos ---------- */
     let AC = null, lastStep = -1;
-    function note(f, d, type, vol) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); o.start(); o.stop(AC.currentTime + d + 0.02); } catch (e) { /* optional */ } }
+    let recDest = null;
+    function note(f, d, type, vol) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === "suspended") AC.resume(); const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, AC.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + d); o.connect(g); g.connect(AC.destination); if (recDest) g.connect(recDest); o.start(); o.stop(AC.currentTime + d + 0.02); } catch (e) { /* optional */ } }
     function firstScene(L) { const k = (L || []).find((x) => x.k === "scene"); return k ? k.sc : "rain"; }
     function music(v, t) {
       const key = v.mus === "none" ? "" : v.mus || (v.sc === "combo" ? firstScene(v.clips) : v.sc);
-      const sd = SND[key]; if (!sd || S.muted) return;
+      const sd = SND[key]; if (!sd || (S.muted && !recDest)) return;
       const step = Math.floor(t * sd[0] / 30); if (step === lastStep) return; lastStep = step;
       const p = P(v), sc = sd[3], k = Math.floor(p.R(step % 16 + Math.floor(step / 64) * 3) * sc.length);
       if (p.R(step % 16 + 700) > 0.25) note(sd[1] * 2 ** (sc[k] / 12), 0.22, sd[2], 0.028);
@@ -1049,7 +1050,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         else { const b = await getFile(v.id); if (cur !== v) return; if (!b) { real = false; cv.hidden = false; vid.hidden = true; msg("Файл этого видео не найден на устройстве — показываю заставку."); } else vid.src = URL.createObjectURL(b); }
         if (real) { const t0 = time; vid.onloadedmetadata = () => { if (t0) vid.currentTime = t0; }; vid.muted = S.muted; vid.playbackRate = speed; vid.play().then(() => { playing = true; ui(); }).catch(() => { playing = false; $("#vtBig").hidden = false; ui(); }); }
       }
-      if (v.gif && v.file) { const b = await getFile(v.id); if (cur !== v) return; if (b) { vid.src = URL.createObjectURL(b); vid.muted = true; vid.hidden = false; vid.play().catch(() => {}); } }
+      if (v.gif && v.file) { const b = await getFile(v.id); if (cur !== v) return; if (b) { vid.src = URL.createObjectURL(b); vid.muted = v.gifMute ? true : S.muted; vid.hidden = false; vid.play().catch(() => {}); } }
       if (!real) playing = !v.yt;
       $("#vtYt").hidden = !v.yt; $("#vtCap").textContent = ""; if (v.yt) $("#vtYt").href = v.yt;
       ui(); Hero.say("v3tube", "start", pick2(["Приятного просмотра!", "Не забудь лайк 👍", "Классный канал!", "Включаю звук 🔊"]));
@@ -1058,7 +1059,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function fillInfo() {
       const v = cur, ch = chOf(v);
       $("#vtTitle").textContent = v.t;
-      $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!v.gif; $("#vtGifDl").hidden = !(v.gif && v.mine);
+      $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!(v.gif && v.gifMute); $("#vtGifDl").hidden = !(v.gif && v.mine); $("#vtGifSnd").hidden = !(v.gif && v.mine && !v.gifMute && window.MediaRecorder);
       $("#vtMeta").textContent = `${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}`;
       const av = $("#vtChAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
       $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${fmtN(subsOf(ch, v.ch))} подписчиков`;
@@ -1165,7 +1166,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         getFile(v.id).then((b) => {
           const c = curShort(); if (!c || c.id !== v.id || tab !== "shorts") return;
           if (!b) { Hero.say("v3tube", "start", "Файл этого видео не найден на устройстве."); return; }
-          svid.src = URL.createObjectURL(b); svid.muted = v.gif ? true : S.muted; svid.hidden = false; svid.play().catch(() => { svid.muted = true; svid.play().catch(() => {}); });
+          svid.src = URL.createObjectURL(b); svid.muted = v.gifMute ? true : S.muted; svid.hidden = false; svid.play().catch(() => { svid.muted = true; svid.play().catch(() => {}); });
         });
       }
     }
@@ -1777,7 +1778,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         const bytes = encodeGif(frames, W, H, 10); btn.textContent = "⬇ Скачать .gif";
         const name = (v.t.replace(/[\\/:*?"<>|#]+/g, " ").replace(/\s+/g, " ").trim() || "v3tube").slice(0, 60) + ".gif";
         await dl.save({ filename: name, data: new Blob([bytes], { type: "image/gif" }) });
-        msg(`🎞 GIF сохранён: ${(bytes.length / 1024).toFixed(0)} КБ`); slog("🎞", `Скачан GIF «${v.t}»`);
+        msg(`🎞 GIF сохранён: ${(bytes.length / 1024).toFixed(0)} КБ. В формате .gif звука не бывает — для звука есть «🔊 Скачать со звуком».`); slog("🎞", `Скачан GIF «${v.t}»`);
       } catch (e) {
         const code = e && e.code;
         msg(code === "declined" ? "Скачивание отменено" : code === "rate_limited" ? "Подожди немного и попробуй снова" : code === "nofile" ? "Файл этого видео не найден на устройстве" : "Не получилось собрать GIF. Попробуй ещё раз.");
@@ -1785,6 +1786,61 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       btn.disabled = false; btn.textContent = "⬇ Скачать .gif";
     }
     $("#vtGifDl").addEventListener("click", () => { if (cur && cur.gif) exportGif(cur); });
+    // GIF with sound: the .gif format cannot hold audio, so this records the looping GIF picture together with its sound as a video file.
+    async function exportGifSound(v) {
+      const btn = $("#vtGifSnd");
+      if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { msg("Этот браузер не умеет записывать видео со звуком."); return; }
+      let dl = null; try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+      if (!dl) { msg("Скачивание файлов здесь недоступно. Открой V3Tube на claude.ai."); return; }
+      const mime = ["video/mp4;codecs=avc1,mp4a.40.2", "video/mp4", "video/webm;codecs=vp8,opus", "video/webm"].find((m) => { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } });
+      if (!mime) { msg("Этот браузер не умеет записывать видео со звуком."); return; }
+      const ext = mime.startsWith("video/mp4") ? "mp4" : "webm";
+      if (playing) toggle();
+      btn.disabled = true; let src = null, url = "", node = null;
+      try {
+        AC = AC || new (window.AudioContext || window.webkitAudioContext)(); await AC.resume(); recDest = AC.createMediaStreamDestination();
+        if (v.file) {
+          const b = await getFile(v.id); if (!b) throw { code: "nofile" };
+          url = URL.createObjectURL(b); src = document.createElement("video"); src.playsInline = true; src.preload = "auto"; src.src = url;
+          await new Promise((res, rej) => { src.oncanplay = res; src.onerror = rej; setTimeout(res, 8000); });
+          node = AC.createMediaElementSource(src); node.connect(recDest); node.connect(AC.destination);
+        }
+        const aspect = src && src.videoWidth ? src.videoHeight / src.videoWidth : (v.short ? 16 / 9 : 9 / 16);
+        const W = aspect > 1 ? 360 : 480, H = Math.round(W * aspect / 2) * 2;
+        const rc = document.createElement("canvas"); rc.width = W; rc.height = H; const rx = rc.getContext("2d");
+        rx.fillStyle = "#000"; rx.fillRect(0, 0, W, H);
+        const stream = new MediaStream([...rc.captureStream(10).getVideoTracks(), ...recDest.stream.getAudioTracks()]);
+        const rec = new MediaRecorder(stream, { mimeType: mime }), chunks = [];
+        rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+        const stopped = new Promise((r) => { rec.onstop = r; });
+        rec.start(250); if (src) { src.currentTime = 0; await src.play(); }
+        lastStep = -1; const t0 = performance.now();
+        await new Promise((res) => {
+          const step = () => {
+            const t = (performance.now() - t0) / 1000; if (t >= v.dur) return res();
+            const tq = Math.floor(t * 10) / 10;
+            gifDraw(rx, W, H, (g, w, h) => src ? drawCover(g, w, h, src) : SC[v.sc](g, w, h, tq, P(v)));
+            if (!src) music(v, t);
+            btn.textContent = `⏺ Записываю… ${Math.ceil(v.dur - t)} с`; requestAnimationFrame(step);
+          };
+          step();
+        });
+        rec.stop(); await stopped;
+        const blob = new Blob(chunks, { type: mime.split(";")[0] });
+        if (!blob.size) throw { code: "empty" };
+        btn.textContent = "🔊 Скачать со звуком";
+        const name = (v.t.replace(/[\\/:*?"<>|#]+/g, " ").replace(/\s+/g, " ").trim() || "v3tube").slice(0, 60) + " (GIF со звуком)." + ext;
+        await dl.save({ filename: name, data: blob });
+        msg(`🔊 GIF со звуком сохранён (${ext.toUpperCase()}, ${(blob.size / 1024).toFixed(0)} КБ)`); slog("🔊", `Скачан GIF со звуком «${v.t}»`);
+      } catch (e) {
+        const code = e && e.code;
+        msg(code === "declined" ? "Скачивание отменено" : code === "rate_limited" ? "Подожди немного и попробуй снова" : code === "nofile" ? "Файл этого видео не найден на устройстве" : "Не получилось записать GIF со звуком. Попробуй ещё раз.");
+      }
+      if (src) { try { src.pause(); node.disconnect(); } catch (e) { /* optional */ } URL.revokeObjectURL(url); }
+      recDest = null; btn.disabled = false; btn.textContent = "🔊 Скачать со звуком";
+    }
+    $("#vtGifSnd").addEventListener("click", () => { if (cur && cur.gif) exportGifSound(cur); });
+
 
     let newGif = false;
     $("#vtNewDesc").addEventListener("input", () => { newGif = isGif($("#vtNewDesc").value); $("#vtGifHintNew").hidden = !newGif; });
@@ -1819,7 +1875,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         if (!real && cur.gif) {
           if (playing) {
             if (cur.file) { if (vid.ended || vid.currentTime >= cur.dur) { vid.currentTime = 0; vid.play().catch(() => {}); gifLoop(); } time = vid.currentTime || 0; }
-            else { time += dt; if (time >= cur.dur) { time %= cur.dur; gifLoop(); } }
+            else { time += dt; if (time >= cur.dur) { time %= cur.dur; lastStep = -1; gifLoop(); } if (!cur.gifMute) music(cur, time); }
           }
           const tq = Math.floor(time * 10) / 10, gv = cur;
           gifDraw(cx, cv.width, cv.height, (g, w, h) => gv.file ? drawCover(g, w, h, vid) : SC[gv.sc](g, w, h, tq, P(gv)));
@@ -1835,7 +1891,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         const v = curShort(); if (!v) return;
         if (v.gif) {
           if (v.file) { if (svid.currentTime >= v.dur) { svid.currentTime = 0; svid.play().catch(() => {}); sLoops++; } sTime = svid.currentTime || 0; }
-          else { sTime += dt; if (sTime >= v.dur) { sTime %= v.dur; sLoops++; } }
+          else { sTime += dt; if (sTime >= v.dur) { sTime %= v.dur; sLoops++; lastStep = -1; } if (!v.gifMute) music(v, sTime); }
           if (sLoops >= 3) { openShort(shortI + 1); return; }
           const tq = Math.floor(sTime * 10) / 10; gifDraw(sx, scv.width, scv.height, (g, w, h) => v.file ? drawCover(g, w, h, svid) : SC[v.sc](g, w, h, tq, P(v)));
         } else if (v.file) { sx.clearRect(0, 0, scv.width, scv.height); sTime = svid.currentTime || 0; }
