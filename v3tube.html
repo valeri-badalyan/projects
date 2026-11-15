@@ -119,6 +119,22 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-lab select { padding: 6px 8px; border-radius: 8px; border: 2px solid var(--line); background: var(--bg); color: var(--fg); font-weight: 800; font-size: 14px; }
 .vt-lab input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ff2d55; }
 .vt-upl { text-align: center; cursor: pointer; }
+.vt-gal { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px; border-radius: 14px; background: var(--panel); border: 2px solid var(--line); }
+.vt-galtxt { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; }
+.vt-galtxt b { font-size: 15px; } .vt-galtxt small { color: var(--muted); font-size: 12.5px; }
+.vt-galtxt small button { border: 0; background: none; color: var(--accent); font: 800 12.5px var(--body); padding: 0; cursor: pointer; text-decoration: underline; }
+.vt-gal .btn { flex: none; }
+.vt-review { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--panel); border: 2px solid var(--accent); }
+.vt-review video { width: 100%; max-height: 60vh; border-radius: 10px; background: #000; display: block; }
+.vt-revbtns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+.vt-perm { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(5,4,10,.78); padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.vt-permbox { width: min(340px, 100%); display: flex; flex-direction: column; gap: 10px; align-items: center; text-align: center; padding: 22px 18px 18px; border-radius: 20px; background: var(--panel-2); border: 2px solid var(--line); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.vt-permico { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 34px; background: var(--bg); }
+.vt-permbox h3 { margin: 0; font: 900 18px/1.25 var(--body); text-wrap: balance; }
+.vt-permbox p { margin: 0 0 4px; color: var(--muted); font-size: 13.5px; }
+.vt-short video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.vt-short canvas { position: relative; z-index: 1; }
+.vt-short .vt-sinfo, .vt-short .vt-sside, .vt-short .vt-sbar { z-index: 2; }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -196,6 +212,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
       <div class="vt-panel" id="vtShorts" hidden>
         <div class="vt-short" id="vtShortBox">
+          <video id="vtSVid" playsinline preload="auto" hidden></video>
           <canvas id="vtShortCv" aria-label="Shorts"></canvas>
           <div class="vt-sinfo"><b id="vtSTitle"></b><small id="vtSChan"></small></div>
           <div class="vt-sside">
@@ -229,6 +246,20 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <button type="button" class="btn" id="vtCash">Забрать</button>
         </div>
         <h3 class="vt-h">🎬 Новое видео</h3>
+        <div class="vt-gal">
+          <span class="vt-galtxt"><b>📱 Видео из галереи</b><small id="vtGalState">Выложи готовое видео со своего телефона</small></span>
+          <button type="button" class="btn" id="vtGalBtn">Открыть галерею</button>
+          <input type="file" id="vtFile" accept="video/*" hidden>
+        </div>
+        <div class="vt-review" id="vtReview" hidden>
+          <video id="vtRevVid" playsinline controls preload="metadata"></video>
+          <p class="vt-note" id="vtRevInfo"></p>
+          <input class="vt-in" id="vtRevTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео из галереи">
+          <input class="vt-in" id="vtRevDesc" maxlength="200" placeholder="Описание (необязательно)" aria-label="Описание видео из галереи">
+          <label class="vt-lab"><input type="checkbox" id="vtRevShort"> Выложить как Shorts</label>
+          <div class="vt-revbtns"><button type="button" class="btn ghost" id="vtRevCancel">Отмена</button><button type="button" class="btn" id="vtRevGo">🚀 Выложить</button></div>
+        </div>
+        <h4 class="vt-h2">Или смонтируй видео сам</h4>
         <canvas id="vtPrev" aria-label="Предпросмотр"></canvas>
         <p class="vt-note" id="vtPrevNote"></p>
         <h4 class="vt-h2">1. Из чего собрать видео</h4>
@@ -248,13 +279,21 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <label class="vt-lab"><input type="checkbox" id="vtNewShort"> Это Shorts</label>
         </div>
         <button type="button" class="btn wide" id="vtPublish">🚀 Опубликовать</button>
-        <label class="btn ghost wide vt-upl">📁 Загрузить видео с устройства<input type="file" id="vtFile" accept="video/*" hidden></label>
         <p class="vt-msg" id="vtStMsg" aria-live="polite"></p>
         <h3 class="vt-h">📂 Мои видео</h3>
         <div class="vt-list" id="vtMine"></div>
       </div>
     </div>
-    <p class="hint">▶ Нажми на ролик, чтобы смотреть. Подписывайся на каналы и ставь лайки. В «Моём канале» снимай видео: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+    <p class="hint">▶ Нажми на ролик, чтобы смотреть. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+</div>
+<div class="vt-perm" id="vtPerm" role="dialog" aria-modal="true" aria-labelledby="vtPermH" hidden>
+  <div class="vt-permbox">
+    <div class="vt-permico" aria-hidden="true">🖼️</div>
+    <h3 id="vtPermH">Разрешить V3Tube доступ к галерее?</h3>
+    <p>V3Tube откроет галерею твоего телефона. Ты сам выберешь видео, и приложение увидит только его.</p>
+    <button type="button" class="btn wide" id="vtPermYes">Разрешить</button>
+    <button type="button" class="btn ghost wide" id="vtPermNo">Не разрешать</button>
+  </div>
 </div>
 <div class="vt-toast off" id="vtToast" role="status" aria-live="polite"></div>
 <script>
@@ -668,6 +707,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     function setTab(t) {
       if (t !== "watch") stopMain();
+      if (t !== "shorts") stopSVid();
       tab = t;
       $$("#vtTabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t || (t === "watch" && b.dataset.tab === "home"))));
       $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio";
@@ -795,7 +835,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     cv.addEventListener("click", toggle); vid.addEventListener("click", toggle);
     $("#vtSeek").addEventListener("input", (e) => { if (!cur) return; const t = +e.target.value / 1000 * curDur(); if (real) vid.currentTime = t; else time = t; $("#vtNext").hidden = true; clearInterval(nextT); });
     $("#vtSpeed").addEventListener("click", () => { const L = [1, 1.5, 2, 0.5]; speed = L[(L.indexOf(speed) + 1) % L.length]; vid.playbackRate = speed; ui(); });
-    $("#vtMute").addEventListener("click", () => { S.muted = !S.muted; vid.muted = S.muted; save(); ui(); });
+    $("#vtMute").addEventListener("click", () => { S.muted = !S.muted; vid.muted = S.muted; svid.muted = S.muted; save(); ui(); });
     $("#vtFull").addEventListener("click", () => { const el = $("#vtPlayer"); try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => msg("Полный экран недоступен")); else msg("Полный экран недоступен"); } catch (e) { msg("Полный экран недоступен"); } });
     $("#vtNext").addEventListener("click", (e) => { const b = e.target.closest("[data-nx]"); if (!b) return; clearInterval(nextT); if (b.dataset.nx === "go") open($("#vtNext").dataset.id); else $("#vtNext").hidden = true; });
     $("#vtSub").addEventListener("click", () => {
@@ -822,9 +862,20 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     /* ---------- shorts ---------- */
     const shortsList = () => allVids().filter((v) => v.short);
+    const svid = $("#vtSVid");
+    function stopSVid() { try { svid.pause(); } catch (e) { /* optional */ } if (svid.src && svid.src.startsWith("blob:")) URL.revokeObjectURL(svid.src); svid.removeAttribute("src"); svid.hidden = true; }
+    svid.addEventListener("ended", () => { if (tab === "shorts") openShort(shortI + 1); });
     function openShort(i) {
       const L = shortsList(); if (!L.length) return; shortI = (i + L.length) % L.length; sTime = 0; lastStep = -1;
-      S.seen[L[shortI].id] = (S.seen[L[shortI].id] || 0) + 1; save(); shortInfo();
+      const v = L[shortI]; S.seen[v.id] = (S.seen[v.id] || 0) + 1; save(); shortInfo();
+      stopSVid();
+      if (v.file) {
+        getFile(v.id).then((b) => {
+          const c = curShort(); if (!c || c.id !== v.id || tab !== "shorts") return;
+          if (!b) { Hero.say("v3tube", "start", "Файл этого видео не найден на устройстве."); return; }
+          svid.src = URL.createObjectURL(b); svid.muted = S.muted; svid.hidden = false; svid.play().catch(() => { svid.muted = true; svid.play().catch(() => {}); });
+        });
+      }
     }
     function shortInfo() {
       const v = curShort(), ch = chOf(v);
@@ -853,7 +904,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const av = $("#vtMyAv"); av.style.background = S.my.col; av.textContent = myName()[0] || "?";
       $("#vtColors").innerHTML = ["#ff2d55", "#ff8a3d", "#ffd84d", "#2a9a4a", "#1fa8d6", "#3a5cff", "#8a5cff", "#d65a8a"].map((c) => `<button type="button" data-col="${c}" style="background:${c}" aria-label="Цвет ${c}" aria-pressed="${c === S.my.col}"></button>`).join("");
       $("#vtScenes").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-sc="${k}" aria-pressed="${k === sc}">${n}</button>`).join("");
-      stats(); renderMine(); renderClips();
+      stats(); renderMine(); renderClips(); galState();
     }
     function stats() {
       const tv = totalMine();
@@ -957,28 +1008,61 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (combo) { draft = []; saveDraft(); renderClips(); }
       $("#vtNewTitle").value = ""; $("#vtNewDesc").value = ""; $("#vtNewShort").checked = false; $("#vtMus").value = "";
     });
+    /* ---------- video from the phone's gallery ---------- */
+    let pend = null;   // { f, url, dur, w, h }
+    function galState() {
+      const st = $("#vtGalState");
+      if (S.gallery === "yes") { st.innerHTML = 'Доступ к галерее разрешён ✓ · <button type="button" id="vtGalOff">Запретить</button>'; }
+      else if (S.gallery === "no") st.textContent = "Доступ к галерее запрещён. Нажми кнопку, чтобы разрешить.";
+      else st.textContent = "Выложи готовое видео со своего телефона";
+    }
+    function openPerm() { $("#vtPerm").hidden = false; $("#vtPermYes").focus(); }
+    function closePerm() { $("#vtPerm").hidden = true; $("#vtGalBtn").focus(); }
+    $("#vtGalBtn").addEventListener("click", () => { if (S.gallery === "yes") $("#vtFile").click(); else openPerm(); });
+    $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); closePerm(); galState(); $("#vtFile").click(); });
+    $("#vtPermNo").addEventListener("click", () => { S.gallery = "no"; save(); closePerm(); galState(); stMsg("Без доступа к галерее видео не выложить. Разрешить можно в любой момент."); });
+    $("#vtPerm").addEventListener("click", (e) => { if (e.target.id === "vtPerm") closePerm(); });
+    $("#vtPerm").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); closePerm(); } });
+    $("#vtGalState").addEventListener("click", (e) => { if (e.target.id === "vtGalOff") { S.gallery = "no"; save(); galState(); } });
+    function closeReview() { if (pend) URL.revokeObjectURL(pend.url); pend = null; const v = $("#vtRevVid"); v.pause(); v.removeAttribute("src"); try { v.load(); } catch (e) { /* optional */ } $("#vtReview").hidden = true; }
     $("#vtFile").addEventListener("change", async (e) => {
       const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
-      if (f.size > 300 * 1024 * 1024) { $("#vtStMsg").textContent = "Файл слишком большой (больше 300 МБ)."; return; }
-      $("#vtStMsg").textContent = "⏳ Загружаю видео…";
-      const url = URL.createObjectURL(f), probe = document.createElement("video"); probe.muted = true; probe.preload = "auto"; probe.playsInline = true; probe.src = url;
-      let dur = 0, thumbURL = "";
-      try {
-        await new Promise((res, rej) => { probe.onloadedmetadata = res; probe.onerror = rej; setTimeout(rej, 8000); });
-        dur = isFinite(probe.duration) ? probe.duration : 0;
-        probe.currentTime = Math.min(1, dur / 3);
-        await new Promise((res) => { probe.onseeked = res; setTimeout(res, 3000); });
-        const c = document.createElement("canvas"); c.width = 320; c.height = 180; const g = c.getContext("2d"); g.fillStyle = "#000"; g.fillRect(0, 0, 320, 180);
-        const r = Math.min(320 / probe.videoWidth, 180 / probe.videoHeight) || 1; g.drawImage(probe, (320 - probe.videoWidth * r) / 2, (180 - probe.videoHeight * r) / 2, probe.videoWidth * r, probe.videoHeight * r);
-        thumbURL = c.toDataURL("image/jpeg", 0.7);
-      } catch (err) { if (!dur) { URL.revokeObjectURL(url); $("#vtStMsg").textContent = "Этот формат видео браузер не может открыть."; return; } }
-      URL.revokeObjectURL(url);
-      const id = "u" + Date.now().toString(36), saved = await putFile(id, f);
-      const t = ($("#vtNewTitle").value.trim() || f.name.replace(/\.[^.]+$/, "")).slice(0, 70);
-      publish({ id, t, d: $("#vtNewDesc").value.trim().slice(0, 200), sc: "upload", file: true, thumb: thumbURL, dur: Math.max(1, Math.round(dur)), short: false, at: Date.now(), pot: Math.floor(600 + Math.random() * 3000) });
-      if (!saved) $("#vtStMsg").textContent += " (Видео сохранится только до закрытия страницы — хранилище браузера недоступно.)";
-      $("#vtNewTitle").value = ""; $("#vtNewDesc").value = "";
+      if (f.size > 300 * 1024 * 1024) { stMsg("Это видео больше 300 МБ. Выбери видео покороче."); return; }
+      closeReview(); stMsg("⏳ Открываю видео…");
+      const url = URL.createObjectURL(f), v = $("#vtRevVid"); v.src = url;
+      try { await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; setTimeout(rej, 10000); }); }
+      catch (err) { URL.revokeObjectURL(url); v.removeAttribute("src"); stMsg("Этот формат видео браузер не может открыть. Попробуй MP4."); return; }
+      const dur = isFinite(v.duration) ? v.duration : 0, w = v.videoWidth, h = v.videoHeight;
+      pend = { f, url, dur, w, h };
+      $("#vtRevInfo").textContent = `${f.name} · ${fmtT(dur)}${w ? ` · ${w}×${h}` : ""} · ${(f.size / 1048576).toFixed(1).replace(".", ",")} МБ`;
+      $("#vtRevTitle").value = ($("#vtNewTitle").value.trim() || f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ")).slice(0, 70);
+      $("#vtRevDesc").value = "";
+      $("#vtRevShort").checked = h > w && dur <= 60;
+      $("#vtReview").hidden = false; stMsg("Посмотри видео, придумай название и нажми «Выложить».");
+      $("#vtReview").scrollIntoView({ behavior: "smooth", block: "center" });
     });
+    $("#vtRevCancel").addEventListener("click", () => { closeReview(); stMsg(""); });
+    async function frameOf(url, dur, vert) {
+      const probe = document.createElement("video"); probe.muted = true; probe.playsInline = true; probe.preload = "auto"; probe.src = url;
+      await new Promise((res, rej) => { probe.onloadeddata = res; probe.onerror = rej; setTimeout(res, 5000); });
+      probe.currentTime = Math.min(1, dur / 3); await new Promise((res) => { probe.onseeked = res; setTimeout(res, 3000); });
+      const W = vert ? 180 : 320, H = vert ? 320 : 180, c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); g.fillStyle = "#000"; g.fillRect(0, 0, W, H);
+      if (probe.videoWidth) { const r = Math.max(W / probe.videoWidth, H / probe.videoHeight), vw = probe.videoWidth * r, vh = probe.videoHeight * r; g.drawImage(probe, (W - vw) / 2, (H - vh) / 2, vw, vh); }
+      probe.removeAttribute("src"); return c.toDataURL("image/jpeg", 0.7);
+    }
+    $("#vtRevGo").addEventListener("click", async () => {
+      if (!pend) return; const btn = $("#vtRevGo"); btn.disabled = true; stMsg("⏳ Выкладываю…");
+      const { f, url, dur, w, h } = pend, short = $("#vtRevShort").checked;
+      let thumbURL = ""; try { thumbURL = await frameOf(url, dur, h > w); } catch (err) { /* thumbnail is optional */ }
+      const id = "u" + Date.now().toString(36), saved = await putFile(id, f);
+      const t = ($("#vtRevTitle").value.trim() || "Моё видео").slice(0, 70);
+      const ok = publish({ id, t, d: $("#vtRevDesc").value.trim().slice(0, 200), sc: "upload", file: true, thumb: thumbURL, dur: Math.max(1, Math.round(dur)), short, at: Date.now(), pot: Math.floor(600 + Math.random() * 3000 + (short ? 800 : 0)) });
+      btn.disabled = false; if (!ok) { delFile(id); return; }
+      closeReview();
+      if (!saved) stMsg($("#vtStMsg").textContent + " Видео сохранится только до закрытия страницы: память браузера недоступна.");
+      else stMsg($("#vtStMsg").textContent + (short ? " Оно уже в Shorts." : ""));
+    });
+
     $("#vtMyName").addEventListener("change", (e) => { S.my.n = e.target.value.trim().slice(0, 24); save(); renderStudio(); });
     $("#vtColors").addEventListener("click", (e) => { const b = e.target.closest("[data-col]"); if (!b) return; S.my.col = b.dataset.col; save(); renderStudio(); });
     $("#vtScenes").addEventListener("click", (e) => { const b = e.target.closest("[data-sc]"); if (!b) return; sc = b.dataset.sc; prevT = 0; lastStep = -1; $$("#vtScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
@@ -1014,11 +1098,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         $("#vtSeek").value = String(Math.round(T / (D || 1) * 1000)); $("#vtTime").textContent = `${fmtT(T)} / ${fmtT(D)}`;
       } else if (tab === "shorts") {
         const v = curShort(); if (!v) return;
-        sTime += dt; if (sTime >= v.dur) { openShort(shortI + 1); return; }
-        SC[v.sc](sx, scv.width, scv.height, sTime, P(v)); music(v, sTime);
+        if (v.file) { sx.clearRect(0, 0, scv.width, scv.height); sTime = svid.currentTime || 0; }
+        else { sTime += dt; if (sTime >= v.dur) { openShort(shortI + 1); return; } SC[v.sc](sx, scv.width, scv.height, sTime, P(v)); music(v, sTime); }
         hearts = hearts.filter((h) => (h.t += dt) < 0.9);
         hearts.forEach((h) => { sx.globalAlpha = 1 - h.t / 0.9; sx.font = `${60 + h.t * 60}px sans-serif`; sx.textAlign = "center"; sx.textBaseline = "middle"; sx.fillText("❤️", h.x, h.y - h.t * 60); }); sx.globalAlpha = 1;
-        $("#vtSProg").style.width = (sTime / v.dur * 100) + "%";
+        $("#vtSProg").style.width = Math.min(100, sTime / ((v.file && isFinite(svid.duration) && svid.duration) || v.dur) * 100) + "%";
       } else if (tab === "studio") {
         prevT += dt;
         if (draft.length) {
@@ -1038,7 +1122,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         if (tab === "watch" && cur) { fillInfo(); ui(); } else setTab(tab === "watch" ? "home" : tab);
         if (tab !== "watch") Hero.say("v3tube", "start", S.mine.length ? `У канала уже ${fmtN(mySubs())} подписчиков!` : "Что посмотрим сегодня?");
       },
-      leave() { visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
+      leave() { visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); svid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
       key(e) {
         if (tab === "watch" && (e.code === "Space" || e.key === "k")) { e.preventDefault(); toggle(); }
         else if (tab === "watch" && (e.key === "ArrowRight" || e.key === "ArrowLeft") && cur) { const d = e.key === "ArrowRight" ? 5 : -5; if (real) vid.currentTime = Math.max(0, vid.currentTime + d); else time = Math.max(0, Math.min(cur.dur - 0.01, time + d)); }
