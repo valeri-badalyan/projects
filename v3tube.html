@@ -127,6 +127,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-galtxt b { font-size: 15px; } .vt-galtxt small { color: var(--muted); font-size: 12.5px; }
 .vt-galtxt small button { border: 0; background: none; color: var(--accent); font: 800 12.5px var(--body); padding: 0; cursor: pointer; text-decoration: underline; }
 .vt-gal .btn { flex: none; }
+.vt-pick { position: relative; display: inline-grid; flex: none; }
+.vt-pick.wide { display: grid; width: 100%; }
+.vt-pick > .btn { grid-area: 1 / 1; }
+.vt-pickin { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 0; z-index: 1; }
+.vt-pickin[hidden] { display: none !important; }
+.vt-pick:focus-within > .btn { outline: 3px solid var(--gold); outline-offset: 2px; }
+.vt-addrow .vt-pick { display: grid; } .vt-addrow .vt-pick > .btn { width: 100%; }
+#vtGalHelp { color: var(--warn); } #vtGalHelp button { border: 0; background: none; color: var(--accent); font: 800 12.5px var(--body); padding: 0; cursor: pointer; text-decoration: underline; }
 .vt-review { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--panel); border: 2px solid var(--accent); }
 .vt-review video { width: 100%; max-height: 60vh; border-radius: 10px; background: #000; display: block; }
 .vt-revbtns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
@@ -332,9 +340,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         </div>
         <h3 class="vt-h">🎬 Новое видео</h3>
         <div class="vt-gal">
-          <span class="vt-galtxt"><b>📱 Видео из галереи</b><small id="vtGalState">Выложи готовое видео со своего телефона</small></span>
-          <button type="button" class="btn" id="vtGalBtn">Открыть галерею</button>
-          <input type="file" id="vtFile" accept="video/*" hidden>
+          <span class="vt-galtxt"><b>📱 Видео из галереи</b><small id="vtGalHelp" hidden>Галерея не открылась? Открой V3Tube в Safari или Chrome: <button type="button" id="vtCopyLink">скопировать ссылку</button></small><small id="vtGalState">Выложи готовое видео со своего телефона</small></span>
+          <span class="vt-pick"><button type="button" class="btn" id="vtGalBtn">Открыть галерею</button><input type="file" id="vtFile" class="vt-pickin" accept="video/*" aria-label="Открыть галерею"></span>
         </div>
         <div class="vt-review" id="vtReview" hidden>
           <video id="vtRevVid" playsinline controls preload="metadata"></video>
@@ -351,7 +358,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <div class="vt-chips" id="vtScenes"></div>
         <div class="vt-addrow">
           <button type="button" class="btn ghost" id="vtAddScene">＋ Сцена</button>
-          <label class="btn ghost vt-upl">＋ Фото<input type="file" id="vtAddPhoto" accept="image/*" multiple hidden></label>
+          <span class="vt-pick"><span class="btn ghost vt-upl" aria-hidden="true">＋ Фото</span><input type="file" id="vtAddPhoto" class="vt-pickin" accept="image/*" multiple aria-label="Добавить фото"></span>
           <button type="button" class="btn ghost" id="vtAddTitle">＋ Титр</button>
         </div>
         <div class="vt-clips" id="vtClips"></div>
@@ -377,7 +384,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     <div class="vt-permico" aria-hidden="true">🖼️</div>
     <h3 id="vtPermH">Разрешить V3Tube доступ к галерее?</h3>
     <p>V3Tube откроет галерею твоего телефона. Ты сам выберешь видео, и приложение увидит только его.</p>
-    <button type="button" class="btn wide" id="vtPermYes">Разрешить</button>
+    <span class="vt-pick wide"><button type="button" class="btn wide" id="vtPermYes">Разрешить</button><input type="file" id="vtFile2" class="vt-pickin" accept="video/*" aria-label="Разрешить и открыть галерею"></span>
     <button type="button" class="btn ghost wide" id="vtPermNo">Не разрешать</button>
   </div>
 </div>
@@ -1116,28 +1123,48 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     /* ---------- video from the phone's gallery ---------- */
     let pend = null;   // { f, url, dur, w, h }
     function galState() {
-      const st = $("#vtGalState");
+      const st = $("#vtGalState"), ok = S.gallery === "yes";
+      $("#vtFile").hidden = !ok; $("#vtGalBtn").tabIndex = ok ? -1 : 0; $("#vtGalBtn").setAttribute("aria-hidden", String(ok));
       if (S.gallery === "yes") { st.innerHTML = 'Доступ к галерее разрешён ✓ · <button type="button" id="vtGalOff">Запретить</button>'; }
       else if (S.gallery === "no") st.textContent = "Доступ к галерее запрещён. Нажми кнопку, чтобы разрешить.";
       else st.textContent = "Выложи готовое видео со своего телефона";
     }
     function openPerm() { $("#vtPerm").hidden = false; $("#vtPermYes").focus(); }
     function closePerm() { $("#vtPerm").hidden = true; $("#vtGalBtn").focus(); }
-    $("#vtGalBtn").addEventListener("click", () => { if (S.gallery === "yes") $("#vtFile").click(); else openPerm(); });
-    $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); slog("🖼️", "Доступ к галерее разрешён"); closePerm(); galState(); $("#vtFile").click(); });
+    // The picker opens only from a real tap on a file input, so the inputs lie over the buttons.
+    let pickT = 0, pickSeen = false;
+    function watchPick() {
+      pickSeen = false; clearTimeout(pickT); $("#vtGalHelp").hidden = true;
+      pickT = setTimeout(() => { if (!pickSeen) $("#vtGalHelp").hidden = false; }, 4000);
+    }
+    const seen = () => { pickSeen = true; };
+    window.addEventListener("blur", seen); document.addEventListener("visibilitychange", seen);
+    $("#vtGalBtn").addEventListener("click", () => { if (S.gallery === "yes") return; openPerm(); });
+    $("#vtFile").addEventListener("click", watchPick);
+    $("#vtFile2").addEventListener("click", () => {
+      S.gallery = "yes"; save(); slog("🖼️", "Доступ к галерее разрешён"); galState(); watchPick();
+      setTimeout(() => { $("#vtPerm").hidden = true; }, 400);
+    });
+    $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); slog("🖼️", "Доступ к галерее разрешён"); closePerm(); galState(); });
+    $("#vtCopyLink").addEventListener("click", async () => {
+      const link = location.href.split("#")[0];
+      try { await navigator.clipboard.writeText(link); stMsg("🔗 Ссылка скопирована. Вставь её в Safari или Chrome."); } catch (e) { stMsg("Ссылка: " + link); }
+    });
     $("#vtPermNo").addEventListener("click", () => { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); closePerm(); galState(); stMsg("Без доступа к галерее видео не выложить. Разрешить можно в любой момент."); });
     $("#vtPerm").addEventListener("click", (e) => { if (e.target.id === "vtPerm") closePerm(); });
     $("#vtPerm").addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopPropagation(); closePerm(); } });
     $("#vtGalState").addEventListener("click", (e) => { if (e.target.id === "vtGalOff") { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); galState(); } });
     function closeReview() { if (pend) URL.revokeObjectURL(pend.url); pend = null; const v = $("#vtRevVid"); v.pause(); v.removeAttribute("src"); try { v.load(); } catch (e) { /* optional */ } $("#vtReview").hidden = true; }
-    $("#vtFile").addEventListener("change", async (e) => {
-      const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+    $("#vtFile2").addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) pickVideo(f); });
+    $("#vtFile").addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) pickVideo(f); });
+    async function pickVideo(f) {
+      pickSeen = true; clearTimeout(pickT); $("#vtGalHelp").hidden = true; $("#vtPerm").hidden = true;
       if (f.size > 300 * 1024 * 1024) { stMsg("Это видео больше 300 МБ. Выбери видео покороче."); slog("⛔", `Отклонён файл ${f.name}: больше 300 МБ`); return; }
       closeReview(); stMsg("🛡 EngineSecure проверяет файл…");
       const chk = await secFile(f, "video"); if (!chk.ok) { stMsg(chk.why); return; }
       stMsg("⏳ Открываю видео…");
       const url = URL.createObjectURL(f), v = $("#vtRevVid"); v.src = url;
-      try { await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; setTimeout(rej, 10000); }); }
+      try { await new Promise((res, rej) => { v.onloadedmetadata = res; v.onerror = rej; setTimeout(rej, 25000); }); }
       catch (err) { URL.revokeObjectURL(url); v.removeAttribute("src"); stMsg("Этот формат видео браузер не может открыть. Попробуй MP4."); return; }
       const dur = isFinite(v.duration) ? v.duration : 0, w = v.videoWidth, h = v.videoHeight;
       if (SEC.upload && (dur > 900 || (!w && !h))) { URL.revokeObjectURL(url); v.removeAttribute("src"); const why = dur > 900 ? "видео длиннее 15 минут" : "в файле нет изображения"; slog("⛔", `Отклонён файл ${f.name}: ${why}`); stMsg(`EngineSecure не пустил файл «${f.name}»: ${why}.`); return; }
@@ -1148,7 +1175,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       $("#vtRevShort").checked = h > w && dur <= 60;
       $("#vtReview").hidden = false; stMsg("Посмотри видео, придумай название и нажми «Выложить».");
       $("#vtReview").scrollIntoView({ behavior: "smooth", block: "center" });
-    });
+    }
     $("#vtRevCancel").addEventListener("click", () => { closeReview(); stMsg(""); });
     async function frameOf(url, dur, vert) {
       const probe = document.createElement("video"); probe.muted = true; probe.playsInline = true; probe.preload = "auto"; probe.src = url;
