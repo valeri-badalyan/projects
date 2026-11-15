@@ -249,6 +249,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-tabs button.onair::after { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-left: 4px; vertical-align: 2px; }
 @media (min-width: 900px) { #vtLiveRoom { display: grid; grid-template-columns: minmax(0, 1fr) 360px; column-gap: 20px; align-content: start; } #vtLiveRoom[hidden] { display: none; } #vtLiveRoom > * { grid-column: 1; } #vtLiveRoom > .vt-chat { grid-column: 2; grid-row: 2 / span 6; align-self: start; } #vtLiveRoom .vt-chatlog { height: 460px; } }
 @media (prefers-reduced-motion: reduce) { .vt-livedot, .vt-hearts span { animation: none; } }
+.vt-player.gifmode video { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
+.vt-player.gifmode canvas { position: relative; z-index: 1; }
+.vt-gifbadge { z-index: 2;  position: absolute; left: 8px; top: 8px; background: #fff; color: #111; font: 900 13px var(--mono); letter-spacing: .08em; padding: 2px 7px; border-radius: 5px; pointer-events: none; }
+.vt-dur.gif { background: #fff; color: #111; font-weight: 900; letter-spacing: .06em; }
+.vt-thumb canvas { image-rendering: pixelated; }
+.vt-gifhint { margin: -4px 0 0; color: var(--gold); font-size: 12.5px; font-weight: 700; }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -294,6 +300,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <canvas id="vtCanvas" aria-label="Видео"></canvas>
           <video id="vtVideo" playsinline preload="metadata" hidden></video>
           <div class="vt-cap" id="vtCap" aria-live="polite"></div>
+          <span class="vt-gifbadge" id="vtGifBadge" hidden>GIF</span>
           <button class="vt-big" id="vtBig" type="button" aria-label="Смотреть">▶</button>
           <a class="vt-yt" id="vtYt" href="https://youtu.be/" target="_blank" rel="noopener" hidden>▶ Смотреть на YouTube</a>
           <div class="vt-next" id="vtNext" hidden></div>
@@ -314,7 +321,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <button type="button" class="vt-sub" id="vtSub">Подписаться</button>
         </div>
         <div class="vt-acts">
-          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button>
+          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
         </div>
         <p class="vt-msg" id="vtMsg" aria-live="polite"></p>
         <details class="vt-desc" id="vtDescBox"><summary>Описание</summary><p id="vtDesc"></p></details>
@@ -451,7 +458,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <video id="vtRevVid" playsinline controls preload="metadata"></video>
           <p class="vt-note" id="vtRevInfo"></p>
           <input class="vt-in" id="vtRevTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео из галереи">
-          <input class="vt-in" id="vtRevDesc" maxlength="200" placeholder="Описание (необязательно)" aria-label="Описание видео из галереи">
+          <input class="vt-in" id="vtRevDesc" maxlength="200" placeholder="Описание (необязательно). Напиши GIF — и видео станет гифкой" aria-label="Описание видео из галереи">
+          <p class="vt-gifhint" id="vtGifHintRev" hidden>🎞 В описании есть «GIF»: видео станет гифкой — первые 6 секунд, без звука, по кругу.</p>
           <label class="vt-lab"><input type="checkbox" id="vtRevShort"> Выложить как Shorts</label>
           <div class="vt-revbtns"><button type="button" class="btn ghost" id="vtRevCancel">Отмена</button><button type="button" class="btn" id="vtRevGo">🚀 Выложить</button></div>
         </div>
@@ -468,7 +476,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <div class="vt-clips" id="vtClips"></div>
         <h4 class="vt-h2">2. Название и музыка</h4>
         <input class="vt-in" id="vtNewTitle" maxlength="70" placeholder="Название видео" aria-label="Название видео">
-        <input class="vt-in" id="vtNewDesc" maxlength="200" placeholder="Описание (необязательно)" aria-label="Описание">
+        <input class="vt-in" id="vtNewDesc" maxlength="200" placeholder="Описание (необязательно). Напиши GIF — и видео станет гифкой" aria-label="Описание">
+        <p class="vt-gifhint" id="vtGifHintNew" hidden>🎞 В описании есть «GIF»: видео станет гифкой — до 6 секунд, без звука, по кругу. Предпросмотр выше уже в стиле GIF.</p>
         <div class="vt-row">
           <label class="vt-lab" id="vtLenLab">Длина <select id="vtNewLen"><option value="20">20 с</option><option value="45" selected>45 с</option><option value="90">1:30</option></select></label>
           <label class="vt-lab">Музыка <select id="vtMus"><option value="">Авто</option><option value="music">Бит</option><option value="rain">LoFi</option><option value="cat">Весёлая</option><option value="space">Космос</option><option value="race">Драйв</option><option value="fireworks">Праздник</option><option value="none">Без музыки</option></select></label>
@@ -851,7 +860,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const totalMine = () => S.mine.reduce((a, v) => a + mineViews(v), 0);
     const mySubs = () => Math.floor(totalMine() / 18) + (S.liveFans || 0);
     const earnable = () => Math.max(0, Math.floor(totalMine() / 50) - S.cashed);
-    function asVideo(m) { return { id: m.id, t: m.t, ch: "me", sc: m.sc, dur: m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
+    function asVideo(m) { const gif = isGif(m.d); return { id: m.id, t: m.t, ch: "me", sc: m.sc, gif, dur: gif ? Math.min(m.dur, GIFMAX) : m.dur, short: m.short, cat: m.file ? "all" : SCCAT[m.sc === "combo" ? firstScene(m.clips) : m.sc] || "all", d: m.d || "", mine: m, file: m.file, thumb: m.thumb, logo: m.t, clips: m.clips, mus: m.mus }; }
     const allVids = () => CAT.concat(S.mine.map(asVideo));
     const byId = (id) => allVids().find((v) => v.id === id);
     const chOf = (v) => v.ch === "me" ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
@@ -882,6 +891,70 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (step % 4 === 0) note(sd[1] / 2 * 2 ** (sc[(step / 4 | 0) % 2 ? 2 : 0] / 12), 0.35, "sine", 0.05);
     }
 
+    /* ---------- GIF mode: "GIF" in a description turns the video into a GIF ---------- */
+    // Up to 6 seconds, silent, looping, 10 frames a second, 216 colours with dithering, like a real GIF.
+    const GIFMAX = 6;
+    const isGif = (d) => /(^|[^a-zа-яё0-9])(gif|гиф\S*)(?=$|[^a-zа-яё0-9])/iu.test(String(d || ""));
+    const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+    function gifQuant(img, w, h, idx) {
+      const d = img.data;
+      for (let y = 0, p = 0; y < h; y++) for (let x = 0; x < w; x++, p++) {
+        const o = p * 4, b = (BAYER[(y & 3) * 4 + (x & 3)] - 7.5) * 3.2;
+        const r = Math.max(0, Math.min(5, Math.round((d[o] + b) / 51))), g = Math.max(0, Math.min(5, Math.round((d[o + 1] + b) / 51))), bl = Math.max(0, Math.min(5, Math.round((d[o + 2] + b) / 51)));
+        d[o] = r * 51; d[o + 1] = g * 51; d[o + 2] = bl * 51; d[o + 3] = 255;
+        if (idx) idx[p] = r * 36 + g * 6 + bl;
+      }
+    }
+    const GC = document.createElement("canvas"), gcx = GC.getContext("2d", { willReadFrequently: true });
+    function gifDraw(ctx, W, H, src) {
+      const gw = W >= H ? 200 : 128, gh = Math.round(gw * H / W);
+      if (GC.width !== gw || GC.height !== gh) { GC.width = gw; GC.height = gh; }
+      gcx.save(); src(gcx, gw, gh); gcx.restore();
+      const img = gcx.getImageData(0, 0, gw, gh); gifQuant(img, gw, gh); gcx.putImageData(img, 0, 0);
+      ctx.save(); ctx.imageSmoothingEnabled = false; ctx.drawImage(GC, 0, 0, W, H); ctx.restore();
+    }
+    function drawCover(g, w, h, el) {
+      g.fillStyle = "#000"; g.fillRect(0, 0, w, h);
+      if (el && el.videoWidth) { const r = Math.max(w / el.videoWidth, h / el.videoHeight), vw = el.videoWidth * r, vh = el.videoHeight * r; try { g.drawImage(el, (w - vw) / 2, (h - vh) / 2, vw, vh); } catch (e) { /* frame not ready */ } }
+    }
+    function lzw(px, minSize) {
+      const clear = 1 << minSize, eoi = clear + 1, out = [], dict = new Map();
+      let size = minSize + 1, next = eoi + 1, cur = 0, bits = 0;
+      const emit = (c) => { cur |= c << bits; bits += size; while (bits >= 8) { out.push(cur & 255); cur >>>= 8; bits -= 8; } };
+      emit(clear);
+      let prefix = px[0];
+      for (let i = 1; i < px.length; i++) {
+        const k = px[i], key = prefix * 256 + k, hit = dict.get(key);
+        if (hit !== undefined) { prefix = hit; continue; }
+        emit(prefix);
+        if (next === 4096) { emit(clear); dict.clear(); size = minSize + 1; next = eoi + 1; }
+        else { if (next >= (1 << size)) size++; dict.set(key, next++); }
+        prefix = k;
+      }
+      emit(prefix); emit(eoi); if (bits > 0) out.push(cur & 255);
+      return out;
+    }
+    function encodeGif(frames, w, h, delay) {
+      const out = [], put = (...b) => { for (const x of b) out.push(x); }, w16 = (n) => put(n & 255, (n >> 8) & 255), str = (s2) => { for (const ch of s2) out.push(ch.charCodeAt(0)); };
+      str("GIF89a"); w16(w); w16(h); put(0xF7, 0, 0);
+      for (let i = 0; i < 256; i++) { if (i < 216) put(Math.floor(i / 36) * 51, Math.floor(i / 6) % 6 * 51, i % 6 * 51); else put(0, 0, 0); }
+      put(0x21, 0xFF, 0x0B); str("NETSCAPE2.0"); put(3, 1, 0, 0, 0);
+      for (const idx of frames) {
+        put(0x21, 0xF9, 4, 0); w16(delay); put(0, 0);
+        put(0x2C); w16(0); w16(0); w16(w); w16(h); put(0, 8);
+        const data = lzw(idx, 8);
+        for (let i = 0; i < data.length; i += 255) { const n = Math.min(255, data.length - i); out.push(n); for (let j = 0; j < n; j++) out.push(data[i + j]); }
+        put(0);
+      }
+      put(0x3B); return new Uint8Array(out);
+    }
+    let gifThumbs = [], gifT = 0;
+    function gifThumbTick(dt) {
+      if ((gifT += dt) < 0.1) return; gifT = 0;
+      gifThumbs = gifThumbs.filter((g) => g.c.isConnected);
+      for (const g of gifThumbs) { g.t = (g.t + 0.1) % g.v.dur; const c = g.c; gifDraw(c.getContext("2d"), c.width, c.height, (x, w, h) => SC[g.v.sc](x, w, h, g.t, P(g.v))); }
+    }
+
     /* ---------- DOM ---------- */
     const cv = $("#vtCanvas"), cx = cv.getContext("2d"), vid = $("#vtVideo"), scv = $("#vtShortCv"), sx = scv.getContext("2d"), pcv = $("#vtPrev"), px = pcv.getContext("2d");
     cv.width = 640; cv.height = 360; scv.width = 360; scv.height = 640; pcv.width = 480; pcv.height = 270;
@@ -892,9 +965,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function thumb(v, short) {
       const box = document.createElement("span"); box.className = "vt-thumb";
       if (short) box.style.aspectRatio = "9 / 16";
-      if (v.thumb) { const im = new Image(); im.src = v.thumb; im.alt = ""; im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block"; box.appendChild(im); }
-      else { const c = document.createElement("canvas"); c.width = short ? 180 : 320; c.height = short ? 320 : 180; SC[v.file ? "upload" : v.sc](c.getContext("2d"), c.width, c.height, v.dur * 0.35 + 3, P(v)); box.appendChild(c); }
-      if (!short) { const d = document.createElement("span"); d.className = "vt-dur"; d.textContent = v.yt ? "YouTube ↗" : fmtT(v.dur); box.appendChild(d); }
+      if (v.thumb && !(v.gif && !v.file)) { const im = new Image(); im.src = v.thumb; im.alt = ""; im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block"; box.appendChild(im); }
+      else { const c = document.createElement("canvas"); c.width = short ? 180 : 320; c.height = short ? 320 : 180; if (v.gif && !v.file) { gifDraw(c.getContext("2d"), c.width, c.height, (x, w, h) => SC[v.sc](x, w, h, 0, P(v))); gifThumbs.push({ c, v, t: 0 }); } else SC[v.file ? "upload" : v.sc](c.getContext("2d"), c.width, c.height, v.dur * 0.35 + 3, P(v)); box.appendChild(c); }
+      if (!short) { const d = document.createElement("span"); d.className = "vt-dur" + (v.gif ? " gif" : ""); d.textContent = v.yt ? "YouTube ↗" : v.gif ? "GIF" : fmtT(v.dur); box.appendChild(d); }
       const pr = S.prog[v.id]; if (pr && v.dur) { const b = document.createElement("span"); b.className = "vt-bar"; b.style.width = Math.min(100, pr / v.dur * 100) + "%"; box.appendChild(b); }
       return box;
     }
@@ -967,7 +1040,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (v.short) { const j = shortsList().findIndex((s) => s.id === id); shortI = Math.max(0, j); setTab("shorts"); return; }
       stopMain(); setTab("watch"); cur = v; lastStep = -1; time = S.prog[v.id] && S.prog[v.id] < v.dur - 2 ? S.prog[v.id] : 0;
       S.seen[v.id] = (S.seen[v.id] || 0) + 1; save();
-      real = !!(v.src || v.file); cv.hidden = real; vid.hidden = !real; $("#vtCap").textContent = "";
+      if (v.gif) time = 0;
+      real = !!(v.src || v.file) && !v.gif; cv.hidden = real; vid.hidden = !real; $("#vtCap").textContent = "";
       $("#vtBig").hidden = true;
       fillInfo();
       if (real) {
@@ -975,6 +1049,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         else { const b = await getFile(v.id); if (cur !== v) return; if (!b) { real = false; cv.hidden = false; vid.hidden = true; msg("Файл этого видео не найден на устройстве — показываю заставку."); } else vid.src = URL.createObjectURL(b); }
         if (real) { const t0 = time; vid.onloadedmetadata = () => { if (t0) vid.currentTime = t0; }; vid.muted = S.muted; vid.playbackRate = speed; vid.play().then(() => { playing = true; ui(); }).catch(() => { playing = false; $("#vtBig").hidden = false; ui(); }); }
       }
+      if (v.gif && v.file) { const b = await getFile(v.id); if (cur !== v) return; if (b) { vid.src = URL.createObjectURL(b); vid.muted = true; vid.hidden = false; vid.play().catch(() => {}); } }
       if (!real) playing = !v.yt;
       $("#vtYt").hidden = !v.yt; $("#vtCap").textContent = ""; if (v.yt) $("#vtYt").href = v.yt;
       ui(); Hero.say("v3tube", "start", pick2(["Приятного просмотра!", "Не забудь лайк 👍", "Классный канал!", "Включаю звук 🔊"]));
@@ -983,6 +1058,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function fillInfo() {
       const v = cur, ch = chOf(v);
       $("#vtTitle").textContent = v.t;
+      $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!v.gif; $("#vtGifDl").hidden = !(v.gif && v.mine);
       $("#vtMeta").textContent = `${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}`;
       const av = $("#vtChAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
       $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${fmtN(subsOf(ch, v.ch))} подписчиков`;
@@ -1019,6 +1095,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function curTime() { return real ? vid.currentTime || 0 : time; }
     function curDur() { return real ? (isFinite(vid.duration) && vid.duration) || cur.dur : cur.dur; }
+    function gifLoop() { if (!cur || S.done[cur.id]) return; S.done[cur.id] = 1; save(); Hero.earn(5); msg("✅ GIF досмотрен до конца: +5 ◎"); }
     function ended() {
       playing = false; ui();
       if (!S.done[cur.id]) { S.done[cur.id] = 1; save(); Hero.earn(5); evAdd("v3tube", 1); msg("✅ Досмотрено до конца: +5 ◎"); }
@@ -1032,6 +1109,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function toggle() {
       if (!cur || cur.yt) return;
       $("#vtNext").hidden = true; clearInterval(nextT);
+      if (cur.gif) { playing = !playing; if (cur.file) { if (playing) vid.play().catch(() => {}); else vid.pause(); } $("#vtBig").hidden = playing; ui(); return; }
       if (real) { if (vid.paused) { if (vid.ended) vid.currentTime = 0; vid.play().catch(() => {}); } else vid.pause(); return; }
       if (!playing && time >= cur.dur - 0.05) time = 0;
       playing = !playing; $("#vtBig").hidden = playing; ui();
@@ -1042,7 +1120,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $("#vtPlay").addEventListener("click", toggle);
     $("#vtBig").addEventListener("click", toggle);
     cv.addEventListener("click", toggle); vid.addEventListener("click", toggle);
-    $("#vtSeek").addEventListener("input", (e) => { if (!cur) return; const t = +e.target.value / 1000 * curDur(); if (real) vid.currentTime = t; else time = t; $("#vtNext").hidden = true; clearInterval(nextT); });
+    $("#vtSeek").addEventListener("input", (e) => { if (!cur) return; const t = +e.target.value / 1000 * curDur(); if (real || (cur.gif && cur.file)) vid.currentTime = t; if (!real) time = t; $("#vtNext").hidden = true; clearInterval(nextT); });
     $("#vtSpeed").addEventListener("click", () => { const L = [1, 1.5, 2, 0.5]; speed = L[(L.indexOf(speed) + 1) % L.length]; vid.playbackRate = speed; ui(); });
     $("#vtMute").addEventListener("click", () => { S.muted = !S.muted; vid.muted = S.muted; svid.muted = S.muted; save(); ui(); });
     $("#vtFull").addEventListener("click", () => { const el = $("#vtPlayer"); try { if (document.fullscreenElement) document.exitFullscreen(); else if (el.requestFullscreen) el.requestFullscreen().catch(() => msg("Полный экран недоступен")); else msg("Полный экран недоступен"); } catch (e) { msg("Полный экран недоступен"); } });
@@ -1077,16 +1155,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const shortsList = () => allVids().filter((v) => v.short);
     const svid = $("#vtSVid");
     function stopSVid() { try { svid.pause(); } catch (e) { /* optional */ } if (svid.src && svid.src.startsWith("blob:")) URL.revokeObjectURL(svid.src); svid.removeAttribute("src"); svid.hidden = true; }
-    svid.addEventListener("ended", () => { if (tab === "shorts") openShort(shortI + 1); });
+    let sLoops = 0;
+    svid.addEventListener("ended", () => { if (tab !== "shorts") return; const c = curShort(); if (c && c.gif) { svid.currentTime = 0; svid.play().catch(() => {}); sLoops++; } else openShort(shortI + 1); });
     function openShort(i) {
       const L = shortsList(); if (!L.length) return; shortI = (i + L.length) % L.length; sTime = 0; lastStep = -1;
-      const v = L[shortI]; S.seen[v.id] = (S.seen[v.id] || 0) + 1; save(); shortInfo();
+      const v = L[shortI]; S.seen[v.id] = (S.seen[v.id] || 0) + 1; save(); shortInfo(); sLoops = 0;
       stopSVid();
       if (v.file) {
         getFile(v.id).then((b) => {
           const c = curShort(); if (!c || c.id !== v.id || tab !== "shorts") return;
           if (!b) { Hero.say("v3tube", "start", "Файл этого видео не найден на устройстве."); return; }
-          svid.src = URL.createObjectURL(b); svid.muted = S.muted; svid.hidden = false; svid.play().catch(() => { svid.muted = true; svid.play().catch(() => {}); });
+          svid.src = URL.createObjectURL(b); svid.muted = v.gif ? true : S.muted; svid.hidden = false; svid.play().catch(() => { svid.muted = true; svid.play().catch(() => {}); });
         });
       }
     }
@@ -1131,7 +1210,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (!S.mine.length) { L.appendChild(empty("У вас пока нет видео. Соберите его из сцен, своих фото и титров — и нажмите «Опубликовать»!")); return; }
       S.mine.slice().reverse().forEach((m) => {
         const v = asVideo(m), w = document.createElement("div"); w.className = "vt-mine-row";
-        const r = row(v), sm = r.querySelectorAll("small"); sm[0].textContent = `${fmtN(mineViews(m))} просмотров · 👍 ${fmtN(likesOf(v))}${m.short ? " · Shorts" : ""}`; sm[1].textContent = agoOf(v);
+        const r = row(v), sm = r.querySelectorAll("small"); sm[0].textContent = `${fmtN(mineViews(m))} просмотров · 👍 ${fmtN(likesOf(v))}${m.short ? " · Shorts" : ""}${v.gif ? " · GIF" : ""}`; sm[1].textContent = agoOf(v);
         w.appendChild(r);
         const d = document.createElement("button"); d.type = "button"; d.className = "vt-del"; d.dataset.del = m.id; d.textContent = delArm === m.id ? "Точно?" : "🗑"; d.setAttribute("aria-label", "Удалить видео");
         w.appendChild(d); L.appendChild(w);
@@ -1202,8 +1281,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       S.mine.push(m);
       if (!trySave()) { S.mine.pop(); stMsg("Не хватает места в памяти браузера. Убери пару фото или удали старые видео и попробуй снова."); return false; }
       if (S.mine.length > 40) { const old = S.mine.shift(); if (old.file) delFile(old.id); save(); }
-      Hero.earn(10); slog("📤", `Опубликовано видео «${m.t}»`); renderStudio(); updateHub();
-      $("#vtStMsg").textContent = `🚀 «${m.t}» опубликовано! +10 ◎. Просмотры начнут расти — загляните позже.`;
+      Hero.earn(10); slog("📤", `Опубликовано видео «${m.t}»`); if (isGif(m.d)) slog("🎞", `«${m.t}» стало GIF`); renderStudio(); updateHub();
+      $("#vtStMsg").textContent = `🚀 «${m.t}» опубликовано${isGif(m.d) ? " как GIF 🎞" : ""}! +10 ◎. Просмотры начнут расти — загляните позже.`;
       Hero.say("v3tube", "good", "Новое видео на канале! 🎬"); note(784, 0.1, "square", 0.04); setTimeout(() => note(1175, 0.15, "square", 0.04), 110);
       return true;
     }
@@ -1276,7 +1355,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       pend = { f, url, dur, w, h };
       $("#vtRevInfo").textContent = `${f.name} · ${fmtT(dur)}${w ? ` · ${w}×${h}` : ""} · ${(f.size / 1048576).toFixed(1).replace(".", ",")} МБ`;
       $("#vtRevTitle").value = ($("#vtNewTitle").value.trim() || f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ")).slice(0, 70);
-      $("#vtRevDesc").value = "";
+      $("#vtRevDesc").value = ""; $("#vtGifHintRev").hidden = true;
       $("#vtRevShort").checked = h > w && dur <= 60;
       $("#vtReview").hidden = false; stMsg("Посмотри видео, придумай название и нажми «Выложить».");
       $("#vtReview").scrollIntoView({ behavior: "smooth", block: "center" });
@@ -1671,6 +1750,45 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     });
     $("#vtSumDone").addEventListener("click", () => { stream = null; liveMode("list"); });
 
+    async function exportGif(v) {
+      const btn = $("#vtGifDl"); let dl = null;
+      try { dl = window.claude && window.claude.use ? await window.claude.use("downloads") : null; } catch (e) { dl = null; }
+      if (!dl) { msg("Скачивание файлов здесь недоступно. Открой V3Tube на claude.ai."); return; }
+      btn.disabled = true;
+      try {
+        let src = null, url = "";
+        if (v.file) {
+          const b = await getFile(v.id); if (!b) throw { code: "nofile" };
+          url = URL.createObjectURL(b); src = document.createElement("video"); src.muted = true; src.playsInline = true; src.preload = "auto"; src.src = url;
+          await new Promise((res, rej) => { src.onloadeddata = res; src.onerror = rej; setTimeout(res, 8000); });
+        }
+        const aspect = src && src.videoWidth ? src.videoHeight / src.videoWidth : (v.short ? 16 / 9 : 9 / 16);
+        const W = aspect > 1 ? 180 : 240, H = Math.max(2, Math.round(W * aspect));
+        const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d", { willReadFrequently: true });
+        const n = Math.max(1, Math.round(v.dur * 10)), frames = [];
+        for (let i = 0; i < n; i++) {
+          const t = i / 10;
+          if (src) { src.currentTime = Math.min(t, Math.max(0, (src.duration || t + 1) - 0.05)); await new Promise((r) => { src.onseeked = r; setTimeout(r, 1500); }); drawCover(g, W, H, src); }
+          else { g.save(); SC[v.sc](g, W, H, t, P(v)); g.restore(); }
+          const img = g.getImageData(0, 0, W, H), idx = new Uint8Array(W * H); gifQuant(img, W, H, idx); frames.push(idx);
+          if (i % 5 === 0) { btn.textContent = `⏳ Собираю GIF… ${Math.round(i / n * 100)}%`; await new Promise((r) => setTimeout(r, 0)); }
+        }
+        if (url) URL.revokeObjectURL(url);
+        const bytes = encodeGif(frames, W, H, 10); btn.textContent = "⬇ Скачать .gif";
+        const name = (v.t.replace(/[\\/:*?"<>|#]+/g, " ").replace(/\s+/g, " ").trim() || "v3tube").slice(0, 60) + ".gif";
+        await dl.save({ filename: name, data: new Blob([bytes], { type: "image/gif" }) });
+        msg(`🎞 GIF сохранён: ${(bytes.length / 1024).toFixed(0)} КБ`); slog("🎞", `Скачан GIF «${v.t}»`);
+      } catch (e) {
+        const code = e && e.code;
+        msg(code === "declined" ? "Скачивание отменено" : code === "rate_limited" ? "Подожди немного и попробуй снова" : code === "nofile" ? "Файл этого видео не найден на устройстве" : "Не получилось собрать GIF. Попробуй ещё раз.");
+      }
+      btn.disabled = false; btn.textContent = "⬇ Скачать .gif";
+    }
+    $("#vtGifDl").addEventListener("click", () => { if (cur && cur.gif) exportGif(cur); });
+
+    let newGif = false;
+    $("#vtNewDesc").addEventListener("input", () => { newGif = isGif($("#vtNewDesc").value); $("#vtGifHintNew").hidden = !newGif; });
+    $("#vtRevDesc").addEventListener("input", () => { $("#vtGifHintRev").hidden = !isGif($("#vtRevDesc").value); });
     $("#vtMyName").addEventListener("change", (e) => { S.my.n = e.target.value.trim().slice(0, 24); save(); renderStudio(); });
     $("#vtColors").addEventListener("click", (e) => { const b = e.target.closest("[data-col]"); if (!b) return; S.my.col = b.dataset.col; save(); renderStudio(); });
     $("#vtScenes").addEventListener("click", (e) => { const b = e.target.closest("[data-sc]"); if (!b) return; sc = b.dataset.sc; prevT = 0; lastStep = -1; $$("#vtScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
@@ -1696,8 +1814,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function frame(ts) {
       raf = requestAnimationFrame(frame);
       const dt = lastTs ? Math.min(0.1, (ts - lastTs) / 1000) : 0; lastTs = ts;
+      gifThumbTick(dt);
       if (tab === "watch" && cur) {
-        if (!real) {
+        if (!real && cur.gif) {
+          if (playing) {
+            if (cur.file) { if (vid.ended || vid.currentTime >= cur.dur) { vid.currentTime = 0; vid.play().catch(() => {}); gifLoop(); } time = vid.currentTime || 0; }
+            else { time += dt; if (time >= cur.dur) { time %= cur.dur; gifLoop(); } }
+          }
+          const tq = Math.floor(time * 10) / 10, gv = cur;
+          gifDraw(cx, cv.width, cv.height, (g, w, h) => gv.file ? drawCover(g, w, h, vid) : SC[gv.sc](g, w, h, tq, P(gv)));
+          $("#vtCap").textContent = "";
+        } else if (!real) {
           if (playing) { time += dt * speed; if (time >= cur.dur) { time = cur.dur; ended(); } else music(cur, time); }
           SC[cur.file ? "upload" : cur.sc](cx, cv.width, cv.height, time, P(cur));
           const cap = (cur.cap || []).filter((c) => c[0] <= time).pop(); $("#vtCap").textContent = cap && time - cap[0] < 6 ? cap[1] : "";
@@ -1706,20 +1833,29 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         $("#vtSeek").value = String(Math.round(T / (D || 1) * 1000)); $("#vtTime").textContent = `${fmtT(T)} / ${fmtT(D)}`;
       } else if (tab === "shorts") {
         const v = curShort(); if (!v) return;
-        if (v.file) { sx.clearRect(0, 0, scv.width, scv.height); sTime = svid.currentTime || 0; }
+        if (v.gif) {
+          if (v.file) { if (svid.currentTime >= v.dur) { svid.currentTime = 0; svid.play().catch(() => {}); sLoops++; } sTime = svid.currentTime || 0; }
+          else { sTime += dt; if (sTime >= v.dur) { sTime %= v.dur; sLoops++; } }
+          if (sLoops >= 3) { openShort(shortI + 1); return; }
+          const tq = Math.floor(sTime * 10) / 10; gifDraw(sx, scv.width, scv.height, (g, w, h) => v.file ? drawCover(g, w, h, svid) : SC[v.sc](g, w, h, tq, P(v)));
+        } else if (v.file) { sx.clearRect(0, 0, scv.width, scv.height); sTime = svid.currentTime || 0; }
         else { sTime += dt; if (sTime >= v.dur) { openShort(shortI + 1); return; } SC[v.sc](sx, scv.width, scv.height, sTime, P(v)); music(v, sTime); }
         hearts = hearts.filter((h) => (h.t += dt) < 0.9);
         hearts.forEach((h) => { sx.globalAlpha = 1 - h.t / 0.9; sx.font = `${60 + h.t * 60}px sans-serif`; sx.textAlign = "center"; sx.textBaseline = "middle"; sx.fillText("❤️", h.x, h.y - h.t * 60); }); sx.globalAlpha = 1;
-        $("#vtSProg").style.width = Math.min(100, sTime / ((v.file && isFinite(svid.duration) && svid.duration) || v.dur) * 100) + "%";
+        $("#vtSProg").style.width = Math.min(100, sTime / ((v.file && !v.gif && isFinite(svid.duration) && svid.duration) || v.dur) * 100) + "%";
       } else if (tab === "live") {
         liveFrame(dt);
       } else if (tab === "studio") {
+        newGif = isGif($("#vtNewDesc").value); $("#vtGifHintNew").hidden = !newGif;
         prevT += dt;
         if (draft.length) {
           const D = draftDur(); if (prevT >= D) { prevT = 0; lastStep = -1; }
-          SC.combo(px, pcv.width, pcv.height, prevT, { clips: draft, seed: 7, hue: 340, label: "", R: P({ id: "prevcombo" }).R });
+          const cp = { clips: draft, seed: 7, hue: 340, label: "", R: P({ id: "prevcombo" }).R };
+          if (newGif) { if (prevT >= Math.min(D, GIFMAX)) prevT = 0; const tq = Math.floor(prevT * 10) / 10; gifDraw(px, pcv.width, pcv.height, (g, w, h) => SC.combo(g, w, h, tq, cp)); }
+          else SC.combo(px, pcv.width, pcv.height, prevT, cp);
           const [ci] = clipAt(draft, prevT); $$("#vtClips .vt-clip").forEach((r) => r.classList.toggle("on", +r.dataset.i === ci));
-        } else SC[sc](px, pcv.width, pcv.height, prevT, { seed: 7, hue: 340, label: "", R: P({ id: "prev" + sc }).R });
+        } else if (newGif) { prevT %= GIFMAX; const tq = Math.floor(prevT * 10) / 10, pp = { seed: 7, hue: 340, label: "", R: P({ id: "prev" + sc }).R }; gifDraw(px, pcv.width, pcv.height, (g, w, h) => SC[sc](g, w, h, tq, pp)); }
+        else SC[sc](px, pcv.width, pcv.height, prevT, { seed: 7, hue: 340, label: "", R: P({ id: "prev" + sc }).R });
         if ((statT += dt) > 1) { statT = 0; stats(); }
       }
     }
