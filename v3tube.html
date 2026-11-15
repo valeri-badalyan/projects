@@ -134,7 +134,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-pickin[hidden] { display: none !important; }
 .vt-pick:focus-within > .btn { outline: 3px solid var(--gold); outline-offset: 2px; }
 .vt-addrow .vt-pick { display: grid; } .vt-addrow .vt-pick > .btn { width: 100%; }
-#vtGalHelp { color: var(--warn); } #vtGalHelp button { border: 0; background: none; color: var(--accent); font: 800 12.5px var(--body); padding: 0; cursor: pointer; text-decoration: underline; }
+#vtGalHelp { color: var(--warn); } #vtGalHelp a, .vt-inapp a { color: var(--accent); font-weight: 800; }
+.vt-inapp { margin: -4px 0 0; color: var(--muted); font-size: 12.5px; }
+.vt-inapp a { display: inline-block; margin-top: 2px; }
+ #vtGalHelp button { border: 0; background: none; color: var(--accent); font: 800 12.5px var(--body); padding: 0; cursor: pointer; text-decoration: underline; }
 .vt-review { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 14px; background: var(--panel); border: 2px solid var(--accent); }
 .vt-review video { width: 100%; max-height: 60vh; border-radius: 10px; background: #000; display: block; }
 .vt-revbtns { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
@@ -340,9 +343,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         </div>
         <h3 class="vt-h">🎬 Новое видео</h3>
         <div class="vt-gal">
-          <span class="vt-galtxt"><b>📱 Видео из галереи</b><small id="vtGalHelp" hidden>Галерея не открылась? Открой V3Tube в Safari или Chrome: <button type="button" id="vtCopyLink">скопировать ссылку</button></small><small id="vtGalState">Выложи готовое видео со своего телефона</small></span>
+          <span class="vt-galtxt"><b>📱 Видео из галереи</b><small id="vtGalHelp" hidden>Галерея не открылась? В приложении Claude выбор файлов не работает. <a href="https://claude.ai/artifact/Vj2QxZi48zdpXNc5G9pmqi" target="_blank" rel="noopener">Открыть V3Tube в браузере ↗</a> или <button type="button" id="vtCopyLink">скопировать ссылку</button></small><small id="vtGalState">Выложи готовое видео со своего телефона</small></span>
           <span class="vt-pick"><button type="button" class="btn" id="vtGalBtn">Открыть галерею</button><input type="file" id="vtFile" class="vt-pickin" accept="video/*" aria-label="Открыть галерею"></span>
         </div>
+        <p class="vt-inapp">Если галерея не открывается, значит, ты смотришь V3Tube внутри приложения Claude: там выбор файлов не работает. <a href="https://claude.ai/artifact/Vj2QxZi48zdpXNc5G9pmqi" target="_blank" rel="noopener">Открыть V3Tube в браузере ↗</a></p>
         <div class="vt-review" id="vtReview" hidden>
           <video id="vtRevVid" playsinline controls preload="metadata"></video>
           <p class="vt-note" id="vtRevInfo"></p>
@@ -1147,7 +1151,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     });
     $("#vtPermYes").addEventListener("click", () => { S.gallery = "yes"; save(); slog("🖼️", "Доступ к галерее разрешён"); closePerm(); galState(); });
     $("#vtCopyLink").addEventListener("click", async () => {
-      const link = location.href.split("#")[0];
+      const link = "https://claude.ai/artifact/Vj2QxZi48zdpXNc5G9pmqi";
       try { await navigator.clipboard.writeText(link); stMsg("🔗 Ссылка скопирована. Вставь её в Safari или Chrome."); } catch (e) { stMsg("Ссылка: " + link); }
     });
     $("#vtPermNo").addEventListener("click", () => { S.gallery = "no"; save(); slog("🚫", "Доступ к галерее запрещён"); closePerm(); galState(); stMsg("Без доступа к галерее видео не выложить. Разрешить можно в любой момент."); });
