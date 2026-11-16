@@ -46,6 +46,7 @@ $script:Paths = @{
   Games  = Join-Path $script:Root 'games'
   Art    = Join-Path $script:Root 'art'
   Export = Join-Path $script:Root 'export'
+  Video  = Join-Path $script:Root 'video'
 }
 $script:VT = (-not $NoColor) -and ($Host.UI.SupportsVirtualTerminal -eq $true)
 $script:ESC = [char]27
@@ -223,6 +224,7 @@ $script:Modes = @(
   @{ id = 'fun';    ico = '😂'; n = 'Весельчак';  p = 'Режим «Весельчак»: шутки, загадки (ответ не говори сразу), викторины, игры в слова. Только добрый юмор.' },
   @{ id = 'art';    ico = '🎨'; n = 'Художник';   p = '' },
   @{ id = 'game';   ico = '🕹'; n = 'WattAI';     p = '' },
+  @{ id = 'video';  ico = '🎬'; n = 'Видео';      p = '' },
   @{ id = 'agents'; ico = '🩺'; n = 'Dr. Agents'; p = '' }
 )
 
@@ -329,6 +331,15 @@ function New-V3ApiError([int]$Status, [string]$Type, [string]$Message, [int]$Ret
   return $e
 }
 
+function New-V3HttpRequest([string]$Json, [string]$Beta) {
+  $req = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Post, 'https://api.anthropic.com/v1/messages')
+  [void]$req.Headers.TryAddWithoutValidation('x-api-key', $script:ApiKey)
+  [void]$req.Headers.TryAddWithoutValidation('anthropic-version', '2026-10-21')
+  if ($Beta) { [void]$req.Headers.TryAddWithoutValidation('anthropic-beta', $Beta) }
+  $req.Content = [System.Net.Http.StringContent]::new($Json, [Text.Encoding]::UTF8, 'application/json')
+  return $req
+}
+
 # Один потоковый запрос. Возвращает @{ Blocks; Stop; Model; Stopped }.
 # OnText получает куски текста, OnTool — имя инструмента, когда модель начинает его вызывать.
 function Invoke-V3Stream($Body, [string]$Beta, [scriptblock]$OnText, [scriptblock]$OnTool) {
@@ -336,11 +347,7 @@ function Invoke-V3Stream($Body, [string]$Beta, [scriptblock]$OnText, [scriptbloc
   $attempt = 0
   while ($true) {
     $attempt++
-    $req = [System.Net.Http.HttpRequestMessage]::new([System.Net.Http.HttpMethod]::Post, 'https://api.anthropic.com/v1/messages')
-    [void]$req.Headers.TryAddWithoutValidation('x-api-key', $script:ApiKey)
-    [void]$req.Headers.TryAddWithoutValidation('anthropic-version', '2026-10-21')
-    if ($Beta) { [void]$req.Headers.TryAddWithoutValidation('anthropic-beta', $Beta) }
-    $req.Content = [System.Net.Http.StringContent]::new($json, [Text.Encoding]::UTF8, 'application/json')
+    $req = New-V3HttpRequest $json $Beta
     try { $resp = $script:Http.SendAsync($req, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult() }
     catch { throw (New-V3ApiError 0 'network' "Нет связи с API: $($_.Exception.Message)") }
     $code = [int]$resp.StatusCode
@@ -846,6 +853,633 @@ function Invoke-V3Game($Chat, [string]$Q) {
   $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(WattAI сделал игру «$title» по запросу «$Q».) $how" })
 }
 
+# ── Видео: сценарий → все сцены сразу → HTML-плеер на движке веб-версии V3AI ─────────────────
+# Несколько независимых запросов одновременно. Возвращает текст каждого ответа ($null — не вышло).
+function Invoke-V3Many([string[]]$Prompts, [string]$System, [string]$Label) {
+  $M = Get-V3Model $script:Cfg.model; $parts = Get-V3RequestParts $M
+  $n = $Prompts.Count; $texts = New-Object 'object[]' $n
+  if ($n -lt 1) { return , $texts }
+  for ($attempt = 1; $attempt -le 2; $attempt++) {
+    $todo = @(0..($n - 1) | Where-Object { $null -eq $texts[$_] })
+    if (-not $todo.Count) { break }
+    if ($attempt -gt 1) { Start-Sleep -Seconds 3; if ($parts.Extra.Contains('speed')) { $parts.Extra.Remove('speed') } }
+    $tasks = @{}
+    foreach ($i in $todo) {
+      $body = [ordered]@{ model = $M.api; max_tokens = 16000; system = $System; messages = @([ordered]@{ role = 'user'; content = $Prompts[$i] }) }
+      foreach ($k in $parts.Extra.Keys) { $body[$k] = $parts.Extra[$k] }
+      $tasks[$i] = $script:Http.SendAsync((New-V3HttpRequest (ConvertTo-V3Json $body) $parts.Beta))
+    }
+    $all = [System.Threading.Tasks.Task[]]@($tasks.Values)
+    while ($true) {
+      $done = @($all | Where-Object { $_.IsCompleted }).Count
+      Write-Host ("`r  ◌ $Label готово $done из $n   ") -NoNewline -ForegroundColor DarkGray
+      if ($done -ge $all.Count) { break }
+      [void][System.Threading.Tasks.Task]::WaitAny($all, 400)
+    }
+    foreach ($i in $todo) {
+      $t = $tasks[$i]
+      if ($t.IsFaulted -or $t.IsCanceled) { continue }
+      $resp = $t.Result
+      try {
+        if (-not $resp.IsSuccessStatusCode) { continue }
+        $j = $resp.Content.ReadAsStringAsync().GetAwaiter().GetResult() | ConvertFrom-Json
+        if ($j.stop_reason -eq 'refusal') { $texts[$i] = ''; continue }
+        $texts[$i] = (@($j.content) | Where-Object { $_.type -eq 'text' } | ForEach-Object { $_.text }) -join ''
+      } catch { } finally { $resp.Dispose() }
+    }
+  }
+  Write-Host ''
+  return , $texts
+}
+
+function Invoke-V3Video($Chat, [string]$Q, [bool]$Three = $true) {
+  $safe = 'Только добрые сюжеты, подходящие детям. На неподходящую просьбу выбери что-то милое на похожую безопасную тему.'
+  $planPrompt = @(
+    'Ты — V3AI, ИИ-режиссёр мультфильмов. Придумай по запросу пользователя короткое видео из 3 сцен (максимум 4), которые вместе рассказывают маленькую историю: начало, развитие, финал.',
+    $safe,
+    'Ответь ТОЛЬКО JSON: {"title":"название ролика до 40 символов","music":"happy|calm|epic","hero":"как выглядит главный герой: цвета, форма, одежда — одной фразой","style":"общий стиль и палитра одной фразой","scenes":[{"picture":"что в сцене и что в ней двигается","caption":"субтитр по-русски до 60 символов","dur":4}],"comment":"одна короткая весёлая фраза по-русски о ролике"}',
+    'dur — от 3 до 6 секунд.',
+    "Запрос: $Q"
+  ) -join "`n"
+  $msgs = New-V3List; $msgs.Add([ordered]@{ role = 'user'; content = $planPrompt })
+  $r = Invoke-V3Turn -Messages $msgs -System 'Ты — V3AI, ИИ-режиссёр мультфильмов.' -Quiet -Waiting '🎬 пишу сценарий…' -MaxTokens 8000
+  $plan = $null; $m = [regex]::Match($r.Text, '\{[\s\S]*\}'); if ($m.Success) { try { $plan = $m.Value | ConvertFrom-Json } catch { } }
+  $list = @(); if ($plan -and $plan.scenes) { $list = @(@($plan.scenes) | Select-Object -First 4) }
+  if (-not $list.Count) { Write-V3Note 'Сценарий не получился — попробуй описать сюжет иначе.' Yellow; return }
+
+  $prompts = @()
+  for ($i = 0; $i -lt $list.Count; $i++) {
+    $sc = $list[$i]; $what = $(if ($sc.picture) { [string]$sc.picture } elseif ($sc.caption) { [string]$sc.caption } else { $Q })
+    $head = @("Сюжет фильма: $Q", $(if ($plan.hero) { "Главный герой (во всех сценах выглядит одинаково): $($plan.hero)" } else { '' }), $(if ($plan.style) { "Стиль: $($plan.style)" } else { '' }), "Эта сцена: $what")
+    if ($Three) {
+      $prompts += (@(
+        "Ты — V3AI, 3D-аниматор. Опиши сцену $($i + 1) из $($list.Count) 3D-мультфильма как JSON. Ответ — только JSON в блоке ``````json."
+      ) + $head + @(
+        'Мир: ось Y вверх, земля на y=0, 1 единица ≈ 1 метр, герой ростом 1–2, всё действие в пределах ±6 от центра.',
+        'Формат: {"sky":"#87ceeb","ground":"grass|sand|snow|water|space|none","groundColor":"#5cb85c","light":"day|sunset|night","particles":"none|stars|snow|rain|confetti|bubbles|sparkles","camera":{"from":[0,2.5,8],"to":[1,2,6],"look":[0,1,0],"fov":50,"orbit":20},"objects":[...],"anim":[...]}',
+        'objects — по порядку, родитель раньше детей: {"id":"cat","shape":"group","pos":[0,0,0]}, {"id":"head","parent":"cat","shape":"sphere","size":0.5,"pos":[0,1.4,0],"rot":[0,0,0],"scale":[1,0.9,1],"color":"#ff9a3c","rough":0.6,"metal":0,"emissive":"#000000"}. pos и rot (градусы) — относительно родителя.',
+        'Формы и size: box [w,h,d]; sphere r; cylinder [rTop,rBottom,h]; cone [r,h]; capsule [r,h]; torus [R,tube]; plane [w,h]; ring [rIn,rOut]; star [r,толщина]; dodecahedron/icosahedron/octahedron/tetrahedron r; group — без формы, для частей.',
+        'Героев собирай из 10–25 частей (голова, глаза с белками и зрачками, бликами, нос, уши, лапы, хвост, одежда) — милые, узнаваемые, яркие. Добавь окружение (деревья из конуса и цилиндра, дома, камни, облака из сфер, планеты, цветы) — всего до 70 объектов. Светящиеся вещи — через emissive.',
+        'anim: [{"id":"cat","loop":1.2,"linear":false,"keys":[{"t":0,"y":0},{"t":0.5,"y":0.6},{"t":1,"y":0}]}] — смещения от исходного положения: x, y, z; поворот rx, ry, rz в градусах; s — множитель масштаба. t от 0 до 1 внутри периода loop (секунды). Первый и последний ключ одинаковые; для непрерывного вращения — "linear":true и ry от 0 до 360. Двигай 3–8 вещей: шаги, прыжки, махи, вращение, полёт, моргание.',
+        'camera: from→to — плавный полёт камеры за сцену, orbit — облёт вокруг look в градусах. Снимай кинематографично, герой хорошо виден.',
+        $safe
+      ) | Where-Object { $_ }) -join "`n"
+    } else {
+      $prompts += (@(
+        "Ты — V3AI, ИИ-аниматор. Нарисуй сцену $($i + 1) из $($list.Count) короткого мультфильма."
+      ) + $head + @(
+        'Шаг 1 — ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"> в блоке ```svg: яркое и детальное, на весь холст (фон, герой крупно, градиенты, тени), до ~5000 символов. Каждую часть, которая двигается, оберни в <g id="..."> с латинским id.',
+        'Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий, текст на картинке.',
+        'Шаг 2 — блок ```json: {"loop":2,"anim":[{"id":"hero","origin":[256,300],"keys":[{"t":0,"y":0},{"t":0.5,"y":-30},{"t":1,"y":0}]}]}. loop — период движения в секундах. Ключи: t от 0 до 1; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin; s — масштаб (или sx, sy); o — прозрачность 0..1. Первый и последний ключ одинаковые. Двигай 2–6 частей заметно и живо.',
+        $safe,
+        'Ответ — только эти два блока.'
+      ) | Where-Object { $_ }) -join "`n"
+    }
+  }
+  $texts = Invoke-V3Many $prompts 'Ты — V3AI, ИИ-аниматор мультфильмов.' $(if ($Three) { "🧊 строю $($list.Count) 3D-сцены сразу:" } else { "🎬 рисую $($list.Count) сцены сразу:" })
+
+  $scenes = New-V3List
+  for ($i = 0; $i -lt $list.Count; $i++) {
+    $t = [string]$texts[$i]; if (-not $t) { continue }
+    $sc = $list[$i]; $dur = 4.0; try { if ($sc.dur) { $dur = [double]$sc.dur } } catch { }
+    $cap = [string]$sc.caption
+    if ($Three) {
+      $js = Get-V3Block $t 'json'; if (-not $js) { $mm = [regex]::Match($t, '\{[\s\S]*\}'); if ($mm.Success) { $js = $mm.Value } }
+      $spec = $null; try { $spec = $js | ConvertFrom-Json } catch { }
+      if (-not $spec -or -not $spec.objects) { continue }
+      $scenes.Add([ordered]@{ three = $spec; dur = $dur; caption = $cap })
+    } else {
+      $mm = [regex]::Match($t, '<svg[\s\S]*?</svg>', 'IgnoreCase'); if (-not $mm.Success) { continue }
+      $anim = @(); $loop = 2.0
+      $js = Get-V3Block $t 'json'
+      if ($js) { try { $a = $js | ConvertFrom-Json; if ($a.anim) { $anim = @($a.anim) }; if ($a.loop) { $loop = [double]$a.loop } } catch { } }
+      $scenes.Add([ordered]@{ svg = $mm.Value; anim = $anim; loop = $loop; dur = $dur; caption = $cap })
+    }
+  }
+  if (-not $scenes.Count) { Write-V3Note 'Сцены не получились — попробуй ещё раз или модель посильнее (/model).' Yellow; return }
+
+  $title = $(if ($plan.title) { ([string]$plan.title).Trim() } else { $Q })
+  if ($title.Length -gt 40) { $title = $title.Substring(0, 40) }
+  $film = [ordered]@{ title = $title; music = [string]$plan.music; scenes = $scenes }
+  $html = $script:PlayerTemplate.Replace('/*V3AI_FILM*/null', (ConvertTo-V3Json $film).Replace('</', '<\/'))
+  $path = Save-V3File $script:Paths.Video ((Get-V3SafeName $title) + '.html') $html
+  $lines = @()
+  if ($plan.comment) { $lines += [string]$plan.comment }
+  $lines += ("Сцен: $($scenes.Count)" + $(if ($scenes.Count -lt $list.Count) { " из $($list.Count)" } else { '' }) + ' · ' + $(if ($Three) { '3D' } else { 'рисованный 2D' }) + ' · субтитры и музыка')
+  $lines += $(if ($path) { "Файл: $path" } else { 'Файл не сохранён (EngineSecure).' })
+  $lines += 'В плеере: ▶ Смотреть и 💾 Скачать видео (MP4). Для 3D нужен интернет.'
+  Write-V3Box "🎬 $title" $lines Magenta
+  if ($path) { Open-V3File $path }
+  $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q })
+  $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(Снял $(if ($Three) { '3D-' } else { '' })видео «$title» по запросу «$Q».)" })
+}
+
+# Плеер: страница, которая показывает фильм и собирает из него MP4 (движок — из веб-версии V3AI).
+$script:PlayerTemplate = @'
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V3AI · Видео</title>
+<style>
+:root { --bg: #0b1020; --panel: #121a30; --line: #263049; --fg: #eef2ff; --muted: #9aa6c4; --a1: #00b4ff; --a2: #7dffcf; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; }
+main { width: min(760px, 100%); padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.logo { font: 900 22px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 1px; background: linear-gradient(90deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+h1 { margin: 0; font-size: 18px; font-weight: 700; }
+.screen { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--line); }
+.screen canvas { display: block; width: 100%; height: 100%; }
+.screen .msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+.bar { height: 6px; border-radius: 3px; background: var(--panel); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--a1), var(--a2)); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+button { min-height: 44px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-weight: 700; cursor: pointer; }
+button.main { border: 0; background: linear-gradient(135deg, #0a84ff, #00c2a8); color: #fff; }
+button:disabled { opacity: .55; cursor: default; }
+button:focus-visible { outline: 3px solid var(--a2); outline-offset: 2px; }
+#status { margin: 0; color: var(--muted); min-height: 1.5em; }
+ol { margin: 0; padding-left: 22px; color: var(--muted); }
+ol b { color: var(--fg); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <header><span class="logo">V3AI</span><h1 id="title">Видео</h1></header>
+  <div class="screen"><canvas id="view" width="720" height="720" aria-label="Видео"></canvas><div class="msg" id="msg">Готовлю сцены…</div></div>
+  <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+  <div class="row">
+    <button type="button" class="main" id="play" disabled>▶ Смотреть</button>
+    <button type="button" id="save" disabled>💾 Скачать видео</button>
+  </div>
+  <p id="status" aria-live="polite"></p>
+  <ol id="scenes"></ol>
+</main>
+<script>
+const FILM = /*V3AI_FILM*/null;
+(() => {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+function cleanSvg(src) {
+  const m = String(src).match(/<svg[\s\S]*<\/svg>/i);
+  if (!m) return "";
+  let doc;
+  try { doc = new DOMParser().parseFromString(m[0], "image/svg+xml"); } catch (e) { return ""; }
+  const root = doc.documentElement;
+  if (!root || root.nodeName.toLowerCase() !== "svg" || doc.getElementsByTagName("parsererror").length) return "";
+  const BAD = ["script", "foreignobject", "iframe", "a", "audio", "video", "animate", "set", "animatetransform", "animatemotion", "image"];
+  Array.from(root.getElementsByTagName("*")).forEach((n) => {
+    if (BAD.includes(n.nodeName.toLowerCase())) { n.remove(); return; }
+    Array.from(n.attributes).forEach((a) => {
+      const k = a.name.toLowerCase(), v = a.value;
+      if (k.startsWith("on") || /javascript:|data:text|@import/i.test(v) || ((k === "href" || k === "xlink:href") && !v.startsWith("#")) || /url\(\s*['"]?(?!#)/i.test(v)) n.removeAttribute(a.name);
+    });
+    if (n.nodeName.toLowerCase() === "style" && /@import|url\(\s*['"]?(?!#)/i.test(n.textContent)) n.remove();
+  });
+  Array.from(root.attributes).forEach((a) => { if (a.name.toLowerCase().startsWith("on")) root.removeAttribute(a.name); });
+  root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  if (!root.getAttribute("viewBox")) root.setAttribute("viewBox", `0 0 ${parseFloat(root.getAttribute("width")) || 512} ${parseFloat(root.getAttribute("height")) || 512}`);
+  root.setAttribute("width", "1024"); root.setAttribute("height", "1024");
+  const out = new XMLSerializer().serializeToString(root);
+  return root.getElementsByTagName("*").length >= 3 ? out : "";
+}
+const svgUrl = (svg) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+const OFF_ANIM = { frames: 20, fps: 12, anim: [
+  { id: "hero", origin: [256, 400], keys: [{ t: 0, y: 0, sx: 1.06, sy: .94 }, { t: .15, y: 0, sx: 1, sy: 1 }, { t: .5, y: -70, sx: .97, sy: 1.04 }, { t: .85, y: 0, sx: 1, sy: 1 }, { t: 1, y: 0, sx: 1.06, sy: .94 }] },
+  { id: "shadow", origin: [256, 410], keys: [{ t: 0, s: 1, o: 1 }, { t: .5, s: .7, o: .5 }, { t: 1, s: 1, o: 1 }] },
+  { id: "sun", origin: [410, 100], keys: [{ t: 0, s: 1 }, { t: .5, s: 1.08 }, { t: 1, s: 1 }] },
+  { id: "fx", origin: [256, 256], keys: [{ t: 0, o: 1 }, { t: .5, o: .45, y: 6 }, { t: 1, o: 1 }] },
+] };
+function jsonBlock(text, key) {
+  const m = String(text).match(/```json\s*([\s\S]*?)```/i) || String(text).match(new RegExp('(\\{[\\s\\S]*"' + key + '"[\\s\\S]*\\})'));
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch (e) { return null; }
+}
+const parseAnim = (text) => normAnim(jsonBlock(text, "anim"));
+function normAnim(a) {
+  try {
+    if (!a || !Array.isArray(a.anim)) return null;
+    const num = (v, d) => (typeof v === "number" && isFinite(v) ? v : d);
+    const anim = a.anim.slice(0, 16).filter((x) => x && typeof x.id === "string" && Array.isArray(x.keys) && x.keys.length).map((x) => ({
+      id: x.id.slice(0, 40), origin: Array.isArray(x.origin) ? [num(x.origin[0], 256), num(x.origin[1], 256)] : [256, 256],
+      keys: x.keys.slice(0, 12).map((k) => ({ t: Math.min(1, Math.max(0, num(k.t, 0))), x: num(k.x, 0), y: num(k.y, 0), r: num(k.r, 0), s: num(k.s, 1), sx: num(k.sx, NaN), sy: num(k.sy, NaN), o: Math.min(1, Math.max(0, num(k.o, 1))) })).sort((p, q) => p.t - q.t),
+    }));
+    return anim.length ? { frames: Math.round(Math.min(36, Math.max(8, num(a.frames, 24)))), fps: Math.min(20, Math.max(4, num(a.fps, 12))), anim } : null;
+  } catch (e) { return null; }
+}
+const offAnim = () => normAnim(OFF_ANIM);
+// the value of every animated property at time t (0..1), eased between keys
+function at(keys, t) {
+  let i = 0; while (i < keys.length - 1 && keys[i + 1].t < t) i++;
+  const a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)];
+  const span = b.t - a.t, u = span > 0 ? Math.min(1, Math.max(0, (t - a.t) / span)) : 0, e = u * u * (3 - 2 * u);
+  const mix = (p, q) => p + (q - p) * e;
+  const sx = (k) => (isNaN(k.sx) ? k.s : k.sx), sy = (k) => (isNaN(k.sy) ? k.s : k.sy);
+  return { x: mix(a.x, b.x), y: mix(a.y, b.y), r: mix(a.r, b.r), sx: mix(sx(a), sx(b)), sy: mix(sy(a), sy(b)), o: mix(a.o, b.o) };
+}
+function frameSvgs(svg, spec) { const rig = makeRig(svg, spec.anim), out = []; for (let f = 0; f < spec.frames; f++) out.push(rig(f / spec.frames)); return out; }
+// a "rig": the picture with its moving parts wrapped; rig(t) gives the SVG at loop time t (0..1)
+function makeRig(svg, anims) {
+  const doc = new DOMParser().parseFromString(svg, "image/svg+xml"), root = doc.documentElement, NS = "http://www.w3.org/2000/svg";
+  // wrap each moving part, so its own transform stays and ours goes on top
+  const parts = (anims || []).map((a) => {
+    let el = null; try { el = root.querySelector("#" + CSS.escape(a.id)); } catch (e) { el = null; }
+    if (!el || el === root) return null;
+    const g = doc.createElementNS(NS, "g"); el.parentNode.insertBefore(g, el); g.appendChild(el);
+    return { a, g };
+  }).filter(Boolean);
+  if (!parts.length) { // nothing matched: gently sway the whole picture
+    const g = doc.createElementNS(NS, "g"); while (root.firstChild) g.appendChild(root.firstChild); root.appendChild(g);
+    parts.push({ g, a: { origin: [256, 256], keys: [{ t: 0, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }, { t: .5, x: 0, y: -8, r: 2, s: 1.07, sx: NaN, sy: NaN, o: 1 }, { t: 1, x: 0, y: 0, r: -2, s: 1.04, sx: NaN, sy: NaN, o: 1 }] } });
+  }
+  const ser = new XMLSerializer();
+  return (t) => {
+    parts.forEach(({ a, g }) => {
+      const v = at(a.keys, t), [ox, oy] = a.origin, n = (z) => Math.round(z * 1000) / 1000;
+      g.setAttribute("transform", `translate(${n(ox + v.x)} ${n(oy + v.y)}) rotate(${n(v.r)}) scale(${n(v.sx)} ${n(v.sy)}) translate(${-ox} ${-oy})`);
+      if (v.o < .999) g.setAttribute("opacity", n(v.o)); else g.removeAttribute("opacity");
+    });
+    return ser.serializeToString(root);
+  };
+}
+const loadImg = (src) => new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
+let actx = null;
+function wakeAudio() { // must run inside the tap that asked for the video
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); } catch (e) { actx = null; }
+}
+function music(a, dest, total, mood) {
+  const t0 = a.currentTime + .05;
+  const M = { happy: { bpm: 120, wave: "triangle", root: 60, prog: [0, 7, 9, 5] }, calm: { bpm: 80, wave: "sine", root: 57, prog: [0, 5, 3, 7] }, epic: { bpm: 100, wave: "sawtooth", root: 50, prog: [0, 8, 3, 10] } }[mood] || null;
+  if (!M) return;
+  const out = a.createGain(); out.gain.setValueAtTime(0, t0); out.gain.linearRampToValueAtTime(.5, t0 + .4); out.gain.setValueAtTime(.5, t0 + total - 1.2); out.gain.linearRampToValueAtTime(0, t0 + total); out.connect(dest);
+  const hz = (n) => 440 * Math.pow(2, (n - 69) / 12), beat = 60 / M.bpm, minor = mood !== "happy";
+  const note = (n, at, len, wave, vol) => { const o = a.createOscillator(), g = a.createGain(); o.type = wave; o.frequency.value = hz(n); g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(vol, at + .02); g.gain.exponentialRampToValueAtTime(.001, at + len); o.connect(g); g.connect(out); o.start(at); o.stop(at + len + .05); };
+  for (let b = 0, t = t0; t < t0 + total; b++, t += beat) {
+    const ch = M.root + M.prog[Math.floor(b / 4) % 4], tri = [0, minor && b % 8 < 4 ? 3 : 4, 7, 12];
+    note(ch - 12, t, beat * .9, "sine", .35);
+    note(ch + tri[b % 4], t, beat * .8, M.wave, mood === "epic" ? .07 : .16);
+    if (mood === "happy") note(ch + tri[(b + 2) % 4] + 12, t + beat / 2, beat * .4, "triangle", .08);
+  }
+}
+function wrapLines(g, text, max) {
+  const words = String(text).split(/\s+/), lines = []; let cur = "";
+  words.forEach((w) => { const t = cur ? cur + " " + w : w; if (g.measureText(t).width > max && cur) { lines.push(cur); cur = w; } else cur = t; });
+  if (cur) lines.push(cur); return lines.slice(0, 2);
+}
+async function makeFrames(m, S) {
+  const cv = document.createElement("canvas"); cv.width = cv.height = S;
+  const g = cv.getContext("2d"), scenes = m.scenes, FADE = .5, k = S / 720;
+  const stage = scenes.some((sc) => sc.three) ? stage3d(await loadThree(), S) : null;
+  const views = scenes.map((sc) => (sc.three ? stage.build(sc) : makeRig(sc.svg, sc.anim))), starts = []; let total = 0;
+  scenes.forEach((sc) => { starts.push(total); total += sc.dur; });
+  const paint = async (i, local, alpha) => {
+    const sc = scenes[i];
+    let src;
+    if (sc.three) { stage.render(views[i], local); src = stage.canvas; } else src = await loadImg(svgUrl(views[i]((local % sc.loop) / sc.loop)));
+    g.globalAlpha = alpha; g.drawImage(src, 0, 0, S, S); g.globalAlpha = 1;
+  };
+  const frame = async (sec) => {
+    let i = 0; while (i < scenes.length - 1 && sec >= starts[i + 1]) i++;
+    const local = sec - starts[i], sc = scenes[i], left = sc.dur - local;
+    g.fillStyle = "#000"; g.fillRect(0, 0, S, S);
+    await paint(i, local, 1);
+    if (i < scenes.length - 1 && left < FADE) await paint(i + 1, 0, 1 - left / FADE); // crossfade into the next scene
+    if (sec < FADE) { g.fillStyle = `rgba(0,0,0,${1 - sec / FADE})`; g.fillRect(0, 0, S, S); }
+    if (total - sec < FADE) { g.fillStyle = `rgba(0,0,0,${Math.min(1, 1 - (total - sec) / FADE)})`; g.fillRect(0, 0, S, S); }
+    if (sc.caption) {
+      g.font = `800 ${34 * k}px Manrope, system-ui, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
+      const lines = wrapLines(g, sc.caption, S - 120 * k), a = Math.min(1, local / .3, left / .3);
+      if (a > 0) {
+        g.globalAlpha = a; const hh = (lines.length * 44 + 24) * k, y0 = S - 40 * k - hh;
+        g.fillStyle = "rgba(0,0,0,.55)"; g.beginPath(); (g.roundRect ? g.roundRect(40 * k, y0, S - 80 * k, hh, 18 * k) : g.rect(40 * k, y0, S - 80 * k, hh)); g.fill();
+        g.fillStyle = "#fff"; lines.forEach((l, n) => g.fillText(l, S / 2, y0 + (34 + n * 44) * k)); g.globalAlpha = 1;
+      }
+    }
+    g.font = `900 ${20 * k}px Manrope, system-ui, sans-serif`; g.textAlign = "right"; g.textBaseline = "middle"; g.fillStyle = "rgba(255,255,255,.75)"; g.fillText("V3AI", S - 18 * k, 30 * k);
+  };
+  return { cv, frame, total, dispose: () => { if (stage) stage.dispose(); } };
+}
+let threeLib = null;
+function loadThree() {
+  if (window.THREE) return Promise.resolve(window.THREE);
+  return threeLib || (threeLib = new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; sc.async = true;
+    sc.onload = () => (window.THREE ? res(window.THREE) : rej(new Error("no3d")));
+    sc.onerror = () => { threeLib = null; sc.remove(); rej(new Error("no3d")); };
+    document.head.appendChild(sc);
+  }));
+}
+const clampN = (v, d, lo, hi) => Math.min(hi, Math.max(lo, typeof v === "number" && isFinite(v) ? v : d));
+const vec3 = (v, d, lo, hi) => (Array.isArray(v) ? [0, 1, 2].map((i) => clampN(v[i], d[i], lo, hi)) : typeof v === "number" ? [clampN(v, d[0], lo, hi), clampN(v, d[1], lo, hi), clampN(v, d[2], lo, hi)] : d.slice());
+const colr = (c, d) => (typeof c === "string" && /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(c) ? c : d);
+const SHAPES = ["group", "box", "sphere", "cylinder", "cone", "capsule", "torus", "plane", "ring", "star", "dodecahedron", "icosahedron", "octahedron", "tetrahedron"];
+// Turn whatever came back into a safe, bounded scene description.
+function norm3d(j) {
+  if (!j || !Array.isArray(j.objects)) return null;
+  const ids = new Set(), objects = [];
+  j.objects.slice(0, 90).forEach((o) => {
+    if (!o || typeof o !== "object") return;
+    const shape = SHAPES.includes(String(o.shape).toLowerCase()) ? String(o.shape).toLowerCase() : "box";
+    const id = typeof o.id === "string" ? o.id.slice(0, 40) : "";
+    const size = Array.isArray(o.size) ? o.size.slice(0, 3).map((v) => clampN(v, 1, .01, 60)) : typeof o.size === "number" ? [clampN(o.size, 1, .01, 60)] : [];
+    objects.push({ id, shape, size, parent: typeof o.parent === "string" && ids.has(o.parent) ? o.parent : "",
+      pos: vec3(o.pos, [0, 0, 0], -120, 120), rot: vec3(o.rot, [0, 0, 0], -720, 720), scale: vec3(o.scale, [1, 1, 1], .01, 40),
+      color: colr(o.color, "#cccccc"), emissive: colr(o.emissive, "#000000"), rough: clampN(o.rough, .55, 0, 1), metal: clampN(o.metal, 0, 0, 1), opacity: clampN(o.opacity, 1, .05, 1) });
+    if (id) ids.add(id);
+  });
+  if (!objects.length) return null;
+  const anim = (Array.isArray(j.anim) ? j.anim : []).slice(0, 24).filter((x) => x && ids.has(x.id) && Array.isArray(x.keys) && x.keys.length).map((x) => ({
+    id: x.id, loop: clampN(x.loop, 2, .2, 12), linear: !!x.linear,
+    keys: x.keys.slice(0, 12).map((k) => ({ t: clampN(k.t, 0, 0, 1), x: clampN(k.x, 0, -60, 60), y: clampN(k.y, 0, -60, 60), z: clampN(k.z, 0, -60, 60), rx: clampN(k.rx, 0, -1080, 1080), ry: clampN(k.ry, 0, -1080, 1080), rz: clampN(k.rz, 0, -1080, 1080), s: clampN(k.s, 1, .01, 20) })).sort((p, q) => p.t - q.t),
+  }));
+  const cam = j.camera && typeof j.camera === "object" ? j.camera : {};
+  const from = vec3(cam.from, [0, 2.5, 8], -80, 80);
+  return {
+    sky: colr(j.sky, "#8fd3ff"), ground: ["grass", "sand", "snow", "water", "space", "none"].includes(j.ground) ? j.ground : "grass", groundColor: colr(j.groundColor, ""),
+    light: ["day", "sunset", "night"].includes(j.light) ? j.light : "day", particles: ["none", "stars", "snow", "rain", "confetti", "bubbles", "sparkles"].includes(j.particles) ? j.particles : "none",
+    camera: { from, to: vec3(cam.to, from, -80, 80), look: vec3(cam.look, [0, 1, 0], -80, 80), fov: clampN(cam.fov, 50, 20, 100), orbit: clampN(cam.orbit, 0, -360, 360) },
+    objects, anim,
+  };
+}
+function stage3d(T, S) {
+  const canvas = document.createElement("canvas"); canvas.width = canvas.height = S;
+  const rd = new T.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+  rd.setPixelRatio(1); rd.setSize(S, S, false); rd.shadowMap.enabled = true; rd.shadowMap.type = T.PCFSoftShadowMap; rd.outputEncoding = T.sRGBEncoding;
+  return { canvas, build: (sc) => build3d(T, sc.three, sc.dur), render: (v, local) => { v.update(local); rd.render(v.scene, v.cam); }, dispose: () => { rd.dispose(); try { rd.forceContextLoss(); } catch (e) { /* fine */ } } };
+}
+function geom(T, shape, sz) {
+  const a = (i, d) => (sz[i] != null ? sz[i] : d);
+  switch (shape) {
+    case "sphere": return new T.SphereGeometry(a(0, .5), 32, 20);
+    case "cylinder": return sz.length >= 3 ? new T.CylinderGeometry(a(0, .5), a(1, .5), a(2, 1), 32) : new T.CylinderGeometry(a(0, .5), a(0, .5), a(1, 1), 32);
+    case "cone": return new T.ConeGeometry(a(0, .5), a(1, 1), 32);
+    case "torus": return new T.TorusGeometry(a(0, .5), a(1, .15), 16, 48);
+    case "plane": return new T.PlaneGeometry(a(0, 1), a(1, 1));
+    case "ring": return new T.RingGeometry(a(0, .3), a(1, .5), 48);
+    case "dodecahedron": return new T.DodecahedronGeometry(a(0, .5));
+    case "icosahedron": return new T.IcosahedronGeometry(a(0, .5));
+    case "octahedron": return new T.OctahedronGeometry(a(0, .5));
+    case "tetrahedron": return new T.TetrahedronGeometry(a(0, .5));
+    case "star": {
+      const r = a(0, .5), sh = new T.Shape();
+      for (let i = 0; i < 10; i++) { const ang = Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; const x = Math.cos(ang) * rr, y = Math.sin(ang) * rr; if (i) sh.lineTo(x, y); else sh.moveTo(x, y); }
+      const gm = new T.ExtrudeGeometry(sh, { depth: a(1, .15), bevelEnabled: true, bevelSize: r * .05, bevelThickness: r * .05, bevelSegments: 2 }); gm.center(); return gm;
+    }
+    default: return new T.BoxGeometry(a(0, 1), a(1, 1), a(2, 1));
+  }
+}
+function build3d(T, spec, dur) {
+  const scene = new T.Scene(), d2r = Math.PI / 180;
+  const lc = (hex) => new T.Color(hex).convertSRGBToLinear(); // colours as people pick them, shown true on screen
+  const LIGHT = { day: [1, .75, "#ffffff"], sunset: [.8, .55, "#ffb27a"], night: [.35, .35, "#9fb4ff"] }[spec.light];
+  const space = spec.ground === "space";
+  scene.background = new T.Color(space ? "#02030c" : spec.sky);
+  if (!space) scene.fog = new T.Fog(lc(spec.sky), 30, 90);
+  scene.add(new T.HemisphereLight(lc(space ? "#8899ff" : spec.sky), lc("#555555"), LIGHT[1]));
+  const sun = new T.DirectionalLight(lc(LIGHT[2]), LIGHT[0] * 1.1); sun.position.set(6, 12, 7); sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 50 }); sun.shadow.bias = -.0008;
+  scene.add(sun);
+  if (!["space", "none"].includes(spec.ground)) {
+    const GC = { grass: "#5cb85c", sand: "#e8d29b", snow: "#f4f8ff", water: "#2a7fd4" }[spec.ground];
+    const gnd = new T.Mesh(new T.CircleGeometry(90, 64), new T.MeshStandardMaterial({ color: lc(spec.groundColor || GC), roughness: spec.ground === "water" ? .15 : .95, metalness: spec.ground === "water" ? .25 : 0 }));
+    gnd.rotation.x = -Math.PI / 2; gnd.receiveShadow = true; scene.add(gnd);
+  }
+  // the objects; a part's position is relative to its parent
+  const byId = {};
+  spec.objects.forEach((o) => {
+    let node;
+    if (o.shape === "group") node = new T.Group();
+    else {
+      const mat = new T.MeshStandardMaterial({ color: lc(o.color), roughness: Math.max(.2, o.rough), metalness: o.metal * .45, emissive: lc(o.emissive), transparent: o.opacity < 1, opacity: o.opacity, side: o.shape === "plane" || o.shape === "ring" ? T.DoubleSide : T.FrontSide });
+      if (o.shape === "capsule") { // r128 has no capsule: a cylinder with two half-spheres
+        const r = o.size[0] != null ? o.size[0] : .3, h = o.size[1] != null ? o.size[1] : .8;
+        node = new T.Group();
+        const body = new T.Mesh(new T.CylinderGeometry(r, r, h, 32), mat), top = new T.Mesh(new T.SphereGeometry(r, 32, 16), mat), bot = top.clone();
+        top.position.y = h / 2; bot.position.y = -h / 2;
+        [body, top, bot].forEach((x) => { x.castShadow = x.receiveShadow = true; node.add(x); });
+      } else { node = new T.Mesh(geom(T, o.shape, o.size), mat); node.castShadow = node.receiveShadow = true; }
+    }
+    node.position.set(...o.pos); node.rotation.set(o.rot[0] * d2r, o.rot[1] * d2r, o.rot[2] * d2r); node.scale.set(...o.scale);
+    (o.parent && byId[o.parent] ? byId[o.parent] : scene).add(node);
+    if (o.id) byId[o.id] = node;
+    node.userData.base = { p: node.position.clone(), r: node.rotation.clone(), s: node.scale.clone() };
+  });
+  // particles
+  let pts = null, base = null, speed = 0;
+  if (spec.particles !== "none") {
+    const N = spec.particles === "stars" ? 700 : 450, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), c = new T.Color();
+    base = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      if (spec.particles === "stars") { const u = Math.random() * 2 - 1, th = Math.random() * Math.PI * 2, rr = 60; base.set([Math.sqrt(1 - u * u) * Math.cos(th) * rr, Math.abs(u) * rr * .9 + 2, Math.sqrt(1 - u * u) * Math.sin(th) * rr], i * 3); }
+      else base.set([(Math.random() - .5) * 24, Math.random() * 14, -14 + Math.random() * 16], i * 3); // in front of the camera, never on its lens
+      c.set(spec.particles === "confetti" ? ["#ff4d6d", "#ffd84d", "#4dd2ff", "#7dffcf", "#b48cff"][i % 5] : spec.particles === "bubbles" ? "#bfefff" : spec.particles === "sparkles" ? "#fff3a0" : "#ffffff");
+      c.convertSRGBToLinear(); col.set([c.r, c.g, c.b], i * 3);
+    }
+    pos.set(base);
+    const gm = new T.BufferGeometry(); gm.setAttribute("position", new T.BufferAttribute(pos, 3)); gm.setAttribute("color", new T.BufferAttribute(col, 3));
+    const size = { stars: .35, snow: .12, rain: .06, confetti: .14, bubbles: .18, sparkles: .12 }[spec.particles];
+    pts = new T.Points(gm, new T.PointsMaterial({ size, vertexColors: true, transparent: true, opacity: spec.particles === "bubbles" ? .7 : .95, sizeAttenuation: true }));
+    scene.add(pts);
+    speed = { stars: 0, snow: -1.2, rain: -9, confetti: -1.6, bubbles: 1.1, sparkles: .4 }[spec.particles];
+  }
+  const cam = new T.PerspectiveCamera(spec.camera.fov, 1, .1, 400);
+  const look = new T.Vector3(...spec.camera.look), from = new T.Vector3(...spec.camera.from), to = new T.Vector3(...spec.camera.to);
+  const ease = (u) => u * u * (3 - 2 * u);
+  const value = (keys, t, lin) => {
+    let i = 0; while (i < keys.length - 1 && keys[i + 1].t < t) i++;
+    const a = keys[i], b = keys[Math.min(i + 1, keys.length - 1)], span = b.t - a.t;
+    const u = span > 0 ? Math.min(1, Math.max(0, (t - a.t) / span)) : 0, e = lin ? u : ease(u), mix = (p, q) => p + (q - p) * e;
+    return { x: mix(a.x, b.x), y: mix(a.y, b.y), z: mix(a.z, b.z), rx: mix(a.rx, b.rx), ry: mix(a.ry, b.ry), rz: mix(a.rz, b.rz), s: mix(a.s, b.s) };
+  };
+  const update = (local) => {
+    spec.anim.forEach((an) => {
+      const node = byId[an.id]; if (!node) return;
+      const v = value(an.keys, (local % an.loop) / an.loop, an.linear), B = node.userData.base;
+      node.position.set(B.p.x + v.x, B.p.y + v.y, B.p.z + v.z);
+      node.rotation.set(B.r.x + v.rx * d2r, B.r.y + v.ry * d2r, B.r.z + v.rz * d2r);
+      node.scale.set(B.s.x * v.s, B.s.y * v.s, B.s.z * v.s);
+    });
+    if (pts) {
+      const arr = pts.geometry.attributes.position.array;
+      for (let i = 0; i < arr.length; i += 3) {
+        if (speed) { let y = base[i + 1] + speed * local; y = ((y % 14) + 14) % 14; arr[i + 1] = y; arr[i] = base[i] + Math.sin(local * 1.3 + i) * (spec.particles === "rain" ? 0 : .25); }
+      }
+      if (speed) pts.geometry.attributes.position.needsUpdate = true;
+      if (spec.particles === "stars" || spec.particles === "sparkles") pts.material.opacity = .75 + .25 * Math.sin(local * 4);
+    }
+    const e = ease(Math.min(1, local / Math.max(.1, dur)));
+    cam.position.lerpVectors(from, to, e);
+    if (spec.camera.orbit) { const off = cam.position.clone().sub(look); off.applyAxisAngle(new T.Vector3(0, 1, 0), spec.camera.orbit * d2r * e); cam.position.copy(look).add(off); }
+    cam.lookAt(look);
+  };
+  return { scene, cam, update };
+}
+// Fast path: WebCodecs encodes the frames as quickly as they can be drawn, mp4-muxer packs them into an MP4.
+let muxLib = null;
+function loadMuxer() {
+  if (window.Mp4Muxer) return Promise.resolve(window.Mp4Muxer);
+  return muxLib || (muxLib = new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = "https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js"; sc.async = true;
+    sc.onload = () => (window.Mp4Muxer ? res(window.Mp4Muxer) : rej(new Error("nomux")));
+    sc.onerror = () => { muxLib = null; sc.remove(); rej(new Error("nomux")); };
+    document.head.appendChild(sc);
+  }));
+}
+async function pickVideo(S, fps) {
+  for (const [codec, mux] of [["avc1.4d401f", "avc"], ["avc1.42e01f", "avc"], ["vp09.00.31.08", "vp9"]]) {
+    const cfg = { codec, width: S, height: S, bitrate: 2500000, framerate: fps, latencyMode: "quality" };
+    if (mux === "avc") cfg.avc = { format: "avc" };
+    try { const r = await VideoEncoder.isConfigSupported(cfg); if (r && r.supported) return { cfg, mux }; } catch (e) { /* try the next */ }
+  }
+  return null;
+}
+async function pickAudio() {
+  if (!window.AudioEncoder || !window.AudioData || !window.OfflineAudioContext) return null;
+  for (const [codec, mux] of [["mp4a.40.2", "aac"], ["opus", "opus"]]) {
+    const cfg = { codec, sampleRate: 48000, numberOfChannels: 2, bitrate: 128000 };
+    try { const r = await AudioEncoder.isConfigSupported(cfg); if (r && r.supported) return { cfg, mux }; } catch (e) { /* try the next */ }
+  }
+  return null;
+}
+async function fastVideo(m, onProg) {
+  if (!window.VideoEncoder || !window.VideoFrame) throw new Error("nowc");
+  const S = 720, FPS = 24, wantMusic = m.music && m.music !== "none";
+  const [M, v, a] = await Promise.all([loadMuxer(), pickVideo(S, FPS), wantMusic ? pickAudio() : null]);
+  if (!v) throw new Error("nowc");
+  const R = await makeFrames(m, S), n = Math.round(R.total * FPS);
+  const muxer = new M.Muxer({ target: new M.ArrayBufferTarget(), video: { codec: v.mux, width: S, height: S, frameRate: FPS }, audio: a ? { codec: a.mux, numberOfChannels: 2, sampleRate: 48000 } : undefined, fastStart: "in-memory", firstTimestampBehavior: "offset" });
+  let err = null;
+  const ve = new VideoEncoder({ output: (c, meta) => muxer.addVideoChunk(c, meta), error: (e) => { err = e; } });
+  ve.configure(v.cfg);
+  // music renders in parallel with the pictures
+  const song = a ? (() => { const oc = new OfflineAudioContext(2, Math.ceil(R.total * 48000), 48000); music(oc, oc.destination, R.total, m.music); return oc.startRendering(); })() : null;
+  for (let i = 0; i < n; i++) {
+    if (err) throw err;
+    await R.frame(i / FPS);
+    const vf = new VideoFrame(R.cv, { timestamp: Math.round(i * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+    ve.encode(vf, { keyFrame: i % (FPS * 2) === 0 }); vf.close();
+    while (ve.encodeQueueSize > 6) await new Promise((r) => setTimeout(r, 4));
+    if (i % 4 === 0) onProg(i / n * .97);
+  }
+  await ve.flush(); ve.close(); if (err) throw err;
+  if (song) {
+    const buf = await song, len = buf.length, L = buf.getChannelData(0), Rr = buf.getChannelData(1), CH = 4800;
+    const ae = new AudioEncoder({ output: (c, meta) => muxer.addAudioChunk(c, meta), error: (e) => { err = e; } });
+    ae.configure(a.cfg);
+    for (let off = 0; off < len; off += CH) {
+      const k = Math.min(CH, len - off), data = new Float32Array(k * 2);
+      data.set(L.subarray(off, off + k), 0); data.set(Rr.subarray(off, off + k), k);
+      const ad = new AudioData({ format: "f32-planar", sampleRate: 48000, numberOfFrames: k, numberOfChannels: 2, timestamp: Math.round(off * 1e6 / 48000), data });
+      ae.encode(ad); ad.close();
+    }
+    await ae.flush(); ae.close(); if (err) throw err;
+  }
+  R.dispose(); muxer.finalize(); onProg(1);
+  const blob = new Blob([muxer.target.buffer], { type: "video/mp4" });
+  if (!blob.size) throw new Error("empty");
+  return { blob, url: URL.createObjectURL(blob) };
+}
+
+// Fallback: play the film on a canvas and record it in real time.
+async function recordVideo(m, onProg) {
+  if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error("norec");
+  const mime = ['video/mp4;codecs="avc1.42E01E,mp4a.40.2"', "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((t) => { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } });
+  if (!mime) throw new Error("norec");
+  const R = await makeFrames(m, 720), total = R.total;
+  await R.frame(0);
+  const stream = R.cv.captureStream(30);
+  if (actx && m.music && m.music !== "none") {
+    try { if (actx.state === "suspended") await actx.resume(); const dest = actx.createMediaStreamDestination(); music(actx, dest, total, m.music); dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t)); } catch (e) { /* silent video then */ }
+  }
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 3e6 }), chunks = [];
+  rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  const stopped = new Promise((res) => { rec.onstop = res; });
+  rec.start(250);
+  const t0 = performance.now();
+  for (;;) {
+    const sec = (performance.now() - t0) / 1000;
+    if (sec >= total) break;
+    await R.frame(sec); onProg(sec / total);
+    const wait = 33 - ((performance.now() - t0) % 33); await new Promise((r) => setTimeout(r, wait));
+  }
+  await R.frame(total - .001);
+  rec.stop(); await stopped; stream.getTracks().forEach((t) => t.stop()); R.dispose();
+  const blob = new Blob(chunks, { type: mime.split(";")[0] });
+  if (!blob.size) throw new Error("empty");
+  return { blob, url: URL.createObjectURL(blob) };
+}
+  // the film as V3AI wrote it → safe, bounded scenes for the engine
+  const raw = (FILM && Array.isArray(FILM.scenes)) ? FILM.scenes : [];
+  const scenes = raw.map((sc) => {
+    if (!sc || typeof sc !== "object") return null;
+    const dur = clampN(sc.dur, 4, 2, 8), caption = typeof sc.caption === "string" ? sc.caption.slice(0, 80) : "";
+    if (sc.three) { const t = norm3d(sc.three); return t ? { three: t, dur, caption } : null; }
+    const svg = cleanSvg(String(sc.svg || "")); if (!svg) return null;
+    const an = normAnim({ anim: Array.isArray(sc.anim) ? sc.anim : [] });
+    return { svg, anim: an ? an.anim : [], dur, loop: clampN(sc.loop, 2, .5, 6), caption };
+  }).filter(Boolean);
+  const film = { scenes, music: ["happy", "calm", "epic", "none"].includes(FILM && FILM.music) ? FILM.music : "happy" };
+  const title = (FILM && typeof FILM.title === "string" && FILM.title) || "Видео V3AI";
+  document.title = "V3AI · " + title; $("#title").textContent = title;
+  scenes.forEach((sc, i) => { const li = document.createElement("li"); const b = document.createElement("b"); b.textContent = sc.caption || "Сцена " + (i + 1); li.append(b, " · " + sc.dur + " с" + (sc.three ? " · 3D" : "")); $("#scenes").appendChild(li); });
+
+  const view = $("#view"), vg = view.getContext("2d"), msg = $("#msg"), playBtn = $("#play"), saveBtn = $("#save"), prog = $("#prog");
+  const status = (t) => { $("#status").textContent = t; };
+  let R = null, playing = false, out = null, t0 = 0;
+  if (!scenes.length) { msg.textContent = "В этом видео нет сцен — сними его в V3AI ещё раз."; return; }
+
+  (async () => {
+    try {
+      R = await makeFrames(film, 720);
+      await R.frame(Math.min(1.2, R.total / 2)); vg.drawImage(R.cv, 0, 0, 720, 720);
+      msg.hidden = true; playBtn.disabled = false; saveBtn.disabled = false;
+      status("Длительность: " + Math.round(R.total) + " с · сцен: " + scenes.length);
+    } catch (e) {
+      msg.textContent = e && e.message === "no3d" ? "3D-движок не загрузился. Проверь интернет и обнови страницу." : "Не получилось подготовить видео.";
+    }
+  })();
+
+  function stop() {
+    playing = false; playBtn.textContent = "▶ Смотреть";
+    if (out) { try { out.disconnect(); } catch (e) { /* fine */ } out = null; }
+  }
+  async function tick() {
+    if (!playing) return;
+    const t = (performance.now() - t0) / 1000;
+    if (t >= R.total) { stop(); prog.style.width = "100%"; return; }
+    await R.frame(t); vg.drawImage(R.cv, 0, 0, 720, 720);
+    prog.style.width = Math.min(100, t / R.total * 100) + "%";
+    requestAnimationFrame(tick);
+  }
+  playBtn.addEventListener("click", () => {
+    if (playing) { stop(); return; }
+    wakeAudio();
+    if (actx && film.music !== "none") { out = actx.createGain(); out.connect(actx.destination); music(actx, out, R.total, film.music); }
+    playing = true; t0 = performance.now(); playBtn.textContent = "⏹ Стоп"; tick();
+  });
+  saveBtn.addEventListener("click", async () => {
+    wakeAudio(); stop(); saveBtn.disabled = true; playBtn.disabled = true;
+    const p = (k) => { prog.style.width = Math.round(k * 100) + "%"; status("Собираю видео… " + Math.round(k * 100) + "%"); };
+    try {
+      const v = await fastVideo(film, p).catch(() => recordVideo(film, p));
+      const a = document.createElement("a"); a.href = v.url; a.download = "V3AI-" + title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + (/mp4/.test(v.blob.type) ? ".mp4" : ".webm");
+      document.body.appendChild(a); a.click(); a.remove();
+      status("Готово: видео скачивается (" + Math.round(v.blob.size / 1024) + " КБ).");
+    } catch (e) {
+      status(e && e.message === "norec" ? "Этот браузер не умеет записывать видео — открой файл в Chrome или Edge." : "Не получилось собрать видео — попробуй ещё раз.");
+    }
+    saveBtn.disabled = false; playBtn.disabled = false;
+  });
+})();
+</script>
+</body>
+</html>
+
+'@
+
 # ── Dr. Agents ────────────────────────────────────────────────────────────────────────────────
 $script:Skills = [ordered]@{ memory = '🧠 Память'; tasks = '✅ Список дел'; calc = '🧮 Калькулятор'; time = '🕐 Дата и время'; dice = '🎲 Случайности' }
 
@@ -969,7 +1603,10 @@ function Invoke-V3Chat($Chat, [string]$Q) {
 function Show-V3Help {
   Write-V3Rule 'Команды'
   $rows = @(
-    @('/mode [имя]', 'режим: help, school, write, lang, code, fun, art, game, agents'),
+    @('/image <описание>', 'нарисовать картинку (без описания — режим «Художник»)'),
+    @('/video <сюжет>', 'снять 3D-видео; /video 2d <сюжет> — рисованное 2D'),
+    @('/watt <описание>', 'WattAI: сделать игру (без описания — режим WattAI)'),
+    @('/mode [имя]', 'режим: help, school, write, lang, code, fun, art, game, video, agents'),
     @('/model [номер]', 'выбрать модель V3AI'),
     @('/new', 'новый чат        /chats — история        /open <номер> — открыть'),
     @('/export', 'сохранить чат в файл .md'),
@@ -984,7 +1621,7 @@ function Show-V3Help {
     @('строка с \ в конце', 'продолжить ввод на следующей строке')
   )
   foreach ($r in $rows) { Write-Host ('   ' + $r[0].PadRight(22)) -NoNewline -ForegroundColor Cyan; Write-Host $r[1] -ForegroundColor Gray }
-  Write-V3Note 'GIF, видео и 3D-мультфильмы есть только в веб-версии V3AI.'
+  Write-V3Note 'GIF-анимации есть только в веб-версии V3AI.'
 }
 
 function Show-V3Models {
@@ -1034,6 +1671,13 @@ function Export-V3Chat($Chat) {
   if ($path) { Write-V3Note "💾 Сохранено: $path" Green }
 }
 
+function Switch-V3Mode([string]$Id) {
+  $mo = Get-V3Mode $Id
+  $script:Cfg.mode = $mo.id; Save-V3Config
+  if ($script:chat.messages.Count -and ($script:chat.mode -ne $mo.id -or $script:chat.agent)) { Save-V3Chat $script:chat; $script:chat = New-V3Chat $mo.id } else { $script:chat.mode = $mo.id }
+  Write-V3Note "Режим «$($mo.n)» $($mo.ico)" Green
+}
+
 function Get-V3PromptText($Chat) {
   $M = Get-V3Model $script:Cfg.model
   $label = ''
@@ -1062,6 +1706,7 @@ while ($true) {
   $line = $line.Trim()
   if (-not $line) { continue }
 
+  $forced = ''
   if ($line.StartsWith('/')) {
     $words = @($line.Substring(1) -split '\s+' | Where-Object { $_ })
     if (-not $words.Count) { Show-V3Help; continue }
@@ -1080,11 +1725,7 @@ while ($true) {
       'mode' {
         if ($rest.Count) {
           $mo = $script:Modes | Where-Object { $_.id -eq $rest[0].ToLower() -or $_.n.ToLower() -eq $rest[0].ToLower() } | Select-Object -First 1
-          if ($mo) {
-            $script:Cfg.mode = $mo.id; Save-V3Config
-            if ($chat.messages.Count -and ($chat.mode -ne $mo.id -or $chat.agent)) { Save-V3Chat $chat; $chat = New-V3Chat $mo.id } else { $chat.mode = $mo.id }
-            Write-V3Note "Режим «$($mo.n)» $($mo.ico)" Green
-          } else { Show-V3Modes }
+          if ($mo) { Switch-V3Mode $mo.id } else { Show-V3Modes }
         } else { Show-V3Modes }
       }
       'new' { Save-V3Chat $chat; $chat = New-V3Chat $script:Cfg.mode; Write-V3Note '＋ Новый чат' Green }
@@ -1097,6 +1738,12 @@ while ($true) {
         } else { Show-V3Chats }
       }
       'export' { Export-V3Chat $chat }
+      'image' { if ($rest.Count) { $forced = 'art'; $line = $rest -join ' ' } else { Switch-V3Mode 'art' } }
+      'watt' { if ($rest.Count) { $forced = 'game'; $line = $rest -join ' ' } else { Switch-V3Mode 'game' } }
+      'video' {
+        if ($rest.Count -and $rest[0].ToLower() -in @('2d', '2д')) { $rest = @($rest | Select-Object -Skip 1); $forced = 'video2d' } else { $forced = 'video' }
+        if ($rest.Count) { $line = $rest -join ' ' } else { $forced = ''; Switch-V3Mode 'video' }
+      }
       'secure' { Set-V3Secure $rest }
       'github' {
         if ($rest.Count -and $rest[0] -eq 'login') { Invoke-V3GitHubLogin }
@@ -1122,12 +1769,11 @@ while ($true) {
       }
       default { Write-V3Note "Не знаю команду /$cmd. Список: /help" Yellow }
     }
-    Write-Host ''
-    continue
+    if (-not $forced) { Write-Host ''; continue }
   }
 
   # Ссылка на GitHub подключает репозиторий; вопрос рядом со ссылкой задаётся сразу после.
-  $R = ConvertFrom-V3RepoUrl $line
+  $R = $(if ($forced) { $null } else { ConvertFrom-V3RepoUrl $line })
   if ($R) {
     $ok = Connect-V3Repo $chat $R
     $line = ($line.Replace($R.url, '')).Trim(' ', ',', '.', ':', ';', '!', '-')
@@ -1137,16 +1783,21 @@ while ($true) {
   if (-not $chat.title) { $chat.title = $(if ($line.Length -gt 40) { $line.Substring(0, 40) } else { $line }) }
   $script:Cfg.asked = [int]$script:Cfg.asked + 1; Save-V3Config
 
+  $cm = $(if ($forced) { $forced } else { $chat.mode })
+  if ($cm -eq 'video' -and $line -match '^(2d|2д)\s+(.+)$') { $cm = 'video2d'; $line = $Matches[2] }
   if (-not $script:ApiKey) {
-    Write-Host ''; Write-V3Line (Get-V3Offline $line); Write-Host ''
+    Write-Host ''
+    if ($cm -in @('art', 'game', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
+    Write-Host ''
     continue
   }
   Write-Host ''
   try {
-    $cm = $chat.mode
-    if ($chat.agent) { Invoke-V3Chat $chat $line }
+    if ($chat.agent -and -not $forced) { Invoke-V3Chat $chat $line }
     elseif ($cm -eq 'art') { Invoke-V3Art $chat $line }
     elseif ($cm -eq 'game') { Invoke-V3Game $chat $line }
+    elseif ($cm -eq 'video') { Invoke-V3Video $chat $line $true }
+    elseif ($cm -eq 'video2d') { Invoke-V3Video $chat $line $false }
     elseif ($cm -eq 'agents') { New-V3Agent $chat $line }
     else { Invoke-V3Chat $chat $line }
   } catch {
