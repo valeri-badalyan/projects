@@ -17465,7 +17465,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     });
     def("Write-Warning", [], "Write-Warning <текст>", "Печатает предупреждение.", (a) => { line("ПРЕДУПРЕЖДЕНИЕ: " + a.pos.map(keyOf).join(" "), "warn"); return []; });
     def("Write-Error", [], "Write-Error <текст>", "Печатает ошибку.", (a) => { throw err(a.pos.map(keyOf).join(" ") || "Ошибка.", "NotSpecified"); });
-    def("Read-Host", [], "Read-Host [<подсказка>]", "Спрашивает текст у пользователя.", (a) => { const v = window.prompt(a.pos.map(keyOf).join(" ") || "Ввод:", ""); return v == null ? [] : [v]; });
+    def("Read-Host", [], "Read-Host [<подсказка>]", "Спрашивает текст у пользователя.", (a) => { let v = null; try { v = window.prompt(a.pos.map(keyOf).join(" ") || "Ввод:", ""); } catch (e) { /* blocked */ } if (v == null) throw err("Окно ввода недоступно здесь. Используй переменную: $имя = \"текст\".", "NotSupported"); return [v]; });
     def("Get-Date", ["date"], "Get-Date [-Format <шаблон>]", "Показывает текущую дату и время.", (a) => {
       const d = new Date(), f = a.get(["format", "uformat"]);
       if (f && f !== true) { const z = (x) => String(x).padStart(2, "0"); return [String(f).replace(/yyyy/g, d.getFullYear()).replace(/MM/g, z(d.getMonth() + 1)).replace(/dd/g, z(d.getDate())).replace(/HH/g, z(d.getHours())).replace(/mm/g, z(d.getMinutes())).replace(/ss/g, z(d.getSeconds()))]; }
@@ -17521,8 +17521,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     def("Get-Variable", ["gv"], "Get-Variable", "Показывает все переменные.", () => [{ kind: "table", head: pad("Name", 16) + "Value", rows: Object.keys(vars).filter((k) => k !== "_").map((k) => pad(k, 16) + (Array.isArray(vars[k]) ? vars[k].map(keyOf).join(", ") : showVal(keyOf(vars[k])))) }]);
     def("Remove-Variable", ["rv"], "Remove-Variable [-Name] <имя>", "Удаляет переменную.", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); const k = Object.keys(vars).find((x) => x.toLowerCase() === n.toLowerCase()); if (!k) throw err("Не удается найти переменную с именем \"" + n + "\".", "ObjectNotFound"); delete vars[k]; S.vars = vars; save(); return []; });
     def("Start-Sleep", ["sleep"], "Start-Sleep [-Seconds] <n>", "Ждёт указанное число секунд (до 10).", (a) => { const s = Math.min(10, Math.max(0, Number(a.get(["seconds", "milliseconds"], 0)) || 1)); return { wait: (a.has("milliseconds") ? s : s * 1000) }; });
-    def("Format-Disk", ["format"], "Format-Disk", "Сбрасывает диск V3:\\ к начальному виду (спросит подтверждение).", () => {
-      if (!window.confirm("Стереть всё на диске V3:\\ и вернуть стандартные файлы?")) return ["Отменено."];
+    def("Format-Disk", ["format"], "Format-Disk -Force", "Сбрасывает диск V3:\\ к начальному виду (нужен -Force).", (a) => {
+      if (!a.has("force")) return [{ kind: "host", text: "ПРЕДУПРЕЖДЕНИЕ: это сотрёт всё на диске V3:\\. Чтобы подтвердить, введи: Format-Disk -Force", color: COLORS.yellow }];
       S.fs = freshFs(); cwd = HOME.slice(); S.cwd = cwd; save(); return ["Диск V3:\\ отформатирован. Как новенький!"];
     });
     def("ping", ["Test-Connection"], "ping <адрес>", "Проверяет связь (понарошку).", (a) => {
