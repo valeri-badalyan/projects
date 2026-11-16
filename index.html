@@ -17134,7 +17134,11 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     if (!S.fs) S.fs = freshFs();
     let cwd = S.cwd || HOME.slice();
     const vars = Object.assign({}, S.vars);
-    let built = false, hi = -1, draft = "", comp = null, editing = null, busy = 0;
+    let built = false, hi = -1, draft = "", comp = null, editing = null;
+    // asking: a Read-Host question waiting for the next Enter; app: a program (v3ai) that owns the input line;
+    // running: an async command (download, sleep, installer) is still working
+    let asking = null, app = null, running = false;
+    S.apps = S.apps && typeof S.apps === "object" ? S.apps : {};
     const out = () => $("#ptOut"), log = () => $("#ptLog"), inp = () => $("#ptIn");
 
     /* ---------- file system ---------- */
@@ -17193,7 +17197,11 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     const COLORS = { black: "#000", darkblue: "#0037da", darkgreen: "#13a10e", darkcyan: "#3a96dd", darkred: "#c50f1f", darkmagenta: "#881798", darkyellow: "#c19c00", gray: "#cccccc", darkgray: "#767676", blue: "#3b78ff", green: "#16c60c", cyan: "#61d6d6", red: "#e74856", magenta: "#b4009e", yellow: "#f9f1a5", white: "#f2f2f2" };
     function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
     const promptText = () => "PS " + pathStr(cwd) + "> ";
-    function setPrompt() { $("#ptPs").textContent = promptText(); $("#ptTitle").textContent = "V3TERMIN — " + pathStr(cwd); }
+    const curPrompt = () => asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
+    function setPrompt() { $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
+    function echoRaw(text) { line(text, "cmd"); }
+    function ask(q) { return new Promise((res, rej) => { asking = { q, res, rej }; setPrompt(); scrollEnd(); }); }
+    const said = (t, c) => render([{ kind: "host", text: t, color: c ? (COLORS[c] || c) : "" }]);
     function echoCmd(text) {
       const d = line("", "cmd"); d.append(promptText());
       const m = text.match(/^(\s*)(\S+)([\s\S]*)$/);
@@ -17267,7 +17275,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       return k ? vars[k] : undefined;
     }
     // args: positional + named (-Name value / -Switch)
-    const SWITCHES = ["recurse", "force", "descending", "unique", "full", "nonewline", "list", "casesensitive", "simplematch", "all", "line", "word", "character", "passthru", "examples", "detailed"];
+    const SWITCHES = ["recurse", "force", "descending", "unique", "full", "nonewline", "list", "casesensitive", "simplematch", "all", "line", "word", "character", "passthru", "examples", "detailed", "usebasicparsing", "useb", "online"];
     function parseArgs(toks) {
       const a = { pos: [], named: {}, blocks: [] };
       for (let i = 0; i < toks.length; i++) {
@@ -17359,7 +17367,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       }
       const rows = uniq().map((c) => pad(c.name, 18) + pad(c.aliases.slice(0, 3).join(", "), 20) + c.desc);
       return [{ kind: "host", text: "V3TERMIN — справка. Подробно о команде: Get-Help <команда>", color: "" }, { kind: "table", head: pad("Командлет", 18) + pad("Псевдонимы", 20) + "Описание", rows },
-        "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (↑ ↓) и Tab."];
+        "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (↑ ↓) и Tab.",
+        "Установка программ одной строкой, как в PowerShell:", "  irm " + V3AI_INSTALL + " | iex"];
     });
     def("Get-Command", ["gcm"], "Get-Command [[-Name] <шаблон>]", "Список доступных командлетов и псевдонимов.", (a) => {
       const n = a.get("name", 0), re = n && n !== true ? wild(String(n).includes("*") ? n : "*" + n + "*") : null;
@@ -17465,7 +17474,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     });
     def("Write-Warning", [], "Write-Warning <текст>", "Печатает предупреждение.", (a) => { line("ПРЕДУПРЕЖДЕНИЕ: " + a.pos.map(keyOf).join(" "), "warn"); return []; });
     def("Write-Error", [], "Write-Error <текст>", "Печатает ошибку.", (a) => { throw err(a.pos.map(keyOf).join(" ") || "Ошибка.", "NotSpecified"); });
-    def("Read-Host", [], "Read-Host [<подсказка>]", "Спрашивает текст у пользователя.", (a) => { let v = null; try { v = window.prompt(a.pos.map(keyOf).join(" ") || "Ввод:", ""); } catch (e) { /* blocked */ } if (v == null) throw err("Окно ввода недоступно здесь. Используй переменную: $имя = \"текст\".", "NotSupported"); return [v]; });
+    def("Read-Host", [], "Read-Host [<подсказка>]", "Спрашивает текст у пользователя.", (a) => ask(a.pos.map(keyOf).join(" ") || "Ввод").then((v) => [v]));
     def("Get-Date", ["date"], "Get-Date [-Format <шаблон>]", "Показывает текущую дату и время.", (a) => {
       const d = new Date(), f = a.get(["format", "uformat"]);
       if (f && f !== true) { const z = (x) => String(x).padStart(2, "0"); return [String(f).replace(/yyyy/g, d.getFullYear()).replace(/MM/g, z(d.getMonth() + 1)).replace(/dd/g, z(d.getDate())).replace(/HH/g, z(d.getHours())).replace(/mm/g, z(d.getMinutes())).replace(/ss/g, z(d.getSeconds()))]; }
@@ -17516,11 +17525,20 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       S.theme = n; save(); $("#ptWin").dataset.theme = n; return [];
     });
     def("notepad", ["edit", "nano"], "notepad <файл>", "Открывает файл в блокноте (если файла нет — создаёт).", (a) => { openEditor(need(a.get("path", 0), "Path")); return []; });
-    def("Invoke-Expression", ["iex"], "Invoke-Expression <команда>", "Выполняет строку как команду.", (a) => execLine(a.pos.map(keyOf).join(" "), true));
+    def("Invoke-Expression", ["iex"], "Invoke-Expression <команда>  |  irm <ссылка> | iex", "Выполняет строку как команду — или скачанный скрипт (например, установщик программы).", (a, input) => {
+      const text = input && input.length ? flat(input.map((x) => x && x.content != null ? x.content : x)).map(keyOf).join("\n") : a.pos.map(keyOf).join(" ");
+      return runText(text, 0);
+    });
+    def("Invoke-RestMethod", ["irm"], "Invoke-RestMethod [-Uri] <ссылка> [-OutFile <файл>]", "Скачивает данные по ссылке. Установка программ: irm <ссылка на install.ps1> | iex", (a) => web(a, false));
+    def("Invoke-WebRequest", ["iwr", "curl", "wget"], "Invoke-WebRequest [-Uri] <ссылка> [-OutFile <файл>] [-UseBasicParsing]", "Скачивает страницу или файл по ссылке.", (a) => web(a, true));
+    def("Get-Package", ["Get-InstalledApp"], "Get-Package", "Программы, установленные через irm … | iex.", () => {
+      const rows = Object.keys(APPS).filter((k) => appReady(k)).map((k) => pad(APPS[k].name, 14) + pad(APPS[k].ver, 10) + APPS[k].cmd);
+      return rows.length ? [{ kind: "table", head: pad("Name", 14) + pad("Version", 10) + "Command", rows }] : ["Пока ничего не установлено. Попробуй:", "irm " + V3AI_INSTALL + " | iex"];
+    });
     def("Set-Variable", ["set", "sv"], "Set-Variable [-Name] <имя> [-Value] <значение>", "Создаёт переменную (то же, что $имя = значение).", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); setVar(n, a.get("value", 1) ?? ""); return []; });
     def("Get-Variable", ["gv"], "Get-Variable", "Показывает все переменные.", () => [{ kind: "table", head: pad("Name", 16) + "Value", rows: Object.keys(vars).filter((k) => k !== "_").map((k) => pad(k, 16) + (Array.isArray(vars[k]) ? vars[k].map(keyOf).join(", ") : showVal(keyOf(vars[k])))) }]);
     def("Remove-Variable", ["rv"], "Remove-Variable [-Name] <имя>", "Удаляет переменную.", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); const k = Object.keys(vars).find((x) => x.toLowerCase() === n.toLowerCase()); if (!k) throw err("Не удается найти переменную с именем \"" + n + "\".", "ObjectNotFound"); delete vars[k]; S.vars = vars; save(); return []; });
-    def("Start-Sleep", ["sleep"], "Start-Sleep [-Seconds] <n>", "Ждёт указанное число секунд (до 10).", (a) => { const s = Math.min(10, Math.max(0, Number(a.get(["seconds", "milliseconds"], 0)) || 1)); return { wait: (a.has("milliseconds") ? s : s * 1000) }; });
+    def("Start-Sleep", ["sleep"], "Start-Sleep [-Seconds] <n>", "Ждёт указанное число секунд (до 10).", (a) => { const s = Math.min(10, Math.max(0, Number(a.get(["seconds", "milliseconds"], 0)) || 1)); const ms = a.has("milliseconds") ? Math.min(10000, s) : s * 1000; return new Promise((r) => setTimeout(() => r([]), ms)); });
     def("Format-Disk", ["format"], "Format-Disk -Force", "Сбрасывает диск V3:\\ к начальному виду (нужен -Force).", (a) => {
       if (!a.has("force")) return [{ kind: "host", text: "ПРЕДУПРЕЖДЕНИЕ: это сотрёт всё на диске V3:\\. Чтобы подтвердить, введи: Format-Disk -Force", color: COLORS.yellow }];
       S.fs = freshFs(); cwd = HOME.slice(); S.cwd = cwd; save(); return ["Диск V3:\\ отформатирован. Как новенький!"];
@@ -17578,14 +17596,174 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     def("Out-Host", ["oh"], "... | Out-Host", "Просто выводит на экран.", (a, input) => input || []);
     def("Out-Null", [], "... | Out-Null", "Выбрасывает вывод.", () => []);
 
+    /* ---------- downloads: irm / iwr ---------- */
+    const V3AI_BASE = "https://raw.githubusercontent.com/valeri-badalyan/projects/ccr-617a6cca-m3ccsg/v3ai/powershell/";
+    const V3AI_INSTALL = V3AI_BASE + "install.ps1";
+    // Offline copies, used when the network (or the page's sandbox) does not let the download through.
+    const MIRROR = {
+      [V3AI_INSTALL]: "<#\n  Установщик V3AI для PowerShell.\n  Запуск одной строкой:\n    irm " + V3AI_INSTALL + " | iex\n\n  Что делает:\n    1. скачивает v3ai.ps1 в папку ~/.v3ai/bin;\n    2. по вашему согласию добавляет команду «v3ai»;\n    3. предлагает сразу запустить V3AI.\n  Ничего не меняет в системе без вопроса, права администратора не нужны.\n#>\n& {\n  $ErrorActionPreference = 'Stop'\n  $url = \"" + V3AI_BASE + "v3ai.ps1\"\n  Write-Host '  V3AI · установка' -ForegroundColor Cyan\n  $bin = Join-Path (Join-Path $HOME '.v3ai') 'bin'\n  Invoke-WebRequest -Uri $url -OutFile (Join-Path $bin 'v3ai.ps1') -UseBasicParsing\n  $answer = Read-Host '  Добавить команду «v3ai», чтобы запускать из любой папки? (Д/н)'\n  # …\n}\n",
+      [V3AI_BASE + "v3ai.ps1"]: "#Requires -Version 5.1\n<#\n.SYNOPSIS\n  V3AI для PowerShell — консольная версия ИИ-помощника V3AI.\n\n.DESCRIPTION\n  Чат с ИИ прямо в терминале: режимы (Помощник, Учёба, Писатель, Переводчик, Код, Весельчак)\n  и шесть моделей V3AI.\n\n.EXAMPLE\n  v3ai\n#>\n# Локальная копия V3TERMIN. Полная версия: " + V3AI_BASE + "v3ai.ps1\n",
+    };
+    const normUrl = (u) => String(u).trim().replace(/^http:\/\//i, "https://").replace(/[?#].*$/, "");
+    async function fetchText(url) {
+      const host = (url.match(/^https?:\/\/([^/]+)/i) || [])[1] || url, mirror = MIRROR[normUrl(url)];
+      try {
+        const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
+        const r = await fetch(url, { signal: ctl.signal, cache: "no-store" }); clearTimeout(t);
+        if (!r.ok) { if (mirror) return mirror; throw err("Удаленный сервер возвратил ошибку: (" + r.status + ") " + (r.status === 404 ? "Не найден" : r.statusText || "Ошибка") + ".", "InvalidOperation"); }
+        return await r.text();
+      } catch (e) {
+        if (e && e.ps) throw e;
+        if (mirror) return mirror;
+        throw err("Не удается соединиться с удаленным сервером " + host + ". Проверь ссылку и подключение к интернету.", "ConnectionError");
+      }
+    }
+    async function web(a, full) {
+      const url = need(a.get(["uri", "url"], 0), "Uri");
+      if (!/^https?:\/\/[^/\s]+/i.test(url)) throw err("Недопустимый URI: \"" + url + "\". Ссылка должна начинаться с https://", "InvalidArgument");
+      const st = line("Запись веб-запроса: " + url.replace(/^https?:\/\//i, "").slice(0, 70) + " …", "dim"); scrollEnd();
+      let text;
+      try { text = await fetchText(url); } finally { st.remove(); }
+      const of = a.get("outfile");
+      if (of && of !== true) { writeFile(String(keyOf(of)), text, false); return []; }
+      if (!full) return [text];
+      return [{ kind: "list", content: text, pairs: [["StatusCode", "200"], ["StatusDescription", "OK"], ["Content", text.length > 160 ? text.slice(0, 160).replace(/\s+/g, " ") + "…" : text.replace(/\s+/g, " ")], ["RawContentLength", String(new Blob([text]).size)]] }];
+    }
+    function mkdirp(parts) { let n = S.fs; for (const seg of parts) { const k = findKey(n, seg); if (k && n.c[k].t !== "d") throw err("\"" + seg + "\" — это файл, а нужна папка."); if (!k) { n.c[seg] = D(); n.m = now(); } n = n.c[k || seg]; } return n; }
+    const isNo = (v) => ["н", "нет", "n", "no"].includes(String(v || "").trim().toLowerCase());
+    // runs downloaded or typed script text: known installers/programs are recognised, the rest runs line by line
+    function runText(text, depth) {
+      text = String(text || "");
+      if (/Установщик V3AI/i.test(text)) return installV3AI();
+      if (/V3AI для PowerShell/i.test(text)) return startV3AI();
+      if (depth > 4) throw err("Слишком глубокая вложенность скриптов.");
+      const ls = text.replace(/^﻿/, "").replace(/<#[\s\S]*?#>/g, "").split(/\r?\n/).filter((x) => x.trim() && !/^\s*#/.test(x));
+      let res = [];
+      const go = (k) => { for (; k < ls.length; k++) { const r = execLine(ls[k], true, depth + 1); if (r && typeof r.then === "function") return r.then((v) => { res = res.concat(v || []); return go(k + 1); }); res = res.concat(r || []); } return res; };
+      return go(0);
+    }
+
+    /* ---------- programs installed with irm | iex ---------- */
+    const APPS = { v3ai: { name: "V3AI", ver: "1.0", cmd: "v3ai", file: HOME.concat(".v3ai", "bin", "v3ai.ps1") } };
+    const appReady = (id) => !!S.apps[id] && !!walk(APPS[id].file);
+    async function installV3AI() {
+      said(""); said("  V3AI · установка", "cyan"); said("  ────────────────", "darkcyan");
+      const bin = HOME.concat(".v3ai", "bin"); mkdirp(bin);
+      said("  ◌ скачиваю V3AI…", "darkgray"); scrollEnd();
+      const code = await fetchText(V3AI_BASE + "v3ai.ps1");
+      const file = pathStr(bin.concat("v3ai.ps1")); writeFile(file, code, false);
+      said("  ✓ V3AI: " + file, "green");
+      if (!isNo(await ask("  Добавить команду «v3ai», чтобы запускать из любой папки? (Д/н)"))) {
+        const first = !S.apps.v3ai; S.apps.v3ai = 1; save();
+        said("  ✓ Команда: v3ai", "green"); said("  Запуск в любой момент: v3ai", "cyan");
+        if (first) { Hero.earn(10); Hero.say("v3termin", "good", "V3AI установлен! Набери v3ai 🤖"); }
+      }
+      if (!isNo(await ask("  Запустить V3AI сейчас? (Д/н)"))) startV3AI();
+      return [];
+    }
+    const VM = [
+      { id: "lai13", n: "LAI 1.3", tag: "Лёгкая", len: 60, q: 1 }, { id: "fuhi28", n: "FUHI 2.8", tag: "Быстрая", len: 120, q: 1 },
+      { id: "ards31", n: "ARDSONNET 3.1", tag: "Умная", len: 150 }, { id: "flash39", n: "FLASH 3.9", tag: "Скорость+", len: 220, q: 1 },
+      { id: "ards45", n: "ARDSONNET 4.5", tag: "Сильная", len: 300 }, { id: "ortl55", n: "V3 ORTL 5.5", tag: "Флагман", len: 400 },
+    ];
+    const VMODES = [
+      { id: "help", ico: "✨", n: "Помощник", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы." },
+      { id: "school", ico: "📚", n: "Учёба", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения." },
+      { id: "write", ico: "✍", n: "Писатель", p: "Режим «Писатель»: пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи." },
+      { id: "lang", ico: "🌍", n: "Переводчик", p: "Режим «Переводчик»: переводи текст. Если язык не указан: с русского — на английский, с других — на русский. Ниже — произношение русскими буквами или полезный нюанс." },
+      { id: "code", ico: "💻", n: "Код", p: "Режим «Код»: ты опытный программист и наставник. Давай рабочий код в блоках ``` с языком и кратко объясняй, как он работает." },
+      { id: "fun", ico: "😂", n: "Весельчак", p: "Режим «Весельчак»: шутки, загадки (ответ не говори сразу), викторины, игры в слова. Только добрый юмор." },
+    ];
+    let samplePromise = null, aiCtl = null;
+    const getSample = () => samplePromise || (samplePromise = (window.claude && typeof window.claude.use === "function") ? Promise.resolve(window.claude.use("sample")).catch(() => null) : Promise.resolve(null));
+    const vst = () => { const v = S.v3ai && typeof S.v3ai === "object" ? S.v3ai : (S.v3ai = {}); if (!VM.some((m) => m.id === v.model)) v.model = "ortl55"; if (!VMODES.some((m) => m.id === v.mode)) v.mode = "help"; if (!Array.isArray(v.hist)) v.hist = []; return v; };
+    const vModel = () => VM.find((m) => m.id === vst().model), vMode = () => VMODES.find((m) => m.id === vst().mode);
+    function startV3AI() {
+      const LOGO = ["  ██╗   ██╗██████╗  █████╗ ██╗", "  ██║   ██║╚════██╗██╔══██╗██║", "  ██║   ██║ █████╔╝███████║██║", "  ╚██╗ ██╔╝ ╚═══██╗██╔══██║██║", "   ╚████╔╝ ██████╔╝██║  ██║██║", "    ╚═══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝"];
+      const GRAD = ["#5ce1e6", "#6fc3f0", "#8a9cf7", "#a37bfb", "#c86af0", "#ff4fd8"];
+      said(""); LOGO.forEach((l, i) => said(l, GRAD[i]));
+      said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
+      said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    /help — команды · /exit — выход", "darkgray");
+      said("");
+      app = { title: "V3AI Terminal", prompt: () => "[" + vModel().n + " · " + vMode().ico + " " + vMode().n + "] ❯ ", line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
+      Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
+      setPrompt(); return [];
+    }
+    function v3aiOffline(q0) {
+      const q = q0.toLowerCase().replace(/ё/g, "е"), pk = (a) => a[Math.floor(Math.random() * a.length)];
+      const ex = q.replace(/,/g, ".").replace(/[x×]/g, "*").replace(/[÷:]/g, "/").replace(/сколько будет|посчитай|реши|=|\?/g, "").trim();
+      if (/^[\d\s.+\-*/()%]+$/.test(ex) && /\d/.test(ex) && /[+\-*/%]/.test(ex)) { const r = tryExpr(ex); if (r.ok && typeof r.v === "number" && isFinite(r.v)) return ex + " = " + showVal(r.v); }
+      if (/привет|здравств|хай|салам|хелло/.test(q)) return pk(["Привет! Я V3AI. Чем помочь?", "Хай! Рад тебя видеть ✨", "Привет-привет! Спрашивай."]);
+      if (/кто ты|как тебя зовут/.test(q)) return "Я V3AI — ИИ-помощник от команды V3, версия для терминала.";
+      if (/время|который час/.test(q)) return "Сейчас " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }) + ".";
+      if (/дата|число|какой (сегодня )?день/.test(q)) return "Сегодня " + new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ".";
+      if (/шутк|анекдот|смешн/.test(q)) return pk(["Почему программисты путают Хэллоуин и Рождество? Потому что 31 OCT = 25 DEC 🎃🎄", "Учитель: «Почему опоздал?» Ученик: «Знак „Школа, сбавь скорость“ увидел!» 🚸", "PowerShell зашёл в бар и сказал: Get-Drink | Where-Object { $_.Cold } 🍹"]);
+      if (/загадк/.test(q)) return pk(["Зимой и летом одним цветом. Что это? (Ответ: ёлка 🎄)", "Не лает, не кусает, а в дом не пускает. (Ответ: замок 🔒)"]);
+      if (/спасиб/.test(q)) return "Всегда пожалуйста! 💙";
+      return "Сейчас я в офлайн-режиме 📴: умею считать примеры («12*7+3»), подсказать время и дату, пошутить и загадать загадку. Открой V3TERMIN в просмотрщике Claude — и я отвечу на что угодно.";
+    }
+    function printReply(text) {
+      let code = false;
+      String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
+        if (/^\s*```/.test(l)) { code = !code; said("  " + (code ? "┌─ " + (l.replace(/```/, "").trim() || "код") : "└─"), "darkgray"); return; }
+        said("  " + (code ? "│ " : "") + l.replace(/`([^`]+)`/g, "$1"), code ? "cyan" : "");
+      });
+    }
+    async function v3aiLine(text) {
+      const q = text.trim(), v = vst();
+      if (!q) return;
+      if (/^(\/exit|\/quit|exit|quit)$/i.test(q)) { said("  До встречи! 👋", "cyan"); app = null; return; }
+      if (q.startsWith("/")) {
+        const [cmd, arg] = [q.split(/\s+/)[0].toLowerCase(), q.split(/\s+/).slice(1).join(" ").trim().toLowerCase()];
+        if (cmd === "/help") {
+          said("  ── Команды ──", "darkcyan");
+          [["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model [номер]", "выбрать модель V3AI"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
+        } else if (cmd === "/mode") {
+          const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
+          if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
+          else VMODES.forEach((x) => said("   " + pad(x.id, 8) + x.ico + " " + x.n + (x.id === v.mode ? "  ← сейчас" : ""), x.id === v.mode ? "cyan" : ""));
+        } else if (cmd === "/model") {
+          const m = VM[(parseInt(arg, 10) || 0) - 1] || VM.find((x) => x.id === arg);
+          if (m) { v.model = m.id; save(); said("  Модель: " + m.n + " (" + m.tag + ")", "green"); }
+          else VM.forEach((x, i) => said("   " + (i + 1) + ". " + pad(x.n, 15) + x.tag + (x.id === v.model ? "  ← сейчас" : ""), x.id === v.model ? "cyan" : ""));
+        } else if (cmd === "/new") { v.hist = []; save(); said("  ✓ Новый чат.", "green"); }
+        else if (cmd === "/clear") log().textContent = "";
+        else if (cmd === "/key") said("  В V3TERMIN ключ не нужен: V3AI отвечает через ИИ приставки.", "darkgray");
+        else said("  Неизвестная команда. Список: /help", "yellow");
+        return;
+      }
+      v.hist.push({ role: "user", content: q });
+      const M = vModel(), Mo = vMode();
+      const el = line("  ◌ думает…", "dim"); scrollEnd();
+      let reply = "", stopped = false;
+      const sample = await getSample();
+      if (sample) {
+        aiCtl = new AbortController();
+        const hist = v.hist.slice(-12).map((x) => ({ role: x.role, content: x.content }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты.";
+        hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
+        try {
+          const opts = { cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
+          if (M.q) opts.modelTier = "quick";
+          const r = await sample(hist, opts);
+          reply = (r && r.text || "").trim();
+        } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
+        aiCtl = null;
+      }
+      el.remove();
+      if (stopped) { said("  ⏹ Ответ остановлен.", "darkgray"); v.hist.pop(); save(); return; }
+      if (!reply) { await new Promise((r) => setTimeout(r, 300)); reply = v3aiOffline(q); }
+      v.hist.push({ role: "assistant", content: reply }); if (v.hist.length > 30) v.hist.splice(0, v.hist.length - 30); save();
+      printReply(reply); said("  — " + M.n, "darkgray");
+    }
+
     /* ---------- running ---------- */
     function setVar(name, v) { if (/^(true|false|null|home|pwd|pi|_|psversiontable)$/i.test(name)) throw err("Нельзя перезаписать переменную $" + name + ": она только для чтения.", "SessionStateUnauthorizedAccess"); const k = Object.keys(vars).find((x) => x.toLowerCase() === name.toLowerCase()) || name; vars[k] = v; S.vars = Object.assign({}, vars); delete S.vars._; save(); }
     function learn(c) { if (S.learned[c.name]) return; S.learned[c.name] = 1; save(); Hero.earn(2); $("#ptChip").textContent = Object.keys(S.learned).length; if (Object.keys(S.learned).length % 5 === 0) Hero.say("v3termin", "good", `Ты освоил уже ${Object.keys(S.learned).length} командлетов! 💻`); }
     function runScript(path, depth) {
       if (depth > 4) throw err("Слишком глубокая вложенность скриптов.");
-      const r = mustGet(path, "f"); let res = [];
-      r.node.v.split("\n").forEach((ln) => { if (ln.trim()) res = res.concat(execLine(ln, true, depth + 1)); });
-      return res;
+      return runText(mustGet(path, "f").node.v, depth);
     }
     // runs one command segment
     function runCmd(toks, input, depth) {
@@ -17596,6 +17774,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       const name = first.v;
       if (/^\.?[\\/]|\.ps1$/i.test(name) && /\.ps1$/i.test(name)) return runScript(name.replace(/^\.[\\/]/, ""), depth || 0);
       const c = C[name.toLowerCase()];
+      if (!c && APPS[name.toLowerCase()] && appReady(name.toLowerCase())) return startV3AI();
+      if (!c && /^(pwsh|powershell)(\.exe)?$/i.test(name)) { const a = parseArgs(toks.slice(1)), f = a.get(["file", "f"]) || a.pos.find((x) => /\.ps1$/i.test(String(x))); if (f && f !== true) return runScript(String(keyOf(f)).replace(/^\.[\\/]/, ""), depth || 0); return ["V3TERMIN уже работает как PowerShell :)"]; }
       if (!c) {
         const g = findGame(name.replace(/\.exe$/i, ""));
         if (g && /\.exe$/i.test(name)) return C["start-process"].fn(parseArgs([{ v: g.id }]), null, "start");
@@ -17614,42 +17794,78 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     function execLine(src, quiet, depth) {
       src = String(src).trim();
       if (!src || src.startsWith("#")) return [];
+      // popular install one-liners: iex (irm URL), iex ((New-Object Net.WebClient).DownloadString('URL')), & ([scriptblock]::Create((irm URL)))
+      let w = src.match(/^(?:iex|invoke-expression)\s*\(+\s*(?:irm|invoke-restmethod|iwr|invoke-webrequest)\s+([^()]+?)\s*\)+\s*$/i)
+        || src.match(/^(?:iex|invoke-expression)\s*\(*\s*new-object\s+(?:system\.)?net\.webclient\s*\)\s*\.downloadstring\(\s*['"]([^'"]+)['"]\s*\)+\s*$/i)
+        || src.match(/^&\s*\(\s*\[scriptblock\]::create\(\s*\(\s*(?:irm|invoke-restmethod)\s+([^()]+?)\s*\)\s*\)\s*\)\s*$/i);
+      if (w) src = "irm " + w[1] + " | iex";
       // statements separated by ;
       const parts = []; { let q = false, d = 0, cur = ""; for (const ch of src) { if (q) { if (ch === q) q = false; cur += ch; continue; } if (ch === '"' || ch === "'") q = ch; if (ch === "{") d++; if (ch === "}") d--; if (ch === ";" && !d) { parts.push(cur); cur = ""; continue; } cur += ch; } parts.push(cur); }
-      if (parts.length > 1) { let all = []; parts.forEach((p) => { const r = execLine(p, quiet, depth); if (quiet) all = all.concat(r); }); return all; }
+      if (parts.length > 1) { let all = []; const go = (k) => { for (; k < parts.length; k++) { const r = execLine(parts[k], quiet, depth); if (r && typeof r.then === "function") return r.then((v) => { if (quiet) all = all.concat(v || []); return go(k + 1); }); if (quiet) all = all.concat(r || []); } return all; }; return go(0); }
       // assignment: $x = ..., $x += ...
       let m = src.match(/^\$([\w]+)\s*([+\-*/]?=)(?!=)\s*([\s\S]*)$/);
       if (m) {
-        const [, name, op, rhs] = m; let v;
+        const [, name, op, rhs] = m;
+        const assign = (v) => { if (op !== "=") { const o = getVar(name) ?? 0; v = op === "+=" ? ((typeof o === "string" || typeof v === "string") ? String(o) + v : o + v) : op === "-=" ? o - v : op === "*=" ? o * v : o / v; } setVar(name, v); return []; };
+        const fromItems = (r) => { const f = (r || []).map((x) => x && x.kind === "fs" ? x.name : x); return f.length === 1 ? f[0] : f; };
         const ex = rhs.trim() ? tryExpr(rhs) : { ok: true, v: null };
-        if (ex.ok) v = ex.v; else { const r = execLine(rhs, true, depth); const f = r.map((x) => x && x.kind === "fs" ? x.name : x); v = f.length === 1 ? f[0] : f; }
-        if (op !== "=") { const o = getVar(name) ?? 0; v = op === "+=" ? ((typeof o === "string" || typeof v === "string") ? String(o) + v : o + v) : op === "-=" ? o - v : op === "*=" ? o * v : o / v; }
-        setVar(name, v); return [];
+        if (ex.ok) return assign(ex.v);
+        const r = execLine(rhs, true, depth);
+        return r && typeof r.then === "function" ? r.then((x) => assign(fromItems(x))) : assign(fromItems(r));
       }
       // pure expression: 2+2, "текст", $x
       if (/^[\d("'$[+\-]/.test(src) && !/^\$\w+\s*\|/.test(src)) { const ex = tryExpr(src); if (ex.ok) { const v = Array.isArray(ex.v) ? ex.v : [ex.v]; const outp = v.filter((x) => x != null); if (!quiet) render(outp); return outp; } }
       const { segs, redir } = splitOps(tokenize(src));
-      let items = null;
-      for (const s of segs) {
-        // a piped value at the start: "a","b" | sort  /  $x | ...
-        if (items === null && s.length && (s[0].quoted || /^\$|^\d/.test(s[0].v || ""))) { const r = tryExpr(s.map((t) => t.raw ?? "").join(" ")); if (r.ok) { items = (Array.isArray(r.v) ? r.v : [r.v]).filter((x) => x != null); continue; } if (s.every((t) => t.quoted || t.v === ",")) { items = s.filter((t) => t.v !== ",").map((t) => t.v); continue; } }
-        const r = runCmd(s, items, depth);
-        if (r && r.wait != null) { busy = r.wait; items = []; continue; }
-        items = r;
-      }
-      items = items || [];
-      if (redir) { writeFile(redir.file, flat(items).map(keyOf).join("\n") + (items.length ? "\n" : ""), redir.append); return []; }
-      if (!quiet) render(items);
-      return items;
+      const finish = (items) => {
+        items = items || [];
+        if (redir) { writeFile(redir.file, flat(items.map((x) => x && x.content != null ? x.content : x)).map(keyOf).join("\n") + (items.length ? "\n" : ""), redir.append); return []; }
+        if (!quiet) render(items);
+        return items;
+      };
+      // a command may answer with a Promise (downloads, installers, Read-Host): the rest of the pipeline waits for it
+      const step = (i, items) => {
+        for (; i < segs.length; i++) {
+          const s = segs[i];
+          // a piped value at the start: "a","b" | sort  /  $x | ...
+          if (items === null && s.length && (s[0].quoted || /^\$|^\d/.test(s[0].v || ""))) { const r = tryExpr(s.map((t) => t.raw ?? "").join(" ")); if (r.ok) { items = (Array.isArray(r.v) ? r.v : [r.v]).filter((x) => x != null); continue; } if (s.every((t) => t.quoted || t.v === ",")) { items = s.filter((t) => t.v !== ",").map((t) => t.v); continue; } }
+          const r = runCmd(s, items, depth);
+          if (r && typeof r.then === "function") { const next = i + 1; return r.then((v) => step(next, v || [])); }
+          items = r;
+        }
+        return finish(items);
+      };
+      return step(0, null);
+    }
+    const remember = (t) => { if (t && S.hist[S.hist.length - 1] !== t) { S.hist.push(t); if (S.hist.length > 150) S.hist.splice(0, S.hist.length - 150); save(); } };
+    function track(r, t) {
+      const done = () => { setPrompt(); scrollEnd(); };
+      if (!(r && typeof r.then === "function")) { done(); return; }
+      running = true; setPrompt();
+      r.then(() => {}, (e) => { if (e === "^C") return; printErr(e, e && e.cmd ? e.cmd : t); if (!(e && e.ps)) console.error(e); })
+        .then(() => { running = false; asking = null; done(); });
     }
     function submit(text) {
-      echoCmd(text);
-      const t = text.trim();
-      if (t) { if (S.hist[S.hist.length - 1] !== t) S.hist.push(t); if (S.hist.length > 150) S.hist.splice(0, S.hist.length - 150); save(); }
       hi = -1; draft = "";
-      try { execLine(text, false, 0); } catch (e) { printErr(e, e && e.cmd ? e.cmd : (t.split(/\s/)[0] || "")); if (!(e && e.ps)) console.error(e); }
-      const done = () => { setPrompt(); scrollEnd(); };
-      if (busy) { const w = busy; busy = 0; inp().disabled = true; $("#ptPs").textContent = ""; setTimeout(() => { inp().disabled = false; done(); inp().focus(); }, w); } else done();
+      if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + text); a.res(text); setPrompt(); scrollEnd(); return; }
+      if (app) {
+        if (running) return;
+        echoRaw(app.prompt() + text); remember(text.trim());
+        let r; try { r = app.line(text); } catch (e) { printErr(e, "v3ai"); }
+        track(r, "v3ai"); return;
+      }
+      if (running) return;
+      echoCmd(text);
+      const t = text.trim(); remember(t);
+      let r; try { r = execLine(text, false, 0); } catch (e) { printErr(e, e && e.cmd ? e.cmd : (t.split(/\s/)[0] || "")); if (!(e && e.ps)) console.error(e); }
+      track(r, t.split(/\s/)[0] || "");
+    }
+    function ctrlC() {
+      const el = inp();
+      if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + el.value + "^C"); a.rej("^C"); }
+      else if (running && app) { app.stop(); }
+      else if (running) { running = false; line("^C", "dim"); }
+      else echoRaw(curPrompt() + el.value + "^C");
+      el.value = ""; hi = -1; setPrompt(); scrollEnd();
     }
 
     /* ---------- notepad ---------- */
@@ -17674,7 +17890,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         const m = v.match(/^([\s\S]*?)((?:"[^"]*)|(?:[^\s|;"]*))$/), before = m[1], word = m[2].replace(/^"/, "");
         const isCmd = !before.trim() || /[|;]\s*$/.test(before);
         let opts = [];
-        if (isCmd && !/[\\/]/.test(word)) opts = Array.from(new Set(uniq().map((c) => c.name).concat(Object.keys(C).filter((k) => !/[?%]/.test(k) && C[k].name.toLowerCase() !== k)))).filter((n) => n.toLowerCase().startsWith(word.toLowerCase())).sort((x, y) => (y.includes("-") - x.includes("-")) || x.localeCompare(y));
+        if (isCmd && !/[\\/]/.test(word)) opts = Array.from(new Set(uniq().map((c) => c.name).concat(Object.keys(C).filter((k) => !/[?%]/.test(k) && C[k].name.toLowerCase() !== k)).concat(Object.keys(APPS).filter(appReady)))).filter((n) => n.toLowerCase().startsWith(word.toLowerCase())).sort((x, y) => (y.includes("-") - x.includes("-")) || x.localeCompare(y));
         if (!opts.length || !isCmd) {
           const i = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/")), dp = i >= 0 ? word.slice(0, i + 1) : "", pre = word.slice(i + 1).toLowerCase();
           const r = resolve(dp || "."); if (!r.missing && !r.bad && r.node.t === "d") opts = opts.concat(Object.keys(r.node.c).filter((k) => k.toLowerCase().startsWith(pre)).sort().map((k) => dp + k + (r.node.c[k].t === "d" ? "\\" : "")));
@@ -17705,8 +17921,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         else if (e.key === "Tab") { e.preventDefault(); complete(); }
         else if (e.key === "ArrowUp") { e.preventDefault(); histMove(-1); }
         else if (e.key === "ArrowDown") { e.preventDefault(); histMove(1); }
-        else if (e.key === "Escape") { e.preventDefault(); el.value = ""; }
-        else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); echoCmd(el.value + "^C"); el.value = ""; hi = -1; scrollEnd(); }
+        else if (e.key === "Escape") { e.preventDefault(); if (running && app) ctrlC(); else el.value = ""; }
+        else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); ctrlC(); }
         else if (e.ctrlKey && (e.key === "l" || e.key === "д")) { e.preventDefault(); log().textContent = ""; }
       });
       el.addEventListener("input", () => { comp = null; });
@@ -17716,7 +17932,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("pointerdown", (e) => e.preventDefault()));
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("click", () => {
         const k = b.dataset.k;
-        if (k === "tab") complete(); else { comp = null; if (k === "up") histMove(-1); else if (k === "down") histMove(1); else if (k === "ctrlc") { echoCmd(el.value + "^C"); el.value = ""; scrollEnd(); } else { el.value = ""; submit(k === "help" ? "Get-Help" : k); } }
+        if (k === "tab") complete(); else { comp = null; if (k === "up") histMove(-1); else if (k === "down") histMove(1); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
         el.focus();
       }));
       $("#ptESave").addEventListener("click", () => closeEditor(true));
