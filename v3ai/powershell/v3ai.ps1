@@ -47,6 +47,7 @@ $script:Paths = @{
   Art    = Join-Path $script:Root 'art'
   Export = Join-Path $script:Root 'export'
   Video  = Join-Path $script:Root 'video'
+  Gif    = Join-Path $script:Root 'gif'
 }
 $script:VT = (-not $NoColor) -and ($Host.UI.SupportsVirtualTerminal -eq $true)
 $script:ESC = [char]27
@@ -244,6 +245,7 @@ $script:SecureActs = [ordered]@{
   open   = @{ ico = '🕹'; n = 'Открытие файлов'; d = 'Игры WattAI и картинки откроются в браузере. Игра — это программа, которую написал ИИ.' }
   save   = @{ ico = '💾'; n = 'Сохранение файлов'; d = 'Игры, картинки и экспорт чатов сохраняются в папку ~/.v3ai.' }
   github = @{ ico = '🐙'; n = 'Доступ к GitHub'; d = 'V3AI читает репозиторий (только чтение). С токеном — и закрытые репозитории твоего аккаунта.' }
+  photo  = @{ ico = '📷'; n = 'Отправка фото ИИ'; d = 'Фото будет отправлено ИИ, чтобы он ответил на вопрос о нём.' }
   key    = @{ ico = '🔑'; n = 'Сохранение ключей'; d = 'Ключ сохранится в переменную среды твоей учётной записи, чтобы не вводить его каждый раз.' }
 }
 
@@ -593,7 +595,9 @@ function Open-V3Chat([string]$Path) {
 # Убрать последний вопрос без ответа (ошибка сети и т. п.), чтобы роли в истории чередовались.
 function Undo-V3LastUser($Chat) {
   $n = $Chat.messages.Count
-  if ($n -and $Chat.messages[$n - 1].role -eq 'user' -and ($Chat.messages[$n - 1].content -is [string])) { $Chat.messages.RemoveAt($n - 1) }
+  if (-not $n -or $Chat.messages[$n - 1].role -ne 'user') { return }
+  $c = $Chat.messages[$n - 1].content
+  if ($c -is [string] -or -not (@($c) | Where-Object { $_.type -eq 'tool_result' })) { $Chat.messages.RemoveAt($n - 1) }
 }
 
 # ── GitHub ────────────────────────────────────────────────────────────────────────────────────
@@ -823,9 +827,13 @@ function Invoke-V3Art($Chat, [string]$Q) {
   $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(Нарисовал картинку по запросу «$Q».) $cap" })
 }
 
-function Invoke-V3Game($Chat, [string]$Q) {
+# Показывает ошибку прямо в игре и подсказывает, как попросить WattAI её исправить.
+$script:GameGuard = '<script data-v3ai-guard>(function(){var n=0;function s(m){if(n++)return;var d=document.createElement("div");d.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;padding:10px 12px;border-radius:10px;background:#3a0d14;color:#fff;font:14px system-ui,sans-serif";d.textContent="⚠ Ошибка в игре: "+m+" — напиши в V3AI: /watt исправь ошибку: "+m;(document.body||document.documentElement).appendChild(d)}window.addEventListener("error",function(e){s((e.message||"ошибка")+(e.lineno?" (строка "+e.lineno+")":""))});window.addEventListener("unhandledrejection",function(e){s(String(e.reason&&e.reason.message||e.reason))})})();</script>'
+function Remove-V3GameGuard([string]$Html) { return [regex]::Replace($Html, '<script data-v3ai-guard>[\s\S]*?</script>', '') }
+
+function Invoke-V3Game($Chat, [string]$Q, [switch]$Fresh) {
   $prevCode = ''
-  if ($Chat.lastGame -and (Test-Path -LiteralPath $Chat.lastGame)) { $prevCode = Get-Content -LiteralPath $Chat.lastGame -Raw -Encoding UTF8 }
+  if (-not $Fresh -and $Chat.lastGame -and (Test-Path -LiteralPath $Chat.lastGame)) { $prevCode = Remove-V3GameGuard (Get-Content -LiteralPath $Chat.lastGame -Raw -Encoding UTF8) }
   $prompt = @(
     'Ты — WattAI, создатель игр внутри V3AI. Напиши по запросу пользователя готовую браузерную игру — ОДИН полный HTML-документ.',
     'Требования:',
@@ -846,6 +854,9 @@ function Invoke-V3Game($Chat, [string]$Q) {
   if (-not $html -or $html -notmatch '<script') { Write-V3Note 'Игра не получилась — попробуй ещё раз или модель посильнее (/model).' Yellow; return }
   $title = ''; $tm = [regex]::Match($r.Text, 'Название:\s*([^\r\n]+)'); if ($tm.Success) { $title = $tm.Groups[1].Value.Trim(' *«»"') }
   $how = ([regex]::Replace(([regex]::Replace($r.Text, '```[\s\S]*?(```|$)', '')), 'Название:[^\r\n]*', '')).Trim()
+  $html = Remove-V3GameGuard $html
+  $hm = [regex]::Match($html, '<head[^>]*>', 'IgnoreCase')
+  $html = $(if ($hm.Success) { $html.Insert($hm.Index + $hm.Length, $script:GameGuard) } else { $script:GameGuard + $html })
   $path = Save-V3File $script:Paths.Games ((Get-V3SafeName $(if ($title) { $title } else { $Q })) + '.html') $html
   Write-V3Box ('🕹 ' + $(if ($title) { $title } else { 'Игра готова' })) @($(if ($how) { $how } else { 'Играй!' }), $(if ($path) { "Файл: $path" } else { 'Файл не сохранён (EngineSecure).' })) Magenta
   if ($path) { $Chat.lastGame = $path; Open-V3File $path }
@@ -992,7 +1003,7 @@ header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .logo { font: 900 22px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 1px; background: linear-gradient(90deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 h1 { margin: 0; font-size: 18px; font-weight: 700; }
 .screen { position: relative; width: 100%; aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid var(--line); }
-.screen canvas { display: block; width: 100%; height: 100%; }
+.screen canvas, .screen img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .screen .msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
 .bar { height: 6px; border-radius: 3px; background: var(--panel); overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--a1), var(--a2)); }
@@ -1411,6 +1422,109 @@ async function recordVideo(m, onProg) {
   if (!blob.size) throw new Error("empty");
   return { blob, url: URL.createObjectURL(blob) };
 }
+// Median-cut palette (256 colours) over all frames, then LZW: a complete GIF89a encoder.
+function palette(frames) {
+  const hist = new Uint32Array(32768);
+  frames.forEach((d) => { for (let i = 0; i < d.length; i += 8) hist[((d[i] >> 3) << 10) | ((d[i + 1] >> 3) << 5) | (d[i + 2] >> 3)]++; });
+  const bins = []; for (let i = 0; i < 32768; i++) if (hist[i]) bins.push(i);
+  const ch = (b, c) => (c === 0 ? b >> 10 : c === 1 ? (b >> 5) & 31 : b & 31);
+  const boxes = [bins];
+  while (boxes.length < 256) {
+    let best = -1, bestScore = 0, bestC = 0;
+    boxes.forEach((bx, i) => {
+      if (bx.length < 2) return;
+      let cnt = 0; const lo = [31, 31, 31], hi = [0, 0, 0];
+      bx.forEach((b) => { cnt += hist[b]; for (let c = 0; c < 3; c++) { const v = ch(b, c); if (v < lo[c]) lo[c] = v; if (v > hi[c]) hi[c] = v; } });
+      for (let c = 0; c < 3; c++) { const sc = (hi[c] - lo[c]) * Math.sqrt(cnt); if (sc > bestScore) { bestScore = sc; best = i; bestC = c; } }
+    });
+    if (best < 0) break;
+    const bx = boxes[best].sort((p, q) => ch(p, bestC) - ch(q, bestC));
+    let total = 0; bx.forEach((b) => { total += hist[b]; });
+    let acc = 0, cut = 1; for (let i = 0; i < bx.length - 1; i++) { acc += hist[bx[i]]; if (acc >= total / 2) { cut = i + 1; break; } }
+    boxes.splice(best, 1, bx.slice(0, cut), bx.slice(cut));
+  }
+  const pal = boxes.map((bx) => { let n = 0, r = 0, g = 0, b = 0; bx.forEach((v) => { const w = hist[v]; n += w; r += ch(v, 0) * w; g += ch(v, 1) * w; b += ch(v, 2) * w; }); return n ? [r / n * 8.226 | 0, g / n * 8.226 | 0, b / n * 8.226 | 0] : [0, 0, 0]; });
+  while (pal.length < 256) pal.push([0, 0, 0]);
+  return pal;
+}
+function encodeGif(frames, w, h, fps) {
+  const pal = palette(frames), look = new Int16Array(32768).fill(-1);
+  const nearest = (key) => {
+    const r = (key >> 10) * 8.226, g = ((key >> 5) & 31) * 8.226, b = (key & 31) * 8.226;
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < 256; i++) { const p = pal[i], d = (p[0] - r) ** 2 * 2 + (p[1] - g) ** 2 * 4 + (p[2] - b) ** 2 * 3; if (d < bd) { bd = d; bi = i; } }
+    return (look[key] = bi);
+  };
+  const out = []; const put = (...b) => { for (const x of b) out.push(x & 255); }; const word = (v) => put(v, v >> 8); const str = (t) => { for (const c of t) put(c.charCodeAt(0)); };
+  str("GIF89a"); word(w); word(h); put(0xF7, 0, 0); pal.forEach((p) => put(p[0], p[1], p[2]));
+  put(0x21, 0xFF, 11); str("NETSCAPE2.0"); put(3, 1, 0, 0, 0); // loop forever
+  const delay = Math.round(100 / fps), BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  const idx = new Uint8Array(w * h);
+  frames.forEach((d) => {
+    for (let y = 0, p = 0; y < h; y++) for (let x = 0; x < w; x++, p++) {
+      const o = (BAYER[(y & 3) * 4 + (x & 3)] - 7.5) * .5, q = (v) => Math.min(255, Math.max(0, d[p * 4 + v] + o)) >> 3;
+      const key = (q(0) << 10) | (q(1) << 5) | q(2), v = look[key];
+      idx[p] = v >= 0 ? v : nearest(key);
+    }
+    put(0x21, 0xF9, 4, 0x04); word(delay); put(0, 0);
+    put(0x2C); word(0); word(0); word(w); word(h); put(0);
+    put(8); lzw(idx, out);
+  });
+  put(0x3B);
+  return new Blob([new Uint8Array(out)], { type: "image/gif" });
+}
+function lzw(idx, out) {
+  const CLEAR = 256, EOI = 257; let size = 9, next = 258, table = new Map(), cur = 0, bits = 0, block = [];
+  const flush = () => { out.push(block.length); for (const b of block) out.push(b); block = []; };
+  const emit = (c) => { cur |= c << bits; bits += size; while (bits >= 8) { block.push(cur & 255); cur >>>= 8; bits -= 8; if (block.length === 255) flush(); } };
+  emit(CLEAR);
+  let code = idx[0];
+  for (let i = 1; i < idx.length; i++) {
+    const k = idx[i], key = (code << 8) | k, e = table.get(key);
+    if (e !== undefined) { code = e; continue; }
+    emit(code);
+    if (next === 4096) { emit(CLEAR); next = 258; size = 9; table = new Map(); }
+    else { if (next >= 1 << size) size++; table.set(key, next++); }
+    code = k;
+  }
+  emit(code); emit(EOI);
+  if (bits > 0) { block.push(cur & 255); if (block.length === 255) flush(); }
+  if (block.length) flush();
+  out.push(0);
+}
+const gifCache = new WeakMap();
+function gifOf(m) {
+  if (!gifCache.has(m)) gifCache.set(m, (async () => {
+    const spec = m.anim || offAnim(), S = 360, svgs = frameSvgs(m.svg, spec);
+    const cv = document.createElement("canvas"); cv.width = cv.height = S; const g = cv.getContext("2d", { willReadFrequently: true });
+    const frames = [];
+    for (const sv of svgs) { const im = await loadImg(svgUrl(sv)); g.fillStyle = "#fff"; g.fillRect(0, 0, S, S); g.drawImage(im, 0, 0, S, S); frames.push(g.getImageData(0, 0, S, S).data); }
+    await new Promise((r) => setTimeout(r, 0));
+    const blob = encodeGif(frames, S, S, spec.fps);
+    return { blob, url: URL.createObjectURL(blob) };
+  })());
+  const p = gifCache.get(m); p.catch(() => gifCache.delete(m)); return p;
+}
+
+  const status = (t) => { $("#status").textContent = t; };
+  const fileName = (t, ext) => "V3AI-" + String(t).replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + ext;
+  // A GIF: one picture with its motion, encoded here with the web version's GIF encoder.
+  if (FILM && FILM.kind === "gif") {
+    const gt = (typeof FILM.title === "string" && FILM.title) || "GIF V3AI";
+    document.title = "V3AI · " + gt; $("#title").textContent = gt;
+    $("#play").hidden = true; $("#scenes").hidden = true; document.querySelector(".bar").hidden = true;
+    const save = $("#save"), msg = $("#msg"); save.textContent = "💾 Скачать GIF"; msg.textContent = "Собираю GIF…";
+    const svg = cleanSvg(String(FILM.svg || ""));
+    if (!svg) { msg.textContent = "В этом GIF нет картинки — сделай его в V3AI ещё раз."; return; }
+    const spec = normAnim({ anim: Array.isArray(FILM.anim) ? FILM.anim : [], frames: FILM.frames, fps: FILM.fps });
+    gifOf({ svg, anim: spec }).then((g) => {
+      const im = document.createElement("img"); im.src = g.url; im.alt = gt; $("#view").replaceWith(im);
+      msg.hidden = true; save.disabled = false;
+      status("GIF · " + Math.round(g.blob.size / 1024) + " КБ · крутится по кругу");
+      save.addEventListener("click", () => { const a = document.createElement("a"); a.href = g.url; a.download = fileName(gt, ".gif"); document.body.appendChild(a); a.click(); a.remove(); });
+    }, () => { msg.textContent = "Не получилось собрать GIF — сделай его ещё раз."; });
+    return;
+  }
   // the film as V3AI wrote it → safe, bounded scenes for the engine
   const raw = (FILM && Array.isArray(FILM.scenes)) ? FILM.scenes : [];
   const scenes = raw.map((sc) => {
@@ -1427,7 +1541,6 @@ async function recordVideo(m, onProg) {
   scenes.forEach((sc, i) => { const li = document.createElement("li"); const b = document.createElement("b"); b.textContent = sc.caption || "Сцена " + (i + 1); li.append(b, " · " + sc.dur + " с" + (sc.three ? " · 3D" : "")); $("#scenes").appendChild(li); });
 
   const view = $("#view"), vg = view.getContext("2d"), msg = $("#msg"), playBtn = $("#play"), saveBtn = $("#save"), prog = $("#prog");
-  const status = (t) => { $("#status").textContent = t; };
   let R = null, playing = false, out = null, t0 = 0;
   if (!scenes.length) { msg.textContent = "В этом видео нет сцен — сними его в V3AI ещё раз."; return; }
 
@@ -1465,7 +1578,7 @@ async function recordVideo(m, onProg) {
     const p = (k) => { prog.style.width = Math.round(k * 100) + "%"; status("Собираю видео… " + Math.round(k * 100) + "%"); };
     try {
       const v = await fastVideo(film, p).catch(() => recordVideo(film, p));
-      const a = document.createElement("a"); a.href = v.url; a.download = "V3AI-" + title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 40) + (/mp4/.test(v.blob.type) ? ".mp4" : ".webm");
+      const a = document.createElement("a"); a.href = v.url; a.download = fileName(title, /mp4/.test(v.blob.type) ? ".mp4" : ".webm");
       document.body.appendChild(a); a.click(); a.remove();
       status("Готово: видео скачивается (" + Math.round(v.blob.size / 1024) + " КБ).");
     } catch (e) {
@@ -1479,6 +1592,119 @@ async function recordVideo(m, onProg) {
 </html>
 
 '@
+
+# ── GIF: картинка с движением → страница, которая собирает GIF (кодировщик — из веб-версии) ──
+function Invoke-V3Gif($Chat, [string]$Q) {
+  $prev = Get-V3Prop $Chat 'lastGif' ''
+  $prompt = @(
+    'Ты — V3AI, ИИ-аниматор. Сделай по описанию пользователя короткую зацикленную анимацию для GIF.',
+    'Шаг 1 — картинка: ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">, яркое и детальное, на весь холст (фон, главный объект крупно, градиенты, тени). Каждую часть, которая будет двигаться, оберни в <g id="..."> с латинским id (например "cat", "paw", "tail", "eyes", "star1").',
+    'Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, теги animate/set, CSS-анимация, обработчики событий. Текст — только если его явно попросили.',
+    'Шаг 2 — движение: блок ```json вида {"frames":24,"fps":12,"anim":[{"id":"paw","origin":[300,260],"keys":[{"t":0,"r":0},{"t":0.5,"r":-30},{"t":1,"r":0}]}]}.',
+    'Поля ключа: t — время от 0 до 1; x, y — сдвиг в пикселях; r — поворот в градусах вокруг origin (шарнир в координатах viewBox); s — масштаб (или sx и sy отдельно); o — прозрачность 0..1. Не указанное поле = покой.',
+    'Первый и последний ключ каждой части одинаковые, чтобы GIF шёл по кругу без рывка. Двигай 2–8 частей заметно и живо: махание, прыжки, полёт, вращение, моргание (sy до 0.1), мерцание. frames 16–32, fps 8–15.',
+    'Только добрые сюжеты, подходящие детям. На неподходящую просьбу сделай что-то милое на похожую безопасную тему.',
+    $(if ($prev) { "Предыдущая работа в этом чате была по запросу «$prev». Если новый запрос — правка («быстрее», «пусть ещё и прыгает»), сделай ту же сцену с изменением." } else { '' }),
+    'Ответ: блок ```svg, затем блок ```json, затем одна короткая весёлая фраза по-русски о том, что получилось.',
+    "Описание анимации: $Q"
+  ) -join "`n"
+  $msgs = New-V3List; $msgs.Add([ordered]@{ role = 'user'; content = $prompt })
+  $r = Invoke-V3Turn -Messages $msgs -System 'Ты — V3AI, ИИ-аниматор.' -Quiet -Waiting '🎞 рисую GIF…'
+  $sm = [regex]::Match($r.Text, '<svg[\s\S]*?</svg>', 'IgnoreCase')
+  if (-not $sm.Success) { Write-V3Note 'GIF не получился — попробуй ещё раз или опиши иначе.' Yellow; return }
+  $anim = @(); $frames = 24; $fps = 12
+  $js = Get-V3Block $r.Text 'json'
+  if ($js) { try { $a = $js | ConvertFrom-Json; if ($a.anim) { $anim = @($a.anim) }; if ($a.frames) { $frames = [int]$a.frames }; if ($a.fps) { $fps = [double]$a.fps } } catch { } }
+  $cap = ([regex]::Replace($r.Text, '```[\s\S]*?(```|$)', '')).Trim()
+  $title = $(if ($Q.Length -gt 40) { $Q.Substring(0, 40) } else { $Q })
+  $film = [ordered]@{ kind = 'gif'; title = $title; svg = $sm.Value; anim = $anim; frames = $frames; fps = $fps }
+  $html = $script:PlayerTemplate.Replace('/*V3AI_FILM*/null', (ConvertTo-V3Json $film).Replace('</', '<\/'))
+  $path = Save-V3File $script:Paths.Gif ((Get-V3SafeName $title) + '.html') $html
+  Write-V3Box "🎞 $title" @($(if ($cap) { $cap } else { 'GIF готов!' }), "Движущихся частей: $($anim.Count) · кадров: $frames", $(if ($path) { "Файл: $path" } else { 'Файл не сохранён (EngineSecure).' }), 'На странице: анимация и 💾 Скачать GIF.') Magenta
+  if ($path) { Open-V3File $path }
+  $Chat['lastGif'] = $Q
+  $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q })
+  $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(Сделал GIF-анимацию по запросу «$Q».) $cap" })
+}
+
+# ── Фото, голос, буфер обмена ──────────────────────────────────────────────────────────────────
+function Get-V3Photo([string[]]$Words) {
+  for ($k = $Words.Count; $k -ge 1; $k--) {
+    $cand = ($Words[0..($k - 1)] -join ' ').Trim('"', "'")
+    if ($cand -and (Test-Path -LiteralPath $cand -PathType Leaf)) {
+      $ext = [IO.Path]::GetExtension($cand).ToLower()
+      $type = @{ '.jpg' = 'image/jpeg'; '.jpeg' = 'image/jpeg'; '.png' = 'image/png'; '.gif' = 'image/gif'; '.webp' = 'image/webp' }[$ext]
+      if (-not $type) { throw 'Подходят только фото JPG, PNG, GIF или WEBP.' }
+      $full = (Resolve-Path -LiteralPath $cand).Path
+      if ((Get-Item -LiteralPath $full).Length -gt 5242880) { throw 'Фото больше 5 МБ — уменьши его и попробуй снова.' }
+      if (-not (Request-V3Permission 'photo' "Файл: $full")) { return $null }
+      $q = $(if ($k -lt $Words.Count) { ($Words[$k..($Words.Count - 1)] -join ' ') } else { 'Что на этом фото?' })
+      return @{ Question = $q; Block = [ordered]@{ type = 'image'; source = [ordered]@{ type = 'base64'; media_type = $type; data = [Convert]::ToBase64String([IO.File]::ReadAllBytes($full)) } } }
+    }
+  }
+  throw 'Файл не найден. Пример: /photo C:\Фото\кот.jpg Что за порода?'
+}
+
+function Get-V3LastAnswer($Chat) {
+  for ($i = $Chat.messages.Count - 1; $i -ge 0; $i--) {
+    $m = $Chat.messages[$i]; if ($m.role -ne 'assistant') { continue }
+    $t = $(if ($m.content -is [string]) { $m.content } else { (@($m.content) | Where-Object { $_.type -eq 'text' } | ForEach-Object { $_.text }) -join "`n" })
+    if ($t.Trim()) { return $t }
+  }
+  return ''
+}
+
+function Invoke-V3Say($Chat, [string]$Arg) {
+  if ($Arg -eq 'stop') { if ($script:Voice) { try { [void]$script:Voice.Speak('', 2) } catch { } }; return }
+  $t = Get-V3LastAnswer $Chat
+  if (-not $t) { Write-V3Note 'Пока нечего озвучить.'; return }
+  $t = ([regex]::Replace($t, '```[\s\S]*?(```|$)', ' (код) ') -replace '[*#`>|]', '').Trim()
+  if ($t.Length -gt 2000) { $t = $t.Substring(0, 2000) }
+  try {
+    if ($IsMacOS) { & say $t; return }
+    if ($IsLinux) {
+      foreach ($c in @('spd-say', 'espeak-ng', 'espeak')) { if (Get-Command $c -ErrorAction SilentlyContinue) { & $c $t; return } }
+      Write-V3Note 'Не нашёл синтез речи. Установи, например, espeak-ng.' Yellow; return
+    }
+    if (-not $script:Voice) {
+      $script:Voice = New-Object -ComObject SAPI.SpVoice
+      $vs = $script:Voice.GetVoices()
+      for ($i = 0; $i -lt $vs.Count; $i++) { $v = $vs.Item($i); if ($v.GetAttribute('Language') -match '(^|;)419($|;)') { $script:Voice.Voice = $v; break } }
+    }
+    [void]$script:Voice.Speak($t, 3)   # асинхронно, прерывая прошлую озвучку
+    Write-V3Note '🔊 Озвучиваю… (/say stop — остановить)'
+  } catch { Write-V3Note 'Озвучка не получилась на этом компьютере.' Yellow }
+}
+
+function Copy-V3Answer($Chat) {
+  $t = Get-V3LastAnswer $Chat
+  if (-not $t) { Write-V3Note 'Пока нечего копировать.'; return }
+  try { Set-Clipboard -Value $t; Write-V3Note '📋 Скопировано.' Green } catch { Write-V3Note 'Буфер обмена недоступен (на Linux нужен xclip или wl-clipboard).' Yellow }
+}
+
+# ── Проводник подключённого репозитория ────────────────────────────────────────────────────────
+function Show-V3RepoFiles($Chat, [string]$Path) {
+  if (-not $Chat.repo) { Write-V3Note 'Репозиторий не подключён. Пришли ссылку на GitHub.'; return }
+  try { $items = @(Get-V3RepoDir $Chat.repo $Path) } catch { Write-V3Note "🐙 $($_.Exception.Message)" Yellow; return }
+  Write-V3Rule ("🐙 /" + $Path.Trim('/'))
+  foreach ($f in $items | Select-Object -First 100) {
+    if ($f.type -eq 'dir') { Write-Host "   📁 $($f.name)/" -ForegroundColor Cyan } else { Write-Host ("   📄 $($f.name)".PadRight(48)) -NoNewline; Write-Host (Format-V3Size $f.size) -ForegroundColor DarkGray }
+  }
+  if ($items.Count -gt 100) { Write-V3Note "… и ещё $($items.Count - 100)" }
+  Write-V3Note 'Папка: /files <путь>   ·   файл: /cat <путь>'
+}
+
+function Show-V3RepoFile($Chat, [string]$Path) {
+  if (-not $Chat.repo) { Write-V3Note 'Репозиторий не подключён. Пришли ссылку на GitHub.'; return }
+  if (-not $Path) { Write-V3Note 'Пример: /cat README.md'; return }
+  try { $t = Get-V3RepoFile $Chat.repo $Path } catch { Write-V3Note "🐙 $($_.Exception.Message)" Yellow; return }
+  if ($null -eq $t) { Write-V3Note 'Это двоичный файл (картинка, видео или архив) — показать нельзя.'; return }
+  $lines = $t -split "`n"
+  Write-Host "  ┌─ $Path" -ForegroundColor DarkYellow
+  for ($i = 0; $i -lt [Math]::Min(200, $lines.Count); $i++) { Write-Host ('  │ ' + ($i + 1).ToString().PadLeft(4) + '  ') -NoNewline -ForegroundColor DarkYellow; Write-Host $lines[$i].TrimEnd("`r") -ForegroundColor Yellow }
+  Write-Host '  └─' -ForegroundColor DarkYellow
+  if ($lines.Count -gt 200) { Write-V3Note "Показаны первые 200 строк из $($lines.Count). Спроси V3AI о файле — он прочитает его целиком." }
+}
 
 # ── Dr. Agents ────────────────────────────────────────────────────────────────────────────────
 $script:Skills = [ordered]@{ memory = '🧠 Память'; tasks = '✅ Список дел'; calc = '🧮 Калькулятор'; time = '🕐 Дата и время'; dice = '🎲 Случайности' }
@@ -1502,11 +1728,12 @@ function Show-V3Agents {
   Write-V3Note 'Чат с агентом: /agent <номер>   ·   удалить: /agent <номер> delete'
 }
 
-function New-V3Agent($Chat, [string]$Q) {
+function New-V3Agent($Chat, [string]$Q, $Old = $null) {
   $prompt = @(
     'Ты — Dr. Agents, конструктор ИИ-агентов в V3AI. По просьбе пользователя спроектируй агента — ИИ-помощника с характером.',
     'Навыки (инструменты), которые агент сможет вызывать: memory — запоминать и вспоминать факты о пользователе; tasks — вести список дел; calc — точно считать; time — узнавать дату и время; dice — случайные числа и жребий. Выбери только нужные (1–5).',
     'Агент должен быть добрым и подходить детям.',
+    $(if ($Old) { "Вот текущий агент: $(ConvertTo-V3Json $Old)`nИзмени его по просьбе пользователя и верни всего агента целиком в том же формате." } else { '' }),
     'Ответь ТОЛЬКО JSON без пояснений: {"name":"короткое имя","emoji":"один эмодзи","role":"роль до 60 символов","greeting":"первое сообщение пользователю в характере агента","instructions":"инструкция агенту 6–12 предложений: кто он, как говорит, что делает, когда использует навыки, чего не делает","skills":["memory","tasks"],"comment":"одна весёлая фраза о созданном агенте"}',
     "Запрос: $Q"
   ) -join "`n"
@@ -1522,10 +1749,15 @@ function New-V3Agent($Chat, [string]$Q) {
     emoji = $(if ($j.emoji) { [string]$j.emoji } else { '🤖' }); role = [string]$j.role; greeting = $(if ($j.greeting) { [string]$j.greeting } else { "Привет! Я $($j.name)." })
     instructions = [string]$j.instructions; skills = $skills
   }
-  $list = Get-V3Agents; $list.Insert(0, $A); Save-V3Agents $list
+  $list = Get-V3Agents
+  if ($Old) {
+    $A.id = $Old.id
+    for ($k = 0; $k -lt $list.Count; $k++) { if ($list[$k].id -eq $Old.id) { $list[$k] = $A } }
+  } else { $list.Insert(0, $A) }
+  Save-V3Agents $list
   if ($j.comment) { Write-V3Line ([string]$j.comment) }
   Show-V3AgentCard $A
-  Write-V3Note 'Начать чат с ним: /agent 1'
+  Write-V3Note $(if ($Old) { "✏️ Агент обновлён. Его память сохранилась." } else { 'Начать чат с ним: /agent 1' })
   $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q })
   $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(Dr. Agents создал агента «$($A.name)».)" })
 }
@@ -1576,8 +1808,9 @@ function Get-V3AgentRules($A) {
 }
 
 # ── Обычный ответ (с репозиторием или агентом) ────────────────────────────────────────────────
-function Invoke-V3Chat($Chat, [string]$Q) {
-  $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q })
+function Invoke-V3Chat($Chat, [string]$Q, $Image = $null) {
+  if ($Image) { $Chat.messages.Add([ordered]@{ role = 'user'; content = @($Image, [ordered]@{ type = 'text'; text = $Q }) }) }
+  else { $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q }) }
   $A = $null; if ($Chat.agent) { $A = Get-V3AgentById $Chat.agent }
   $tools = @(); $handler = $null
   $script:Ctx = @{ Agent = $A; Repo = $Chat.repo }
@@ -1606,6 +1839,11 @@ function Show-V3Help {
     @('/image <описание>', 'нарисовать картинку (без описания — режим «Художник»)'),
     @('/video <сюжет>', 'снять 3D-видео; /video 2d <сюжет> — рисованное 2D'),
     @('/watt <описание>', 'WattAI: сделать игру (без описания — режим WattAI)'),
+    @('/gif <описание>', 'анимированный GIF'),
+    @('/photo <файл> [вопрос]', 'спросить ИИ о фото'),
+    @('/again', 'ещё вариант последнего запроса'),
+    @('/say', 'озвучить последний ответ (/say stop — замолчать)   /copy — скопировать его'),
+    @('/files [папка]', 'файлы подключённого репозитория   /cat <файл> — показать файл'),
     @('/mode [имя]', 'режим: help, school, write, lang, code, fun, art, game, video, agents'),
     @('/model [номер]', 'выбрать модель V3AI'),
     @('/new', 'новый чат        /chats — история        /open <номер> — открыть'),
@@ -1614,6 +1852,7 @@ function Show-V3Help {
     @('/github login', 'войти в GitHub (закрытые репозитории)   /github logout — выйти'),
     @('/repo', 'карточка репозитория   /disconnect — отключить'),
     @('/agents', 'мои агенты           /agent <номер> — чат с агентом'),
+    @('/agent <n> memory', 'память агента;  forget — очистить;  edit <что изменить> — изменить'),
     @('/secure', 'EngineSecure: разрешения'),
     @('/key', 'ввести ключ Claude API'),
     @('/clear', 'очистить экран      /exit — выход'),
@@ -1621,7 +1860,7 @@ function Show-V3Help {
     @('строка с \ в конце', 'продолжить ввод на следующей строке')
   )
   foreach ($r in $rows) { Write-Host ('   ' + $r[0].PadRight(22)) -NoNewline -ForegroundColor Cyan; Write-Host $r[1] -ForegroundColor Gray }
-  Write-V3Note 'GIF-анимации есть только в веб-версии V3AI.'
+  Write-V3Note 'Голосовой ввод (микрофон) есть только в веб-версии V3AI.'
 }
 
 function Show-V3Models {
@@ -1739,6 +1978,19 @@ while ($true) {
       }
       'export' { Export-V3Chat $chat }
       'image' { if ($rest.Count) { $forced = 'art'; $line = $rest -join ' ' } else { Switch-V3Mode 'art' } }
+      'gif' { if ($rest.Count) { $forced = 'gif'; $line = $rest -join ' ' } else { Write-V3Note 'Пример: /gif кот машет лапой' } }
+      'photo' {
+        try { $ph = Get-V3Photo $rest; if ($ph) { $forced = 'photo'; $script:PhotoBlock = $ph.Block; $line = $ph.Question } }
+        catch { Write-V3Note "📷 $($_.Exception.Message)" Yellow }
+      }
+      'say' { Invoke-V3Say $chat ($rest -join ' ') }
+      'copy' { Copy-V3Answer $chat }
+      'again' {
+        if ($script:LastReq) { $forced = $(if ($script:LastReq.cm -eq 'game') { 'game-new' } else { $script:LastReq.cm }); $line = $script:LastReq.line; $script:PhotoBlock = $script:LastReq.photo; Write-V3Note "🔁 Ещё вариант: $line" }
+        else { Write-V3Note 'Пока нечего повторять.' }
+      }
+      'files' { Show-V3RepoFiles $chat ($rest -join ' ') }
+      'cat' { Show-V3RepoFile $chat ($rest -join ' ') }
       'watt' { if ($rest.Count) { $forced = 'game'; $line = $rest -join ' ' } else { Switch-V3Mode 'game' } }
       'video' {
         if ($rest.Count -and $rest[0].ToLower() -in @('2d', '2д')) { $rest = @($rest | Select-Object -Skip 1); $forced = 'video2d' } else { $forced = 'video' }
@@ -1757,7 +2009,15 @@ while ($true) {
         $list = Get-V3Agents; $n = 0
         if ($rest.Count -and [int]::TryParse($rest[0], [ref]$n) -and $n -ge 1 -and $n -le $list.Count) {
           $A = $list[$n - 1]
-          if ($rest.Count -ge 2 -and $rest[1] -eq 'delete') {
+          if ($rest.Count -ge 2 -and $rest[1] -eq 'memory') {
+            $mem = Get-V3Mem $A
+            Write-V3Box "🧠 Память: $($A.emoji) $($A.name)" (@('Заметки:') + @(@($mem.notes) | ForEach-Object { '  • ' + $(if ($_.k) { "$($_.k): " } else { '' }) + $_.t }) + @('Дела:') + @(@($mem.tasks) | ForEach-Object { '  ' + $(if ($_.done) { '✔ ' } else { '☐ ' }) + $_.t })) Magenta
+          } elseif ($rest.Count -ge 2 -and $rest[1] -eq 'forget') {
+            if ((Read-Host "  Очистить память агента «$($A.name)»? (да/нет)").Trim().ToLower() -in @('да', 'д', 'y', 'yes')) { Save-V3Mem $A ([ordered]@{ notes = (New-V3List); tasks = (New-V3List) }); Write-V3Note '🧠 Память очищена.' }
+          } elseif ($rest.Count -ge 3 -and $rest[1] -eq 'edit') {
+            if (-not $script:ApiKey) { Write-V3Note 'Для этого нужен ключ Claude API — /key.' Yellow }
+            else { try { New-V3Agent $chat (($rest | Select-Object -Skip 2) -join ' ') $A } catch { Stop-V3Render; Write-V3Note ('⚠ ' + (Get-V3ErrorText $_.Exception)) Yellow } }
+          } elseif ($rest.Count -ge 2 -and $rest[1] -eq 'delete') {
             if ((Read-Host "  Удалить агента «$($A.name)»? (да/нет)").Trim().ToLower() -in @('да', 'д', 'y', 'yes')) { $list.RemoveAt($n - 1); Save-V3Agents $list; Remove-Item -LiteralPath (Join-Path $script:Paths.Memory ($A.id + '.json')) -ErrorAction SilentlyContinue; Write-V3Note '🗑 Удалён.' }
           } else {
             Save-V3Chat $chat; $chat = New-V3Chat 'agents' $A.id; $chat.title = "$($A.emoji) $($A.name)"
@@ -1787,19 +2047,25 @@ while ($true) {
   if ($cm -eq 'video' -and $line -match '^(2d|2д)\s+(.+)$') { $cm = 'video2d'; $line = $Matches[2] }
   if (-not $script:ApiKey) {
     Write-Host ''
-    if ($cm -in @('art', 'game', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
+    if ($cm -in @('art', 'game', 'game-new', 'gif', 'photo', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
     Write-Host ''
     continue
   }
   Write-Host ''
   try {
-    if ($chat.agent -and -not $forced) { Invoke-V3Chat $chat $line }
-    elseif ($cm -eq 'art') { Invoke-V3Art $chat $line }
-    elseif ($cm -eq 'game') { Invoke-V3Game $chat $line }
-    elseif ($cm -eq 'video') { Invoke-V3Video $chat $line $true }
-    elseif ($cm -eq 'video2d') { Invoke-V3Video $chat $line $false }
-    elseif ($cm -eq 'agents') { New-V3Agent $chat $line }
-    else { Invoke-V3Chat $chat $line }
+    $kind = $(if ($cm -eq 'photo') { 'photo' } elseif (($chat.agent -and -not $forced) -or $cm -notin @('art', 'game', 'game-new', 'gif', 'video', 'video2d', 'agents')) { 'chat' } else { $cm })
+    switch ($kind) {
+      'photo'    { Invoke-V3Chat $chat $line $script:PhotoBlock }
+      'chat'     { Invoke-V3Chat $chat $line }
+      'art'      { Invoke-V3Art $chat $line }
+      'gif'      { Invoke-V3Gif $chat $line }
+      'game'     { Invoke-V3Game $chat $line }
+      'game-new' { Invoke-V3Game $chat $line -Fresh }
+      'video'    { Invoke-V3Video $chat $line $true }
+      'video2d'  { Invoke-V3Video $chat $line $false }
+      'agents'   { New-V3Agent $chat $line }
+    }
+    $script:LastReq = @{ cm = $(if ($kind -eq 'game-new') { 'game' } else { $kind }); line = $line; photo = $(if ($kind -eq 'photo') { $script:PhotoBlock } else { $null }) }
   } catch {
     Stop-V3Render
     Write-V3Note ('⚠ ' + (Get-V3ErrorText $_.Exception)) Yellow
