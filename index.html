@@ -947,6 +947,35 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .mc-dbtn { display: flex; flex-direction: column; gap: 4px; } .mc-dbtn small { text-align: center; font-size: 10px; color: var(--muted); font-weight: 800; min-height: 2.4em; } .mc-dbtn .btn { margin: 0; padding: 7px 4px; font-size: 11px; }
 .mc-card { padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); } .mc-card b { display: block; } .mc-card small { color: #5ce1e6; font-size: 10px; font-weight: 800; } .mc-card p { margin: 3px 0 0; font-size: 12px; } .mc-card.lock { opacity: .6; }
 .mc-prog { margin: 0; text-align: center; font-weight: 900; }
+/* ===== V3TERMIN ===== */
+#ptWin { --pt-bg: #012456; --pt-fg: #eeedf0; --pt-dim: #9fb3d1; --pt-acc: #ffd84d; --pt-err: #ff6b6b; --pt-warn: #ffd84d; --pt-head: #e8e8e8; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.35); background: var(--pt-bg); color: var(--pt-fg); }
+#ptWin[data-theme="dark"] { --pt-bg: #0c0c0c; --pt-fg: #cccccc; --pt-dim: #8a8a8a; --pt-acc: #61d6d6; }
+#ptWin[data-theme="matrix"] { --pt-bg: #020a02; --pt-fg: #38ff6a; --pt-dim: #1f9a40; --pt-acc: #b6ffc6; }
+#ptWin[data-theme="v3"] { --pt-bg: #160a2e; --pt-fg: #f1e9ff; --pt-dim: #a993d6; --pt-acc: #ff4fd8; }
+#ptWin[data-theme="light"] { --pt-bg: #f5f5f5; --pt-fg: #1b1b1b; --pt-dim: #666; --pt-acc: #0a58ca; --pt-err: #c62828; --pt-warn: #a86b00; }
+.pt-bar { display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 10px; background: #1f1f1f; color: #e8e8e8; font: 700 12px var(--body); }
+.pt-tab { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 7px 7px 0 0; background: var(--pt-bg); color: var(--pt-fg); min-width: 0; }
+.pt-tab b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-ico { flex: none; width: 16px; height: 16px; border-radius: 3px; background: #012456; color: #fff; font: 900 9px/16px var(--mono); text-align: center; }
+.pt-bar .pt-sp { flex: 1; }
+.pt-dots { display: flex; gap: 4px; } .pt-dots button { width: 26px; height: 22px; border: 0; border-radius: 5px; background: transparent; color: #ccc; cursor: pointer; font-size: 12px; } .pt-dots button:hover { background: #333; } .pt-dots button.x:hover { background: #c42b1c; color: #fff; }
+#ptOut { height: min(62vh, 520px); overflow-y: auto; padding: 10px 12px 14px; font: 13.5px/1.42 var(--mono); white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; cursor: text; }
+#ptOut .pt-l { min-height: 1.42em; }
+#ptOut .err { color: var(--pt-err); } #ptOut .warn { color: var(--pt-warn); } #ptOut .dim { color: var(--pt-dim); } #ptOut .acc { color: var(--pt-acc); }
+#ptOut .cmd { color: var(--pt-fg); } #ptOut .cmd .kw { color: var(--pt-acc); }
+.pt-in { display: flex; align-items: baseline; flex-wrap: wrap; }
+.pt-in .pt-ps { white-space: pre; flex: none; max-width: 100%; overflow-wrap: anywhere; white-space: pre-wrap; }
+#ptIn { flex: 1; min-width: 6ch; border: 0; outline: 0; background: transparent; color: var(--pt-fg); font: inherit; padding: 0; margin: 0; caret-color: var(--pt-fg); }
+.pt-keys { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.pt-keys button { flex: 1 1 auto; min-width: 44px; padding: 7px 8px; border-radius: 9px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font: 800 12px var(--mono); cursor: pointer; }
+#ptEdit { display: flex; flex-direction: column; height: min(62vh, 520px); background: var(--pt-bg); }
+#ptEdit[hidden] { display: none; }
+.pt-ehead { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: rgba(255,255,255,.08); font: 700 12px var(--mono); color: var(--pt-fg); }
+.pt-ehead span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-ehead button { padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: var(--pt-fg); font: 800 12px var(--body); cursor: pointer; }
+.pt-ehead button.ok { background: var(--pt-acc); color: #111; border-color: transparent; }
+#ptText { flex: 1; resize: none; border: 0; outline: 0; padding: 10px 12px; background: transparent; color: var(--pt-fg); font: 13.5px/1.42 var(--mono); }
+@media (max-width: 520px) { #ptOut, #ptText { font-size: 11px; } #ptOut { padding: 8px 8px 12px; } }
 /* ===== V3Tube ===== */
 #vtWrap { display: flex; flex-direction: column; gap: 10px; }
 .vt-head { display: flex; align-items: center; gap: 10px; }
@@ -2195,6 +2224,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Подписчики</span><span class="stat-val" id="hubV3tube">—</span></span>
       </button>
+      <button class="cart" data-go="v3termin" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#0a1530"/><rect x="6" y="10" width="52" height="38" rx="5" fill="#012456" stroke="#3a6fd8" stroke-width="2"/><path d="M14 22 l9 7 -9 7" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="27" y="33" width="14" height="4" rx="2" fill="#ffd84d"/><text x="32" y="59" text-anchor="middle" font-size="8" font-weight="900" fill="#fff" font-family="sans-serif">V3TERMIN</text></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">V3TERMIN</span>
+          <span class="cart-desc">Терминал в стиле PowerShell: командлеты Get-ChildItem, Set-Location, Get-Content и ещё десятки, конвейер «|», переменные и вычисления, свой диск V3:\ с папками и файлами, блокнот и скрипты .ps1. Запускай игры командой Start-Process.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Командлетов</span><span class="stat-val" id="hubV3termin">—</span></span>
+      </button>
     </div>
     <button class="btn wide talk-btn" type="button" data-go="talk">💬 Общение <span class="badge2" id="talkBadge">0 в сети</span></button>
     <button class="btn ghost wide" type="button" data-go="chats">Чаты с персонажами</button>
@@ -3330,6 +3369,36 @@ div.sc-pl { cursor: default; }
       </div>
     </div>
     <p class="hint">▶ Нажми на ролик, чтобы смотреть. Подписывайся на каналы и ставь лайки. В «Моём канале» снимай видео: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+  </section>
+
+  <!-- ===== V3TERMIN ===== -->
+  <section id="v3termin" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">V3TERMIN</div>
+      <div class="chips"><div class="chip hi"><span>Командлетов</span><b id="ptChip">0</b></div></div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Введи Get-Help!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div id="ptWin" data-theme="classic">
+      <div class="pt-bar">
+        <div class="pt-tab"><span class="pt-ico">&gt;_</span><b id="ptTitle">V3TERMIN</b></div>
+        <span class="pt-sp"></span>
+        <div class="pt-dots"><button type="button" id="ptCls" title="Очистить экран (cls)" aria-label="Очистить экран">─</button><button type="button" id="ptTheme" title="Сменить тему" aria-label="Сменить тему">◐</button><button type="button" class="x" data-go="hub" title="Закрыть" aria-label="Закрыть">✕</button></div>
+      </div>
+      <div id="ptOut" role="log" aria-live="polite"><div id="ptLog"></div><div class="pt-in"><span class="pt-ps" id="ptPs"></span><input id="ptIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда"></div></div>
+      <div id="ptEdit" hidden>
+        <div class="pt-ehead"><span id="ptEName">Блокнот</span><button type="button" id="ptECancel">Отмена</button><button type="button" class="ok" id="ptESave">Сохранить</button></div>
+        <textarea id="ptText" spellcheck="false" aria-label="Текст файла"></textarea>
+      </div>
+    </div>
+    <div class="pt-keys" aria-label="Клавиши терминала">
+      <button type="button" data-k="tab">Tab</button><button type="button" data-k="up">↑</button><button type="button" data-k="down">↓</button><button type="button" data-k="ctrlc">Ctrl+C</button><button type="button" data-k="help">help</button><button type="button" data-k="ls">ls</button><button type="button" data-k="cls">cls</button>
+    </div>
+    <p class="hint">⌨️ Как в PowerShell: <b>Get-ChildItem</b> (ls, dir), <b>cd</b>, <b>Get-Content</b> (cat), <b>New-Item</b>, <b>notepad файл.txt</b>, конвейер <b>ls | Sort-Object -Descending</b>, переменные <b>$x = 2 + 2</b>, перенаправление <b>&gt; файл.txt</b>. <b>Tab</b> дополняет команды и пути, <b>↑ ↓</b> листают историю. <b>Start-Process snake</b> запускает игру. Всё, что ты создашь на диске V3:\, сохраняется.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -7262,7 +7331,7 @@ div.sc-pl { cursor: default; }
       if (!ref) setState("local");
       render(); $("#cop").hidden = true; modal.hidden = false; $("#invClose").focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube" || current === "v3termin"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     document.addEventListener("click", (e) => { if (e.target.closest("[data-inv-open]")) open(); });
     $("#invClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
@@ -7537,7 +7606,7 @@ div.sc-pl { cursor: default; }
     }
     function clock() { const d = new Date(), hm = d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }); $("#phTime").textContent = hm; $("#phClock").textContent = hm; $("#phDate").textContent = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" }); }
     function open(start) { lastFocus = document.activeElement; clock(); $("#cop").hidden = true; modal.hidden = false; view(start || "home"); $("#phoneClose").focus(); }
-    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { Calls.hang(true); modal.hidden = true; if (raf) cancelAnimationFrame(raf); raf = 0; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube" || current === "v3termin"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     $("#phoneClose").addEventListener("click", close);
     modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
@@ -17031,6 +17100,654 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     };
   })();
 
+  /* ================= V3TERMIN ================= */
+  // A PowerShell-like terminal. It has its own virtual drive V3:\ (saved in localStorage),
+  // cmdlets with their usual aliases, a text pipeline, variables, math, redirection and .ps1 scripts.
+  const V3Termin = (() => {
+    const S = store.get("v3termin", null) || {};
+    if (!S.fs || S.fs.t !== "d") S.fs = null;
+    S.hist = Array.isArray(S.hist) ? S.hist : [];
+    S.learned = S.learned && typeof S.learned === "object" ? S.learned : {};
+    S.vars = S.vars && typeof S.vars === "object" ? S.vars : {};
+    S.theme = S.theme || "classic";
+    S.cwd = Array.isArray(S.cwd) ? S.cwd : null;
+    const save = () => store.set("v3termin", S);
+    const HOME = ["Users", "Игрок"];
+    const now = () => Date.now();
+    const F = (v) => ({ t: "f", v: v, m: now() });
+    const D = (c) => ({ t: "d", c: c || {}, m: now() });
+    function freshFs() {
+      return D({
+        Users: D({ "Игрок": D({
+          Desktop: D({ "readme.txt": F("Добро пожаловать в V3TERMIN!\n\nПопробуй:\n  Get-Help             — список команд\n  ls                   — что лежит в папке\n  cd ..\\Documents      — перейти в папку\n  cat заметки.txt      — прочитать файл\n  notepad новый.txt    — написать свой файл\n  Start-Process snake  — запустить Змейку\n") }),
+          Documents: D({
+            "заметки.txt": F("Купить: газировку V3 COLA\nПобить рекорд в 2048\nПозвонить сержанту Мигалкину\n"),
+            "hello.ps1": F("# Скрипт: запусти его командой .\\hello.ps1\nWrite-Host \"Привет из скрипта!\" -ForegroundColor Cyan\n$n = 6 * 7\nWrite-Output \"Ответ на главный вопрос: $n\"\nGet-Date\n"),
+          }),
+          Downloads: D({}),
+          Pictures: D({ "кот.txt": F(" /\\_/\\\n( o.o )\n > ^ <\n") }),
+        }) }),
+        Games: D({}),
+        Windows: D({ System32: D({ "drivers.txt": F("Здесь живут драйверы приставки V3. Лучше ничего не трогать :)\n"), "secret.txt": F("Пароль от Wi-Fi: V3V3V3V3\n") }) }),
+      });
+    }
+    if (!S.fs) S.fs = freshFs();
+    let cwd = S.cwd || HOME.slice();
+    const vars = Object.assign({}, S.vars);
+    let built = false, hi = -1, draft = "", comp = null, editing = null, busy = 0;
+    const out = () => $("#ptOut"), log = () => $("#ptLog"), inp = () => $("#ptIn");
+
+    /* ---------- file system ---------- */
+    const findKey = (dir, name) => { const l = String(name).toLowerCase(); return Object.keys(dir.c).find((k) => k.toLowerCase() === l); };
+    function splitPath(p) {
+      p = String(p == null ? "" : p).trim().replace(/\//g, "\\");
+      let base = cwd.slice();
+      if (p === "~" || p.startsWith("~\\")) { base = HOME.slice(); p = p.slice(1).replace(/^\\+/, ""); }
+      else if (/^v3:/i.test(p)) { base = []; p = p.slice(3); }
+      else if (/^[a-z]:/i.test(p)) return { bad: "Диск \"" + p.slice(0, 1).toUpperCase() + "\" не найден. На этой приставке есть только диск V3:." };
+      if (p.startsWith("\\")) base = [];
+      const parts = base;
+      for (const seg of p.split("\\")) {
+        if (!seg || seg === ".") continue;
+        if (seg === "..") { parts.pop(); continue; }
+        parts.push(seg);
+      }
+      return { parts };
+    }
+    function walk(parts) { let n = S.fs; const real = []; for (const s of parts) { if (n.t !== "d") return null; const k = findKey(n, s); if (!k) return null; real.push(k); n = n.c[k]; } return { node: n, real }; }
+    function resolve(p) { const sp = splitPath(p); if (sp.bad) return { bad: sp.bad }; const w = walk(sp.parts); return w ? { node: w.node, parts: w.real } : { parts: sp.parts, missing: true }; }
+    const pathStr = (parts) => "V3:\\" + parts.join("\\");
+    function parentOf(p) { const sp = splitPath(p); if (sp.bad) throw err(sp.bad); const name = sp.parts.pop(); if (!name) throw err("Нельзя изменить корень диска V3:\\."); const w = walk(sp.parts); if (!w || w.node.t !== "d") throw err("Не удается найти путь \"" + pathStr(sp.parts) + "\", так как он не существует.", "ItemNotFoundException"); return { dir: w.node, name, parts: w.real }; }
+    const sizeOf = (n) => n.t === "f" ? new Blob([n.v]).size : Object.values(n.c).reduce((a, x) => a + sizeOf(x), 0);
+    const badName = (n) => /[<>:"|?*]/.test(n);
+    function mustGet(p, kind) {
+      const r = resolve(p);
+      if (r.bad) throw err(r.bad);
+      if (r.missing) throw err("Не удается найти путь \"" + pathStr(r.parts) + "\", так как он не существует.", "ItemNotFoundException");
+      if (kind === "f" && r.node.t !== "f") throw err("Не удается найти путь \"" + pathStr(r.parts) + "\": это папка, а не файл.", "UnauthorizedAccessException");
+      if (kind === "d" && r.node.t !== "d") throw err("Путь \"" + pathStr(r.parts) + "\" указывает на файл, а не на папку.");
+      return r;
+    }
+    const isUnder = (a, b) => b.length >= a.length && a.every((x, i) => x.toLowerCase() === String(b[i]).toLowerCase());
+    function clone(n) { return JSON.parse(JSON.stringify(n)); }
+    // wildcards: *.txt, a?c
+    const wild = (s) => new RegExp("^" + String(s).replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$", "i");
+    function expand(p) {
+      p = String(p);
+      if (!/[*?]/.test(p)) return [p];
+      const i = Math.max(p.lastIndexOf("\\"), p.lastIndexOf("/"));
+      const dirP = i >= 0 ? p.slice(0, i) || "\\" : ".", pat = p.slice(i + 1);
+      const d = mustGet(dirP, "d"), re = wild(pat);
+      return Object.keys(d.node.c).filter((k) => re.test(k)).map((k) => (i >= 0 ? p.slice(0, i + 1) : "") + k);
+    }
+
+    /* ---------- errors & output ---------- */
+    function err(msg, cat) { const e = new Error(msg); e.ps = true; e.cat = cat || "InvalidOperation"; return e; }
+    function line(text, cls) { const d = document.createElement("div"); d.className = "pt-l" + (cls ? " " + cls : ""); d.textContent = text; log().appendChild(d); return d; }
+    function lines(text, cls) { String(text).split("\n").forEach((t) => line(t, cls)); }
+    function printErr(e, cmd) {
+      const m = e && e.ps ? e.message : "Внутренняя ошибка: " + (e && e.message || e);
+      lines((cmd ? cmd + " : " : "") + m, "err");
+      line("    + CategoryInfo          : " + (e && e.cat || "NotSpecified") + ": (:) [" + (cmd || "") + "], " + (e && e.cat === "CommandNotFoundException" ? "CommandNotFoundException" : "PSException"), "err");
+    }
+    const COLORS = { black: "#000", darkblue: "#0037da", darkgreen: "#13a10e", darkcyan: "#3a96dd", darkred: "#c50f1f", darkmagenta: "#881798", darkyellow: "#c19c00", gray: "#cccccc", darkgray: "#767676", blue: "#3b78ff", green: "#16c60c", cyan: "#61d6d6", red: "#e74856", magenta: "#b4009e", yellow: "#f9f1a5", white: "#f2f2f2" };
+    function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
+    const promptText = () => "PS " + pathStr(cwd) + "> ";
+    function setPrompt() { $("#ptPs").textContent = promptText(); $("#ptTitle").textContent = "V3TERMIN — " + pathStr(cwd); }
+    function echoCmd(text) {
+      const d = line("", "cmd"); d.append(promptText());
+      const m = text.match(/^(\s*)(\S+)([\s\S]*)$/);
+      if (m) { const s = document.createElement("span"); s.className = "kw"; s.textContent = m[2]; d.append(m[1], s, m[3]); } else d.append(text);
+    }
+
+    /* ---------- objects that flow through the pipeline ---------- */
+    const pad = (s, n) => { s = String(s); return s.length >= n ? s : s + " ".repeat(n - s.length); };
+    const lpad = (s, n) => { s = String(s); return s.length >= n ? s : " ".repeat(n - s.length) + s; };
+    const fmtDate = (t) => { const d = new Date(t); const z = (x) => String(x).padStart(2, "0"); return `${z(d.getDate())}.${z(d.getMonth() + 1)}.${d.getFullYear()}    ${z(d.getHours())}:${z(d.getMinutes())}`; };
+    const fsItem = (name, n, dirParts) => ({ kind: "fs", name, dir: n.t === "d", len: n.t === "f" ? sizeOf(n) : "", m: n.m || 0, at: pathStr(dirParts) });
+    const keyOf = (x) => x == null ? "" : typeof x === "number" || typeof x === "boolean" ? showVal(x) : typeof x === "object" ? (x.name != null ? String(x.name) : JSON.stringify(x)) : String(x);
+    function render(items) {
+      let prevKind = null, prevAt = null;
+      for (const x of items) {
+        if (x && typeof x === "object" && x.kind === "fs") {
+          if (prevKind !== "fs" || prevAt !== x.at) { line(""); line("    Каталог: " + x.at); line(""); line("Mode                 LastWriteTime         Length Name", "acc"); line("----                 -------------         ------ ----", "acc"); }
+          line(pad(x.dir ? "d-----" : "-a----", 21) + pad(fmtDate(x.m), 18) + lpad(x.len, 12) + " " + x.name, x.dir ? "acc" : "");
+          prevAt = x.at;
+        } else if (x && typeof x === "object" && x.kind === "table") {
+          line(""); line(x.head, "acc"); line(x.head.replace(/\S/g, "-"), "acc"); x.rows.forEach((r) => line(r)); line("");
+        } else if (x && typeof x === "object" && x.kind === "list") {
+          line(""); const w = Math.max(...x.pairs.map((p) => p[0].length)); x.pairs.forEach((p) => line(pad(p[0], w) + " : " + p[1])); line("");
+        } else if (x && typeof x === "object" && x.kind === "host") {
+          const d = line(x.text); if (x.color) d.style.color = x.color; if (x.bg) d.style.background = x.bg;
+        } else lines(keyOf(x));
+        prevKind = x && x.kind;
+      }
+      if (prevKind === "fs") line("");
+    }
+    const flat = (items) => items.flatMap((x) => (x && x.kind === "table") ? x.rows : (x && x.kind === "list") ? x.pairs.map((p) => p[0] + " : " + p[1]) : (x && x.kind === "host") ? [x.text] : [x]);
+
+    /* ---------- parsing ---------- */
+    function tokenize(s) {
+      const t = []; let i = 0;
+      while (i < s.length) {
+        const c = s[i];
+        if (/\s/.test(c)) { i++; continue; }
+        if (c === "#") break;
+        if (c === "|" ) { t.push({ op: "|" }); i++; continue; }
+        if (c === ";") { t.push({ op: ";" }); i++; continue; }
+        if (c === ">") { if (s[i + 1] === ">") { t.push({ op: ">>" }); i += 2; } else { t.push({ op: ">" }); i++; } continue; }
+        if (c === "{") { let d = 0, j = i; for (; j < s.length; j++) { if (s[j] === "{") d++; else if (s[j] === "}" && --d === 0) break; } t.push({ block: s.slice(i + 1, j).trim() }); i = j + 1; continue; }
+        let v = "", q = false, quoted = false, raw = "";
+        while (i < s.length && !/[\s|;>]/.test(s[i]) || (i < s.length && q)) {
+          const ch = s[i];
+          if (q) { if (ch === q) { if (q === "'" && s[i + 1] === "'") { v += "'"; raw += "''"; i += 2; continue; } q = false; raw += ch; i++; continue; } if (q === '"' && ch === "`" && i + 1 < s.length) { const n = s[i + 1]; v += n === "n" ? "\n" : n === "t" ? "\t" : n; raw += ch + n; i += 2; continue; } if (q === '"' && ch === "$") { const m = s.slice(i).match(/^\$(\{[^}]+\}|[\w:]+|\(([^)]*)\))/); if (m) { v += interp(m[0]); raw += m[0]; i += m[0].length; continue; } } v += ch; raw += ch; i++; continue; }
+          if (ch === '"' || ch === "'") { q = ch; quoted = true; raw += ch; i++; continue; }
+          if (ch === "`" && i + 1 < s.length) { v += s[i + 1]; raw += ch + s[i + 1]; i += 2; continue; }
+          v += ch; raw += ch; i++;
+        }
+        if (q) throw err("В строке отсутствует завершающий символ кавычки: " + q + ".", "ParserError");
+        t.push({ v, quoted, raw });
+      }
+      return t;
+    }
+    function interp(tok) {
+      if (tok.startsWith("$(")) { try { return flat(execLine(tok.slice(2, -1), true)).map(keyOf).join(" "); } catch (e) { return ""; } }
+      const name = tok.replace(/^\$\{?|\}$/g, "");
+      const v = getVar(name); return v == null ? "" : Array.isArray(v) ? v.map(keyOf).join(" ") : typeof v === "object" ? keyOf(v) : String(v);
+    }
+    function getVar(name) {
+      const l = name.toLowerCase();
+      if (l === "true") return true; if (l === "false") return false; if (l === "null") return null;
+      if (l === "home") return pathStr(HOME); if (l === "pwd") return pathStr(cwd);
+      if (l === "pi") return Math.PI;
+      if (l === "env:username") return "Игрок"; if (l === "env:computername") return "V3-PRISTAVKA"; if (l === "env:os") return "V3_NT";
+      if (l === "psversiontable") return { kind: "list", pairs: [["PSVersion", "3.3.0"], ["PSEdition", "V3"], ["Platform", "V3Games"], ["OS", "V3 Console"], ["V3TERMIN", "3.3"]] };
+      if (l === "_") return vars._;
+      const k = Object.keys(vars).find((x) => x.toLowerCase() === l);
+      return k ? vars[k] : undefined;
+    }
+    // args: positional + named (-Name value / -Switch)
+    const SWITCHES = ["recurse", "force", "descending", "unique", "full", "nonewline", "list", "casesensitive", "simplematch", "all", "line", "word", "character", "passthru", "examples", "detailed"];
+    function parseArgs(toks) {
+      const a = { pos: [], named: {}, blocks: [] };
+      for (let i = 0; i < toks.length; i++) {
+        const t = toks[i];
+        if (t.block != null) { a.blocks.push(t.block); a.pos.push({ block: t.block }); continue; }
+        if (!t.quoted && /^-[a-z]/i.test(t.v)) {
+          let name = t.v.slice(1), val;
+          const ci = name.indexOf(":"); if (ci > 0) { val = name.slice(ci + 1); name = name.slice(0, ci); }
+          name = name.toLowerCase();
+          if (val == null) { const nx = toks[i + 1]; if (!SWITCHES.includes(name) && nx && nx.v != null && !(!nx.quoted && /^-[a-z]/i.test(nx.v))) { val = valueOf(nx); i++; } else if (nx && nx.block != null && !SWITCHES.includes(name)) { val = { block: nx.block }; i++; } else val = true; }
+          a.named[name] = val; continue;
+        }
+        a.pos.push(valueOf(t));
+      }
+      a.get = (names, idx) => { for (const n of [].concat(names)) { const k = Object.keys(a.named).find((x) => n.startsWith(x) || x === n); if (k != null) return a.named[k]; } return idx != null ? a.pos[idx] : undefined; };
+      a.has = (n) => Object.keys(a.named).some((x) => n.startsWith(x) && x.length >= 2 || x === n);
+      return a;
+    }
+    function valueOf(t) {
+      if (!t.quoted && /^\$[\w:]+$/.test(t.v)) { const v = getVar(t.v.slice(1)); return v == null ? "" : v; }
+      if (!t.quoted && /^-?\d+(\.\d+)?(kb|mb|gb)?$/i.test(t.v)) return num(t.v);
+      return t.v;
+    }
+    function num(s) { const m = String(s).match(/^(-?\d+(?:\.\d+)?)(kb|mb|gb|tb)?$/i); if (!m) return NaN; const mul = { kb: 1024, mb: 1048576, gb: 1073741824, tb: 1099511627776 }[(m[2] || "").toLowerCase()] || 1; return parseFloat(m[1]) * mul; }
+
+    /* ---------- expressions: 2 + 2 * 3, "a" + $x, (1kb / 4) ---------- */
+    function evalExpr(src) {
+      const T = []; let i = 0;
+      while (i < src.length) {
+        const c = src[i];
+        if (/\s/.test(c)) { i++; continue; }
+        let m;
+        if ((m = src.slice(i).match(/^\d+(\.\d+)?(kb|mb|gb|tb)?\b/i))) { T.push({ n: num(m[0]) }); i += m[0].length; continue; }
+        if ((m = src.slice(i).match(/^-(eq|ne|gt|ge|lt|le|like|notlike|match|notmatch|and|or)\b/i))) { T.push({ o: m[1].toLowerCase() }); i += m[0].length; continue; }
+        if ((m = src.slice(i).match(/^\[math\]::(\w+)/i))) { T.push({ f: m[1].toLowerCase() }); i += m[0].length; continue; }
+        if (c === "." && src[i + 1] === ".") { T.push({ o: ".." }); i += 2; continue; }
+        if ("+-*/%(),".includes(c)) { T.push({ o: c }); i++; continue; }
+        if (c === "$" || c === '"' || c === "'") {
+          let j = i; if (c === "$") { m = src.slice(i).match(/^\$[\w:]+/); if (!m) throw 0; j = i + m[0].length; }
+          else { j = i + 1; while (j < src.length && src[j] !== c) { if (src[j] === "`") j++; j++; } if (j >= src.length) throw 0; j++; }
+          const tk = tokenize(src.slice(i, j))[0]; T.push({ v: c === "$" ? (getVar(src.slice(i + 1, j)) ?? null) : tk.v }); i = j; continue;
+        }
+        throw 0;
+      }
+      let p = 0;
+      const peek = () => T[p], isO = (o) => T[p] && T[p].o === o;
+      const truthy = (v) => !!v && v !== "0";
+      function rngE() { const l = addE(); if (!isO("..")) return l; p++; const r = addE(); const a0 = Math.round(+l), b0 = Math.round(+r); if (isNaN(a0) || isNaN(b0)) throw 0; if (Math.abs(b0 - a0) > 5000) throw err("Слишком большой диапазон (максимум 5000 чисел).", "RuntimeException"); const o = []; for (let k = a0; a0 <= b0 ? k <= b0 : k >= b0; k += a0 <= b0 ? 1 : -1) o.push(k); return o; }
+      function listE() { const l = logicE(); if (!isO(",")) return l; const o = [].concat(l); while (isO(",")) { p++; o.push(...[].concat(logicE())); } return o; }
+      function cmpE() {
+        let l = rngE();
+        while (T[p] && T[p].o && /^(eq|ne|gt|ge|lt|le|like|notlike|match|notmatch)$/.test(T[p].o)) {
+          const o = T[p++].o, r = rngE(), ls = typeof l === "string" ? l.toLowerCase() : l, rs = typeof r === "string" ? r.toLowerCase() : r;
+          l = o === "eq" ? ls == rs : o === "ne" ? ls != rs : o === "gt" ? l > r : o === "ge" ? l >= r : o === "lt" ? l < r : o === "le" ? l <= r : o === "like" ? wild(r).test(l) : o === "notlike" ? !wild(r).test(l) : o === "match" ? new RegExp(r, "i").test(l) : !new RegExp(r, "i").test(l);
+        }
+        return l;
+      }
+      function logicE() { let l = cmpE(); while (isO("and") || isO("or")) { const o = T[p++].o, r = cmpE(); l = o === "and" ? truthy(l) && truthy(r) : truthy(l) || truthy(r); } return l; }
+      function addE() { let l = mulE(); while (isO("+") || isO("-")) { const o = T[p++].o, r = mulE(); if (o === "+") l = (typeof l === "string" || typeof r === "string") ? String(l ?? "") + String(r ?? "") : l + r; else l = l - r; } return l; }
+      function mulE() { let l = unE(); while (isO("*") || isO("/") || isO("%")) { const o = T[p++].o, r = unE(); if (o === "*") l = typeof l === "string" ? l.repeat(Math.max(0, Math.min(1000, r | 0))) : l * r; else if (o === "/") { if (r === 0) throw err("Попытка деления на нуль.", "RuntimeException"); l = l / r; } else l = l % r; } return l; }
+      function unE() { if (isO("-")) { p++; return -unE(); } if (isO("+")) { p++; return +unE(); } return prim(); }
+      function prim() {
+        const t = peek(); if (!t) throw 0;
+        if (t.n != null) { p++; return t.n; }
+        if ("v" in t) { p++; return t.v; }
+        if (t.f) { p++; if (!isO("(")) throw 0; p++; const as = []; if (!isO(")")) { as.push(logicE()); while (isO(",")) { p++; as.push(logicE()); } } if (!isO(")")) throw 0; p++; const fn = { sqrt: Math.sqrt, pow: Math.pow, abs: Math.abs, round: (x, d) => d ? Math.round(x * 10 ** d) / 10 ** d : Math.round(x), floor: Math.floor, ceiling: Math.ceil, max: Math.max, min: Math.min, sin: Math.sin, cos: Math.cos, log: Math.log, log10: Math.log10 }[t.f]; if (!fn) throw err("Метод [math]::" + t.f + " не найден."); return fn(...as); }
+        if (isO("(")) { p++; const v = listE(); if (!isO(")")) throw 0; p++; return v; }
+        throw 0;
+      }
+      const v = listE(); if (p !== T.length) throw 0; return v;
+    }
+    const tryExpr = (s) => { try { return { ok: true, v: evalExpr(s) }; } catch (e) { if (e && e.ps) throw e; return { ok: false }; } };
+    const showVal = (v) => typeof v === "boolean" ? (v ? "True" : "False") : typeof v === "number" ? (Number.isInteger(v) ? String(v) : String(+v.toFixed(10)).replace(".", ",")) : v;
+
+    /* ---------- cmdlets ---------- */
+    const C = {};
+    function def(name, aliases, syn, desc, fn) { const c = { name, aliases, syn, desc, fn }; C[name.toLowerCase()] = c; aliases.forEach((a) => { C[a.toLowerCase()] = c; }); }
+    const uniq = () => Array.from(new Set(Object.values(C)));
+    const gameList = () => $$(".cart[data-go]").map((b) => ({ id: b.dataset.go, name: (b.querySelector(".cart-name") || b).textContent.trim() }));
+    const findGame = (q) => { q = String(q || "").toLowerCase().replace(/\.exe$/, ""); return gameList().find((g) => g.id.toLowerCase() === q || g.name.toLowerCase() === q) || gameList().find((g) => g.name.toLowerCase().replace(/\s+/g, "").includes(q.replace(/\s+/g, "")) && q.length > 1); };
+    const need = (v, what) => { if (v == null || v === "" || v === true) throw err("Отсутствует обязательный параметр " + what + ".", "ParameterBindingException"); return String(keyOf(v)); };
+
+    def("Get-Help", ["help", "man"], "Get-Help [[-Name] <команда>]", "Показывает справку: список всех команд или подробности об одной.", (a) => {
+      const n = a.get("name", 0);
+      if (n && n !== true) {
+        const c = C[String(n).toLowerCase()];
+        if (!c) throw err("Справка для \"" + n + "\" не найдена.", "ResourceUnavailable");
+        return ["", "ИМЯ", "    " + c.name, "", "ОПИСАНИЕ", "    " + c.desc, "", "СИНТАКСИС", "    " + c.syn, "", "ПСЕВДОНИМЫ", "    " + (c.aliases.join(", ") || "нет"), ""];
+      }
+      const rows = uniq().map((c) => pad(c.name, 18) + pad(c.aliases.slice(0, 3).join(", "), 20) + c.desc);
+      return [{ kind: "host", text: "V3TERMIN — справка. Подробно о команде: Get-Help <команда>", color: "" }, { kind: "table", head: pad("Командлет", 18) + pad("Псевдонимы", 20) + "Описание", rows },
+        "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (↑ ↓) и Tab."];
+    });
+    def("Get-Command", ["gcm"], "Get-Command [[-Name] <шаблон>]", "Список доступных командлетов и псевдонимов.", (a) => {
+      const n = a.get("name", 0), re = n && n !== true ? wild(String(n).includes("*") ? n : "*" + n + "*") : null;
+      const rows = uniq().filter((c) => !re || re.test(c.name) || c.aliases.some((x) => re.test(x))).map((c) => pad("Cmdlet", 16) + pad(c.name, 22) + "V3.Core");
+      const al = re ? Object.keys(C).filter((k) => re.test(k) && C[k].name.toLowerCase() !== k).map((k) => pad("Alias", 16) + pad(k + " -> " + C[k].name, 22) + "V3.Core") : [];
+      return [{ kind: "table", head: pad("CommandType", 16) + pad("Name", 22) + "Source", rows: rows.concat(al) }];
+    });
+    def("Get-Alias", ["gal"], "Get-Alias", "Показывает все псевдонимы команд.", () => [{ kind: "table", head: pad("CommandType", 14) + "Name", rows: Object.keys(C).filter((k) => C[k].name.toLowerCase() !== k).sort().map((k) => pad("Alias", 14) + k + " -> " + C[k].name) }]);
+    def("Clear-Host", ["cls", "clear"], "Clear-Host", "Очищает экран терминала.", () => { log().textContent = ""; return []; });
+    def("Get-Location", ["pwd", "gl"], "Get-Location", "Показывает текущую папку.", () => [{ kind: "table", head: "Path", rows: [pathStr(cwd)] }]);
+    def("Set-Location", ["cd", "sl", "chdir"], "Set-Location [[-Path] <путь>]", "Переходит в другую папку. cd .. — на уровень вверх, cd ~ — домой.", (a) => {
+      const p = a.get("path", 0); const r = mustGet(p == null || p === true ? "~" : keyOf(p), "d"); cwd = r.parts; S.cwd = cwd; save(); return [];
+    });
+    def("Get-ChildItem", ["ls", "dir", "gci"], "Get-ChildItem [[-Path] <путь>] [-Filter <шаблон>] [-Recurse]", "Показывает файлы и папки.", (a) => {
+      let p = a.get("path", 0); p = p == null || p === true ? "." : keyOf(p);
+      let filt = a.get("filter", 1); let target = p;
+      if (/[*?]/.test(p)) { const i = Math.max(p.lastIndexOf("\\"), p.lastIndexOf("/")); filt = p.slice(i + 1); target = i >= 0 ? p.slice(0, i) || "\\" : "."; }
+      const r = mustGet(target);
+      if (r.node.t === "f") return [fsItem(r.parts[r.parts.length - 1], r.node, r.parts.slice(0, -1))];
+      const re = filt && filt !== true ? wild(filt) : null, res = [];
+      (function go(n, parts) {
+        const ks = Object.keys(n.c).sort((x, y) => (n.c[y].t === "d") - (n.c[x].t === "d") || x.localeCompare(y));
+        ks.forEach((k) => { if (!re || re.test(k)) res.push(fsItem(k, n.c[k], parts)); });
+        if (a.has("recurse")) ks.forEach((k) => { if (n.c[k].t === "d") go(n.c[k], parts.concat(k)); });
+      })(r.node, r.parts);
+      return res;
+    });
+    def("New-Item", ["ni", "mkdir", "md"], "New-Item [-Path] <путь> [-ItemType File|Directory] [-Value <текст>]", "Создаёт файл или папку (mkdir — сразу папку).", (a, input, me) => {
+      const p = need(a.get("path", 0), "Path");
+      const isDir = /^(mkdir|md)$/i.test(me) || /^d/i.test(String(a.get("itemtype") || a.get("type") || ""));
+      const { dir, name, parts } = parentOf(p);
+      if (badName(name)) throw err("Недопустимые символы в имени \"" + name + "\".", "ArgumentException");
+      const k = findKey(dir, name);
+      if (k && !a.has("force")) throw err("Элемент с указанным именем " + pathStr(parts.concat(k)) + " уже существует.", "ResourceExists");
+      if (k) delete dir.c[k];
+      const v = a.get("value"); dir.c[name] = isDir ? D() : F(v == null || v === true ? "" : String(keyOf(v)));
+      dir.m = now(); save(); return [fsItem(name, dir.c[name], parts)];
+    });
+    def("Remove-Item", ["rm", "del", "rmdir", "rd", "erase", "ri"], "Remove-Item [-Path] <путь> [-Recurse]", "Удаляет файл или папку (для непустой папки нужен -Recurse).", (a) => {
+      const ps = a.pos.length ? a.pos : [a.get("path")]; let n = 0;
+      ps.forEach((p0) => expand(need(p0, "Path")).forEach((p) => {
+        const r = mustGet(p);
+        if (!r.parts.length) throw err("Нельзя удалить весь диск V3:\\. Приставка обидится.");
+        if (isUnder(r.parts, cwd) && r.parts.length <= cwd.length) throw err("Нельзя удалить папку, в которой ты сейчас находишься.");
+        if (r.node.t === "d" && Object.keys(r.node.c).length && !a.has("recurse")) throw err("Элемент в " + pathStr(r.parts) + " содержит дочерние элементы. Добавь -Recurse, чтобы удалить их тоже.");
+        const w = walk(r.parts.slice(0, -1)); delete w.node.c[r.parts[r.parts.length - 1]]; n++;
+      }));
+      save(); return [];
+    });
+    def("Get-Content", ["cat", "type", "gc"], "Get-Content [-Path] <файл> [-TotalCount <n>] [-Tail <n>]", "Выводит содержимое файла.", (a) => {
+      let res = [];
+      const ps = a.pos.length ? a.pos : [a.get("path")];
+      ps.forEach((p0) => expand(need(p0, "Path")).forEach((p) => { res = res.concat(mustGet(p, "f").node.v.replace(/\n$/, "").split("\n")); }));
+      const head = a.get(["totalcount", "head", "first"]), tail = a.get("tail");
+      if (typeof head === "number") res = res.slice(0, head); if (typeof tail === "number") res = res.slice(-tail);
+      return res;
+    });
+    function writeFile(p, text, append) {
+      const { dir, name, parts } = parentOf(p);
+      if (badName(name)) throw err("Недопустимые символы в имени \"" + name + "\".", "ArgumentException");
+      const k = findKey(dir, name) || name;
+      if (dir.c[k] && dir.c[k].t === "d") throw err("Нельзя записать текст в папку \"" + pathStr(parts.concat(k)) + "\".");
+      const old = dir.c[k] ? dir.c[k].v : "";
+      dir.c[k] = F(append ? old + (old && !old.endsWith("\n") ? "\n" : "") + text : text); dir.m = now(); save();
+    }
+    const textOf = (a, input) => { const v = a.get("value", 1); const src = v != null && v !== true ? [].concat(v) : input || []; return flat(src).map(keyOf).join("\n") + (src.length ? "\n" : ""); };
+    def("Set-Content", ["sc"], "Set-Content [-Path] <файл> [-Value] <текст>", "Записывает текст в файл (заменяя старый).", (a, input) => { writeFile(need(a.get("path", 0), "Path"), textOf(a, input), false); return []; });
+    def("Add-Content", ["ac"], "Add-Content [-Path] <файл> [-Value] <текст>", "Дописывает текст в конец файла.", (a, input) => { writeFile(need(a.get("path", 0), "Path"), textOf(a, input), true); return []; });
+    def("Out-File", [], "... | Out-File [-FilePath] <файл> [-Append]", "Сохраняет вывод конвейера в файл.", (a, input) => { writeFile(need(a.get(["filepath", "path"], 0), "FilePath"), flat(input || []).map(keyOf).join("\n") + "\n", a.has("append")); return []; });
+    def("Copy-Item", ["cp", "copy", "cpi"], "Copy-Item [-Path] <откуда> [-Destination] <куда> [-Recurse]", "Копирует файл или папку.", (a) => {
+      const src = mustGet(need(a.get("path", 0), "Path")); let dst = need(a.get("destination", 1), "Destination");
+      const dr = resolve(dst); if (dr.bad) throw err(dr.bad);
+      if (!dr.missing && dr.node.t === "d") dst = pathStr(dr.parts.concat(src.parts[src.parts.length - 1]));
+      if (src.node.t === "d" && isUnder(src.parts, splitPath(dst).parts || [])) throw err("Нельзя скопировать папку саму в себя.");
+      const { dir, name } = parentOf(dst); dir.c[findKey(dir, name) || name] = clone(src.node); dir.m = now(); save(); return [];
+    });
+    def("Move-Item", ["mv", "move", "mi"], "Move-Item [-Path] <откуда> [-Destination] <куда>", "Перемещает файл или папку.", (a) => {
+      const src = mustGet(need(a.get("path", 0), "Path")); let dst = need(a.get("destination", 1), "Destination");
+      if (!src.parts.length) throw err("Нельзя переместить корень диска.");
+      const dr = resolve(dst); if (dr.bad) throw err(dr.bad);
+      if (!dr.missing && dr.node.t === "d") dst = pathStr(dr.parts.concat(src.parts[src.parts.length - 1]));
+      if (src.node.t === "d" && isUnder(src.parts, splitPath(dst).parts || [])) throw err("Нельзя переместить папку саму в себя.");
+      const { dir, name } = parentOf(dst); const node = src.node;
+      delete walk(src.parts.slice(0, -1)).node.c[src.parts[src.parts.length - 1]];
+      dir.c[name] = node; dir.m = now(); if (isUnder(src.parts, cwd)) cwd = HOME.slice(); save(); return [];
+    });
+    def("Rename-Item", ["ren", "rni"], "Rename-Item [-Path] <путь> [-NewName] <новое имя>", "Переименовывает файл или папку.", (a) => {
+      const src = mustGet(need(a.get("path", 0), "Path")), nn = need(a.get("newname", 1), "NewName");
+      if (!src.parts.length) throw err("Нельзя переименовать корень диска.");
+      if (/[\\/]/.test(nn) || badName(nn)) throw err("Недопустимое новое имя \"" + nn + "\".", "ArgumentException");
+      const par = walk(src.parts.slice(0, -1)).node, old = src.parts[src.parts.length - 1];
+      if (findKey(par, nn) && findKey(par, nn) !== old) throw err("Файл \"" + nn + "\" уже существует.", "ResourceExists");
+      const node = par.c[old]; delete par.c[old]; par.c[nn] = node; if (isUnder(src.parts, cwd)) cwd = src.parts.slice(0, -1).concat(nn, cwd.slice(src.parts.length)); save(); return [];
+    });
+    def("Test-Path", [], "Test-Path [-Path] <путь>", "Проверяет, существует ли файл или папка (True/False).", (a) => { const r = resolve(need(a.get("path", 0), "Path")); return [!r.bad && !r.missing ? "True" : "False"]; });
+    def("Get-Item", ["gi"], "Get-Item [-Path] <путь>", "Показывает сведения о файле или папке.", (a) => { const r = mustGet(need(a.get("path", 0), "Path")); return [fsItem(r.parts[r.parts.length - 1] || "V3:\\", r.node, r.parts.slice(0, -1))]; });
+    def("Write-Output", ["echo", "write"], "Write-Output <текст>", "Передаёт текст дальше по конвейеру (или выводит его).", (a) => a.pos.map((x) => x && x.block != null ? x.block : typeof x === "number" || typeof x === "boolean" ? showVal(x) : x));
+    def("Write-Host", [], "Write-Host <текст> [-ForegroundColor <цвет>] [-BackgroundColor <цвет>]", "Печатает цветной текст на экран. Цвета: Red, Green, Yellow, Cyan, Magenta, Blue, White, Gray…", (a) => {
+      const fg = a.get(["foregroundcolor", "fg"]), bg = a.get(["backgroundcolor", "bg"]);
+      const c1 = fg && COLORS[String(fg).toLowerCase()], c2 = bg && COLORS[String(bg).toLowerCase()];
+      if (fg && fg !== true && !c1) throw err("Не удается привести значение \"" + fg + "\" к типу ConsoleColor. Допустимые: " + Object.keys(COLORS).join(", ") + ".", "ParameterBindingException");
+      render([{ kind: "host", text: a.pos.map((x) => showVal(keyOf(x))).join(" "), color: c1, bg: c2 }]); return [];
+    });
+    def("Write-Warning", [], "Write-Warning <текст>", "Печатает предупреждение.", (a) => { line("ПРЕДУПРЕЖДЕНИЕ: " + a.pos.map(keyOf).join(" "), "warn"); return []; });
+    def("Write-Error", [], "Write-Error <текст>", "Печатает ошибку.", (a) => { throw err(a.pos.map(keyOf).join(" ") || "Ошибка.", "NotSpecified"); });
+    def("Read-Host", [], "Read-Host [<подсказка>]", "Спрашивает текст у пользователя.", (a) => { const v = window.prompt(a.pos.map(keyOf).join(" ") || "Ввод:", ""); return v == null ? [] : [v]; });
+    def("Get-Date", ["date"], "Get-Date [-Format <шаблон>]", "Показывает текущую дату и время.", (a) => {
+      const d = new Date(), f = a.get(["format", "uformat"]);
+      if (f && f !== true) { const z = (x) => String(x).padStart(2, "0"); return [String(f).replace(/yyyy/g, d.getFullYear()).replace(/MM/g, z(d.getMonth() + 1)).replace(/dd/g, z(d.getDate())).replace(/HH/g, z(d.getHours())).replace(/mm/g, z(d.getMinutes())).replace(/ss/g, z(d.getSeconds()))]; }
+      const s = d.toLocaleString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return ["", s.charAt(0).toUpperCase() + s.slice(1), ""];
+    });
+    def("Get-Random", ["random"], "Get-Random [-Minimum <n>] [-Maximum <n>] | <список> | Get-Random", "Случайное число или случайный элемент из конвейера.", (a, input) => {
+      if (input && input.length) return [input[Math.floor(Math.random() * input.length)]];
+      if (a.pos.length > 1) return [a.pos[Math.floor(Math.random() * a.pos.length)]];
+      const mn = Number(a.get("minimum") ?? 0), mx = Number(a.get("maximum", 0) ?? 2147483647);
+      if (!(mx > mn)) throw err("Значение Minimum (" + mn + ") должно быть меньше Maximum (" + mx + ").", "InvalidArgument");
+      return [String(Math.floor(mn + Math.random() * (mx - mn)))];
+    });
+    def("Get-History", ["history", "h", "ghy"], "Get-History", "Показывает ранее введённые команды.", () => [{ kind: "table", head: lpad("Id", 4) + "  CommandLine", rows: S.hist.map((c, i) => lpad(i + 1, 4) + "  " + c) }]);
+    def("Clear-History", ["clhy"], "Clear-History", "Очищает историю команд.", () => { S.hist = []; save(); return []; });
+    def("Get-Process", ["ps", "gps"], "Get-Process [[-Name] <имя>]", "Список «процессов» приставки — это её игры.", (a) => {
+      const n = a.get("name", 0), re = n && n !== true ? wild(n) : null;
+      const pr = [{ id: "V3Games", name: "V3Games" }, { id: "v3termin", name: "V3TERMIN" }].concat(gameList().filter((g) => g.id !== "v3termin"));
+      const rows = pr.filter((g) => !re || re.test(g.id) || re.test(g.name)).map((g, i) => { const h = Array.from(g.id).reduce((x, c) => x * 31 + c.charCodeAt(0) >>> 0, 7); const run = g.id === "v3termin" || g.id === "V3Games"; return lpad(run ? (h % 900 + 40) : 0, 7) + lpad(run ? ((h % 3000) / 100).toFixed(2) : "0,00", 9) + lpad(1000 + h % 9000, 7) + "  " + pad(g.id, 12) + " " + g.name; });
+      if (re && !rows.length) throw err("Не удается найти процесс с именем \"" + n + "\".", "ObjectNotFound");
+      return [{ kind: "table", head: lpad("WS(MB)", 7) + lpad("CPU(s)", 9) + lpad("Id", 7) + "  " + pad("ProcessName", 12) + " Title", rows }];
+    });
+    def("Start-Process", ["start", "saps"], "Start-Process [-FilePath] <игра>", "Запускает игру приставки: Start-Process snake, start 2048, start \"Block Blast\".", (a) => {
+      const q = need(a.get(["filepath", "name"], 0), "FilePath"), g = findGame(q);
+      if (!g) throw err("Не удается выполнить эту команду из-за ошибки: системе не удается найти указанный файл \"" + q + "\". Список: Get-Process.", "InvalidOperationException");
+      if (g.id === "v3termin") return ["V3TERMIN уже запущен — ты в нём :)"];
+      line("Запуск " + g.name + "…", "dim"); setTimeout(() => show(g.id), 350); return [];
+    });
+    def("Stop-Process", ["kill", "spps"], "Stop-Process [-Name] <имя>", "Закрывает процесс. Stop-Process v3termin — выход в меню.", (a) => {
+      const q = need(a.get(["name", "id"], 0), "Name").toLowerCase();
+      if (q === "v3termin") { setTimeout(() => show("hub"), 200); return ["Завершение V3TERMIN…"]; }
+      if (q === "v3games") throw err("Отказано в доступе: процесс V3Games защищён системой.", "PermissionDenied");
+      if (findGame(q)) return ["Процесс \"" + findGame(q).name + "\" сейчас не запущен."];
+      throw err("Не удается найти процесс с именем \"" + q + "\".", "ObjectNotFound");
+    });
+    def("Exit", ["exit", "quit"], "exit", "Закрывает терминал и возвращает в меню.", () => { setTimeout(() => show("hub"), 150); return []; });
+    def("Get-Host", [], "Get-Host", "Сведения о терминале.", () => [{ kind: "list", pairs: [["Name", "V3TERMIN ConsoleHost"], ["Version", "3.3.0"], ["CurrentCulture", "ru-RU"], ["Theme", S.theme]] }]);
+    def("whoami", [], "whoami", "Имя текущего пользователя.", () => ["v3-pristavka\\игрок"]);
+    def("hostname", [], "hostname", "Имя компьютера.", () => ["V3-PRISTAVKA"]);
+    def("Get-ComputerInfo", ["systeminfo", "gin"], "Get-ComputerInfo", "Сведения о приставке.", () => {
+      let used = 0; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); used += (k.length + (localStorage.getItem(k) || "").length) * 2; } } catch (e) { /* ignore */ }
+      return [{ kind: "list", pairs: [["OsName", "V3 Console OS"], ["OsVersion", "3.3.0 (сборка 2026)"], ["CsName", "V3-PRISTAVKA"], ["CsProcessors", (navigator.hardwareConcurrency || 4) + " ядер V3-Core"], ["Игр установлено", String(gameList().length)], ["Диск V3:\\", sizeOf(S.fs) + " байт занято"], ["Хранилище", Math.round(used / 1024) + " КБ"], ["Язык", navigator.language || "ru-RU"]] }];
+    });
+    def("Get-Coins", [], "Get-Coins", "Сколько у тебя монет ◎.", () => { const b = document.querySelector("[data-coins]"); return ["◎ " + (b ? b.textContent : "0")]; });
+    def("Set-Theme", ["theme"], "Set-Theme [-Name] classic|dark|matrix|v3|light", "Меняет оформление терминала.", (a) => {
+      const n = String(a.get("name", 0) || "").toLowerCase(), all = ["classic", "dark", "matrix", "v3", "light"];
+      if (!all.includes(n)) return ["Темы: " + all.join(", ") + ". Сейчас: " + S.theme];
+      S.theme = n; save(); $("#ptWin").dataset.theme = n; return [];
+    });
+    def("notepad", ["edit", "nano"], "notepad <файл>", "Открывает файл в блокноте (если файла нет — создаёт).", (a) => { openEditor(need(a.get("path", 0), "Path")); return []; });
+    def("Invoke-Expression", ["iex"], "Invoke-Expression <команда>", "Выполняет строку как команду.", (a) => execLine(a.pos.map(keyOf).join(" "), true));
+    def("Set-Variable", ["set", "sv"], "Set-Variable [-Name] <имя> [-Value] <значение>", "Создаёт переменную (то же, что $имя = значение).", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); setVar(n, a.get("value", 1) ?? ""); return []; });
+    def("Get-Variable", ["gv"], "Get-Variable", "Показывает все переменные.", () => [{ kind: "table", head: pad("Name", 16) + "Value", rows: Object.keys(vars).filter((k) => k !== "_").map((k) => pad(k, 16) + (Array.isArray(vars[k]) ? vars[k].map(keyOf).join(", ") : showVal(keyOf(vars[k])))) }]);
+    def("Remove-Variable", ["rv"], "Remove-Variable [-Name] <имя>", "Удаляет переменную.", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); const k = Object.keys(vars).find((x) => x.toLowerCase() === n.toLowerCase()); if (!k) throw err("Не удается найти переменную с именем \"" + n + "\".", "ObjectNotFound"); delete vars[k]; S.vars = vars; save(); return []; });
+    def("Start-Sleep", ["sleep"], "Start-Sleep [-Seconds] <n>", "Ждёт указанное число секунд (до 10).", (a) => { const s = Math.min(10, Math.max(0, Number(a.get(["seconds", "milliseconds"], 0)) || 1)); return { wait: (a.has("milliseconds") ? s : s * 1000) }; });
+    def("Format-Disk", ["format"], "Format-Disk", "Сбрасывает диск V3:\\ к начальному виду (спросит подтверждение).", () => {
+      if (!window.confirm("Стереть всё на диске V3:\\ и вернуть стандартные файлы?")) return ["Отменено."];
+      S.fs = freshFs(); cwd = HOME.slice(); S.cwd = cwd; save(); return ["Диск V3:\\ отформатирован. Как новенький!"];
+    });
+    def("ping", ["Test-Connection"], "ping <адрес>", "Проверяет связь (понарошку).", (a) => {
+      const h = need(a.get(["computername", "target"], 0), "Address"), out = ["", "Обмен пакетами с " + h + " по 32 байт:"];
+      for (let i = 0; i < 4; i++) out.push("Ответ от " + h + ": число байт=32 время=" + (8 + Math.floor(Math.random() * 40)) + "мс TTL=118");
+      return out.concat(["", "Статистика Ping для " + h + ": пакетов отправлено = 4, получено = 4, потеряно = 0 (0% потерь)"]);
+    });
+    def("ipconfig", [], "ipconfig", "Сетевые настройки приставки.", () => ["", "Настройка протокола IP для V3", "", "Адаптер Wi-Fi V3Net:", "   IPv4-адрес. . . . . . . . . . . . : 192.168.3.33", "   Маска подсети . . . . . . . . . . : 255.255.255.0", "   Основной шлюз . . . . . . . . . . : 192.168.3.1", ""]);
+    def("tree", [], "tree [<путь>]", "Рисует дерево папок.", (a) => {
+      const p = a.get("path", 0), r = mustGet(p == null || p === true ? "." : keyOf(p), "d"), res = [pathStr(r.parts)];
+      (function go(n, pre) { const ks = Object.keys(n.c).sort(); ks.forEach((k, i) => { const last = i === ks.length - 1; res.push(pre + (last ? "└───" : "├───") + k); if (n.c[k].t === "d") go(n.c[k], pre + (last ? "    " : "│   ")); }); })(r.node, "");
+      return res;
+    });
+    // pipeline-only filters
+    def("Sort-Object", ["sort"], "... | Sort-Object [-Descending] [-Unique]", "Сортирует строки/объекты конвейера.", (a, input) => {
+      const prop = a.get("property", 0); let r = (input || []).slice();
+      const key = (x) => prop && typeof x === "object" && x[String(prop).toLowerCase()] != null ? x[String(prop).toLowerCase()] : keyOf(x);
+      r.sort((x, y) => { const p = key(x), q = key(y); return typeof p === "number" && typeof q === "number" ? p - q : !isNaN(+p) && !isNaN(+q) && p !== "" && q !== "" ? +p - +q : String(p).localeCompare(String(q)); });
+      if (a.has("descending")) r.reverse(); if (a.has("unique")) { const s = new Set(); r = r.filter((x) => !s.has(keyOf(x).toLowerCase()) && s.add(keyOf(x).toLowerCase())); } return r;
+    });
+    def("Select-Object", ["select"], "... | Select-Object [-First <n>] [-Last <n>] [-Skip <n>] [-Unique]", "Берёт первые/последние элементы конвейера.", (a, input) => {
+      let r = input || []; const sk = a.get("skip"), f = a.get("first"), l = a.get("last");
+      if (typeof sk === "number") r = r.slice(sk); if (typeof f === "number") r = r.slice(0, f); if (typeof l === "number") r = r.slice(-l);
+      if (a.has("unique")) { const s = new Set(); r = r.filter((x) => !s.has(keyOf(x)) && s.add(keyOf(x))); }
+      const prop = a.get(["property", "expandproperty"], 0); if (prop && prop !== true) r = r.map((x) => x && typeof x === "object" && x[String(prop).toLowerCase()] != null ? String(x[String(prop).toLowerCase()]) : keyOf(x));
+      return r;
+    });
+    def("Where-Object", ["where", "?"], "... | Where-Object { $_ -like \"*текст*\" }", "Оставляет только подходящие элементы. Операторы: -like, -match, -eq, -ne, -gt, -lt.", (a, input) => {
+      const b = a.blocks[0]; if (!b) throw err("Нужен блок условия, например { $_ -like \"*.txt\" }.", "ParameterBindingException");
+      return (input || []).filter((x) => { vars._ = x && x.kind === "fs" ? x.name : (typeof x === "object" ? keyOf(x) : x); const r = tryExpr(b.replace(/\$_\.(name|length|len)\b/gi, (m0, p) => { const v = x && typeof x === "object" ? (/^len/i.test(p) ? x.len : x.name) : keyOf(x); return typeof v === "number" ? String(v) : "'" + String(v).replace(/'/g, "''") + "'"; })); if (!r.ok) throw err("Не удалось разобрать условие { " + b + " }.", "ParserError"); return !!r.v && r.v !== "0"; });
+    });
+    def("ForEach-Object", ["foreach", "%"], "... | ForEach-Object { команда с $_ }", "Выполняет команду для каждого элемента.", (a, input) => {
+      const b = a.blocks[0]; if (!b) throw err("Нужен блок, например { \"Файл: $_\" }.", "ParameterBindingException");
+      let res = []; (input || []).forEach((x) => { vars._ = x && x.kind === "fs" ? x.name : (typeof x === "object" ? keyOf(x) : x); res = res.concat(flat(execLine(b, true))); }); return res;
+    });
+    def("Select-String", ["sls", "grep", "findstr"], "... | Select-String [-Pattern] <текст>  |  Select-String <текст> <файл>", "Ищет строки с текстом (в конвейере или в файле).", (a, input) => {
+      const pat = need(a.get("pattern", 0), "Pattern"); let src = input || [];
+      const file = a.get("path", 1); if (file && file !== true) src = expand(keyOf(file)).flatMap((p) => mustGet(p, "f").node.v.replace(/\n$/, "").split("\n").map((t, i) => p + ":" + (i + 1) + ":" + t));
+      let re; try { re = a.has("simplematch") ? null : new RegExp(pat, a.has("casesensitive") ? "" : "i"); } catch (e) { re = null; }
+      const lp = pat.toLowerCase(); return flat(src).filter((x) => { const s = keyOf(x); return re ? re.test(s) : s.toLowerCase().includes(lp); });
+    });
+    def("Measure-Object", ["measure"], "... | Measure-Object [-Line] [-Word] [-Character]", "Считает элементы (и сумму/среднее чисел).", (a, input) => {
+      const it = flat(input || []), nums = it.map((x) => typeof x === "object" && x.kind === "fs" ? (x.len === "" ? NaN : x.len) : +keyOf(x)).filter((x) => !isNaN(x) && String(x) !== "");
+      const pairs = [["Count", String(it.length)]];
+      if (nums.length === it.length && nums.length) { const s = nums.reduce((x, y) => x + y, 0); pairs.push(["Sum", showVal(s)], ["Average", showVal(s / nums.length)], ["Maximum", showVal(Math.max(...nums))], ["Minimum", showVal(Math.min(...nums))]); }
+      const txt = it.map(keyOf).join("\n");
+      if (a.has("word")) pairs.push(["Words", String((txt.match(/\S+/g) || []).length)]); if (a.has("character")) pairs.push(["Characters", String(txt.replace(/\n/g, "").length)]); if (a.has("line")) pairs.push(["Lines", String(it.length)]);
+      return [{ kind: "list", pairs }];
+    });
+    def("Get-Unique", ["gu"], "... | Get-Unique", "Убирает повторы в конвейере.", (a, input) => { const s = new Set(); return (input || []).filter((x) => !s.has(keyOf(x)) && s.add(keyOf(x))); });
+    def("Format-Table", ["ft"], "... | Format-Table", "Выводит как таблицу.", (a, input) => input || []);
+    def("Format-List", ["fl"], "... | Format-List", "Выводит списком «свойство : значение».", (a, input) => (input || []).map((x) => x && x.kind === "fs" ? { kind: "list", pairs: [["Name", x.name], ["Mode", x.dir ? "d-----" : "-a----"], ["Length", String(x.len)], ["LastWriteTime", fmtDate(x.m)], ["Directory", x.at]] } : x));
+    def("Out-Host", ["oh"], "... | Out-Host", "Просто выводит на экран.", (a, input) => input || []);
+    def("Out-Null", [], "... | Out-Null", "Выбрасывает вывод.", () => []);
+
+    /* ---------- running ---------- */
+    function setVar(name, v) { if (/^(true|false|null|home|pwd|pi|_|psversiontable)$/i.test(name)) throw err("Нельзя перезаписать переменную $" + name + ": она только для чтения.", "SessionStateUnauthorizedAccess"); const k = Object.keys(vars).find((x) => x.toLowerCase() === name.toLowerCase()) || name; vars[k] = v; S.vars = Object.assign({}, vars); delete S.vars._; save(); }
+    function learn(c) { if (S.learned[c.name]) return; S.learned[c.name] = 1; save(); Hero.earn(2); $("#ptChip").textContent = Object.keys(S.learned).length; if (Object.keys(S.learned).length % 5 === 0) Hero.say("v3termin", "good", `Ты освоил уже ${Object.keys(S.learned).length} командлетов! 💻`); }
+    function runScript(path, depth) {
+      if (depth > 4) throw err("Слишком глубокая вложенность скриптов.");
+      const r = mustGet(path, "f"); let res = [];
+      r.node.v.split("\n").forEach((ln) => { if (ln.trim()) res = res.concat(execLine(ln, true, depth + 1)); });
+      return res;
+    }
+    // runs one command segment
+    function runCmd(toks, input, depth) {
+      if (!toks.length) return input || [];
+      const first = toks[0];
+      if (first.block != null) return [first.block];
+      if (first.quoted) { if (toks.length === 1) return [first.v]; throw err("Непредвиденная лексема \"" + toks[1].raw + "\" в выражении или операторе.", "ParserError"); }
+      const name = first.v;
+      if (/^\.?[\\/]|\.ps1$/i.test(name) && /\.ps1$/i.test(name)) return runScript(name.replace(/^\.[\\/]/, ""), depth || 0);
+      const c = C[name.toLowerCase()];
+      if (!c) {
+        const g = findGame(name.replace(/\.exe$/i, ""));
+        if (g && /\.exe$/i.test(name)) return C["start-process"].fn(parseArgs([{ v: g.id }]), null, "start");
+        const dist = (x, y) => { const d = Array.from({ length: y.length + 1 }, (_, j) => j); for (let i2 = 1; i2 <= x.length; i2++) { let pr = d[0]; d[0] = i2; for (let j = 1; j <= y.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, pr + (x[i2 - 1] === y[j - 1] ? 0 : 1)); pr = t; } } return d[y.length]; };
+        const ln = name.toLowerCase(), best = uniq().map((x) => x.name).concat(Object.keys(C)).map((x) => [x, dist(ln, x.toLowerCase())]).sort((x, y) => x[1] - y[1])[0];
+        const near = best && name.length > 1 && best[1] <= Math.max(1, Math.floor(name.length / 3)) ? best[0] : null;
+        const e = err("Имя \"" + name + "\" не распознано как имя командлета, функции, файла сценария или выполняемой программы. Проверьте правильность написания имени." + (near ? "\nВозможно, вы имели в виду: " + near : "\nСписок команд: Get-Help"), "ObjectNotFound: (" + name + ":String)");
+        e.cat = "CommandNotFoundException"; e.cmd = name; throw e;
+      }
+      const res = c.fn(parseArgs(toks.slice(1)), input, name);
+      learn(c);
+      return res;
+    }
+    function splitOps(toks) { const segs = [[]]; let redir = null; for (let i = 0; i < toks.length; i++) { const t = toks[i]; if (t.op === "|") segs.push([]); else if (t.op === ">" || t.op === ">>") { const f = toks[i + 1]; if (!f || f.op) throw err("Отсутствует файл после оператора перенаправления \"" + t.op + "\".", "ParserError"); redir = { file: f.v, append: t.op === ">>" }; i++; } else segs[segs.length - 1].push(t); } if (segs.some((s) => !s.length) && segs.length > 1) throw err("Пустой элемент конвейера не допускается.", "ParserError"); return { segs, redir }; }
+    // runs a whole line; quiet=true returns items instead of printing them
+    function execLine(src, quiet, depth) {
+      src = String(src).trim();
+      if (!src || src.startsWith("#")) return [];
+      // statements separated by ;
+      const parts = []; { let q = false, d = 0, cur = ""; for (const ch of src) { if (q) { if (ch === q) q = false; cur += ch; continue; } if (ch === '"' || ch === "'") q = ch; if (ch === "{") d++; if (ch === "}") d--; if (ch === ";" && !d) { parts.push(cur); cur = ""; continue; } cur += ch; } parts.push(cur); }
+      if (parts.length > 1) { let all = []; parts.forEach((p) => { const r = execLine(p, quiet, depth); if (quiet) all = all.concat(r); }); return all; }
+      // assignment: $x = ..., $x += ...
+      let m = src.match(/^\$([\w]+)\s*([+\-*/]?=)(?!=)\s*([\s\S]*)$/);
+      if (m) {
+        const [, name, op, rhs] = m; let v;
+        const ex = rhs.trim() ? tryExpr(rhs) : { ok: true, v: null };
+        if (ex.ok) v = ex.v; else { const r = execLine(rhs, true, depth); const f = r.map((x) => x && x.kind === "fs" ? x.name : x); v = f.length === 1 ? f[0] : f; }
+        if (op !== "=") { const o = getVar(name) ?? 0; v = op === "+=" ? ((typeof o === "string" || typeof v === "string") ? String(o) + v : o + v) : op === "-=" ? o - v : op === "*=" ? o * v : o / v; }
+        setVar(name, v); return [];
+      }
+      // pure expression: 2+2, "текст", $x
+      if (/^[\d("'$[+\-]/.test(src) && !/^\$\w+\s*\|/.test(src)) { const ex = tryExpr(src); if (ex.ok) { const v = Array.isArray(ex.v) ? ex.v : [ex.v]; const outp = v.filter((x) => x != null); if (!quiet) render(outp); return outp; } }
+      const { segs, redir } = splitOps(tokenize(src));
+      let items = null;
+      for (const s of segs) {
+        // a piped value at the start: "a","b" | sort  /  $x | ...
+        if (items === null && s.length && (s[0].quoted || /^\$|^\d/.test(s[0].v || ""))) { const r = tryExpr(s.map((t) => t.raw ?? "").join(" ")); if (r.ok) { items = (Array.isArray(r.v) ? r.v : [r.v]).filter((x) => x != null); continue; } if (s.every((t) => t.quoted || t.v === ",")) { items = s.filter((t) => t.v !== ",").map((t) => t.v); continue; } }
+        const r = runCmd(s, items, depth);
+        if (r && r.wait != null) { busy = r.wait; items = []; continue; }
+        items = r;
+      }
+      items = items || [];
+      if (redir) { writeFile(redir.file, flat(items).map(keyOf).join("\n") + (items.length ? "\n" : ""), redir.append); return []; }
+      if (!quiet) render(items);
+      return items;
+    }
+    function submit(text) {
+      echoCmd(text);
+      const t = text.trim();
+      if (t) { if (S.hist[S.hist.length - 1] !== t) S.hist.push(t); if (S.hist.length > 150) S.hist.splice(0, S.hist.length - 150); save(); }
+      hi = -1; draft = "";
+      try { execLine(text, false, 0); } catch (e) { printErr(e, e && e.cmd ? e.cmd : (t.split(/\s/)[0] || "")); if (!(e && e.ps)) console.error(e); }
+      const done = () => { setPrompt(); scrollEnd(); };
+      if (busy) { const w = busy; busy = 0; inp().disabled = true; $("#ptPs").textContent = ""; setTimeout(() => { inp().disabled = false; done(); inp().focus(); }, w); } else done();
+    }
+
+    /* ---------- notepad ---------- */
+    function openEditor(p) {
+      const r = resolve(p); if (r.bad) throw err(r.bad);
+      if (!r.missing && r.node.t === "d") throw err("\"" + pathStr(r.parts) + "\" — это папка. Укажи файл.");
+      parentOf(p);
+      editing = p; $("#ptEName").textContent = "📝 " + (r.missing ? pathStr(splitPath(p).parts) + " (новый)" : pathStr(r.parts));
+      $("#ptText").value = r.missing ? "" : r.node.v;
+      out().hidden = true; $("#ptEdit").hidden = false; setTimeout(() => $("#ptText").focus(), 30);
+    }
+    function closeEditor(ok) {
+      if (editing == null) return;
+      if (ok) { try { writeFile(editing, $("#ptText").value, false); line("Сохранено: " + editing, "dim"); } catch (e) { printErr(e, "notepad"); } }
+      editing = null; $("#ptEdit").hidden = true; out().hidden = false; setPrompt(); scrollEnd(); inp().focus();
+    }
+
+    /* ---------- tab completion ---------- */
+    function complete() {
+      const el = inp(), v = el.value.slice(0, el.selectionStart), rest = el.value.slice(el.selectionStart);
+      if (!comp) {
+        const m = v.match(/^([\s\S]*?)((?:"[^"]*)|(?:[^\s|;"]*))$/), before = m[1], word = m[2].replace(/^"/, "");
+        const isCmd = !before.trim() || /[|;]\s*$/.test(before);
+        let opts = [];
+        if (isCmd && !/[\\/]/.test(word)) opts = Array.from(new Set(uniq().map((c) => c.name).concat(Object.keys(C).filter((k) => !/[?%]/.test(k) && C[k].name.toLowerCase() !== k)))).filter((n) => n.toLowerCase().startsWith(word.toLowerCase())).sort((x, y) => (y.includes("-") - x.includes("-")) || x.localeCompare(y));
+        if (!opts.length || !isCmd) {
+          const i = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/")), dp = i >= 0 ? word.slice(0, i + 1) : "", pre = word.slice(i + 1).toLowerCase();
+          const r = resolve(dp || "."); if (!r.missing && !r.bad && r.node.t === "d") opts = opts.concat(Object.keys(r.node.c).filter((k) => k.toLowerCase().startsWith(pre)).sort().map((k) => dp + k + (r.node.c[k].t === "d" ? "\\" : "")));
+          if (!isCmd && word.startsWith("-")) { const cmd = (before.trim().split(/[|;]/).pop().trim().split(/\s+/)[0] || "").toLowerCase(); const c = C[cmd]; if (c) opts = (c.syn.match(/-[A-Z]\w+/g) || []).filter((x) => x.toLowerCase().startsWith(word.toLowerCase())); }
+        }
+        if (!opts.length) return;
+        comp = { before, opts, i: -1, rest };
+      }
+      comp.i = (comp.i + 1) % comp.opts.length;
+      let o = comp.opts[comp.i]; if (/\s/.test(o)) o = "\"" + o + "\"";
+      el.value = comp.before + o + comp.rest; const pos = (comp.before + o).length; el.setSelectionRange(pos, pos);
+    }
+    function histMove(d) {
+      if (!S.hist.length) return;
+      if (hi === -1) { if (d > 0) return; draft = inp().value; hi = S.hist.length; }
+      hi += d;
+      if (hi >= S.hist.length) { hi = -1; inp().value = draft; return; }
+      hi = Math.max(0, hi); inp().value = S.hist[hi];
+      setTimeout(() => { const e = inp(); e.setSelectionRange(e.value.length, e.value.length); }, 0);
+    }
+
+    function build() {
+      if (built) return; built = true;
+      const el = inp();
+      el.addEventListener("keydown", (e) => {
+        if (e.key !== "Tab" && e.key !== "Shift") comp = null;
+        if (e.key === "Enter") { e.preventDefault(); const v = el.value; el.value = ""; submit(v); }
+        else if (e.key === "Tab") { e.preventDefault(); complete(); }
+        else if (e.key === "ArrowUp") { e.preventDefault(); histMove(-1); }
+        else if (e.key === "ArrowDown") { e.preventDefault(); histMove(1); }
+        else if (e.key === "Escape") { e.preventDefault(); el.value = ""; }
+        else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); echoCmd(el.value + "^C"); el.value = ""; hi = -1; scrollEnd(); }
+        else if (e.ctrlKey && (e.key === "l" || e.key === "д")) { e.preventDefault(); log().textContent = ""; }
+      });
+      el.addEventListener("input", () => { comp = null; });
+      out().addEventListener("click", () => { if (!window.getSelection || !String(window.getSelection())) el.focus(); });
+      $("#ptCls").addEventListener("click", () => { log().textContent = ""; el.focus(); });
+      $("#ptTheme").addEventListener("click", () => { const all = ["classic", "dark", "matrix", "v3", "light"]; S.theme = all[(all.indexOf(S.theme) + 1) % all.length]; $("#ptWin").dataset.theme = S.theme; save(); line("Тема: " + S.theme, "dim"); scrollEnd(); });
+      $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("pointerdown", (e) => e.preventDefault()));
+      $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("click", () => {
+        const k = b.dataset.k;
+        if (k === "tab") complete(); else { comp = null; if (k === "up") histMove(-1); else if (k === "down") histMove(1); else if (k === "ctrlc") { echoCmd(el.value + "^C"); el.value = ""; scrollEnd(); } else { el.value = ""; submit(k === "help" ? "Get-Help" : k); } }
+        el.focus();
+      }));
+      $("#ptESave").addEventListener("click", () => closeEditor(true));
+      $("#ptECancel").addEventListener("click", () => closeEditor(false));
+      $("#ptText").addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "ы")) { e.preventDefault(); closeEditor(true); }
+        else if (e.key === "Escape") { e.preventDefault(); closeEditor(false); }
+        else if (e.key === "Tab") { e.preventDefault(); const t = e.target, s = t.selectionStart; t.setRangeText("    ", s, t.selectionEnd, "end"); }
+      });
+      $("#ptWin").dataset.theme = S.theme;
+      if (!walk(cwd)) cwd = HOME.slice();
+      line("V3TERMIN", "acc");
+      line("(C) Корпорация V3 (V3 Corporation). Все права защищены.");
+      line("");
+      line("Установите последнюю версию V3TERMIN для новых функций и улучшения! Введите Get-Help, чтобы увидеть команды.", "dim");
+      line("");
+      setPrompt();
+    }
+
+    return {
+      enter() {
+        build(); $("#ptChip").textContent = Object.keys(S.learned).length; setPrompt(); scrollEnd();
+        Hero.say("v3termin", "start", ((a) => a[Math.floor(Math.random() * a.length)])(["Введи Get-Help — там все команды!", "Попробуй: ls, потом cd Documents", "Start-Process snake — и поехали 🐍", "Хакерский режим включён 😎", "Посчитай: 2 + 2 * 2"]));
+        if (editing == null && matchMedia("(hover: hover)").matches) setTimeout(() => inp().focus(), 60);
+      },
+      leave() { if (editing != null) closeEditor(true); },
+      key() {},
+      best: () => Object.keys(S.learned).length || "—",
+    };
+  })();
+
   /* ================= Mortal Kombat ================= */
   const MK = (() => {
     // Fighters are drawn from simple shapes; no official artwork is used.
@@ -17621,7 +18338,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       $("#cop").hidden = true;
       modal.hidden = false; text.focus();
     }
-    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    function close() { modal.hidden = true; $("#cop").hidden = current === "fix" || current === "soda" || current === "cook" || current === "mine" || current === "craft" || current === "talk" || current === "biz" || current === "comp" || current === "cash" || current === "menu" || current === "ussr" || current === "enth" || current === "tc" || current === "cod" || current === "doccer" || current === "morger" || current === "voicerec" || current === "soccerstar" || current === "microscop" || current === "v3a" || current === "assa" || current === "v3ai" || current === "v3tube" || current === "v3termin"; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
     function cannot(msg) {
       status.className = "idea-status err"; status.textContent = msg;
       $("#ideaCopy").hidden = false; $("#ideaSend").disabled = false;
@@ -17879,6 +18596,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       { go: "cod", ico: "🎖️", t: "CALL OF V3", s: "Роботы атакуют базу! Автомат, снайперка и волны врагов — в 3D.", bg: "linear-gradient(135deg,#3a4a2a,#c9a06a)", fx: ["🎖️", "🔥", "🤖", "💥"] },
       { go: "assa", ico: "🤖", t: "ASSA AI", s: "Спроси AssA о чём угодно или попроси нарисовать картинку!", bg: "linear-gradient(135deg,#2a1a5e,#ff4fd8)", fx: ["🤖", "✨", "💬", "🧠"] },
       { go: "v3tube", ico: "▶️", t: "V3TUBE", s: "Смотри ролики и Shorts, подписывайся на каналы — или заведи свой канал и собери подписчиков!", bg: "linear-gradient(135deg,#ff2d55,#2a0a14)", fx: ["▶️", "👍", "🔔", "🎬"] },
+      { go: "v3termin", ico: "💻", t: "V3TERMIN", s: "Терминал как PowerShell: ls, cd, cat, конвейер и скрипты — почувствуй себя хакером!", bg: "linear-gradient(135deg,#012456,#0a0f1e)", fx: ["💻", ">_", "⌨️", "📁"] },
       { go: "microscop", ico: "🔬", t: "MICROSCOP", s: "Загляни в микромир: инфузории, тихоходки, бактерии в чашках Петри!", bg: "linear-gradient(135deg,#0e3a4a,#2a8a6a)", fx: ["🔬", "🦠", "🧫", "🧪"] },
       { go: "v3a", ico: "✈️", t: "V3A INTERNATIONAL", s: "Своя авиакомпания: самолёты, рейсы по всему миру и посадка своими руками!", bg: "linear-gradient(135deg,#1b5fb8,#4fa3ff)", fx: ["✈️", "🌍", "🛫", "🛬"] },
       { go: "soccerstar", ico: "⭐", t: "SOCCER STAR", s: "Начни карьеру в 17 лет, выбирай клубы сам и заверши её легендой с Золотым мячом!", bg: "linear-gradient(135deg,#16803a,#c89a2a)", fx: ["⚽", "⭐", "🏆", "🏅"] },
@@ -17924,7 +18642,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         if (rewarded) { Hero.grant(REWARD); watched.n++; store.set("adWatched", watched); leftTxt(); $("#adX").textContent = `+${REWARD} ◎ ✕`; }
       }, 100);
     }
-    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube"].includes(current); full = null; }
+    function closeFull() { if (!full || !full.done) return; clearInterval(fullT); $("#adFull").hidden = true; $("#cop").hidden = ["fix", "soda", "cook", "mine", "craft", "talk", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube", "v3termin"].includes(current); full = null; }
     $("#adX").addEventListener("click", closeFull);
     function openAd(a) {
       if (!a) return;
@@ -17952,7 +18670,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
 
   /* ================= Общение: chat with the players online right now ================= */
   const Talk = (() => {
-    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", v3tube: "V3Tube", v3a: "V3A International", assa: "AssA AI", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
+    const GNAME = { hub: "в меню", snake: "Змейка", g2048: "2048", ttt: "Крестики-нолики", blast: "Block Blast", zombie: "Zombie Apokalipsis", vr: "VR Аттракцион", sonic: "Соник Даш", ghost: "Ghost of Leyendas", geo: "Geometry Lite", links: "Ссылка", fix: "Почини Монитор", soda: "Газировка", dress: "Переодень", cook: "Готовить", mine: "My Mine", craft: "V3 Craft", mk: "Mortal Kombat", dubai: "Just Dubai!", yerevan: "Just Yerevan", moscow: "Just Moscow", biz: "Business Empire", comp: "Computer Tycoon", cash: "Cash Simulator", menu: "Своё Меню", ussr: "Жизнь сладка!", enth: "Enthernet", tc: "Что в ТЦ?", cod: "Call of V3", doccer: "Doccer", morger: "MORGER", voicerec: "Voice Rec", soccerstar: "Soccer Star", microscop: "Microscop", v3tube: "V3Tube", v3termin: "V3TERMIN", v3a: "V3A International", assa: "AssA AI", talk: "в общении", chars: "Персонажи", gear: "Аксессуары", chats: "Чаты", events: "EVENTS", ideas: "Идеи", manage: "в меню", soccer: "в меню" };
     const COLS = ["#ff6b6b", "#5ce1e6", "#ffd84d", "#9be15d", "#ff8ad1", "#c4a8ff", "#ffb547"];
     let room = null, mine = store.get("talkMine", []), nick = store.get("talkNick", ""), color = store.get("talkColor", COLS[(Math.random() * COLS.length) | 0]), log = new Map(), unread = 0, lastG = "", sentAt = 0;
     if (!Array.isArray(mine)) mine = [];
@@ -20799,8 +21517,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, v3a: V3A, assa: Assa, v3ai: V3AI, v3tube: V3Tube };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, v3a: V3A, assa: Assa, v3ai: V3AI, v3tube: V3Tube, v3termin: V3Termin };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube", "v3termin", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -20838,6 +21556,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     $("#hubSoccerstar").textContent = SoccerStar.best();
     $("#hubMicroscop").textContent = Microscop.best();
     $("#hubV3tube").textContent = V3Tube.best();
+    $("#hubV3termin").textContent = V3Termin.best();
     $("#hubV3a").textContent = V3A.best();
     $("#hubAssa").textContent = Assa.best();
     $("#hubV3ai").textContent = V3AI.best();
@@ -20860,7 +21579,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     if (name === "soccer" && window.__sc) window.__sc.enter();
     if (fromGame) Ads.fromGame();
     // the police button would cover the workbench in "Fix the monitor"
-    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop" || name === "v3a" || name === "assa" || name === "v3ai" || name === "v3tube";
+    $("#cop").hidden = name === "soccer" || name === "fix" || name === "soda" || name === "cook" || name === "mine" || name === "craft" || name === "talk" || name === "biz" || name === "comp" || name === "cash" || name === "menu" || name === "ussr" || name === "enth" || name === "tc" || name === "cod" || name === "doccer" || name === "morger" || name === "voicerec" || name === "soccerstar" || name === "microscop" || name === "v3a" || name === "assa" || name === "v3ai" || name === "v3tube" || name === "v3termin";
     if (GAMES[name]) Events.greet(name);
     updateHub();
     try { history.replaceState(null, "", name === "hub" ? location.pathname + location.search : "#" + name); } catch (e) {}
