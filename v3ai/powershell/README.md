@@ -16,7 +16,17 @@
 
 Один файл — `v3ai.ps1`, без установки модулей. Работает в **Windows PowerShell 5.1** и **PowerShell 7** (Windows, macOS, Linux). Для цветного градиента и эмодзи лучше всего подходит Windows Terminal.
 
-## Запуск
+## Установка одной строкой
+
+Вставьте в PowerShell (Windows, macOS или Linux):
+
+```powershell
+irm https://raw.githubusercontent.com/valeri-badalyan/projects/ccr-617a6cca-m3ccsg/v3ai/powershell/install.ps1 | iex
+```
+
+Установщик скачает V3AI в `~/.v3ai/bin`, по вашему согласию добавит команду `v3ai` и предложит сразу запустить программу. Права администратора не нужны. Потом V3AI запускается из любой папки командой `v3ai`.
+
+## Запуск вручную
 
 1. Скачайте `v3ai.ps1`:
    ```powershell
