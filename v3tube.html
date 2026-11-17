@@ -2426,7 +2426,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function dlFrame(dt) {
       if ((dlT += dt) < 1) return; dlT = 0;
-      for (const id in S.dl) { const d = S.dl[id]; if (!d.ok && dlProg(id) >= 1) { d.ok = 1; save(); const v = byId(id); if (v) { Hero.say("v3tube", "good", `✓ «${v.t}» скачано — можно смотреть без интернета`); note(1046, 0.1, "triangle", 0.05); slog("✅", `Скачано «${v.t}»`); } if (tab === "home") renderHome(); } }
+      for (const id in S.dl) { const d = S.dl[id]; if (!d.ok && dlProg(id) >= 1) { d.ok = 1; save(); const v = byId(id); if (v) { Hero.say("v3tube", "good", `✓ «${v.t}» скачано — можно смотреть без интернета`); note(1046, 0.1, "triangle", 0.05); slog("✅", `Скачано «${v.t}»`); } if (tab === "home") renderHome(); if (tab === "subs") renderSubs(); } }
       if (tab === "subs") dlTick(); if (tab === "watch") dlBtn();
     }
     $("#vtDlList").addEventListener("click", (e) => { const x = e.target.closest("[data-dldel]"); if (!x) return; e.stopPropagation(); const v = byId(x.dataset.dldel); dropDl(x.dataset.dldel); if (v) slog("🗑️", `Удалено из скачанных «${v.t}»`); renderSubs(); });
