@@ -255,6 +255,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-dur.gif { background: #fff; color: #111; font-weight: 900; letter-spacing: .06em; }
 .vt-thumb canvas { image-rendering: pixelated; }
 .vt-gifhint { margin: -4px 0 0; color: var(--gold); font-size: 12.5px; font-weight: 700; }
+.vt-acts .vt-super { border-color: var(--gold); color: var(--gold); }
+.vt-acts .vt-super[aria-pressed="true"] { background: linear-gradient(120deg, #ffb547, #ff2d55); border-color: transparent; color: #fff; box-shadow: 0 0 14px rgba(255,181,71,.55); }
+.vt-sside .vt-ssuper.on { background: linear-gradient(135deg, #ffb547, #ff2d55); box-shadow: 0 0 14px rgba(255,181,71,.7); }
+.vt-burst { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 3; }
+.vt-burst b { font: 900 clamp(34px, 11vw, 64px) var(--body); color: #fff; text-shadow: 0 0 18px #ffb547, 0 0 40px #ff2d55, 0 3px 0 #b8301a; animation: vtsup 1.1s ease-out forwards; }
+.vt-burst i { position: absolute; left: 50%; top: 50%; font-style: normal; font-size: 26px; animation: vtspark 1s ease-out forwards; }
+@keyframes vtsup { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; } 25% { transform: scale(1.15) rotate(3deg); opacity: 1; } 60% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.05) translateY(-20px); opacity: 0; } }
+@keyframes vtspark { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 1; } 100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .vt-burst b, .vt-burst i { animation-duration: .01s; } }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -300,6 +309,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <canvas id="vtCanvas" aria-label="Видео"></canvas>
           <video id="vtVideo" playsinline preload="metadata" hidden></video>
           <div class="vt-cap" id="vtCap" aria-live="polite"></div>
+          <div class="vt-burst" id="vtBurst" aria-hidden="true"></div>
           <span class="vt-gifbadge" id="vtGifBadge" hidden>GIF</span>
           <button class="vt-big" id="vtBig" type="button" aria-label="Смотреть">▶</button>
           <a class="vt-yt" id="vtYt" href="https://youtu.be/" target="_blank" rel="noopener" hidden>▶ Смотреть на YouTube</a>
@@ -321,7 +331,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <button type="button" class="vt-sub" id="vtSub">Подписаться</button>
         </div>
         <div class="vt-acts">
-          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifSnd" hidden>🔊 Скачать со звуком</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
+          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtSuper" class="vt-super" aria-label="Суперлайк: как 10 лайков">⚡ Суперлайк <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifSnd" hidden>🔊 Скачать со звуком</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
         </div>
         <p class="vt-msg" id="vtMsg" aria-live="polite"></p>
         <details class="vt-desc" id="vtDescBox"><summary>Описание</summary><p id="vtDesc"></p></details>
@@ -339,11 +349,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <div class="vt-sinfo"><b id="vtSTitle"></b><small id="vtSChan"></small></div>
           <div class="vt-sside">
             <button type="button" id="vtSLike" aria-label="Нравится">❤️<small>0</small></button>
+            <button type="button" id="vtSSuper" class="vt-ssuper" aria-label="Суперлайк: как 10 лайков">⚡<small>×10</small></button>
             <button type="button" id="vtSSub" aria-label="Подписаться">➕<small>Подп.</small></button>
             <button type="button" id="vtSUp" aria-label="Предыдущий">▲</button>
             <button type="button" id="vtSDown" aria-label="Следующий">▼</button>
           </div>
           <div class="vt-sbar"><i id="vtSProg"></i></div>
+          <div class="vt-burst" id="vtSBurst" aria-hidden="true"></div>
         </div>
         <p class="hint">Листай Shorts свайпом вверх/вниз, стрелками или кнопками ▲▼. Двойное нажатие — лайк.</p>
       </div>
@@ -551,6 +563,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     const fmtT = (s) => { s = Math.max(0, Math.floor(s)); const m = Math.floor(s / 60); return m + ":" + String(s % 60).padStart(2, "0"); };
     const plural = (n, f) => { const a = Math.abs(n) % 100, b = a % 10; return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b >= 2 && b <= 4 ? 1 : 2]; };
+    const viewsTxt = (n) => { n = Math.max(0, Math.round(n)); return `${fmtN(n)} ${n >= 1000 ? "просмотров" : plural(n, ["просмотр", "просмотра", "просмотров"])}`; };
     const subsTxt = (n) => { n = Math.max(0, Math.round(n)); return `${fmtN(n)} ${n >= 1000 ? "подписчиков" : plural(n, ["подписчик", "подписчика", "подписчиков"])}`; };
     function fmtN(n) {
       n = Math.max(0, Math.round(n));
@@ -857,7 +870,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
     /* ---------- state ---------- */
     const S = store.get("v3tube", null) || {};
-    S.subs = S.subs || {}; S.likes = S.likes || {}; S.later = S.later || []; S.coms = S.coms || {}; S.cl = S.cl || {}; S.prog = S.prog || {}; S.seen = S.seen || {}; S.done = S.done || {};
+    S.subs = S.subs || {}; S.likes = S.likes || {}; S.later = S.later || []; S.coms = S.coms || {}; S.cl = S.cl || {}; S.sup = S.sup || {}; S.prog = S.prog || {}; S.seen = S.seen || {}; S.done = S.done || {};
     S.my = S.my || { n: "", col: "#ff2d55" }; S.mine = Array.isArray(S.mine) ? S.mine : []; S.cashed = S.cashed || 0; S.muted = !!S.muted;
     const save = () => store.set("v3tube", S);
     const myName = () => (S.my.n || "V3 Games").slice(0, 24);
@@ -871,7 +884,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const byId = (id) => allVids().find((v) => v.id === id);
     const chOf = (v) => (v.ch === "me" || (CH[v.ch] && CH[v.ch].own)) ? { n: myName(), col: S.my.col, subs: mySubs(), me: true } : CH[v.ch];
     const viewsOf = (v) => v.mine ? mineViews(v.mine) : v.views + (S.seen[v.id] || 0);
-    const likesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.07) : v.likes) + (S.likes[v.id] === 1 ? 1 : 0);
+    const supOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) / 150) : Math.floor((v.likes || 0) * 0.004)) + (S.sup[v.id] ? 1 : 0);   // superlikes, each worth 10 likes
+    const likesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.07) : v.likes) + (S.likes[v.id] === 1 ? 1 : 0) + (S.sup[v.id] ? 10 : 0);
     const dislikesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.004) : Math.floor(v.likes * 0.02)) + (S.likes[v.id] === -1 ? 1 : 0);
     const subsOf = (ch, id) => ch.me ? ch.subs : ch.subs + (S.subs[id] ? 1 : 0);
     const agoOf = (v) => v.mine ? ago((Date.now() - v.mine.at) / 3600000) : ago(v.ago);
@@ -982,13 +996,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const ch = chOf(v), b = document.createElement("button"); b.type = "button"; b.className = "vt-card"; b.dataset.vid = v.id;
       b.appendChild(thumb(v));
       const i = document.createElement("span"); i.className = "vt-cinfo";
-      i.innerHTML = `${avHTML(ch)}<span><b>${esc(v.t)}</b><small>${esc(ch.n)}${ch.me ? " · вы" : ""}</small><small>${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}</small></span>`;
+      i.innerHTML = `${avHTML(ch)}<span><b>${esc(v.t)}</b><small>${esc(ch.n)}${ch.me ? " · вы" : ""}</small><small>${viewsTxt(viewsOf(v))} · ${agoOf(v)}</small></span>`;
       b.appendChild(i); return b;
     }
     function row(v) {
       const ch = chOf(v), b = document.createElement("button"); b.type = "button"; b.className = "vt-row2"; b.dataset.vid = v.id;
       b.appendChild(thumb(v)); const s = document.createElement("span");
-      s.innerHTML = `<b>${esc(v.t)}</b><small>${esc(ch.n)}</small><small>${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}</small>`;
+      s.innerHTML = `<b>${esc(v.t)}</b><small>${esc(ch.n)}</small><small>${viewsTxt(viewsOf(v))} · ${agoOf(v)}</small>`;
       b.appendChild(s); return b;
     }
     const empty = (t) => { const p = document.createElement("p"); p.className = "vt-empty"; p.textContent = t; return p; };
@@ -1015,7 +1029,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         if (i === 3 && !q && cat === "all") {
           const sh = document.createElement("div"); sh.style.cssText = "grid-column:1/-1;display:flex;flex-direction:column;gap:8px";
           sh.innerHTML = '<h3 class="vt-h">⚡ Shorts</h3>'; const r = document.createElement("div"); r.style.cssText = "display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px";
-          shortsList().slice(0, 3).forEach((s, j) => { const b = document.createElement("button"); b.type = "button"; b.className = "vt-card"; b.dataset.short = j; b.appendChild(thumb(s, true)); const t = document.createElement("small"); t.innerHTML = `<b style="font-size:12px">${esc(s.t)}</b><br><span style="color:var(--muted);font-size:11px">${fmtN(viewsOf(s))} просмотров</span>`; b.appendChild(t); r.appendChild(b); });
+          shortsList().slice(0, 3).forEach((s, j) => { const b = document.createElement("button"); b.type = "button"; b.className = "vt-card"; b.dataset.short = j; b.appendChild(thumb(s, true)); const t = document.createElement("small"); t.innerHTML = `<b style="font-size:12px">${esc(s.t)}</b><br><span style="color:var(--muted);font-size:11px">${viewsTxt(viewsOf(s))}</span>`; b.appendChild(t); r.appendChild(b); });
           sh.appendChild(r); f.appendChild(sh);
         }
       });
@@ -1030,7 +1044,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const L = $("#vtLaterList"); L.innerHTML = ""; const later = S.later.map(byId).filter(Boolean);
       if (!later.length) L.appendChild(empty("Здесь будут видео, отмеченные «🕒 Позже»."));
       later.forEach((v) => L.appendChild(row(v)));
-      const K = $("#vtLikedList"); K.innerHTML = ""; const liked = Object.keys(S.likes).filter((k) => S.likes[k] === 1).map(byId).filter(Boolean);
+      const K = $("#vtLikedList"); K.innerHTML = ""; const liked = [...new Set(Object.keys(S.sup).concat(Object.keys(S.likes).filter((k) => S.likes[k] === 1)))].map(byId).filter(Boolean);
       if (!liked.length) K.appendChild(empty("Пока нет понравившихся видео."));
       liked.forEach((v) => K.appendChild(row(v)));
     }
@@ -1066,10 +1080,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const v = cur, ch = chOf(v);
       $("#vtTitle").textContent = v.t;
       $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!(v.gif && v.gifMute); $("#vtGifDl").hidden = !(v.gif && v.mine); $("#vtGifSnd").hidden = !(v.gif && v.mine && !v.gifMute && window.MediaRecorder);
-      $("#vtMeta").textContent = `${fmtN(viewsOf(v))} просмотров · ${agoOf(v)}`;
+      $("#vtMeta").textContent = `${viewsTxt(viewsOf(v))} · ${agoOf(v)}${supOf(v) ? ` · ⚡ ${fmtN(supOf(v))} ${plural(supOf(v) % 1000 === supOf(v) ? supOf(v) : 5, ["суперлайк", "суперлайка", "суперлайков"])}` : ""}`;
       const av = $("#vtChAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
       $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${subsTxt(subsOf(ch, v.ch))}`;
       const sb = $("#vtSub"); sb.hidden = !!ch.me; sb.classList.toggle("on", !!S.subs[v.ch]); sb.textContent = S.subs[v.ch] ? "✓ Вы подписаны" : "Подписаться";
+      $("#vtSuper").setAttribute("aria-pressed", String(!!S.sup[v.id])); $("#vtSuper b").textContent = fmtN(supOf(v));
       $("#vtLike").setAttribute("aria-pressed", String(S.likes[v.id] === 1)); $("#vtLike b").textContent = fmtN(likesOf(v));
       $("#vtDis").setAttribute("aria-pressed", String(S.likes[v.id] === -1)); $("#vtDis b").textContent = fmtN(dislikesOf(v));
       $("#vtLater").setAttribute("aria-pressed", String(S.later.includes(v.id)));
@@ -1139,7 +1154,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     });
     function like(v, d) { S.likes[v.id] = S.likes[v.id] === d ? 0 : d; if (!S.likes[v.id]) delete S.likes[v.id]; save(); }
     $("#vtLike").addEventListener("click", () => { if (!cur) return; like(cur, 1); if (S.likes[cur.id] === 1) note(1046, 0.08, "triangle", 0.05); fillInfo(); });
-    $("#vtDis").addEventListener("click", () => { if (!cur) return; like(cur, -1); fillInfo(); });
+    $("#vtDis").addEventListener("click", () => { if (!cur) return; like(cur, -1); if (S.likes[cur.id] === -1 && S.sup[cur.id]) { delete S.sup[cur.id]; save(); } fillInfo(); });
+    function burst(box) {
+      box.innerHTML = "<b>⚡ +10</b>" + Array.from({ length: 10 }, (_, i) => { const a = i / 10 * Math.PI * 2, r = 70 + Math.random() * 50; return `<i style="--x:${Math.round(Math.cos(a) * r)}px;--y:${Math.round(Math.sin(a) * r)}px">${i % 2 ? "👍" : "⚡"}</i>`; }).join("");
+      clearTimeout(box._t); box._t = setTimeout(() => { box.innerHTML = ""; }, 1200);
+      [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => note(f, 0.12, "triangle", 0.05), i * 70));
+    }
+    function superLike(v, box) {
+      if (S.sup[v.id]) { delete S.sup[v.id]; save(); return false; }
+      S.sup[v.id] = Date.now(); if (S.likes[v.id] === -1) delete S.likes[v.id]; save(); burst(box); return true;
+    }
+    $("#vtSuper").addEventListener("click", () => { if (!cur) return; if (superLike(cur, $("#vtBurst"))) msg(`⚡ Суперлайк! Это как 10 лайков для «${chOf(cur).n}»`); fillInfo(); });
     $("#vtLater").addEventListener("click", () => { if (!cur) return; const i = S.later.indexOf(cur.id); if (i >= 0) { S.later.splice(i, 1); msg("Убрано из «Смотреть позже»"); } else { S.later.unshift(cur.id); msg("🕒 Добавлено в «Смотреть позже»"); } save(); fillInfo(); });
     $("#vtShare").addEventListener("click", async () => {
       if (!cur) return; const text = `Смотри на V3Tube: «${cur.t}» — ${location.href.split("#")[0]}`;
@@ -1178,13 +1203,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function shortInfo() {
       const v = curShort(), ch = chOf(v);
-      $("#vtSTitle").textContent = v.t; $("#vtSChan").textContent = `@${ch.n} · ${fmtN(viewsOf(v))} просмотров`;
+      $("#vtSTitle").textContent = v.t; $("#vtSChan").textContent = `@${ch.n} · ${viewsTxt(viewsOf(v))}`;
+      $("#vtSSuper").classList.toggle("on", !!S.sup[v.id]);
       const lb = $("#vtSLike"); lb.classList.toggle("on", S.likes[v.id] === 1); lb.querySelector("small").textContent = fmtN(likesOf(v));
       const sb = $("#vtSSub"); sb.hidden = !!ch.me; sb.classList.toggle("on", !!S.subs[v.ch]); sb.querySelector("small").textContent = S.subs[v.ch] ? "Вы подп." : "Подп.";
     }
     const curShort = () => shortsList()[shortI];
     $("#vtSUp").addEventListener("click", () => openShort(shortI - 1));
     $("#vtSDown").addEventListener("click", () => openShort(shortI + 1));
+    $("#vtSSuper").addEventListener("click", () => { const v = curShort(); if (!v) return; superLike(v, $("#vtSBurst")); shortInfo(); });
     $("#vtSLike").addEventListener("click", () => { const v = curShort(); if (!v) return; like(v, 1); if (S.likes[v.id] === 1) note(1046, 0.08, "triangle", 0.05); shortInfo(); });
     $("#vtSSub").addEventListener("click", () => { const v = curShort(); if (!v || v.ch === "me") return; if (S.subs[v.ch]) delete S.subs[v.ch]; else S.subs[v.ch] = Date.now(); save(); shortInfo(); });
     let sp = null, lastTap = 0, hearts = [];
@@ -1208,7 +1235,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     function stats() {
       const tv = totalMine();
-      $("#vtMyStats").textContent = `${subsTxt(mySubs())} · ${S.mine.length} ${plural(S.mine.length, ["видео", "видео", "видео"])} · ${fmtN(tv)} просмотров`;
+      $("#vtMyStats").textContent = `${subsTxt(mySubs())} · ${S.mine.length} ${plural(S.mine.length, ["видео", "видео", "видео"])} · ${viewsTxt(tv)}`;
       $("#vtEarn").textContent = earnable(); $("#vtCash").disabled = !earnable();
       $("#vtSubsChip").textContent = fmtN(mySubs());
     }
@@ -1217,7 +1244,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (!S.mine.length) { L.appendChild(empty("У вас пока нет видео. Соберите его из сцен, своих фото и титров — и нажмите «Опубликовать»!")); return; }
       S.mine.slice().reverse().forEach((m) => {
         const v = asVideo(m), w = document.createElement("div"); w.className = "vt-mine-row";
-        const r = row(v), sm = r.querySelectorAll("small"); sm[0].textContent = `${fmtN(mineViews(m))} просмотров · 👍 ${fmtN(likesOf(v))}${m.short ? " · Shorts" : ""}${v.gif ? " · GIF" : ""}`; sm[1].textContent = agoOf(v);
+        const r = row(v), sm = r.querySelectorAll("small"); sm[0].textContent = `${viewsTxt(mineViews(m))} · 👍 ${fmtN(likesOf(v))}${supOf(v) ? ` · ⚡ ${fmtN(supOf(v))}` : ""}${m.short ? " · Shorts" : ""}${v.gif ? " · GIF" : ""}`; sm[1].textContent = agoOf(v);
         w.appendChild(r);
         const d = document.createElement("button"); d.type = "button"; d.className = "vt-del"; d.dataset.del = m.id; d.textContent = delArm === m.id ? "Точно?" : "🗑"; d.setAttribute("aria-label", "Удалить видео");
         w.appendChild(d); L.appendChild(w);
