@@ -17884,12 +17884,13 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     const curAgent = () => { const v = vst(); return v.agent ? agents().find((a) => a.id === v.agent) || null : null; };
     function saveAgents() {
       save();
-      try { mkdirp(HOME.concat(".v3ai")); writeFile(pathStr(HOME.concat(".v3ai", "agents.json")), JSON.stringify(agents().map((a) => ({ id: a.id, name: a.name, emoji: a.emoji, role: a.role, greeting: a.greeting, instructions: a.instructions, skills: a.skills, memory: a.mem })), null, 2) + "\n", false); } catch (e) { /* the list itself is saved above */ }
+      try { mkdirp(HOME.concat(".v3ai")); writeFile(pathStr(HOME.concat(".v3ai", "agents.json")), JSON.stringify(agents().map((a) => ({ id: a.id, name: a.name, emoji: a.emoji, role: a.role, greeting: a.greeting, instructions: a.instructions, skills: a.skills, repo: a.repo || null, memory: a.mem })), null, 2) + "\n", false); } catch (e) { /* the list itself is saved above */ }
     }
     function agentCard(A) {
       const w = "─".repeat(Math.min(40, 4 + A.name.length + A.role.length));
       said("  ╭─ " + A.emoji + " " + A.name + " — " + A.role, "magenta");
       said("  │ Навыки: " + A.skills.map((k) => SKILLS[k]).join("  "), "magenta");
+      if (A.repo) said("  │ 🐙 Репозиторий: " + A.repo.owner + "/" + A.repo.repo + " (" + A.repo.ref + ")", "magenta");
       said("  │ «" + A.greeting + "»", "magenta");
       said("  ╰" + w, "magenta");
     }
@@ -17937,6 +17938,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       if (!j || !j.name) { j = offlineAgent(q); off = true; }
       const skills = Array.from(new Set((Array.isArray(j.skills) ? j.skills : []).map(String).filter((k) => SKILLS[k])));
       const A = { id: "a" + Date.now().toString(36), name: String(j.name).slice(0, 40), emoji: String(j.emoji || "🤖").slice(0, 8), role: String(j.role || "помощник").slice(0, 80), greeting: String(j.greeting || "Привет! Я " + j.name + "."), instructions: String(j.instructions || ""), skills: skills.length ? skills : ["time"], mem: { notes: [], tasks: [] }, hist: [] };
+      if (vst().repo) A.repo = Object.assign({}, vst().repo);
       agents().unshift(A); saveAgents();
       if (j.comment) printReply(String(j.comment));
       agentCard(A);
@@ -17965,6 +17967,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       if (A.skills.includes("calc")) add("calculate", "Точно вычислить выражение: + - * / % и скобки.", obj({ expression: str }, ["expression"]));
       if (A.skills.includes("time")) add("get_time", "Текущие дата, время и день недели.", obj({}));
       if (A.skills.includes("dice")) add("random", "Случайные целые числа от min до max (count штук).", obj({ min: int, max: int, count: int }));
+      if (A.repo) repoTools(A, (name, description, inputSchema, fn) => T.push({ name, description, inputSchema, execute: (x) => { said("    🐙 " + name + (x && x.path ? " " + x.path : ""), "darkgray"); return fn(x || {}); } }));
       return T;
     }
     // offline: the skills still work from simple phrases
@@ -17990,6 +17993,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         while (hist.length && hist[0].role !== "user") hist.shift();
         const rules = ["Ты — " + A.name + " " + A.emoji + ", ИИ-агент, созданный в конструкторе Dr. Agents (V3AI в терминале V3TERMIN). Твоя роль: " + A.role + ".", A.instructions,
           "Твои навыки — инструменты: " + A.skills.map((k) => SKILLS[k]).join(", ") + ". Пользуйся ими сам, когда они помогают: точные расчёты — через калькулятор, важные факты о пользователе — запоминай.",
+          A.repo ? "К тебе подключён GitHub-репозиторий " + A.repo.owner + "/" + A.repo.repo + " (ветка " + A.repo.ref + "), только чтение. Отвечая о проекте, сам смотри файлы, коммиты, ветки, issues и pull requests через инструменты; не выдумывай содержимое файлов." : "",
           "Отвечай на языке пользователя (по умолчанию по-русски), живо и в своём характере, до " + M.len + " слов. Без таблиц и HTML.",
           "С тобой могут говорить дети: никаких взрослых, опасных или грубых тем. Не проси пароли и личные данные.",
           "Сегодня " + new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "."].join("\n");
@@ -18003,10 +18007,92 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       }
       el.remove();
       if (stopped) { said("  ⏹ Ответ остановлен.", "darkgray"); A.hist.pop(); saveAgents(); return; }
+      if (!reply && A.repo) reply = (await repoOffline(A, q)) || "";
       if (!reply) { await new Promise((r) => setTimeout(r, 250)); reply = agentOffline(A, q); }
       A.hist.push({ role: "assistant", content: reply }); if (A.hist.length > 30) A.hist.splice(0, A.hist.length - 30); saveAgents();
       printReply(reply); said("  — " + A.emoji + " " + A.name + " · " + M.n, "darkgray");
     }
+    /* ---- GitHub repository: can be connected only in Dr. Agents (the mode or a chat with an agent) ---- */
+    const GH_RE = /https?:\/\/(?:www\.)?github\.com\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+?)(?:\.git)?(?:\/tree\/([^\s?#]+))?\/?(?=[\s?#]|$)/i;
+    const GH_SKIP = ["orgs", "settings", "marketplace", "features", "topics", "collections", "sponsors", "login", "about", "pricing", "explore", "notifications", "search", "apps", "enterprise"];
+    function parseRepo(t) { const m = String(t).match(GH_RE); if (!m || GH_SKIP.includes(m[1].toLowerCase()) || m[2] === "." || m[2] === "..") return null; return { owner: m[1], repo: m[2], ref: m[3] ? decodeURIComponent(m[3]) : "" }; }
+    const inDrAgents = () => vMode().id === "agents" || !!curAgent();
+    const repoHolder = () => curAgent() || vst();
+    function drAgentsOnly() { said("  🔒 GitHub-репозиторий можно подключить только в Dr. Agents.", "yellow"); said("  Включи режим: /dragents — и вставь ссылку ещё раз (или открой агента: /agent <номер>).", "darkgray"); }
+    async function gh(path) {
+      let r;
+      try { r = await fetch("https://api.github.com" + path, { headers: { Accept: "application/vnd.github+json" } }); }
+      catch (e) { throw new Error("Нет связи с GitHub. Проверь интернет. В просмотрщике Claude страница не может обращаться к GitHub — открой приставку V3 Games в обычном браузере."); }
+      if (r.status === 404) throw new Error("Не найдено: репозиторий закрытый или в ссылке опечатка.");
+      if (r.status === 403 || r.status === 429) throw new Error("GitHub ограничил запросы (без входа — 60 в час). Попробуй позже.");
+      if (!r.ok) throw new Error("GitHub ответил ошибкой " + r.status + ".");
+      return r.json();
+    }
+    const repoQ = (R) => R.ref ? "?ref=" + encodeURIComponent(R.ref) : "";
+    const repoPath = (x) => String(x || "").replace(/^\/+|\/+$/g, "").split("/").filter(Boolean).map(encodeURIComponent).join("/");
+    async function repoDir(R, path) {
+      const r = await gh("/repos/" + R.owner + "/" + R.repo + "/contents/" + repoPath(path) + repoQ(R));
+      if (!Array.isArray(r)) throw new Error("«" + path + "» — это файл, а не папка.");
+      return r.map((x) => ({ name: x.name, type: x.type, path: x.path, size: x.size })).sort((a, b) => (a.type !== "dir") - (b.type !== "dir") || a.name.localeCompare(b.name));
+    }
+    async function repoFile(R, path) {
+      const f = await gh("/repos/" + R.owner + "/" + R.repo + "/contents/" + repoPath(path) + repoQ(R));
+      if (Array.isArray(f)) throw new Error("«" + path + "» — это папка, а не файл.");
+      if (!f.content) return "";
+      const bin = atob(String(f.content).replace(/\s/g, "")), bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      if (bytes.includes(0)) return null;
+      return new TextDecoder().decode(bytes);
+    }
+    const fmtSize = (n) => n > 1048576 ? (n / 1048576).toFixed(1).replace(".", ",") + " МБ" : n > 1024 ? Math.round(n / 1024) + " КБ" : n + " Б";
+    async function connectRepo(R0) {
+      const st = line("  ◌ подключаю " + R0.owner + "/" + R0.repo + "…", "dim"); scrollEnd();
+      let info, files, readme = "", commits = [];
+      try {
+        info = await gh("/repos/" + R0.owner + "/" + R0.repo);
+        const R = { owner: info.owner.login, repo: info.name, ref: R0.ref || info.default_branch };
+        files = await repoDir(R, "");
+        const rd = files.find((x) => x.type === "file" && /^readme(\.(md|markdown|txt|rst))?$/i.test(x.name));
+        if (rd) { try { readme = (await repoFile(R, rd.path)) || ""; } catch (e) { /* optional */ } }
+        try { commits = await gh("/repos/" + R.owner + "/" + R.repo + "/commits?per_page=5&sha=" + encodeURIComponent(R.ref)); } catch (e) { /* optional */ }
+        const H = repoHolder(); H.repo = { owner: R.owner, repo: R.repo, ref: R.ref, desc: info.description || "", priv: !!info.private }; saveAgents();
+        st.remove();
+        const A = curAgent();
+        said("  ╭─ 🐙 " + R.owner + "/" + R.repo + " — подключён" + (A ? " к агенту " + A.emoji + " " + A.name : " к Dr. Agents") + " (только чтение)", "green");
+        if (info.description) said("  │ " + info.description, "green");
+        said("  │ ★ " + info.stargazers_count + "  ⑂ " + info.forks_count + "  язык: " + (info.language || "—") + "  ветка: " + R.ref + "  " + (info.private ? "🔒 закрытый" : "🌐 публичный"), "green");
+        const names = files.slice(0, 24).map((x) => x.type === "dir" ? "📁 " + x.name + "/" : "📄 " + x.name + " (" + fmtSize(x.size) + ")");
+        for (let i = 0; i < names.length; i += 2) said("  │ " + pad(names[i], 34) + (names[i + 1] || ""), "green");
+        if (files.length > 24) said("  │ … и ещё " + (files.length - 24), "green");
+        if (readme) { said("  │ 📖 README:", "green"); readme.split("\n").map((x) => x.trim()).filter(Boolean).slice(0, 5).forEach((x) => said("  │    " + (x.length > 90 ? x.slice(0, 90) + "…" : x), "green")); }
+        if (commits.length) { said("  │ 🕒 Последние коммиты:", "green"); commits.forEach((c) => said("  │    • " + String(c.commit.message).split("\n")[0].slice(0, 70) + "  " + new Date(c.commit.author.date).toLocaleDateString("ru-RU"), "green")); }
+        said("  ╰" + "─".repeat(40), "green");
+        said(A ? "  Спрашивай " + A.name + " о проекте. /repo — карточка, /disconnect — отключить." : "  Теперь опиши агента (например, «ревьюер кода для этого проекта») — он получит доступ к репозиторию. /repo — карточка, /disconnect — отключить.", "darkgray");
+      } catch (e) { st.remove(); said("  🐙 " + (e && e.message || e), "yellow"); }
+    }
+    // tools an agent gets when a repository is connected to it
+    function repoTools(A, add) {
+      const R = A.repo, str = { type: "string" }, obj = (props, req) => ({ type: "object", properties: props, required: req || [] }), base = "/repos/" + R.owner + "/" + R.repo;
+      add("list_dir", "Список файлов и папок в подключённом репозитории. path — путь к папке, пустой — корень.", obj({ path: str }), async (x) => ({ entries: await repoDir(R, x.path) }));
+      add("read_file", "Прочитать текстовый файл репозитория. Длинный — частями: offset (с какого символа, по 30000).", obj({ path: str, offset: { type: "integer" } }, ["path"]), async (x) => { const t = await repoFile(R, x.path); if (t == null) return { binary: true }; const o = Math.max(0, +x.offset || 0); return { text: t.slice(o, o + 30000), total: t.length, next: o + 30000 < t.length ? o + 30000 : null }; });
+      add("list_commits", "Последние коммиты (можно по одному файлу через path).", obj({ path: str }), async (x) => ({ commits: (await gh(base + "/commits?per_page=15&sha=" + encodeURIComponent(R.ref) + (x.path ? "&path=" + encodeURIComponent(x.path) : ""))).map((c) => ({ sha: c.sha.slice(0, 7), message: String(c.commit.message).split("\n")[0], author: c.commit.author.name, date: c.commit.author.date })) }));
+      add("list_branches", "Ветки репозитория.", obj({}), async () => ({ branches: (await gh(base + "/branches?per_page=50")).map((b) => b.name) }));
+      add("list_issues", "Issues репозитория. state: open, closed или all.", obj({ state: str }), async (x) => ({ issues: (await gh(base + "/issues?per_page=20&state=" + (x.state || "open"))).filter((i) => !i.pull_request).map((i) => ({ n: i.number, title: i.title, state: i.state })) }));
+      add("list_pull_requests", "Pull requests. state: open, closed или all.", obj({ state: str }), async (x) => ({ pulls: (await gh(base + "/pulls?per_page=20&state=" + (x.state || "open"))).map((i) => ({ n: i.number, title: i.title, state: i.state })) }));
+    }
+    // without AI an agent with a repository still answers simple questions about it
+    async function repoOffline(A, q) {
+      const t = q.toLowerCase(), R = A.repo;
+      try {
+        let m;
+        if ((m = q.match(/(?:открой|прочитай|покажи файл|cat)\s+([\w./-]+\.\w+)/i))) { const x = await repoFile(R, m[1]); return x == null ? "Это двоичный файл, показать не могу." : "Файл " + m[1] + ":\n```\n" + x.split("\n").slice(0, 40).join("\n") + "\n```"; }
+        if (/readme|ридми|о чем|о проекте/.test(t)) { const f = (await repoDir(R, "")).find((x) => /^readme/i.test(x.name)); return f ? (await repoFile(R, f.path) || "").split("\n").slice(0, 25).join("\n") : "README в корне нет."; }
+        if (/коммит|изменен|истори/.test(t)) { const c = await gh("/repos/" + R.owner + "/" + R.repo + "/commits?per_page=8&sha=" + encodeURIComponent(R.ref)); return "Последние коммиты:\n" + c.map((x) => "- " + String(x.commit.message).split("\n")[0] + " (" + new Date(x.commit.author.date).toLocaleDateString("ru-RU") + ")").join("\n"); }
+        if (/ветк|branch/.test(t)) { const b = await gh("/repos/" + R.owner + "/" + R.repo + "/branches?per_page=50"); return "Ветки: " + b.map((x) => x.name).join(", "); }
+        if (/файл|папк|структур|что внутри/.test(t)) { const d = await repoDir(R, ""); return "В корне " + R.owner + "/" + R.repo + ":\n" + d.map((x) => "- " + (x.type === "dir" ? "📁 " + x.name + "/" : "📄 " + x.name)).join("\n"); }
+      } catch (e) { return "🐙 " + (e && e.message || e); }
+      return null;
+    }
+
     // /agents, /agent <n> [delete], /agent off
     async function agentCmd(cmd, raw) {
       const v = vst(), L = agents();
@@ -18064,7 +18150,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollBy(key);
     }
 
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/exit", "выход в V3TERMIN"]];
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -18081,7 +18167,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       scrollEnd();
     }
-    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/dragents", "/agents", "/agent", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -18099,11 +18185,19 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const mk = { "/image": "image", "/img": "image", "/video": "video", "/watt": "watt", "/game": "watt" }[cmd];
         if (cmd === "/dragents") {
           v.mode = "agents"; v.agent = null; save(); setPrompt();
-          if (raw) return newAgent(raw);
+          if (raw) return parseRepo(raw) ? connectRepo(parseRepo(raw)) : newAgent(raw);
           said("  Режим: 🩺 Dr. Agents — опиши, какой ИИ-агент нужен, и я его соберу. Мои агенты: /agents", "green");
           return;
         }
         if (cmd === "/agents" || cmd === "/agent") return agentCmd(cmd, raw);
+        if (cmd === "/github" || cmd === "/repo" || cmd === "/disconnect") {
+          if (!inDrAgents()) { drAgentsOnly(); return; }
+          const H = repoHolder();
+          if (cmd === "/github") { const R = parseRepo(raw); if (!R) { said("  Вставь ссылку вида https://github.com/владелец/репозиторий", "yellow"); return; } return connectRepo(R); }
+          if (!H.repo) { said("  Репозиторий не подключён. Вставь ссылку на GitHub-репозиторий.", "darkgray"); return; }
+          if (cmd === "/disconnect") { const n = H.repo.owner + "/" + H.repo.repo; H.repo = null; saveAgents(); said("  ✓ Репозиторий " + n + " отключён.", "green"); return; }
+          said("  🐙 " + H.repo.owner + "/" + H.repo.repo + " · ветка " + H.repo.ref + (H.repo.desc ? " · " + H.repo.desc : "") + "   /disconnect — отключить", "green"); return;
+        }
         if (cmd === "/chat") {
           v.mode = "chat"; v.agent = null; save(); setPrompt();
           if (raw) return v3aiLine(raw);
@@ -18134,6 +18228,9 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         else said("  Неизвестная команда. Список команд: /", "yellow");
         return;
       }
+      // a GitHub link: connect it — but only in Dr. Agents
+      const R = parseRepo(q);
+      if (R) { if (!inDrAgents()) { drAgentsOnly(); return; } return connectRepo(R); }
       if (curAgent()) return agentChat(curAgent(), q);
       if (vMode().id === "agents") return newAgent(q);
       if (vMode().make) return make(vMode().make, q);
