@@ -17549,6 +17549,10 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       const text = input && input.length ? flat(input.map((x) => x && x.content != null ? x.content : x)).map(keyOf).join("\n") : a.pos.map(keyOf).join(" ");
       return runText(text, 0);
     });
+    def("bash", ["sh"], "... | bash", "Выполняет скачанный скрипт (как iex). Например: curl -fsSL https://claude.ai/install.sh | bash", (a, input) => {
+      if (!input || !input.length) return ["V3TERMIN — это не bash :) Но скачанный скрипт можно передать: curl … | bash"];
+      return runText(flat(input.map((x) => x && x.content != null ? x.content : x)).map(keyOf).join("\n"), 0);
+    });
     def("Invoke-RestMethod", ["irm"], "Invoke-RestMethod [-Uri] <ссылка> [-OutFile <файл>]", "Скачивает данные по ссылке. Установка программ: irm <ссылка на install.ps1> | iex", (a) => web(a, false));
     def("Invoke-WebRequest", ["iwr", "curl", "wget"], "Invoke-WebRequest [-Uri] <ссылка> [-OutFile <файл>] [-UseBasicParsing]", "Скачивает страницу или файл по ссылке.", (a) => web(a, true));
     def("Get-Package", ["Get-InstalledApp"], "Get-Package", "Программы, установленные через irm … | iex.", () => {
@@ -17624,13 +17628,16 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       [V3AI_INSTALL]: "<#\n  Установщик V3AI для PowerShell.\n  Запуск одной строкой:\n    irm " + V3AI_INSTALL + " | iex\n\n  Что делает:\n    1. скачивает v3ai.ps1 в папку ~/.v3ai/bin;\n    2. по вашему согласию добавляет команду «v3ai»;\n    3. предлагает сразу запустить V3AI.\n  Ничего не меняет в системе без вопроса, права администратора не нужны.\n#>\n& {\n  $ErrorActionPreference = 'Stop'\n  $url = \"" + V3AI_BASE + "v3ai.ps1\"\n  Write-Host '  V3AI · установка' -ForegroundColor Cyan\n  $bin = Join-Path (Join-Path $HOME '.v3ai') 'bin'\n  Invoke-WebRequest -Uri $url -OutFile (Join-Path $bin 'v3ai.ps1') -UseBasicParsing\n  $answer = Read-Host '  Добавить команду «v3ai», чтобы запускать из любой папки? (Д/н)'\n  # …\n}\n",
       [V3AI_BASE + "v3ai.ps1"]: "#Requires -Version 5.1\n<#\n.SYNOPSIS\n  V3AI для PowerShell — консольная версия ИИ-помощника V3AI.\n\n.DESCRIPTION\n  Чат с ИИ прямо в терминале: режимы (Помощник, Учёба, Писатель, Переводчик, Код, Весельчак)\n  и шесть моделей V3AI.\n\n.EXAMPLE\n  v3ai\n#>\n# Локальная копия V3TERMIN. Полная версия: " + V3AI_BASE + "v3ai.ps1\n",
     };
-    const normUrl = (u) => String(u).trim().replace(/^http:\/\//i, "https://").replace(/[?#].*$/, "");
+    // scheme and host are case-insensitive; "www." and a trailing slash don't matter
+    const normUrl = (u) => String(u).trim().replace(/^https?:\/\/(?:www\.)?([^/]+)/i, (m0, h) => "https://" + h.toLowerCase()).replace(/[?#].*$/, "").replace(/\/+$/, "");
+    // the Claude Code installer, however it is written: install.ps1 (PowerShell), install.sh (curl … | bash) or install.cmd
+    const isClaudeInstaller = (u) => /^https:\/\/claude\.ai\/install\.(ps1|sh|cmd)$/i.test(normUrl(u));
     // installers that ship inside V3TERMIN and are never fetched from the network
     const LOCAL = {
       "https://claude.ai/install.ps1": "<#\n  Установщик Claude Code для V3TERMIN.\n  Запуск одной строкой:\n    irm https://claude.ai/install.ps1 | iex\n  Ставит команду «claude» — ИИ-помощника для работы с файлами на диске V3:\\.\n#>\n& { Write-Host 'Setting up Claude Code…' }\n",
     };
     async function fetchText(url) {
-      if (LOCAL[normUrl(url)]) { await new Promise((r) => setTimeout(r, 400)); return LOCAL[normUrl(url)]; }
+      if (isClaudeInstaller(url)) { await new Promise((r) => setTimeout(r, 400)); return LOCAL["https://claude.ai/install.ps1"]; }
       const host = (url.match(/^https?:\/\/([^/]+)/i) || [])[1] || url, mirror = MIRROR[normUrl(url)];
       try {
         const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
@@ -17644,7 +17651,10 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       }
     }
     async function web(a, full) {
-      const url = need(a.get(["uri", "url"], 0), "Uri");
+      // the address may come positionally, as -Uri, or after flags such as curl -fsSL
+      let url = a.get(["uri", "url"], 0);
+      if (!/^https?:\/\//i.test(String(url || ""))) url = a.pos.concat(Object.values(a.named)).find((x) => /^https?:\/\//i.test(String(x))) || url;
+      url = need(url, "Uri");
       if (!/^https?:\/\/[^/\s]+/i.test(url)) throw err("Недопустимый URI: \"" + url + "\". Ссылка должна начинаться с https://", "InvalidArgument");
       const st = line("Запись веб-запроса: " + url.replace(/^https?:\/\//i, "").slice(0, 70) + " …", "dim"); scrollEnd();
       let text;
