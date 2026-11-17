@@ -3408,7 +3408,7 @@ div.sc-pl { cursor: default; }
     <div class="pt-keys" aria-label="Клавиши терминала">
       <button type="button" data-k="tab">Tab</button><button type="button" data-k="up">↑</button><button type="button" data-k="down">↓</button><button type="button" data-k="ctrlc">Ctrl+C</button><button type="button" data-k="help">help</button><button type="button" data-k="ls">ls</button><button type="button" data-k="cls">cls</button>
     </div>
-    <p class="hint">⌨️ Как в PowerShell: <b>Get-ChildItem</b> (ls, dir), <b>cd</b>, <b>Get-Content</b> (cat), <b>New-Item</b>, <b>notepad файл.txt</b>, конвейер <b>ls | Sort-Object -Descending</b>, переменные <b>$x = 2 + 2</b>, перенаправление <b>&gt; файл.txt</b>. <b>Tab</b> дополняет команды и пути, <b>↑ ↓</b> листают историю. <b>Start-Process snake</b> запускает игру. Всё, что ты создашь на диске V3:\, сохраняется.</p>
+    <p class="hint">⌨️ Как в PowerShell: <b>Get-ChildItem</b> (ls, dir), <b>cd</b>, <b>Get-Content</b> (cat), <b>New-Item</b>, <b>notepad файл.txt</b>, конвейер <b>ls | Sort-Object -Descending</b>, переменные <b>$x = 2 + 2</b>, перенаправление <b>&gt; файл.txt</b>. <b>Tab</b> дополняет команды и пути, <b>↑ ↓</b> прокручивают экран, прошлые команды — <b>Get-History</b>. <b>Start-Process snake</b> запускает игру. Всё, что ты создашь на диске V3:\, сохраняется.</p>
   </section>
 
   <!-- ===== Mortal Kombat ===== -->
@@ -17144,7 +17144,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     if (!S.fs) S.fs = freshFs();
     let cwd = S.cwd || HOME.slice();
     const vars = Object.assign({}, S.vars);
-    let built = false, hi = -1, draft = "", comp = null, editing = null;
+    let built = false, comp = null, editing = null;
     // asking: a Read-Host question waiting for the next Enter; app: a program (v3ai) that owns the input line;
     // running: an async command (download, sleep, installer) is still working
     let asking = null, app = null, running = false;
@@ -17377,7 +17377,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       }
       const rows = uniq().map((c) => pad(c.name, 18) + pad(c.aliases.slice(0, 3).join(", "), 20) + c.desc);
       return [{ kind: "host", text: "V3TERMIN — справка. Подробно о команде: Get-Help <команда>", color: "" }, { kind: "table", head: pad("Командлет", 18) + pad("Псевдонимы", 20) + "Описание", rows },
-        "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (↑ ↓) и Tab.",
+        "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (Get-History), Tab, ↑ ↓ — прокрутка экрана.",
         "Установка программ одной строкой, как в PowerShell:", "  irm " + V3AI_INSTALL + " | iex"];
     });
     def("Get-Command", ["gcm"], "Get-Command [[-Name] <шаблон>]", "Список доступных командлетов и псевдонимов.", (a) => {
@@ -18024,7 +18024,6 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         .then(() => { running = false; asking = null; done(); });
     }
     function submit(text) {
-      hi = -1; draft = "";
       if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + text); a.res(text); setPrompt(); scrollEnd(); return; }
       if (app) {
         if (running) return;
@@ -18044,7 +18043,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       else if (running && app) { app.stop(); }
       else if (running) { running = false; line("^C", "dim"); }
       else echoRaw(curPrompt() + el.value + "^C");
-      el.value = ""; hi = -1; setPrompt(); scrollEnd();
+      el.value = ""; setPrompt(); scrollEnd();
     }
 
     /* ---------- notepad ---------- */
@@ -18082,14 +18081,8 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       let o = comp.opts[comp.i]; if (/\s/.test(o)) o = "\"" + o + "\"";
       el.value = comp.before + o + comp.rest; const pos = (comp.before + o).length; el.setSelectionRange(pos, pos);
     }
-    function histMove(d) {
-      if (!S.hist.length) return;
-      if (hi === -1) { if (d > 0) return; draft = inp().value; hi = S.hist.length; }
-      hi += d;
-      if (hi >= S.hist.length) { hi = -1; inp().value = draft; return; }
-      hi = Math.max(0, hi); inp().value = S.hist[hi];
-      setTimeout(() => { const e = inp(); e.setSelectionRange(e.value.length, e.value.length); }, 0);
-    }
+    // ↑ ↓ scroll the screen (a few lines); PageUp / PageDown scroll a whole page. They never bring back old commands.
+    function scrollBy(key) { const o = out(), lh = parseFloat(getComputedStyle(o).lineHeight) || 19, d = /Page/.test(key) ? o.clientHeight * 0.9 : lh * 3; o.scrollTop += /Up/.test(key) ? -d : d; }
 
     function build() {
       if (built) return; built = true;
@@ -18098,8 +18091,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         if (e.key !== "Tab" && e.key !== "Shift") comp = null;
         if (e.key === "Enter") { e.preventDefault(); const v = el.value; el.value = ""; submit(v); }
         else if (e.key === "Tab") { e.preventDefault(); complete(); }
-        else if (e.key === "ArrowUp") { e.preventDefault(); histMove(-1); }
-        else if (e.key === "ArrowDown") { e.preventDefault(); histMove(1); }
+        else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "PageUp" || e.key === "PageDown") { e.preventDefault(); scrollBy(e.key); }
         else if (e.key === "Escape") { e.preventDefault(); if (running && app) ctrlC(); else el.value = ""; }
         else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); ctrlC(); }
         else if (e.ctrlKey && (e.key === "l" || e.key === "д")) { e.preventDefault(); log().textContent = ""; }
@@ -18111,7 +18103,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("pointerdown", (e) => e.preventDefault()));
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("click", () => {
         const k = b.dataset.k;
-        if (k === "tab") complete(); else { comp = null; if (k === "up") histMove(-1); else if (k === "down") histMove(1); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
+        if (k === "tab") complete(); else { comp = null; if (k === "up") scrollBy("ArrowUp"); else if (k === "down") scrollBy("ArrowDown"); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
         el.focus();
       }));
       $("#ptESave").addEventListener("click", () => closeEditor(true));
