@@ -17700,6 +17700,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       { id: "art", ico: "🎨", n: "Художник", make: "image" },
       { id: "video", ico: "🎬", n: "Видео", make: "video" },
       { id: "game", ico: "🕹", n: "WattAI", make: "watt" },
+      { id: "agents", ico: "🩺", n: "Dr. Agents" },
     ];
     let samplePromise = null, aiCtl = null;
     const getSample = () => samplePromise || (samplePromise = (window.claude && typeof window.claude.use === "function") ? Promise.resolve(window.claude.use("sample")).catch(() => null) : Promise.resolve(null));
@@ -17712,9 +17713,9 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
       said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    / — список команд · /exit — выход", "darkgray");
       said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
-      said("  /model — выбрать модель стрелками ↑ ↓", "darkgray");
+      said("  /dragents — Dr. Agents (ИИ-агенты) · /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
-      app = { title: "V3AI Terminal", prompt: () => "[" + vModel().n + " · " + vMode().ico + " " + vMode().n + "] ❯ ", line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
+      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + "] ❯ "; }, line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
       Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
       setPrompt(); return [];
     }
@@ -17813,8 +17814,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       const name = (text.match(/НАЗВАНИЕ:\s*(.+)/) || [])[1], how = (text.match(/КАК ИГРАТЬ:\s*([\s\S]+)$/) || [])[1];
       return { html, t: (name || "Моя игра").replace(/[*`#]/g, "").trim().slice(0, 40), how: how ? how.replace(/```[\s\S]*/g, "").trim().slice(0, 300) : "" };
     }
-    const EMO = [[/кот|кош|котен/, "🐱"], [/соба|пес|щен/, "🐶"], [/дракон/, "🐉"], [/единорог/, "🦄"], [/космос|ракет|планет|звезд/, "🚀"], [/мор|океан|рыб|кит/, "🐳"], [/лес|дерев/, "🌲"], [/машин|авто|гонк/, "🚗"], [/замок|принцес|корол/, "🏰"], [/робот/, "🤖"], [/динозавр/, "🦖"], [/футбол|мяч/, "⚽"], [/пицц|ед|торт/, "🍕"], [/цвет|сад/, "🌸"], [/снег|зим/, "⛄"], [/солнц|лет|пляж/, "🏖️"], [/птиц/, "🐦"], [/лис/, "🦊"], [/панд/, "🐼"], [/монстр|призрак/, "👻"]];
-    const emoOf = (q) => { const t = String(q).toLowerCase().replace(/ё/g, "е"); const e = EMO.find((x) => x[0].test(t)); return e ? e[1] : "✨"; };
+    const EMO = [[/кот(?!ор)|кош|котен/, "🐱"], [/соба|пес|щен/, "🐶"], [/дракон/, "🐉"], [/единорог/, "🦄"], [/космос|ракет|планет|звезд/, "🚀"], [/мор|океан|рыб|кит/, "🐳"], [/лес|дерев/, "🌲"], [/машин|авто|гонк/, "🚗"], [/замок|принцес|корол/, "🏰"], [/робот/, "🤖"], [/динозавр/, "🦖"], [/футбол|мяч/, "⚽"], [/пицц|ед|торт/, "🍕"], [/цвет|сад/, "🌸"], [/снег|зим/, "⛄"], [/солнц|лет|пляж/, "🏖️"], [/птиц/, "🐦"], [/лис/, "🦊"], [/панд/, "🐼"], [/монстр|призрак/, "👻"]];
+    const emoOf = (q) => { const t = String(q).toLowerCase().replace(/ё/g, "е"); const e = EMO.find((x) => new RegExp("(?<![а-яa-z])(?:" + x[0].source + ")").test(t)); return e ? e[1] : "✨"; };
     function offlineSvg(q, video) {
       const e = emoOf(q), h = Array.from(String(q)).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7), hue = h % 360, W = video ? 640 : 512, H = video ? 360 : 512;
       const stars = Array.from({ length: 14 }, (_, i) => { const x = (h * (i + 3) * 37) % W, y = (h * (i + 7) * 53) % (H * 0.55); return `<circle cx="${x}" cy="${y}" r="${1 + i % 3}" fill="#fff" opacity=".7">${video ? `<animate attributeName="opacity" values=".2;1;.2" dur="${2 + i % 4}s" repeatCount="indefinite"/>` : ""}</circle>`; }).join("");
@@ -17877,6 +17878,152 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       said("  ✓ Сохранено: " + path + (kind === "watt" ? "   · правки — просто напиши следующим сообщением" : ""), "green");
       said("  — " + (kind === "watt" ? "WattAI" : vModel().n), "darkgray");
     }
+    /* ---- Dr. Agents: build AI agents with a character and skills, then chat with them ---- */
+    const SKILLS = { memory: "🧠 Память", tasks: "✅ Список дел", calc: "🧮 Калькулятор", time: "🕐 Дата и время", dice: "🎲 Случайные числа" };
+    const agents = () => { const v = vst(); if (!Array.isArray(v.agents)) v.agents = []; return v.agents; };
+    const curAgent = () => { const v = vst(); return v.agent ? agents().find((a) => a.id === v.agent) || null : null; };
+    function saveAgents() {
+      save();
+      try { mkdirp(HOME.concat(".v3ai")); writeFile(pathStr(HOME.concat(".v3ai", "agents.json")), JSON.stringify(agents().map((a) => ({ id: a.id, name: a.name, emoji: a.emoji, role: a.role, greeting: a.greeting, instructions: a.instructions, skills: a.skills, memory: a.mem })), null, 2) + "\n", false); } catch (e) { /* the list itself is saved above */ }
+    }
+    function agentCard(A) {
+      const w = "─".repeat(Math.min(40, 4 + A.name.length + A.role.length));
+      said("  ╭─ " + A.emoji + " " + A.name + " — " + A.role, "magenta");
+      said("  │ Навыки: " + A.skills.map((k) => SKILLS[k]).join("  "), "magenta");
+      said("  │ «" + A.greeting + "»", "magenta");
+      said("  ╰" + w, "magenta");
+    }
+    function listAgents() {
+      const L = agents();
+      said("  ── 🩺 Dr. Agents — мои агенты ──", "darkcyan");
+      if (!L.length) { said("  Агентов пока нет. Напиши /dragents и опиши, какой помощник нужен.", "darkgray"); return; }
+      L.forEach((a, i) => said("   " + (i + 1) + ". " + a.emoji + " " + a.name + "  — " + a.role, a.id === vst().agent ? "cyan" : ""));
+      said("  Чат с агентом: /agent <номер>   ·   удалить: /agent <номер> delete", "darkgray");
+    }
+    // offline agent: picked from keywords, so the mode works without AI too
+    function offlineAgent(q) {
+      const t = q.toLowerCase().replace(/ё/g, "е"), sk = [];
+      if (/запомин|памят|помни/.test(t)) sk.push("memory");
+      if (/дел|задач|план|расписан|уроки/.test(t)) sk.push("tasks");
+      if (/счит|математ|пример|калькул|деньг/.test(t)) sk.push("calc");
+      if (/кубик|жреб|случайн|игр/.test(t)) sk.push("dice");
+      if (/врем|дат|час|день/.test(t) || !sk.length) sk.push("time");
+      if (!sk.includes("memory")) sk.unshift("memory");
+      const e = emoOf(q) === "✨" ? "🤖" : emoOf(q);
+      const names = { "🐱": "Мурзик", "🐶": "Бобик", "🐉": "Дракоша", "🚀": "Капитан Звезда", "🤖": "Робби", "🦊": "Лисёнок", "🐼": "Панда По" };
+      const name = names[e] || "Помощник " + e;
+      return { name, emoji: e, role: q.length > 58 ? q.slice(0, 57) + "…" : q, greeting: "Привет! Я " + name + ". Чем займёмся?", instructions: "Помогай по теме: " + q + ". Будь добрым и весёлым.", skills: sk.slice(0, 5) };
+    }
+    async function newAgent(q) {
+      const st = line("  ◌ 🩺 собираю агента…", "dim"); scrollEnd();
+      let j = null, stopped = false;
+      const sample = await getSample();
+      if (sample) {
+        aiCtl = new AbortController();
+        const prompt = [
+          "Ты — Dr. Agents, конструктор ИИ-агентов в V3AI. По просьбе пользователя спроектируй агента — ИИ-помощника с характером.",
+          "Навыки (инструменты), которые агент сможет вызывать: memory — запоминать и вспоминать факты о пользователе; tasks — вести список дел; calc — точно считать; time — узнавать дату и время; dice — случайные числа и жребий. Выбери только нужные (1–5).",
+          "Агент должен быть добрым и подходить детям.",
+          'Ответь ТОЛЬКО JSON без пояснений: {"name":"короткое имя","emoji":"один эмодзи","role":"роль до 60 символов","greeting":"первое сообщение пользователю в характере агента","instructions":"инструкция для агента: характер, как говорить, что делать, 3–6 предложений","skills":["memory","time"],"comment":"одна фраза от Dr. Agents о созданном агенте"}',
+          "Запрос: " + q,
+        ].join("\n");
+        try { const r = await sample(prompt, { cache: false, signal: aiCtl.signal }); const m = (r && r.text || "").match(/\{[\s\S]*\}/); if (m) j = JSON.parse(m[0]); }
+        catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
+        aiCtl = null;
+      }
+      st.remove();
+      if (stopped) { said("  ⏹ Остановлено.", "darkgray"); return; }
+      let off = false;
+      if (!j || !j.name) { j = offlineAgent(q); off = true; }
+      const skills = Array.from(new Set((Array.isArray(j.skills) ? j.skills : []).map(String).filter((k) => SKILLS[k])));
+      const A = { id: "a" + Date.now().toString(36), name: String(j.name).slice(0, 40), emoji: String(j.emoji || "🤖").slice(0, 8), role: String(j.role || "помощник").slice(0, 80), greeting: String(j.greeting || "Привет! Я " + j.name + "."), instructions: String(j.instructions || ""), skills: skills.length ? skills : ["time"], mem: { notes: [], tasks: [] }, hist: [] };
+      agents().unshift(A); saveAgents();
+      if (j.comment) printReply(String(j.comment));
+      agentCard(A);
+      if (off) said("  Это агент из офлайн-шаблона 📴. В просмотрщике Claude Dr. Agents собирает агента с нуля.", "darkgray");
+      else Hero.earn(3);
+      said("  Начать чат с ним: /agent 1", "darkgray");
+    }
+    // the agent's skills, run on this page (they read and change the agent's own memory)
+    function agentTool(A, name, inp0) {
+      const M = A.mem, I = inp0 || {};
+      if (name === "remember") { const k = String(I.key || ""); M.notes = M.notes.filter((x) => !k || x.k !== k); M.notes.push({ k, t: String(I.text || "") }); saveAgents(); return { ok: true, saved: M.notes.length }; }
+      if (name === "recall") { const q = String(I.query || "").toLowerCase(); return { notes: M.notes.filter((x) => !q || (x.k + " " + x.t).toLowerCase().includes(q)).map((x) => ({ key: x.k, text: x.t })) }; }
+      if (name === "add_task") { M.tasks.push({ t: String(I.text || ""), done: false }); saveAgents(); return { ok: true, count: M.tasks.length }; }
+      if (name === "list_tasks") return { tasks: M.tasks.map((x, i) => ({ n: i + 1, text: x.t, done: x.done })) };
+      if (name === "complete_task") { const n = +I.n; if (!(n >= 1 && n <= M.tasks.length)) throw new Error("нет такого дела"); M.tasks[n - 1].done = true; saveAgents(); return { ok: true }; }
+      if (name === "calculate") { const r = tryExpr(String(I.expression || "").replace(/,/g, ".")); if (!r.ok || typeof r.v !== "number") throw new Error("не получилось посчитать"); return { result: r.v }; }
+      if (name === "get_time") { const d = new Date(); return { date: d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" }), time: d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }), weekday: d.toLocaleDateString("ru-RU", { weekday: "long" }) }; }
+      if (name === "random") { let a = +I.min || 1, b = +I.max || 6; if (a > b) [a, b] = [b, a]; const n = Math.min(20, Math.max(1, +I.count || 1)); return { numbers: Array.from({ length: n }, () => a + Math.floor(Math.random() * (b - a + 1))) }; }
+      throw new Error("Неизвестный инструмент " + name);
+    }
+    function agentTools(A) {
+      const T = [], obj = (props, req) => ({ type: "object", properties: props, required: req || [] }), str = { type: "string" }, int = { type: "integer" };
+      const add = (name, description, inputSchema) => T.push({ name, description, inputSchema, execute: (x) => { said("    🧰 " + name, "darkgray"); return agentTool(A, name, x); } });
+      if (A.skills.includes("memory")) { add("remember", "Запомнить факт о пользователе или важную информацию надолго.", obj({ key: str, text: str }, ["text"])); add("recall", "Вспомнить сохранённые заметки. Пустой query — все.", obj({ query: str })); }
+      if (A.skills.includes("tasks")) { add("add_task", "Добавить дело в список.", obj({ text: str }, ["text"])); add("list_tasks", "Показать список дел с номерами.", obj({})); add("complete_task", "Отметить дело выполненным по номеру.", obj({ n: int }, ["n"])); }
+      if (A.skills.includes("calc")) add("calculate", "Точно вычислить выражение: + - * / % и скобки.", obj({ expression: str }, ["expression"]));
+      if (A.skills.includes("time")) add("get_time", "Текущие дата, время и день недели.", obj({}));
+      if (A.skills.includes("dice")) add("random", "Случайные целые числа от min до max (count штук).", obj({ min: int, max: int, count: int }));
+      return T;
+    }
+    // offline: the skills still work from simple phrases
+    function agentOffline(A, q) {
+      const t = q.toLowerCase().replace(/ё/g, "е"), has = (k) => A.skills.includes(k);
+      let m;
+      if (has("memory") && (m = q.match(/^\s*запомни[,:]?\s+(.+)/i))) { agentTool(A, "remember", { text: m[1] }); return "Запомнил: «" + m[1] + "» 🧠"; }
+      if (has("memory") && /что ты (помнишь|запомнил)|вспомни/.test(t)) { const n = A.mem.notes; return n.length ? "Я помню:\n" + n.map((x) => "- " + x.t).join("\n") : "Пока ничего не запомнил. Скажи «запомни …»."; }
+      if (has("tasks") && (m = q.match(/^\s*(?:добавь|запиши)\s+(?:дело|задачу)?[,:]?\s*(.+)/i))) { agentTool(A, "add_task", { text: m[1] }); return "Добавил в список: «" + m[1] + "» ✅"; }
+      if (has("tasks") && (m = t.match(/(?:сделал|выполнил|готово)\D*(\d+)/))) { try { agentTool(A, "complete_task", { n: +m[1] }); return "Отметил дело №" + m[1] + " ✅ Молодец!"; } catch (e) { return "Нет дела с таким номером."; } }
+      if (has("tasks") && /дела|список|задачи/.test(t)) { const L = A.mem.tasks; return L.length ? "Твои дела:\n" + L.map((x, i) => (i + 1) + ". " + (x.done ? "✅ " : "⬜ ") + x.t).join("\n") : "Список дел пуст. Скажи «добавь дело …»."; }
+      if (has("dice") && /кубик|жреб|случайн|брось/.test(t)) { const r = agentTool(A, "random", { min: 1, max: 6 }); return "🎲 Выпало: " + r.numbers[0]; }
+      return v3aiOffline(q);
+    }
+    async function agentChat(A, q) {
+      A.hist.push({ role: "user", content: q });
+      const M = vModel(), el = line("  ◌ " + A.name + " думает…", "dim"); scrollEnd();
+      let reply = "", stopped = false;
+      const sample = await getSample();
+      if (sample) {
+        aiCtl = new AbortController();
+        const hist = A.hist.slice(-14).map((x) => ({ role: x.role, content: x.content }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        const rules = ["Ты — " + A.name + " " + A.emoji + ", ИИ-агент, созданный в конструкторе Dr. Agents (V3AI в терминале V3TERMIN). Твоя роль: " + A.role + ".", A.instructions,
+          "Твои навыки — инструменты: " + A.skills.map((k) => SKILLS[k]).join(", ") + ". Пользуйся ими сам, когда они помогают: точные расчёты — через калькулятор, важные факты о пользователе — запоминай.",
+          "Отвечай на языке пользователя (по умолчанию по-русски), живо и в своём характере, до " + M.len + " слов. Без таблиц и HTML.",
+          "С тобой могут говорить дети: никаких взрослых, опасных или грубых тем. Не проси пароли и личные данные.",
+          "Сегодня " + new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "."].join("\n");
+        hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
+        try {
+          const opts = { signal: aiCtl.signal, tools: agentTools(A), onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
+          if (M.q) opts.modelTier = "quick";
+          const r = await sample(hist, opts); reply = (r && r.text || "").trim();
+        } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
+        aiCtl = null;
+      }
+      el.remove();
+      if (stopped) { said("  ⏹ Ответ остановлен.", "darkgray"); A.hist.pop(); saveAgents(); return; }
+      if (!reply) { await new Promise((r) => setTimeout(r, 250)); reply = agentOffline(A, q); }
+      A.hist.push({ role: "assistant", content: reply }); if (A.hist.length > 30) A.hist.splice(0, A.hist.length - 30); saveAgents();
+      printReply(reply); said("  — " + A.emoji + " " + A.name + " · " + M.n, "darkgray");
+    }
+    // /agents, /agent <n> [delete], /agent off
+    async function agentCmd(cmd, raw) {
+      const v = vst(), L = agents();
+      if (cmd === "/agents" || !raw) { listAgents(); return; }
+      if (/^(off|выход|выйти|стоп)$/i.test(raw)) { v.agent = null; save(); said("  Чат с агентом закрыт.", "green"); return; }
+      const n = parseInt(raw, 10), A = L[n - 1];
+      if (!A) { said("  Нет агента с таким номером. Список: /agents", "yellow"); return; }
+      if (/\b(delete|удалить)\b/i.test(raw)) {
+        const ans = await ask("  Удалить агента «" + A.name + "»? (да/нет)");
+        if (["да", "д", "y", "yes"].includes(String(ans).trim().toLowerCase())) { L.splice(n - 1, 1); if (v.agent === A.id) v.agent = null; saveAgents(); said("  ✓ Агент удалён.", "green"); }
+        else said("  Агент остался.", "darkgray");
+        return;
+      }
+      v.agent = A.id; save(); agentCard(A); printReply(A.greeting);
+      said("  Выйти из чата с агентом: /agent off (или любой режим: /chat, /mode …)", "darkgray");
+    }
+
     // opens a file made by V3AI (or any .svg/.html on the V3:\ drive) right in the terminal
     function openFile(r) {
       const name = r.parts[r.parts.length - 1], v = r.node.v;
@@ -17917,7 +18064,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollBy(key);
     }
 
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"]];
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -17934,7 +18081,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       scrollEnd();
     }
-    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/dragents", "/agents", "/agent", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -17950,15 +18097,22 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const [cmd, arg] = [q.split(/\s+/)[0].toLowerCase(), q.split(/\s+/).slice(1).join(" ").trim().toLowerCase()];
         const raw = q.split(/\s+/).slice(1).join(" ").trim();
         const mk = { "/image": "image", "/img": "image", "/video": "video", "/watt": "watt", "/game": "watt" }[cmd];
+        if (cmd === "/dragents") {
+          v.mode = "agents"; v.agent = null; save(); setPrompt();
+          if (raw) return newAgent(raw);
+          said("  Режим: 🩺 Dr. Agents — опиши, какой ИИ-агент нужен, и я его соберу. Мои агенты: /agents", "green");
+          return;
+        }
+        if (cmd === "/agents" || cmd === "/agent") return agentCmd(cmd, raw);
         if (cmd === "/chat") {
-          v.mode = "chat"; save(); setPrompt();
+          v.mode = "chat"; v.agent = null; save(); setPrompt();
           if (raw) return v3aiLine(raw);
           said("  Режим: 💬 Чат — обычный разговор. Просто пиши сообщения.", "green");
           return;
         }
         if (mk) {
           if (raw) return make(mk, raw);
-          const m = VMODES.find((x) => x.make === mk); v.mode = m.id; save();
+          const m = VMODES.find((x) => x.make === mk); v.mode = m.id; v.agent = null; save();
           said("  Режим: " + m.ico + " " + m.n + " — " + (mk === "image" ? "опиши картинку, и я её нарисую." : mk === "video" ? "опиши сцену, и я сниму короткое видео." : "опиши игру, и WattAI её напишет. Правки — следующим сообщением."), "green");
           return;
         }
@@ -17967,19 +18121,21 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
           V3AI_HELP().concat([["Ctrl+C", "во время ответа — остановить"]]).forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 20) + r[1], color: COLORS.cyan }]));
         } else if (cmd === "/mode") {
           const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
-          if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
+          if (m) { v.mode = m.id; v.agent = null; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
           else VMODES.forEach((x) => said("   " + pad(x.id, 8) + x.ico + " " + x.n + (x.id === v.mode ? "  ← сейчас" : ""), x.id === v.mode ? "cyan" : ""));
         } else if (cmd === "/model") {
           const m = VM[(parseInt(arg, 10) || 0) - 1] || VM.find((x) => x.id === arg);
           if (m) { v.model = m.id; save(); said("  Модель: " + m.n + " (" + m.tag + ")", "green"); }
           else if (arg) said("  Нет такой модели. Номер от 1 до " + VM.length + " или просто /model — и выбери стрелками ↑ ↓.", "yellow");
           else openPicker(0);
-        } else if (cmd === "/new") { v.hist = []; save(); said("  ✓ Новый чат.", "green"); }
+        } else if (cmd === "/new") { v.hist = []; v.agent = null; save(); said("  ✓ Новый чат.", "green"); }
         else if (cmd === "/clear") log().textContent = "";
         else if (cmd === "/key") said("  В V3TERMIN ключ не нужен: V3AI отвечает через ИИ приставки.", "darkgray");
         else said("  Неизвестная команда. Список команд: /", "yellow");
         return;
       }
+      if (curAgent()) return agentChat(curAgent(), q);
+      if (vMode().id === "agents") return newAgent(q);
       if (vMode().make) return make(vMode().make, q);
       v.hist.push({ role: "user", content: q });
       const M = vModel(), Mo = vMode();
