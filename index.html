@@ -17386,7 +17386,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       const rows = uniq().map((c) => pad(c.name, 18) + pad(c.aliases.slice(0, 3).join(", "), 20) + c.desc);
       return [{ kind: "host", text: "V3TERMIN — справка. Подробно о команде: Get-Help <команда>", color: "" }, { kind: "table", head: pad("Командлет", 18) + pad("Псевдонимы", 20) + "Описание", rows },
         "Ещё: переменные ($x = 5), математика (2 + 2 * 2, [math]::Sqrt(16)), конвейер (ls | Sort-Object),", "перенаправление (echo привет > файл.txt), скрипты (.\\hello.ps1), история (Get-History), Tab, ↑ ↓ — прокрутка экрана.",
-        "Установка программ одной строкой, как в PowerShell:", "  irm " + V3AI_INSTALL + " | iex"];
+        "Установка программ одной строкой, как в PowerShell:", "  irm " + V3AI_INSTALL + " | iex", "  irm https://claude.ai/install.ps1 | iex   (Claude Code)"];
     });
     def("Get-Command", ["gcm"], "Get-Command [[-Name] <шаблон>]", "Список доступных командлетов и псевдонимов.", (a) => {
       const n = a.get("name", 0), re = n && n !== true ? wild(String(n).includes("*") ? n : "*" + n + "*") : null;
@@ -17553,7 +17553,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     def("Invoke-WebRequest", ["iwr", "curl", "wget"], "Invoke-WebRequest [-Uri] <ссылка> [-OutFile <файл>] [-UseBasicParsing]", "Скачивает страницу или файл по ссылке.", (a) => web(a, true));
     def("Get-Package", ["Get-InstalledApp"], "Get-Package", "Программы, установленные через irm … | iex.", () => {
       const rows = Object.keys(APPS).filter((k) => appReady(k)).map((k) => pad(APPS[k].name, 14) + pad(APPS[k].ver, 10) + APPS[k].cmd);
-      return rows.length ? [{ kind: "table", head: pad("Name", 14) + pad("Version", 10) + "Command", rows }] : ["Пока ничего не установлено. Попробуй:", "irm " + V3AI_INSTALL + " | iex"];
+      return rows.length ? [{ kind: "table", head: pad("Name", 14) + pad("Version", 10) + "Command", rows }] : ["Пока ничего не установлено. Попробуй:", "irm " + V3AI_INSTALL + " | iex", "irm https://claude.ai/install.ps1 | iex"];
     });
     def("Set-Variable", ["set", "sv"], "Set-Variable [-Name] <имя> [-Value] <значение>", "Создаёт переменную (то же, что $имя = значение).", (a) => { const n = need(a.get("name", 0), "Name").replace(/^\$/, ""); setVar(n, a.get("value", 1) ?? ""); return []; });
     def("Get-Variable", ["gv"], "Get-Variable", "Показывает все переменные.", () => [{ kind: "table", head: pad("Name", 16) + "Value", rows: Object.keys(vars).filter((k) => k !== "_").map((k) => pad(k, 16) + (Array.isArray(vars[k]) ? vars[k].map(keyOf).join(", ") : showVal(keyOf(vars[k])))) }]);
@@ -17625,7 +17625,12 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       [V3AI_BASE + "v3ai.ps1"]: "#Requires -Version 5.1\n<#\n.SYNOPSIS\n  V3AI для PowerShell — консольная версия ИИ-помощника V3AI.\n\n.DESCRIPTION\n  Чат с ИИ прямо в терминале: режимы (Помощник, Учёба, Писатель, Переводчик, Код, Весельчак)\n  и шесть моделей V3AI.\n\n.EXAMPLE\n  v3ai\n#>\n# Локальная копия V3TERMIN. Полная версия: " + V3AI_BASE + "v3ai.ps1\n",
     };
     const normUrl = (u) => String(u).trim().replace(/^http:\/\//i, "https://").replace(/[?#].*$/, "");
+    // installers that ship inside V3TERMIN and are never fetched from the network
+    const LOCAL = {
+      "https://claude.ai/install.ps1": "<#\n  Установщик Claude Code для V3TERMIN.\n  Запуск одной строкой:\n    irm https://claude.ai/install.ps1 | iex\n  Ставит команду «claude» — ИИ-помощника для работы с файлами на диске V3:\\.\n#>\n& { Write-Host 'Setting up Claude Code…' }\n",
+    };
     async function fetchText(url) {
+      if (LOCAL[normUrl(url)]) { await new Promise((r) => setTimeout(r, 400)); return LOCAL[normUrl(url)]; }
       const host = (url.match(/^https?:\/\/([^/]+)/i) || [])[1] || url, mirror = MIRROR[normUrl(url)];
       try {
         const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 9000);
@@ -17655,6 +17660,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     function runText(text, depth) {
       text = String(text || "");
       if (/Установщик V3AI/i.test(text)) return installV3AI();
+      if (/Установщик Claude Code для V3TERMIN/i.test(text)) return installClaude();
       if (/V3AI для PowerShell/i.test(text)) return startV3AI();
       if (depth > 4) throw err("Слишком глубокая вложенность скриптов.");
       const ls = text.replace(/^﻿/, "").replace(/<#[\s\S]*?#>/g, "").split(/\r?\n/).filter((x) => x.trim() && !/^\s*#/.test(x));
@@ -17664,7 +17670,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     }
 
     /* ---------- programs installed with irm | iex ---------- */
-    const APPS = { v3ai: { name: "V3AI", ver: "1.0", cmd: "v3ai", file: HOME.concat(".v3ai", "bin", "v3ai.ps1") } };
+    const APPS = { v3ai: { name: "V3AI", ver: "1.0", cmd: "v3ai", file: HOME.concat(".v3ai", "bin", "v3ai.ps1") }, claude: { name: "Claude Code", ver: "1.0", cmd: "claude", file: HOME.concat(".local", "bin", "claude.exe") } };
     const appReady = (id) => !!S.apps[id] && !!walk(APPS[id].file);
     async function installV3AI() {
       said(""); said("  V3AI · установка", "cyan"); said("  ────────────────", "darkcyan");
@@ -17715,7 +17721,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
       said("  /dragents — Dr. Agents (ИИ-агенты) · /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
-      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + "] ❯ "; }, line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
+      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + "] ❯ "; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
       Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
       setPrompt(); return [];
     }
@@ -17878,6 +17884,124 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       said("  ✓ Сохранено: " + path + (kind === "watt" ? "   · правки — просто напиши следующим сообщением" : ""), "green");
       said("  — " + (kind === "watt" ? "WattAI" : vModel().n), "darkgray");
     }
+    /* ---- Claude Code for V3TERMIN: an AI helper that works with the V3:\ drive (asks before every change) ---- */
+    const CCM = [{ id: "opus", n: "Opus", d: "самая умная: сложные задачи и большой код", tier: "complex" }, { id: "sonnet", n: "Sonnet", d: "умная и быстрая, для большинства задач", tier: "default" }, { id: "haiku", n: "Haiku", d: "самая быстрая, для простых дел", tier: "quick" }];
+    const CC_HELP = () => [["/help", "команды Claude Code"], ["/model", "выбрать модель стрелками ↑ ↓"], ["/init", "создать CLAUDE.md с описанием этой папки"], ["/permissions", "разрешения: спрашивать или разрешать всё"], ["/clear", "новый разговор и чистый экран"], ["!<команда>", "выполнить команду V3TERMIN, например !ls"], ["/exit", "выйти из Claude Code"]];
+    const CC_CMDS = ["/help", "/model", "/init", "/permissions", "/clear", "/exit"];
+    const ccs = () => { const c = S.claude && typeof S.claude === "object" ? S.claude : (S.claude = {}); if (!CCM.some((m) => m.id === c.model)) c.model = "sonnet"; if (!Array.isArray(c.hist)) c.hist = []; return c; };
+    const ccModel = () => CCM.find((m) => m.id === ccs().model);
+    async function installClaude() {
+      said("Setting up Claude Code…", "gray");
+      const bin = HOME.concat(".local", "bin"); mkdirp(bin);
+      said("  ◌ скачиваю…", "darkgray"); scrollEnd();
+      await new Promise((r) => setTimeout(r, 600));
+      writeFile(pathStr(bin.concat("claude.exe")), "Claude Code для V3TERMIN 1.0\n", false);
+      const first = !S.apps.claude; S.apps.claude = 1; save();
+      said(""); said("✔ Claude Code успешно установлен!", "green");
+      said("  Версия: 1.0 (для V3TERMIN)", "gray"); said("  Расположение: " + pathStr(bin.concat("claude.exe")), "gray");
+      said("  Дальше: введи claude, чтобы начать", "cyan"); said("");
+      if (first) { Hero.earn(10); Hero.say("v3termin", "good", "Claude Code установлен! Набери claude ✻"); }
+      return [];
+    }
+    function startClaude(args) {
+      args = (args || []).filter((x) => x != null && x !== "");
+      if (args[0] === "--version" || args[0] === "-v") return ["1.0 (Claude Code для V3TERMIN)"];
+      if (args[0] === "--help" || args[0] === "-h") return ["Использование: claude [запрос]", "", "Claude Code для V3TERMIN — ИИ-помощник, который читает и меняет файлы на диске V3:\\ и запускает команды.", "Перед каждым изменением он спрашивает разрешения.", "", "  claude              запустить в текущей папке", "  claude \"запрос\"     запустить и сразу задать вопрос", "  claude --version    версия"];
+      said("");
+      said("  ╭──────────────────────────────────────────────╮", "#d97757");
+      said("  │ ✻ Добро пожаловать в Claude Code!            │", "#d97757");
+      said("  │                                              │", "#d97757");
+      said("  │   /help — команды · /model — модель          │", "#d97757");
+      said("  │   папка: " + pad(pathStr(cwd).slice(0, 36), 36) + "│", "#d97757");
+      said("  ╰──────────────────────────────────────────────╯", "#d97757");
+      said("  Совет: попроси «создай файл hello.ps1, который здоровается» или «что лежит в этой папке?»", "darkgray");
+      said("");
+      app = { title: "Claude Code", prompt: () => "> ", line: claudeLine, cmds: () => CC_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
+      Hero.say("v3termin", "start", "Claude Code готов к работе ✻");
+      setPrompt();
+      if (args.length) return claudeLine(args.join(" "));
+      return [];
+    }
+    // the tools Claude uses on the V3:\ drive; changes and commands ask the player first
+    async function ccAllow(what) {
+      if (ccs().allowAll) return true;
+      const a = String(await ask("  Разрешить: " + what + "? (д — да, н — нет, в — всегда)")).trim().toLowerCase();
+      if (a === "в" || a === "a" || a === "always") { ccs().allowAll = true; save(); return true; }
+      return !isNo(a) && a !== "";
+    }
+    function ccTools() {
+      const str = { type: "string" }, obj = (props, req) => ({ type: "object", properties: props, required: req || [] });
+      const T = [], add = (name, label, description, inputSchema, fn) => T.push({ name, description, inputSchema, execute: async (x) => { x = x || {}; said("⏺ " + label(x), "#d97757"); try { const r = await fn(x); return r; } catch (e) { const m = e && e.message || String(e); said("  ⎿ " + m, "red"); return { error: m }; } } });
+      add("list_dir", (x) => "List(" + (x.path || ".") + ")", "Список файлов и папок на диске V3:\\. path — путь (пусто — текущая папка).", obj({ path: str }), (x) => { const r = mustGet(x.path || ".", "d"); const L = Object.keys(r.node.c).map((k) => (r.node.c[k].t === "d" ? k + "\\" : k)); said("  ⎿ " + L.length + " элемент(ов)", "darkgray"); return { path: pathStr(r.parts), entries: L }; });
+      add("read_file", (x) => "Read(" + x.path + ")", "Прочитать текстовый файл с диска V3:\\.", obj({ path: str }, ["path"]), (x) => { const r = mustGet(x.path, "f"); said("  ⎿ прочитано строк: " + r.node.v.split("\n").length, "darkgray"); return { path: pathStr(r.parts), text: r.node.v.slice(0, 30000) }; });
+      add("write_file", (x) => "Write(" + x.path + ")", "Создать или полностью перезаписать текстовый файл на диске V3:\\.", obj({ path: str, content: str }, ["path", "content"]), async (x) => { if (!(await ccAllow("записать файл " + x.path))) { said("  ⎿ отклонено", "yellow"); return { denied: true }; } writeFile(x.path, String(x.content), false); said("  ⎿ записано строк: " + String(x.content).split("\n").length, "green"); return { ok: true }; });
+      add("edit_file", (x) => "Update(" + x.path + ")", "Заменить в файле точный фрагмент old_text на new_text (old_text должен встречаться один раз).", obj({ path: str, old_text: str, new_text: str }, ["path", "old_text", "new_text"]), async (x) => { const r = mustGet(x.path, "f"); const n = r.node.v.split(x.old_text).length - 1; if (n !== 1) throw new Error(n ? "фрагмент встречается " + n + " раз(а)" : "фрагмент не найден"); if (!(await ccAllow("изменить файл " + x.path))) { said("  ⎿ отклонено", "yellow"); return { denied: true }; } writeFile(x.path, r.node.v.replace(x.old_text, x.new_text), false); said("  ⎿ - " + String(x.old_text).split("\n")[0].slice(0, 60), "red"); said("  ⎿ + " + String(x.new_text).split("\n")[0].slice(0, 60), "green"); return { ok: true }; });
+      add("run_command", (x) => "Run(" + x.command + ")", "Выполнить команду V3TERMIN (PowerShell-подобную: ls, cd, cat, mkdir, .\\script.ps1, Get-Date …) и получить её вывод.", obj({ command: str }, ["command"]), async (x) => {
+        const cmd = String(x.command || "").trim();
+        if (/^(claude|v3ai|exit|quit|stop-process|kill|format|format-disk|start|start-process|notepad|clear|cls|clear-host)\b/i.test(cmd)) throw new Error("эту команду Claude запускать не может");
+        if (!(await ccAllow("выполнить «" + cmd + "»"))) { said("  ⎿ отклонено", "yellow"); return { denied: true }; }
+        try { const r = await execLine(cmd, true, 0); const out = flat(r || []).map(keyOf).join("\n"); said("  ⎿ " + (out.split("\n")[0] || "(нет вывода)").slice(0, 80) + (out.split("\n").length > 1 ? " …" : ""), "darkgray"); setPrompt(); return { output: out.slice(0, 20000) }; }
+        catch (e) { throw new Error(e && e.message || String(e)); }
+      });
+      return T;
+    }
+    async function claudeLine(text) {
+      const q = text.trim(), c = ccs();
+      if (!q) return;
+      if (/^(\/exit|\/quit|exit|quit)$/i.test(q)) { said("  До встречи! ✻", "#d97757"); app = null; return; }
+      if (q.startsWith("!")) { const cmd = q.slice(1).trim(); if (!cmd) return; try { const r = await execLine(cmd, true, 0); render(r || []); } catch (e) { printErr(e, cmd.split(/\s/)[0]); } return; }
+      if (q.startsWith("/")) {
+        const cmd = q.split(/\s+/)[0].toLowerCase(), raw = q.split(/\s+/).slice(1).join(" ").trim();
+        if (cmd === "/" || cmd === "/help") { said("  ── Claude Code · команды ──", "#d97757"); CC_HELP().concat([["Ctrl+C / Esc", "остановить ответ"]]).forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 16) + r[1], color: "#d97757" }])); return; }
+        if (cmd === "/model") {
+          const m = CCM[(parseInt(raw, 10) || 0) - 1] || CCM.find((x) => x.id === raw.toLowerCase());
+          if (m) { c.model = m.id; save(); said("  ✓ Модель: " + m.n, "green"); return; }
+          openPicker(0, { title: "  Выбери модель Claude", items: CCM.map((x) => pad(x.n, 8) + x.d), cur: CCM.findIndex((x) => x.id === c.model), onPick: (i) => { c.model = CCM[i].id; save(); said("  ✓ Модель: " + CCM[i].n, "green"); }, onCancel: () => said("  Модель не изменилась: " + ccModel().n, "darkgray") });
+          return;
+        }
+        if (cmd === "/clear") { c.hist = []; save(); log().textContent = ""; said("  ✓ Новый разговор.", "darkgray"); return; }
+        if (cmd === "/permissions") { c.allowAll = !c.allowAll; save(); said(c.allowAll ? "  ✓ Claude будет менять файлы и запускать команды без вопросов. Вернуть вопросы: /permissions" : "  ✓ Claude снова спрашивает разрешение перед каждым изменением.", "green"); return; }
+        if (cmd === "/init") return claudeAsk("Изучи текущую папку " + pathStr(cwd) + " (list_dir, при необходимости read_file) и создай в ней файл CLAUDE.md: что это за папка, какие в ней файлы и для чего, полезные команды. Коротко, по-русски.", true);
+        said("  Неизвестная команда. Список команд: /", "yellow"); return;
+      }
+      return claudeAsk(q, false);
+    }
+    async function claudeAsk(q, isInit) {
+      const c = ccs(), M = ccModel();
+      c.hist.push({ role: "user", content: q });
+      const el = line("✻ Думаю…", "dim"); el.style.color = "#d97757"; scrollEnd();
+      let reply = "", stopped = false;
+      const sample = await getSample();
+      if (sample) {
+        aiCtl = new AbortController();
+        const hist = c.hist.slice(-16).map((x) => ({ role: x.role, content: x.content }));
+        while (hist.length && hist[0].role !== "user") hist.shift();
+        const rules = ["Ты — Claude Code в учебном терминале V3TERMIN (похож на PowerShell, свой диск V3:\\). Помогаешь работать с файлами и командами на этом диске.",
+          "Текущая папка: " + pathStr(cwd) + ". Домашняя папка: " + pathStr(HOME) + ".",
+          "Инструменты: list_dir, read_file, write_file, edit_file, run_command (команды V3TERMIN: ls, cd, cat, mkdir, Get-Date, .\\script.ps1 и т. п.). Сначала смотри, потом меняй. Перед изменением кратко скажи, что сделаешь. Игрок может отклонить действие — тогда не настаивай.",
+          "Скрипты .ps1 в V3TERMIN — это по одной команде на строку (без функций, циклов и блоков if). Write-Host, Write-Output, переменные $x = …, математика, Get-Date, ls, cat работают.",
+          "Отвечай по-русски, коротко и по делу. Без таблиц и HTML. С тобой могут работать дети: только добрые темы."].join("\n");
+        hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
+        try {
+          const r = await sample(hist, { modelTier: M.tier, signal: aiCtl.signal, tools: ccTools(), onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.style.color = ""; el.textContent = "⏺ " + tx.replace(/\*\*/g, ""); scrollEnd(); } } });
+          reply = (r && r.text || "").trim();
+        } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
+        aiCtl = null;
+      }
+      el.remove();
+      if (stopped) { said("  ⎿ Прервано.", "darkgray"); c.hist.pop(); save(); return; }
+      if (!reply) {
+        if (isInit) {
+          const d = mustGet(".", "d"), L = Object.keys(d.node.c);
+          writeFile("CLAUDE.md", "# " + pathStr(cwd) + "\n\nПапка на диске V3:\\ в терминале V3TERMIN.\n\n## Что здесь\n" + (L.length ? L.map((k) => "- " + k + (d.node.c[k].t === "d" ? "\\ — папка" : "")).join("\n") : "- пока пусто") + "\n\n## Полезные команды\n- ls — список файлов\n- cat <файл> — прочитать файл\n- notepad <файл> — изменить файл\n", false);
+          reply = "Создал CLAUDE.md с описанием папки (офлайн-шаблон 📴).";
+        } else reply = "Сейчас я офлайн 📴, поэтому думать не могу. Но команды работают: напиши !ls, !cat <файл> или !Get-Date. В просмотрщике Claude я читаю и меняю файлы по твоей просьбе.";
+      }
+      c.hist.push({ role: "assistant", content: reply }); if (c.hist.length > 30) c.hist.splice(0, c.hist.length - 30); save();
+      String(reply).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l, i) => said((i ? "  " : "⏺ ") + l, ""));
+      said("  — " + M.n, "darkgray");
+    }
+
     /* ---- Dr. Agents: build AI agents with a character and skills, then chat with them ---- */
     const SKILLS = { memory: "🧠 Память", tasks: "✅ Список дел", calc: "🧮 Калькулятор", time: "🕐 Дата и время", dice: "🎲 Случайные числа" };
     const agents = () => { const v = vst(); if (!Array.isArray(v.agents)) v.agents = []; return v.agents; };
@@ -18120,28 +18244,32 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
 
     /* ---- model picker: after /model the arrows ↑ ↓ choose the model, Enter confirms, Esc cancels ---- */
     let picker = null;
+    // a list chosen with ↑ ↓ (Enter — pick, Esc — cancel); opts: { title, items: [label], cur, onPick(i), onCancel() }
     function drawPicker() {
       const pk = picker; pk.el.textContent = "";
-      const head = document.createElement("div"); head.className = "pt-l dim"; head.textContent = "  Выбери модель V3AI:  ↑ ↓ — выбор · Enter — готово · Esc — отмена"; pk.el.appendChild(head);
-      VM.forEach((m, i) => {
+      const head = document.createElement("div"); head.className = "pt-l dim"; head.textContent = pk.title + ":  ↑ ↓ — выбор · Enter — готово · Esc — отмена"; pk.el.appendChild(head);
+      pk.items.forEach((label, i) => {
         const r = document.createElement("div"); r.className = "pt-l row" + (i === pk.i ? " on" : "");
-        r.textContent = (i === pk.i ? "  ❯ " : "    ") + (i + 1) + ". " + pad(m.n, 15) + pad(m.tag, 11) + m.d + (m.id === vst().model ? "  ← сейчас" : "");
+        r.textContent = (i === pk.i ? "  ❯ " : "    ") + (i + 1) + ". " + label + (i === pk.cur ? "  ← сейчас" : "");
         r.addEventListener("click", () => { pk.i = i; pickDone(true); });
         pk.el.appendChild(r);
       });
     }
-    function openPicker(dir) {
-      const cur = VM.findIndex((m) => m.id === vst().model);
+    function openPicker(dir, opts) {
+      opts = opts || {
+        title: "  Выбери модель V3AI", items: VM.map((m) => pad(m.n, 15) + pad(m.tag, 11) + m.d), cur: VM.findIndex((m) => m.id === vst().model),
+        onPick: (i) => { const m = VM[i]; vst().model = m.id; save(); said("  ✓ Модель: " + m.n + " (" + m.tag + ")", "green"); },
+        onCancel: () => said("  Модель не изменилась: " + vModel().n, "darkgray"),
+      };
       const el = document.createElement("div"); el.className = "pt-pick"; log().appendChild(el);
-      picker = { el, i: Math.max(0, Math.min(VM.length - 1, cur + dir)) };
+      picker = Object.assign({ el, i: Math.max(0, Math.min(opts.items.length - 1, opts.cur + dir)) }, opts);
       drawPicker(); setPrompt(); scrollEnd();
     }
-    function pickMove(dir) { picker.i = (picker.i + dir + VM.length) % VM.length; drawPicker(); }
+    function pickMove(dir) { picker.i = (picker.i + dir + picker.items.length) % picker.items.length; drawPicker(); }
     function pickDone(ok) {
       const pk = picker; if (!pk) return; picker = null;
       pk.el.remove();
-      if (ok) { const m = VM[pk.i], v = vst(); v.model = m.id; save(); said("  ✓ Модель: " + m.n + " (" + m.tag + ")", "green"); }
-      else said("  Модель не изменилась: " + vModel().n, "darkgray");
+      if (ok) pk.onPick(pk.i); else pk.onCancel();
       setPrompt(); scrollEnd(); inp().focus();
     }
     // one handler for keyboard arrows and the on-screen ↑ ↓ buttons: they move the /model list while it is open, otherwise scroll
@@ -18154,9 +18282,9 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
-      const v = inp().value, on = !!app && !picker && !asking && !running && /^\/\S*$/.test(v);
+      const v = inp().value, on = !!app && !!app.cmds && !picker && !asking && !running && /^\/\S*$/.test(v);
       box.hidden = !on; if (!on) { box.textContent = ""; return; }
-      const low = v.toLowerCase(), rows = V3AI_HELP().filter((r) => r[0].split(" ")[0].startsWith(low));
+      const low = v.toLowerCase(), rows = app.cmds().filter((r) => r[0].split(" ")[0].startsWith(low));
       box.textContent = "";
       if (!rows.length) { const d = document.createElement("div"); d.className = "pt-l dim"; d.textContent = "нет такой команды · сотри лишнее, чтобы увидеть список"; box.appendChild(d); }
       rows.forEach((r) => {
@@ -18276,6 +18404,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       const name = first.v;
       if (/^\.?[\\/]|\.ps1$/i.test(name) && /\.ps1$/i.test(name)) return runScript(name.replace(/^\.[\\/]/, ""), depth || 0);
       const c = C[name.toLowerCase()];
+      if (!c && name.toLowerCase().replace(/\.exe$/, "") === "claude" && appReady("claude")) return startClaude(toks.slice(1).map((t) => t.v));
       if (!c && APPS[name.toLowerCase()] && appReady(name.toLowerCase())) return startV3AI();
       if (!c && /^(pwsh|powershell)(\.exe)?$/i.test(name)) { const a = parseArgs(toks.slice(1)), f = a.get(["file", "f"]) || a.pos.find((x) => /\.ps1$/i.test(String(x))); if (f && f !== true) return runScript(String(keyOf(f)).replace(/^\.[\\/]/, ""), depth || 0); return ["V3TERMIN уже работает как PowerShell :)"]; }
       if (!c) {
@@ -18394,7 +18523,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const isCmd = !before.trim() || /[|;]\s*$/.test(before);
         let opts = [];
         // in V3AI, Tab completes slash commands
-        if (app && !before.trim() && word.startsWith("/")) opts = V3AI_CMDS.filter((c) => c !== "/" && c.startsWith(word.toLowerCase()));
+        if (app && !before.trim() && word.startsWith("/")) opts = (app.title === "Claude Code" ? CC_CMDS : V3AI_CMDS).filter((c) => c !== "/" && c.startsWith(word.toLowerCase()));
         if (opts.length) { comp = { before, opts, i: -1, rest }; }
         else {
         if (isCmd && !/[\\/]/.test(word)) opts = Array.from(new Set(uniq().map((c) => c.name).concat(Object.keys(C).filter((k) => !/[?%]/.test(k) && C[k].name.toLowerCase() !== k)).concat(Object.keys(APPS).filter(appReady)))).filter((n) => n.toLowerCase().startsWith(word.toLowerCase())).sort((x, y) => (y.includes("-") - x.includes("-")) || x.localeCompare(y));
