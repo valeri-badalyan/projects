@@ -975,6 +975,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .pt-ehead button { padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: var(--pt-fg); font: 800 12px var(--body); cursor: pointer; }
 .pt-ehead button.ok { background: var(--pt-acc); color: #111; border-color: transparent; }
 #ptText { flex: 1; resize: none; border: 0; outline: 0; padding: 10px 12px; background: transparent; color: var(--pt-fg); font: 13.5px/1.42 var(--mono); }
+#ptSug { margin: 2px 0 4px; border-left: 2px solid var(--pt-acc); padding-left: 1ch; }
+#ptSug .row { cursor: pointer; border-radius: 4px; }
+#ptSug .row:hover { background: rgba(255,255,255,.08); }
+#ptSug .row b { color: var(--pt-acc); font-weight: 700; }
 .pt-pick { margin: 4px 0 6px; }
 .pt-pick .row { cursor: pointer; border-radius: 4px; }
 .pt-pick .row.on { background: var(--pt-acc); color: var(--pt-bg); font-weight: 700; }
@@ -3403,7 +3407,7 @@ div.sc-pl { cursor: default; }
         <span class="pt-sp"></span>
         <div class="pt-dots"><button type="button" id="ptCls" title="Очистить экран (cls)" aria-label="Очистить экран">─</button><button type="button" id="ptTheme" title="Сменить тему" aria-label="Сменить тему">◐</button><button type="button" class="x" data-go="hub" title="Закрыть" aria-label="Закрыть">✕</button></div>
       </div>
-      <div id="ptOut" role="log" aria-live="polite"><div id="ptLog"></div><div class="pt-in"><span class="pt-ps" id="ptPs"></span><input id="ptIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда"></div></div>
+      <div id="ptOut" role="log" aria-live="polite"><div id="ptLog"></div><div class="pt-in"><span class="pt-ps" id="ptPs"></span><input id="ptIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда"></div><div id="ptSug" hidden></div></div>
       <div id="ptEdit" hidden>
         <div class="pt-ehead"><span id="ptEName">Блокнот</span><button type="button" id="ptECancel">Отмена</button><button type="button" class="ok" id="ptESave">Сохранить</button></div>
         <textarea id="ptText" spellcheck="false" aria-label="Текст файла"></textarea>
@@ -17212,7 +17216,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
     const promptText = () => "PS " + pathStr(cwd) + "> ";
     const curPrompt = () => picker ? "Модель ↑ ↓, Enter — выбрать: " : asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
-    function setPrompt() { $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
+    function setPrompt() { updateSug(); $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
     function echoRaw(text) { line(text, "cmd"); }
     function ask(q) { return new Promise((res, rej) => { asking = { q, res, rej }; setPrompt(); scrollEnd(); }); }
     const said = (t, c) => render([{ kind: "host", text: t, color: c ? (COLORS[c] || c) : "" }]);
@@ -17913,6 +17917,23 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollBy(key);
     }
 
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"]];
+    // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
+    function updateSug() {
+      const box = $("#ptSug"); if (!box) return;
+      const v = inp().value, on = !!app && !picker && !asking && !running && /^\/\S*$/.test(v);
+      box.hidden = !on; if (!on) { box.textContent = ""; return; }
+      const low = v.toLowerCase(), rows = V3AI_HELP().filter((r) => r[0].split(" ")[0].startsWith(low));
+      box.textContent = "";
+      if (!rows.length) { const d = document.createElement("div"); d.className = "pt-l dim"; d.textContent = "нет такой команды · сотри лишнее, чтобы увидеть список"; box.appendChild(d); }
+      rows.forEach((r) => {
+        const d = document.createElement("div"); d.className = "pt-l row";
+        const b = document.createElement("b"); b.textContent = pad(r[0], 20); d.append(b, r[1]);
+        d.addEventListener("click", () => { const c = r[0].split(" ")[0]; inp().value = c + (/[<[]/.test(r[0]) ? " " : ""); updateSug(); inp().focus(); });
+        box.appendChild(d);
+      });
+      scrollEnd();
+    }
     const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
@@ -17943,7 +17964,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         }
         if (cmd === "/" || cmd === "/help") {
           said("  ── Команды ──", "darkcyan");
-          [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 20) + r[1], color: COLORS.cyan }]));
+          V3AI_HELP().concat([["Ctrl+C", "во время ответа — остановить"]]).forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 20) + r[1], color: COLORS.cyan }]));
         } else if (cmd === "/mode") {
           const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
           if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
@@ -18136,6 +18157,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       comp.i = (comp.i + 1) % comp.opts.length;
       let o = comp.opts[comp.i]; if (/\s/.test(o)) o = "\"" + o + "\"";
       el.value = comp.before + o + comp.rest; const pos = (comp.before + o).length; el.setSelectionRange(pos, pos);
+      updateSug();
     }
     // ↑ ↓ scroll the screen (a few lines); PageUp / PageDown scroll a whole page. They never bring back old commands.
     function scrollBy(key) { const o = out(), lh = parseFloat(getComputedStyle(o).lineHeight) || 19, d = /Page/.test(key) ? o.clientHeight * 0.9 : lh * 3; o.scrollTop += /Up/.test(key) ? -d : d; }
@@ -18148,11 +18170,11 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         if (e.key === "Enter") { e.preventDefault(); const v = el.value; el.value = ""; submit(v); }
         else if (e.key === "Tab") { e.preventDefault(); complete(); }
         else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "PageUp" || e.key === "PageDown") { e.preventDefault(); arrow(e.key); }
-        else if (e.key === "Escape") { e.preventDefault(); if (picker) pickDone(false); else if (running && app) ctrlC(); else el.value = ""; }
+        else if (e.key === "Escape") { e.preventDefault(); if (picker) pickDone(false); else if (running && app) ctrlC(); else { el.value = ""; updateSug(); } }
         else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); ctrlC(); }
         else if (e.ctrlKey && (e.key === "l" || e.key === "д")) { e.preventDefault(); log().textContent = ""; }
       });
-      el.addEventListener("input", () => { comp = null; });
+      el.addEventListener("input", () => { comp = null; updateSug(); });
       out().addEventListener("click", () => { if (!window.getSelection || !String(window.getSelection())) el.focus(); });
       $("#ptCls").addEventListener("click", () => { log().textContent = ""; el.focus(); });
       $("#ptTheme").addEventListener("click", () => { const all = ["classic", "dark", "matrix", "v3", "light"]; S.theme = all[(all.indexOf(S.theme) + 1) % all.length]; $("#ptWin").dataset.theme = S.theme; save(); line("Тема: " + S.theme, "dim"); scrollEnd(); });
