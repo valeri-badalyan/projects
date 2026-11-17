@@ -943,10 +943,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       { id: "s_beat", short: true, t: "Бит в стиле V3 🔥", ch: "lofi", sc: "music", dur: 15, views: 2100000, ago: 6, likes: 160000, cat: "music" },
       { id: "s_fish", short: true, t: "Рыбка-клоун 🐠", ch: "sea", sc: "ocean", dur: 12, views: 450000, ago: 100, likes: 22000, cat: "nature" },
       { id: "s_goal", short: true, t: "Гол через себя! ⚽", ch: "foot", sc: "football", dur: 10, views: 3900000, ago: 30, likes: 270000, cat: "sport" },
-      { id: "md1first", t: "Привет! Это первое видео канала MD1", ch: "md1", sc: "logo", logo: "MD1", dur: 20, views: 37, ago: 96, likes: 6, cat: "games", d: "Знакомьтесь, это MD1! Здесь будут игры из MD1 Games. Подписывайтесь 🙏" },
-      { id: "md1snake", t: "Играю в Змейку в MD1 Games", ch: "md1", sc: "snake", dur: 40, views: 21, ago: 30, likes: 4, cat: "games", d: "Пробую набрать 50 очков.", cap: [[1, "Всем привет, это MD1!"], [12, "Уже 20 очков!"], [30, "Подпишитесь, нас всего 20 😅"]] },
-      { id: "md1dino", t: "Дино из MD1 Games прыгает через кактусы", ch: "md1", sc: "dino", dur: 30, views: 14, ago: 6, likes: 3, cat: "games", d: "Новый рекорд канала!" },
-      { id: "s_md1", short: true, t: "MD1 — 20 подписчиков! 🎉", ch: "md1", sc: "fireworks", dur: 10, views: 52, ago: 3, likes: 9, cat: "show" },
+      { id: "md1first", t: "Привет! Это первое видео канала MD1", ch: "md1", sc: "logo", logo: "MD1", dur: 20, views: 37, ago: 96, likes: 6, dis: 24, cat: "games", d: "Знакомьтесь, это MD1! Здесь будут игры из MD1 Games. Подписывайтесь 🙏" },
+      { id: "md1snake", t: "Играю в Змейку в MD1 Games", ch: "md1", sc: "snake", dur: 40, views: 21, ago: 30, likes: 4, dis: 15, cat: "games", d: "Пробую набрать 50 очков.", cap: [[1, "Всем привет, это MD1!"], [12, "Уже 20 очков!"], [30, "Подпишитесь, нас всего 20 😅"]] },
+      { id: "md1dino", t: "Дино из MD1 Games прыгает через кактусы", ch: "md1", sc: "dino", dur: 30, views: 14, ago: 6, likes: 3, dis: 9, cat: "games", d: "Новый рекорд канала!" },
+      { id: "s_md1", short: true, t: "MD1 — 20 подписчиков! 🎉", ch: "md1", sc: "fireworks", dur: 10, views: 52, ago: 3, likes: 9, dis: 31, cat: "show" },
       { id: "s_dino", short: true, t: "Дино-прыжок 🦖", ch: "dino", sc: "dino", dur: 12, views: 380000, ago: 60, likes: 19000, cat: "games" },
     ];
     const NAMES = ["Артём", "Лиза", "Макс_2012", "Соня", "Дима Про", "Кира", "Ваня", "Алина", "Тимур", "Ника", "Гоша", "Полина"];
@@ -955,6 +955,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       space: ["Хочу стать космонавтом 🚀", "А почему у Сатурна кольца?", "Красота невероятная"], animals: ["Котик милашка 😻", "Мой кот так же делает", "Мячик победил 😂"],
       music: ["Под это идеально делать уроки", "Бит качает 🔥", "Включаю каждый вечер"], sport: ["ГОООЛ!", "Вратарь не успел 😅", "Месси лучший"], games: ["Я прошёл дальше!", "Какой у тебя рекорд?", "Играю прямо сейчас"],
       food: ["Попробую завтра на завтрак", "Бабушка лучшая ❤️"], auto: ["Голубая победила!", "Красная быстрее"], nature: ["Так спокойно…", "Хочу на море 🌊"], show: ["Вау 🎆", "С Новым годом!"],
+      // Viewers don't like MD1: criticism of the videos, never of the person.
+      md1: ["Это худшее видео, что я видел 👎", "Скучно. Выключил на пятой секунде", "Опять MD1… дизлайк", "Зачем это вообще снимать?", "V3 Games делает в сто раз лучше", "Звук ужасный, ничего не слышно", "Монтаж как будто на калькуляторе 😅", "Кто вообще смотрит MD1? 😂", "Отписался", "Кликбейт, ничего не произошло", "Я прохожу Змейку лучше с закрытыми глазами", "Верните мне 40 секунд жизни", "MD1, не снимай больше такое 🙏", "Ну такое… 2/10", "Даже мой кот снял бы лучше 🐱", "Почему это в рекомендациях?!", "Без обид, но очень скучно", "Лучше бы посмотрел V3 Games"],
     };
 
     /* ---------- state ---------- */
@@ -975,7 +977,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     const viewsOf = (v) => v.mine ? mineViews(v.mine) : v.views + (S.seen[v.id] || 0);
     const supOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) / 150) : Math.floor((v.likes || 0) * 0.004)) + (S.sup[v.id] ? 1 : 0);   // superlikes, each worth 10 likes
     const likesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.07) : v.likes) + (S.likes[v.id] === 1 ? 1 : 0) + (S.sup[v.id] ? 10 : 0);
-    const dislikesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.004) : Math.floor(v.likes * 0.02)) + (S.likes[v.id] === -1 ? 1 : 0);
+    const dislikesOf = (v) => (v.mine ? Math.floor(mineViews(v.mine) * 0.004) : v.dis != null ? v.dis : Math.floor(v.likes * 0.02)) + (S.likes[v.id] === -1 ? 1 : 0);
     const subsOf = (ch, id) => ch.me ? ch.subs : ch.subs + (S.subs[id] ? 1 : 0);
     const agoOf = (v) => v.mine ? ago((Date.now() - v.mine.at) / 3600000) : ago(v.ago);
     const avHTML = (ch) => `<span class="vt-av" style="background:${ch.col}">${esc(ch.n[0] || "?")}</span>`;
@@ -1181,9 +1183,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       renderComs(); renderRec();
     }
     function seedComs(v) {
-      const p = P(v), pool = (COMS[v.cat] || []).concat(COMS.any), out = [];
-      const n = v.mine ? Math.min(8, Math.floor(mineViews(v.mine) / 40)) : 5;
-      for (let i = 0; i < n; i++) out.push({ n: NAMES[Math.floor(p.R(i + 900) * NAMES.length)], x: pool[Math.floor(p.R(i + 950) * pool.length)], h: v.mine ? Math.max(0, (Date.now() - v.mine.at) / 3600000 * (1 - i / 9)) : v.ago * p.R(i + 980), l: Math.floor(p.R(i + 990) * (v.mine ? 12 : 4000)), k: "s" + i });
+      const hate = v.ch === "md1", p = P(v), pool = hate ? COMS.md1 : (COMS[v.cat] || []).concat(COMS.any), out = [];
+      const n = v.mine ? Math.min(8, Math.floor(mineViews(v.mine) / 40)) : hate ? 8 : 5, order = pool.map((_, j) => j).sort((a, b) => p.R(a + 950) - p.R(b + 950));
+      for (let i = 0; i < n; i++) out.push({ n: NAMES[Math.floor(p.R(i + 900) * NAMES.length)], x: pool[order[i % order.length]], h: v.mine ? Math.max(0, (Date.now() - v.mine.at) / 3600000 * (1 - i / 9)) : v.ago * p.R(i + 980), l: Math.floor(p.R(i + 990) * (v.mine ? 12 : hate ? 30 : 4000)), k: "s" + i });
       return out;
     }
     function showCom(x) { const r = secText(x); return r.ok ? r.text : "🛡 Комментарий скрыт EngineSecure"; }
@@ -1268,7 +1270,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const x = chk.text;
       arr.push({ n: myName(), x: x.slice(0, 200), t: Date.now() }); if (arr.length > 30) arr.shift();
       $("#vtComIn").value = ""; save(); renderComs();
-      if (v.ch !== "me") setTimeout(() => { const c = arr[arr.length - 1]; if (!c || c.rep) return; c.rep = pick2(["Спасибо! ❤️", "Рад, что понравилось!", "Скоро новое видео 😉", "Огонь коммент 🔥", "Спасибо за поддержку!"]); save(); if (cur === v && tab === "watch") renderComs(); }, 2500);
+      if (v.ch !== "me") setTimeout(() => { const c = arr[arr.length - 1]; if (!c || c.rep) return; c.rep = pick2(v.ch === "md1" ? ["Хоть кто-то нормально пишет 😅", "Я стараюсь, правда!", "Следующее видео будет лучше, обещаю", "Спасибо, а то все ругают 😢", "Не уходи, пожалуйста 🙏"] : ["Спасибо! ❤️", "Рад, что понравилось!", "Скоро новое видео 😉", "Огонь коммент 🔥", "Спасибо за поддержку!"]); save(); if (cur === v && tab === "watch") renderComs(); }, 2500);
     });
     $("#vtComs").addEventListener("click", (e) => { const b = e.target.closest("[data-cl]"); if (!b || !cur) return; const k = cur.id + b.dataset.cl; if (S.cl[k]) delete S.cl[k]; else S.cl[k] = 1; save(); renderComs(); });
 
