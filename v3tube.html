@@ -301,6 +301,24 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-lplayer .gp-over { padding: 36px 8px 8px; gap: 6px; } .vt-lplayer .gp-over h3 { font-size: 17px; } .vt-lplayer .gp-over p { font-size: 11.5px; }
 .vt-lplayer .vt-lbadges, .vt-lplayer .vt-hearts { z-index: 4; }
 @media (hover: hover) and (pointer: fine) { .gp-joy { display: none; } }
+.vt-offbar { background: var(--warn); color: #1a1208; font-weight: 800; font-size: 13px; text-align: center; padding: 7px 10px; border-radius: 10px; }
+.vt-dlhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.vt-dlhead small { color: var(--muted); font: 700 12px var(--mono); margin-left: 4px; }
+.vt-offsw { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 999px; padding: 5px 12px 5px 6px; font: 800 12.5px var(--body); cursor: pointer; }
+.vt-offsw i { width: 34px; height: 20px; border-radius: 99px; background: var(--line); position: relative; flex: none; transition: background .2s; }
+.vt-offsw i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.vt-offsw[aria-checked="true"] { border-color: var(--warn); } .vt-offsw[aria-checked="true"] i { background: var(--warn); } .vt-offsw[aria-checked="true"] i::after { transform: translateX(14px); }
+.vt-dlrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 8px; align-items: center; }
+.vt-dlside { display: grid; grid-template-columns: 1fr auto; gap: 4px 6px; align-items: center; }
+.vt-dlbar { grid-column: 1 / -1; height: 6px; border-radius: 99px; background: var(--panel-2); overflow: hidden; } .vt-dlbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #5ce1e6, var(--ok)); transition: width .8s linear; }
+.vt-dlrow.done .vt-dlbar i { background: var(--ok); }
+.vt-dltxt { color: var(--muted); font-size: 11px; line-height: 1.25; } .vt-dlrow.done .vt-dltxt { color: var(--ok); font-weight: 700; }
+.vt-dlside .vt-del { border: 2px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 10px; padding: 4px 8px; cursor: pointer; }
+.vt-dlmark { position: absolute; left: 6px; top: 6px; background: rgba(0,0,0,.75); color: #fff; font: 800 10.5px var(--mono); padding: 2px 6px; border-radius: 5px; }
+.vt-dlmark.ok { background: var(--ok); color: #06210f; }
+.vt-card.off, .vt-row2.off { opacity: .4; }
+#vtDlBtn[aria-pressed="true"] { border-color: var(--ok); color: var(--ok); }
+@media (max-width: 420px) { .vt-dlrow { grid-template-columns: 1fr; } }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -325,6 +343,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 <div class="app">
   <div id="vtWrap">
     <header class="vt-top">
+      <div class="vt-offbar" id="vtOffBar" hidden>✈️ Нет интернета. Можно смотреть только скачанные видео (⬇).</div>
       <div class="vt-head">
         <h1 class="vt-logo"><i aria-hidden="true">▶</i>V3Tube</h1>
         <form class="vt-search" id="vtSearch" role="search"><input id="vtQ" type="search" placeholder="Поиск видео" aria-label="Поиск видео" autocomplete="off"><button type="submit" aria-label="Найти">🔍</button></form>
@@ -368,7 +387,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
           <button type="button" class="vt-sub" id="vtSub">Подписаться</button>
         </div>
         <div class="vt-acts">
-          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtSuper" class="vt-super" aria-label="Суперлайк: как 10 лайков">⚡ Суперлайк <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtGifSnd" hidden>🔊 Скачать со звуком</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
+          <button type="button" id="vtLike">👍 <b>0</b></button><button type="button" id="vtDis">👎 <b>0</b></button><button type="button" id="vtSuper" class="vt-super" aria-label="Суперлайк: как 10 лайков">⚡ Суперлайк <b>0</b></button><button type="button" id="vtShare">↗ Поделиться</button><button type="button" id="vtLater">🕒 Позже</button><button type="button" id="vtDlBtn">⬇ Скачать</button><button type="button" id="vtGifSnd" hidden>🔊 Скачать со звуком</button><button type="button" id="vtGifDl" hidden>⬇ Скачать .gif</button>
         </div>
         <p class="vt-msg" id="vtMsg" aria-live="polite"></p>
         <details class="vt-desc" id="vtDescBox"><summary>Описание</summary><p id="vtDesc"></p></details>
@@ -487,6 +506,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       </div>
 
       <div class="vt-panel" id="vtSubsP" hidden>
+        <div class="vt-dlhead"><h3 class="vt-h">⬇ Скачанные <small id="vtDlCount"></small></h3><button type="button" class="vt-offsw" id="vtOffSw" role="switch" aria-checked="false"><i></i>✈️ Режим офлайн</button></div>
+        <div class="vt-list" id="vtDlList"></div>
+        <h3 class="vt-h">📺 Подписки</h3>
         <div class="vt-chips" id="vtSubList"></div>
         <div class="vt-grid" id="vtSubFeed"></div>
         <h3 class="vt-h">🕒 Смотреть позже</h3>
@@ -1085,11 +1107,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (v.thumb && !(v.gif && !v.file)) { const im = new Image(); im.src = v.thumb; im.alt = ""; im.style.cssText = "width:100%;height:100%;object-fit:cover;display:block"; box.appendChild(im); }
       else { const c = document.createElement("canvas"); c.width = short ? 180 : 320; c.height = short ? 320 : 180; if (v.gif && !v.file) { gifDraw(c.getContext("2d"), c.width, c.height, (x, w, h) => SC[v.sc](x, w, h, 0, P(v))); gifThumbs.push({ c, v, t: 0 }); } else SC[v.file ? "upload" : v.sc](c.getContext("2d"), c.width, c.height, v.dur * 0.35 + 3, P(v)); box.appendChild(c); }
       if (!short) { const d = document.createElement("span"); d.className = "vt-dur" + (v.gif ? " gif" : ""); d.textContent = v.yt ? "YouTube ↗" : v.gif ? "GIF" : fmtT(v.dur); box.appendChild(d); }
+      if (S.dl && S.dl[v.id]) { const mk = document.createElement("span"); const done = dlProg(v.id) >= 1; mk.className = "vt-dlmark" + (done ? " ok" : ""); mk.textContent = done ? "⬇ скачано" : `⬇ ${Math.floor(dlProg(v.id) * 100)}%`; box.appendChild(mk); }
       const pr = S.prog[v.id]; if (pr && v.dur) { const b = document.createElement("span"); b.className = "vt-bar"; b.style.width = Math.min(100, pr / v.dur * 100) + "%"; box.appendChild(b); }
       return box;
     }
     function card(v) {
-      const ch = chOf(v), b = document.createElement("button"); b.type = "button"; b.className = "vt-card"; b.dataset.vid = v.id;
+      const ch = chOf(v), b = document.createElement("button"); b.type = "button"; b.className = "vt-card" + (S.dl && isOffline() && !dlDone(v) && !v.file ? " off" : ""); b.dataset.vid = v.id;
       b.appendChild(thumb(v));
       const i = document.createElement("span"); i.className = "vt-cinfo";
       i.innerHTML = `${avHTML(ch)}<span><b>${esc(v.t)}</b><small>${esc(ch.n)}${ch.me ? " · вы" : ""}</small><small>${viewsTxt(viewsOf(v))} · ${agoOf(v)}</small></span>`;
@@ -1131,6 +1154,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       });
     }
     function renderSubs() {
+      renderDl(); $("#vtOffSw").setAttribute("aria-checked", String(!!S.offline));
       const ids = Object.keys(S.subs).filter((k) => CH[k] && !CH[k].own);
       $("#vtSubList").innerHTML = ids.map((k) => `<button type="button" data-chq="${esc(CH[k].n)}"><span class="vt-av" style="width:20px;height:20px;font-size:10px;display:inline-grid;vertical-align:middle;background:${CH[k].col}">${esc(CH[k].n[0])}</span> ${esc(CH[k].n)}</button>`).join("");
       const f = $("#vtSubFeed"); f.innerHTML = "";
@@ -1154,6 +1178,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     }
     async function open(id) {
       const v = byId(id); if (!v) return;
+      if (isOffline() && !dlDone(v) && !v.file) { Hero.say("v3tube", "start", v.yt ? "Без интернета YouTube не открыть" : "✈️ Нет интернета, а это видео не скачано"); return; }
       if (v.short) { const j = shortsList().findIndex((s) => s.id === id); shortI = Math.max(0, j); setTab("shorts"); return; }
       stopMain(); setTab("watch"); cur = v; lastStep = -1; time = S.prog[v.id] && S.prog[v.id] < v.dur - 2 ? S.prog[v.id] : 0;
       S.seen[v.id] = (S.seen[v.id] || 0) + 1; save();
@@ -1162,7 +1187,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       $("#vtBig").hidden = true;
       fillInfo();
       if (real) {
-        if (v.src) { const ok = vid.canPlayType("video/mp4") ? "mp4" : "webm"; vid.src = v.src + "." + ok; }
+        if (v.src) { const ok = vid.canPlayType("video/mp4") ? "mp4" : "webm", b = dlDone(v) ? await getFile("dl_" + v.id) : null; if (cur !== v) return; vid.src = b ? URL.createObjectURL(b) : v.src + "." + ok; }
         else { const b = await getFile(v.id); if (cur !== v) return; if (!b) { real = false; cv.hidden = false; vid.hidden = true; msg("Файл этого видео не найден на устройстве — показываю заставку."); } else vid.src = URL.createObjectURL(b); }
         if (real) { const t0 = time; vid.onloadedmetadata = () => { if (t0) vid.currentTime = t0; }; vid.muted = S.muted; vid.playbackRate = speed; vid.play().then(() => { playing = true; ui(); }).catch(() => { playing = false; $("#vtBig").hidden = false; ui(); }); }
       }
@@ -1175,7 +1200,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     function fillInfo() {
       const v = cur, ch = chOf(v);
       $("#vtTitle").textContent = v.t;
-      $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!(v.gif && v.gifMute); $("#vtGifDl").hidden = !(v.gif && v.mine); $("#vtGifSnd").hidden = !(v.gif && v.mine && !v.gifMute && window.MediaRecorder);
+      dlBtn(); $("#vtGifBadge").hidden = !v.gif; $("#vtPlayer").classList.toggle("gifmode", !!(v.gif && v.file)); $("#vtSpeed").hidden = !!v.gif; $("#vtMute").hidden = !!(v.gif && v.gifMute); $("#vtGifDl").hidden = !(v.gif && v.mine); $("#vtGifSnd").hidden = !(v.gif && v.mine && !v.gifMute && window.MediaRecorder);
       $("#vtMeta").textContent = `${viewsTxt(viewsOf(v))} · ${agoOf(v)}${supOf(v) ? ` · ⚡ ${fmtN(supOf(v))} ${plural(supOf(v) % 1000 === supOf(v) ? supOf(v) : 5, ["суперлайк", "суперлайка", "суперлайков"])}` : ""}`;
       const av = $("#vtChAv"); av.style.background = ch.col; av.textContent = ch.n[0] || "?";
       $("#vtChName").textContent = ch.n; $("#vtChSubs").textContent = `${subsTxt(subsOf(ch, v.ch))}`;
@@ -2331,6 +2356,83 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       delArm = null; save(); renderStudio(); updateHub();
     });
 
+    /* ---------- downloads: watch videos offline ---------- */
+    // A download takes 5 minutes and keeps going while the app is closed; it pauses while there is no network.
+    const DL_MS = 5 * 60 * 1000, DL_MAX = 20;
+    S.dl = S.dl && typeof S.dl === "object" ? S.dl : {};
+    let offAt = S.offline || !navigator.onLine ? Date.now() : 0, dlT = 0;
+    const isOffline = () => !!S.offline || !navigator.onLine;
+    function dlElapsed(d) { const pausedNow = offAt ? Date.now() - Math.max(offAt, d.at) : 0; return Math.max(0, Date.now() - d.at - (d.paused || 0) - pausedNow); }
+    const dlProg = (id) => { const d = S.dl[id]; return d ? Math.min(1, dlElapsed(d) / DL_MS) : 0; };
+    const dlDone = (v) => !!(S.dl[v.id] && dlProg(v.id) >= 1);
+    const canDl = (v) => !v.yt;
+    function dlLeft(id) { const ms = Math.max(0, DL_MS - dlElapsed(S.dl[id])); return fmtT(ms / 1000); }
+    function netChange() {
+      if (isOffline()) { if (!offAt) offAt = Date.now(); }
+      else if (offAt) { for (const id in S.dl) { const d = S.dl[id]; if (dlProg(id) < 1) d.paused = (d.paused || 0) + (Date.now() - Math.max(offAt, d.at)); } offAt = 0; save(); }
+      $("#vtOffBar").hidden = !isOffline(); $("#vtOffSw").setAttribute("aria-checked", String(!!S.offline));
+      if (tab === "home") renderHome(); if (tab === "subs") renderSubs();
+    }
+    window.addEventListener("online", netChange); window.addEventListener("offline", netChange);
+    async function startDl(v) {
+      if (!canDl(v)) return;
+      if (S.dl[v.id]) return;
+      if (isOffline()) { msg("Нет интернета — скачивание начнётся, когда сеть появится"); }
+      if (Object.keys(S.dl).length >= DL_MAX) { msg(`Можно скачать не больше ${DL_MAX} видео. Удали старые в «Подписках → Скачанные».`); return; }
+      S.dl[v.id] = { at: Date.now(), paused: 0 }; save(); slog("⬇", `Начато скачивание «${v.t}»`);
+      msg("⬇ Скачивание началось — займёт 5 минут. Можно закрыть V3Tube, оно продолжится.");
+      if (v.src && !isOffline()) {
+        try {
+          const ext = vid.canPlayType("video/mp4") ? "mp4" : "webm", r = await fetch(v.src + "." + ext);
+          if (!r.ok) throw new Error("http " + r.status);
+          const b = await r.blob(); if (S.dl[v.id]) { await putFile("dl_" + v.id, b); S.dl[v.id].size = b.size; save(); }
+        } catch (e) { if (S.dl[v.id]) { S.dl[v.id].err = 1; save(); } }
+      }
+    }
+    function dropDl(id) { if (!S.dl[id]) return; delete S.dl[id]; save(); delFile("dl_" + id); }
+    function dlBtn() {
+      if (!cur) return; const b = $("#vtDlBtn"); b.hidden = !canDl(cur);
+      const d = S.dl[cur.id];
+      if (!d) { b.textContent = "⬇ Скачать"; b.setAttribute("aria-pressed", "false"); }
+      else if (dlProg(cur.id) >= 1) { b.textContent = "✓ Скачано"; b.setAttribute("aria-pressed", "true"); }
+      else { b.textContent = `⬇ ${Math.floor(dlProg(cur.id) * 100)}% · ${isOffline() ? "пауза" : dlLeft(cur.id)}`; b.setAttribute("aria-pressed", "false"); }
+    }
+    $("#vtDlBtn").addEventListener("click", () => {
+      if (!cur) return;
+      if (!S.dl[cur.id]) { startDl(cur); dlBtn(); return; }
+      if (dlProg(cur.id) >= 1) { msg("Видео уже скачано: смотри его без интернета в «Подписки → Скачанные»"); return; }
+      msg(`Скачивается: ${Math.floor(dlProg(cur.id) * 100)}%, осталось ${dlLeft(cur.id)}`);
+    });
+    function renderDl() {
+      const L = $("#vtDlList"); L.innerHTML = "";
+      const ids = Object.keys(S.dl).sort((a, b) => S.dl[b].at - S.dl[a].at), vids = ids.map(byId).filter(Boolean);
+      $("#vtDlCount").textContent = vids.length ? `${vids.length} из ${DL_MAX}` : "";
+      if (!vids.length) { L.appendChild(empty("Скачанных видео пока нет. Открой видео и нажми «⬇ Скачать» — через 5 минут его можно смотреть без интернета.")); return; }
+      for (const v of vids) {
+        const w = document.createElement("div"); w.className = "vt-dlrow"; w.dataset.dl = v.id;
+        const r = row(v); w.appendChild(r);
+        const side = document.createElement("div"); side.className = "vt-dlside";
+        side.innerHTML = `<div class="vt-dlbar"><i></i></div><small class="vt-dltxt"></small><button type="button" class="vt-del" data-dldel="${v.id}" aria-label="Удалить из скачанных">✕</button>`;
+        w.appendChild(side); L.appendChild(w);
+      }
+      dlTick();
+    }
+    function dlTick() {
+      for (const w of $$("#vtDlList .vt-dlrow")) {
+        const id = w.dataset.dl, p = dlProg(id), d = S.dl[id]; if (!d) continue;
+        w.querySelector(".vt-dlbar i").style.width = (p * 100).toFixed(1) + "%"; w.classList.toggle("done", p >= 1);
+        w.querySelector(".vt-dltxt").textContent = p >= 1 ? `✓ Можно смотреть офлайн${d.size ? ` · ${(d.size / 1048576).toFixed(1).replace(".", ",")} МБ` : ""}` : isOffline() ? `${Math.floor(p * 100)}% · пауза: нет сети` : `${Math.floor(p * 100)}% · осталось ${dlLeft(id)}`;
+      }
+    }
+    function dlFrame(dt) {
+      if ((dlT += dt) < 1) return; dlT = 0;
+      for (const id in S.dl) { const d = S.dl[id]; if (!d.ok && dlProg(id) >= 1) { d.ok = 1; save(); const v = byId(id); if (v) { Hero.say("v3tube", "good", `✓ «${v.t}» скачано — можно смотреть без интернета`); note(1046, 0.1, "triangle", 0.05); slog("✅", `Скачано «${v.t}»`); } if (tab === "home") renderHome(); } }
+      if (tab === "subs") dlTick(); if (tab === "watch") dlBtn();
+    }
+    $("#vtDlList").addEventListener("click", (e) => { const x = e.target.closest("[data-dldel]"); if (!x) return; e.stopPropagation(); const v = byId(x.dataset.dldel); dropDl(x.dataset.dldel); if (v) slog("🗑️", `Удалено из скачанных «${v.t}»`); renderSubs(); });
+    $("#vtOffBar").hidden = !isOffline();
+    $("#vtOffSw").addEventListener("click", () => { S.offline = !S.offline; save(); netChange(); msg(S.offline ? "✈️ Режим офлайн: видно только скачанные видео" : "Сеть снова есть"); });
+
     /* ---------- shared clicks, frame loop ---------- */
     $("#vtWrap").addEventListener("click", (e) => {
       const s = e.target.closest("[data-short]"); if (s) { shortI = +s.dataset.short; setTab("shorts"); return; }
@@ -2347,6 +2449,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       const dt = lastTs ? Math.min(0.1, (ts - lastTs) / 1000) : 0; lastTs = ts;
       gifThumbTick(dt);
       if (Game.shown()) Game.tick(dt);
+      dlFrame(dt);
       if (tab === "watch" && cur) {
         if (!real && cur.gif) {
           if (playing) {
