@@ -17686,6 +17686,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       { id: "ortl55", n: "V3 ORTL 5.5", tag: "Флагман", len: 400, d: "Самая мощная: сложные задачи, большой код, лучшие игры." },
     ];
     const VMODES = [
+      { id: "chat", ico: "💬", n: "Чат", p: "Режим «Чат»: обычный дружеский разговор. Отвечай естественно и коротко, как живой собеседник, задавай встречные вопросы, без лишних списков." },
       { id: "help", ico: "✨", n: "Помощник", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы." },
       { id: "school", ico: "📚", n: "Учёба", p: "Режим «Учёба»: ты терпеливый учитель. Объясняй шаг за шагом, простыми словами и с примерами. С домашним заданием не давай просто готовый ответ — покажи ход решения." },
       { id: "write", ico: "✍", n: "Писатель", p: "Режим «Писатель»: пиши живые истории, стихи с рифмой, поздравления, придумывай названия и идеи." },
@@ -17706,7 +17707,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said(""); LOGO.forEach((l, i) => said(l, GRAD[i]));
       said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
       said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    /help — команды · /exit — выход", "darkgray");
-      said("  /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
+      said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
       said("  /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
       app = { title: "V3AI Terminal", prompt: () => "[" + vModel().n + " · " + vMode().ico + " " + vMode().n + "] ❯ ", line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
@@ -17927,6 +17928,12 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const [cmd, arg] = [q.split(/\s+/)[0].toLowerCase(), q.split(/\s+/).slice(1).join(" ").trim().toLowerCase()];
         const raw = q.split(/\s+/).slice(1).join(" ").trim();
         const mk = { "/image": "image", "/img": "image", "/video": "video", "/watt": "watt", "/game": "watt" }[cmd];
+        if (cmd === "/chat") {
+          v.mode = "chat"; save(); setPrompt();
+          if (raw) return v3aiLine(raw);
+          said("  Режим: 💬 Чат — обычный разговор. Просто пиши сообщения.", "green");
+          return;
+        }
         if (mk) {
           if (raw) return make(mk, raw);
           const m = VMODES.find((x) => x.make === mk); v.mode = m.id; save();
@@ -17935,7 +17942,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         }
         if (cmd === "/help") {
           said("  ── Команды ──", "darkcyan");
-          [["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
+          [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
         } else if (cmd === "/mode") {
           const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
           if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
