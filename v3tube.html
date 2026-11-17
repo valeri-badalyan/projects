@@ -51,7 +51,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-search { flex: 1; min-width: 0; display: flex; }
 .vt-search input { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 999px 0 0 999px; border: 2px solid var(--line); border-right: 0; background: var(--bg); color: var(--fg); font: 700 15px var(--body); }
 .vt-search button { padding: 0 12px; border-radius: 0 999px 999px 0; border: 2px solid var(--line); background: var(--panel-2); color: var(--fg); cursor: pointer; }
-.vt-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
+.vt-tabs { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .vt-tabs button { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.15; white-space: nowrap; } .vt-tabs button i { font-style: normal; font-size: 16px; }
 .vt-tabs button, .vt-cats button, .vt-chips button, .vt-colors button, .vt-acts button, .vt-ctrl button { padding: 7px 6px; border-radius: 10px; border: 2px solid var(--line); background: var(--panel); color: var(--fg); font-weight: 800; font-size: 12px; cursor: pointer; }
 .vt-tabs button[aria-selected="true"], .vt-cats button[aria-pressed="true"], .vt-chips button[aria-pressed="true"], .vt-acts button[aria-pressed="true"] { border-color: #ff2d55; background: rgba(255,45,85,.16); }
@@ -264,6 +264,43 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 @keyframes vtsup { 0% { transform: scale(.3) rotate(-8deg); opacity: 0; } 25% { transform: scale(1.15) rotate(3deg); opacity: 1; } 60% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.05) translateY(-20px); opacity: 0; } }
 @keyframes vtspark { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 1; } 100% { transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(1); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .vt-burst b, .vt-burst i { animation-duration: .01s; } }
+.gp-hero { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: center; padding: 14px; border-radius: 18px; background: radial-gradient(circle at 15% 20%, rgba(120,150,220,.18), transparent 60%), var(--panel); border: 2px solid var(--line); }
+#gpCover { width: 120px; aspect-ratio: 3 / 4; border-radius: 12px; display: block; background: #05060c; }
+.gp-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gp-info h2 { margin: 0; font: 900 21px var(--body); letter-spacing: -.3px; }
+.gp-info p { margin: 0; color: var(--muted); font-size: 13px; }
+.gp-stats { display: flex; gap: 6px; flex-wrap: wrap; }
+.gp-stats span { display: flex; flex-direction: column; padding: 5px 9px; border-radius: 10px; background: var(--bg); color: var(--muted); font-size: 11px; }
+.gp-stats b { font: 800 14px var(--mono); color: var(--fg); }
+.gp-acts { display: flex; gap: 8px; flex-wrap: wrap; } .gp-acts .btn { padding: 9px 14px; font-size: 14px; }
+.gp-box { position: relative; width: 100%; aspect-ratio: 3 / 4; max-height: 74vh; border-radius: 14px; overflow: hidden; background: #05060c; touch-action: none; user-select: none; -webkit-user-select: none; }
+@media (min-width: 600px) { .gp-box { aspect-ratio: 16 / 9; } }
+.vt-lplayer .gp-box { position: absolute; inset: 0; aspect-ratio: auto; max-height: none; border-radius: 0; }
+.gp-box > canvas { width: 100%; height: 100%; display: block; }
+.gp-hud { position: absolute; left: 8px; right: 8px; top: 8px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.vt-lplayer .gp-hud { top: 34px; }
+.gp-hud span { background: rgba(0,0,0,.55); color: #fff; font: 800 12px var(--mono); padding: 3px 8px; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.gp-stam { position: absolute; left: 50%; bottom: 10px; width: 28%; height: 6px; transform: translateX(-50%); background: rgba(255,255,255,.2); border-radius: 99px; overflow: hidden; pointer-events: none; }
+.gp-stam i { display: block; height: 100%; width: 100%; background: #9be15d; }
+.gp-msg { position: absolute; left: 50%; top: 20%; transform: translateX(-50%); width: max-content; max-width: 86%; text-align: center; color: #fff; font: 800 14px/1.35 var(--body); text-shadow: 0 2px 6px #000, 0 0 2px #000; pointer-events: none; transition: opacity .4s; opacity: 0; }
+.gp-joy { position: absolute; left: 14px; bottom: 20px; width: 112px; height: 112px; border-radius: 50%; background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.22); touch-action: none; }
+.gp-joy i { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255,255,255,.32); pointer-events: none; }
+.gp-btns { position: absolute; right: 12px; bottom: 20px; display: grid; grid-template-columns: repeat(2, 52px); gap: 8px; }
+.gp-btns button { width: 52px; height: 52px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); background: rgba(10,12,24,.55); color: #fff; font-size: 21px; cursor: pointer; touch-action: manipulation; padding: 0; }
+.gp-btns .gp-act { grid-column: 1 / -1; justify-self: center; width: 60px; height: 60px; font-size: 25px; }
+.gp-btns button.on { background: rgba(255,181,71,.55); border-color: #ffb547; }
+.vt-lplayer .gp-joy { width: 84px; height: 84px; left: 10px; bottom: 10px; } .vt-lplayer .gp-joy i { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
+.vt-lplayer .gp-btns { grid-template-columns: repeat(3, 42px); right: 8px; bottom: 10px; gap: 6px; } .vt-lplayer .gp-btns button, .vt-lplayer .gp-btns .gp-act { width: 42px; height: 42px; font-size: 18px; grid-column: auto; }
+.gp-over { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px; background: radial-gradient(circle at 50% 40%, rgba(40,20,30,.7), rgba(3,4,10,.94)); color: #fff; }
+.gp-over h3 { margin: 0; font: 900 24px var(--body); letter-spacing: -.3px; text-wrap: balance; }
+.gp-over p { margin: 0; max-width: 40ch; color: #c9c3d6; font-size: 13.5px; }
+.gp-nights { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+.gp-nights button { padding: 7px 12px; border-radius: 999px; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff; font: 800 13px var(--body); cursor: pointer; }
+.gp-nights button[aria-pressed="true"] { border-color: #ff2d55; background: rgba(255,45,85,.25); } .gp-nights button:disabled { opacity: .45; cursor: default; }
+.gp-overbtns { display: flex; gap: 8px; }
+.vt-lplayer .gp-over { padding: 36px 8px 8px; gap: 6px; } .vt-lplayer .gp-over h3 { font-size: 17px; } .vt-lplayer .gp-over p { font-size: 11.5px; }
+.vt-lplayer .vt-lbadges, .vt-lplayer .vt-hearts { z-index: 4; }
+@media (hover: hover) and (pointer: fine) { .gp-joy { display: none; } }
 .vt-note { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; }
 .vt-h2 { margin: 6px 0 0; font: 800 13px var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .vt-addrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
@@ -283,7 +320,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .vt-cmov button:disabled { opacity: .35; cursor: default; }
 .vt-mine-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
 .vt-mine-row .vt-del { border: 2px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 10px; padding: 6px 9px; cursor: pointer; }
-@media (max-width: 420px) { .vt-row2 { grid-template-columns: 128px 1fr; } .vt-tabs button { font-size: 10.5px; padding: 6px 1px; } }
+@media (max-width: 420px) { .vt-row2 { grid-template-columns: 128px 1fr; } .vt-tabs button { font-size: 9.5px; padding: 6px 0; letter-spacing: -.2px; } }
 </style>
 <div class="app">
   <div id="vtWrap">
@@ -295,7 +332,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         <span class="vt-coins" title="Монеты"><b id="vtCoins">0</b> ◎</span><span id="vtSubsChip" hidden>0</span>
       </div>
       <div class="vt-tabs" id="vtTabs" role="tablist">
-        <button type="button" data-tab="home"><i aria-hidden="true">🏠</i>Главная</button><button type="button" data-tab="shorts"><i aria-hidden="true">⚡</i>Shorts</button><button type="button" data-tab="live"><i aria-hidden="true">🔴</i>Эфиры</button><button type="button" data-tab="subs"><i aria-hidden="true">📺</i>Подписки</button><button type="button" data-tab="studio"><i aria-hidden="true">🎬</i>Мой канал</button>
+        <button type="button" data-tab="home"><i aria-hidden="true">🏠</i>Главная</button><button type="button" data-tab="shorts"><i aria-hidden="true">⚡</i>Shorts</button><button type="button" data-tab="live"><i aria-hidden="true">🔴</i>Эфиры</button><button type="button" data-tab="game"><i aria-hidden="true">🎮</i>Game Port</button><button type="button" data-tab="subs"><i aria-hidden="true">📺</i>Подписки</button><button type="button" data-tab="studio"><i aria-hidden="true">🎬</i>Мой канал</button>
       </div>
 
     </header>
@@ -415,6 +452,40 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         </div>
       </div>
 
+      <div class="vt-panel" id="vtGameP" hidden>
+        <div class="gp-hero">
+          <canvas id="gpCover" aria-label="Обложка игры «Тёмный хутор»"></canvas>
+          <div class="gp-info">
+            <span class="vt-eyebrow">Game Port · хоррор-побег</span>
+            <h2>Тёмный хутор</h2>
+            <p>Метель отрезала хутор от мира, а в доме бродит Сторож. Найди 3 ключа, открой входную дверь и добеги до ворот. Прячься в шкафах и береги батарейку фонарика.</p>
+            <div class="gp-stats" id="gpStats"></div>
+            <div class="gp-acts"><button type="button" class="btn" id="gpPlay">▶ Играть</button><button type="button" class="btn ghost" id="gpStream">🔴 Играть в эфире</button></div>
+          </div>
+        </div>
+        <div id="gpMount">
+          <div class="gp-box" id="gpBox" hidden>
+            <canvas id="gpCv" aria-label="Игра «Тёмный хутор»"></canvas>
+            <div class="gp-hud"><span id="gpKeys">🔑 0/3</span><span id="gpBat">🔦 100%</span><span id="gpNight">🌙 Ночь 1</span></div>
+            <div class="gp-stam" aria-hidden="true"><i id="gpStam"></i></div>
+            <div class="gp-msg" id="gpMsg" aria-live="polite"></div>
+            <div class="gp-joy" id="gpJoy" aria-label="Джойстик"><i></i></div>
+            <div class="gp-btns">
+              <button type="button" id="gpAct" class="gp-act" aria-label="Действие: дверь, шкаф">✋</button>
+              <button type="button" id="gpRun" aria-label="Бег" aria-pressed="false">🏃</button>
+              <button type="button" id="gpLight" class="on" aria-label="Фонарик">🔦</button>
+            </div>
+            <div class="gp-over" id="gpOver">
+              <h3 id="gpOverH">Тёмный хутор</h3>
+              <p id="gpOverP"></p>
+              <div class="gp-nights" id="gpNights"></div>
+              <div class="gp-overbtns"><button type="button" class="btn" id="gpGo">Начать</button><button type="button" class="btn ghost" id="gpExit">Выйти</button></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint">На телефоне: джойстик слева, 🏃 — бег (вкл/выкл), ✋ — открыть дверь или спрятаться в шкаф, 🔦 — фонарик. На клавиатуре: WASD или стрелки, Shift — бег, E — действие, F — фонарик.</p>
+      </div>
+
       <div class="vt-panel" id="vtSubsP" hidden>
         <div class="vt-chips" id="vtSubList"></div>
         <div class="vt-grid" id="vtSubFeed"></div>
@@ -502,7 +573,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         </div>
       </div>
     </div>
-    <p class="hint">▶ Нажми на ролик, чтобы смотреть. В «Эфирах» смотри прямые трансляции или запусти свою. Щит 🛡 вверху открывает EngineSecure — центр безопасности. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
+    <p class="hint">▶ Нажми на ролик, чтобы смотреть. В «Эфирах» смотри прямые трансляции или запусти свою, а в Game Port играй в «Тёмный хутор» — можно прямо в эфире. Щит 🛡 вверху открывает EngineSecure — центр безопасности. Подписывайся на каналы и ставь лайки. В «Моём канале» выкладывай видео из галереи или монтируй своё: просмотры и подписчики растут со временем, а монетизация приносит монеты.</p>
 </div>
 <div class="vt-perm" id="vtPerm" role="dialog" aria-modal="true" aria-labelledby="vtPermH" hidden>
   <div class="vt-permbox">
@@ -812,6 +883,24 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
         c.fillStyle = "#fff"; c.textAlign = "center"; c.textBaseline = "middle"; c.font = `900 ${m * 0.14}px sans-serif`; c.fillText(p.label, W / 2, H / 2);
         c.fillStyle = "#ff2d55"; c.font = `800 ${m * 0.06}px sans-serif`; c.fillText("▶ V3", W / 2, H / 2 + m * 0.15);
       },
+      horror(c, W, H, t, p) {
+        const m = Math.min(W, H); sky(c, W, H, "#0a0d1e", "#1b2036");
+        c.fillStyle = "#dfe6f4"; c.fillRect(0, H * 0.78, W, H * 0.22);
+        const hx = W * 0.5, hy = H * 0.78, hw = m * 0.62, hh = m * 0.36;
+        c.fillStyle = "#07070d"; c.fillRect(hx - hw / 2, hy - hh, hw, hh); c.beginPath(); c.moveTo(hx - hw / 2 - m * 0.04, hy - hh); c.lineTo(hx, hy - hh - m * 0.22); c.lineTo(hx + hw / 2 + m * 0.04, hy - hh); c.fill();
+        c.fillRect(hx + hw * 0.22, hy - hh - m * 0.2, m * 0.05, m * 0.12);
+        const blink = Math.sin(t * 1.3) > -0.85 ? 1 : 0;
+        c.fillStyle = "rgba(255,190,90,.85)"; c.fillRect(hx - hw * 0.36, hy - hh * 0.68, hw * 0.16, hh * 0.3);
+        c.fillStyle = "#151520"; c.fillRect(hx + hw * 0.18, hy - hh * 0.68, hw * 0.16, hh * 0.3);
+        if (blink) { c.fillStyle = "#ff2020"; c.shadowColor = "#ff2020"; c.shadowBlur = 8; c.beginPath(); c.arc(hx + hw * 0.24, hy - hh * 0.55, m * 0.008, 0, Math.PI * 2); c.arc(hx + hw * 0.28, hy - hh * 0.55, m * 0.008, 0, Math.PI * 2); c.fill(); c.shadowBlur = 0; }
+        c.fillStyle = "#3a2010"; c.fillRect(hx - hw * 0.06, hy - hh * 0.42, hw * 0.12, hh * 0.42);
+        const bx = W * 0.15, by = H * 0.86, a = -0.5 + Math.sin(t * 0.7) * 0.35;
+        const gr = c.createRadialGradient(bx, by, 2, bx, by, m * 0.6); gr.addColorStop(0, "rgba(255,240,190,.5)"); gr.addColorStop(1, "rgba(255,240,190,0)");
+        c.fillStyle = gr; c.beginPath(); c.moveTo(bx, by); c.arc(bx, by, m * 0.6, a - 0.25, a + 0.25); c.closePath(); c.fill();
+        c.fillStyle = "#1a1a28"; c.beginPath(); c.arc(bx, by - m * 0.05, m * 0.03, 0, Math.PI * 2); c.fill(); c.fillRect(bx - m * 0.025, by - m * 0.03, m * 0.05, m * 0.08);
+        c.fillStyle = "rgba(235,242,255,.8)";
+        for (let i = 0; i < 110; i++) { const x = ((p.R(i) + t * (0.04 + p.R(i + 300) * 0.06)) % 1) * W, y = ((p.R(i + 150) + t * (0.1 + p.R(i + 450) * 0.12)) % 1) * H, s2 = 1 + p.R(i + 600) * 2.2; c.fillRect(x, y, s2, s2); }
+      },
       upload(c, W, H, t, p) {
         const m = Math.min(W, H); sky(c, W, H, "#1c1e3d", "#0a0b18");
         c.fillStyle = "#34386a"; for (let i = 0; i < 10; i++) { c.fillRect(i * W / 10 + 4, 6, W / 20, m * 0.06); c.fillRect(i * W / 10 + 4, H - 6 - m * 0.06, W / 20, m * 0.06); }
@@ -820,8 +909,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       },
     };
     const SCN = { space: "🚀 Космос", cat: "🐱 Котик", race: "🏎 Гонка", music: "🎵 Бит", rain: "🌧 LoFi дождь", ocean: "🐠 Океан", football: "⚽ Футбол", snake: "🐍 Летсплей", fireworks: "🎆 Салют", cook: "🍳 Кулинария", dino: "🦖 Дино" };
-    const SCCAT = { space: "space", cat: "animals", race: "auto", music: "music", rain: "music", ocean: "nature", football: "sport", snake: "games", fireworks: "show", cook: "food", dino: "games" };
-    const SND = { space: [70, 220, "sine", [0, 3, 7, 10, 12]], cat: [120, 392, "triangle", [0, 2, 4, 7, 9]], race: [150, 110, "sawtooth", [0, 3, 5, 7, 10]], music: [128, 110, "square", [0, 3, 7, 10, 12, 15]], rain: [76, 196, "sine", [0, 4, 7, 11, 14]], ocean: [66, 262, "sine", [0, 2, 4, 7, 9]], football: [132, 165, "square", [0, 4, 7, 12]], snake: [140, 330, "square", [0, 2, 4, 5, 7, 9]], fireworks: [100, 262, "triangle", [0, 4, 7, 12, 16]], cook: [108, 294, "triangle", [0, 2, 4, 7, 9]], dino: [146, 220, "square", [0, 3, 5, 7, 10]] };
+    const SCCAT = { horror: "games", space: "space", cat: "animals", race: "auto", music: "music", rain: "music", ocean: "nature", football: "sport", snake: "games", fireworks: "show", cook: "food", dino: "games" };
+    const SND = { horror: [62, 98, "sine", [0, 1, 3, 6, 7]], space: [70, 220, "sine", [0, 3, 7, 10, 12]], cat: [120, 392, "triangle", [0, 2, 4, 7, 9]], race: [150, 110, "sawtooth", [0, 3, 5, 7, 10]], music: [128, 110, "square", [0, 3, 7, 10, 12, 15]], rain: [76, 196, "sine", [0, 4, 7, 11, 14]], ocean: [66, 262, "sine", [0, 2, 4, 7, 9]], football: [132, 165, "square", [0, 4, 7, 12]], snake: [140, 330, "square", [0, 2, 4, 5, 7, 9]], fireworks: [100, 262, "triangle", [0, 4, 7, 12, 16]], cook: [108, 294, "triangle", [0, 2, 4, 7, 9]], dino: [146, 220, "square", [0, 3, 5, 7, 10]] };
 
     /* ---------- catalog ---------- */
     const CATS = { all: "Все", games: "Игры", music: "Музыка", animals: "Животные", space: "Космос", sport: "Спорт", food: "Еда", auto: "Авто", nature: "Природа", show: "Шоу" };
@@ -1012,8 +1101,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (t !== "shorts") stopSVid();
       tab = t;
       $$("#vtTabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t || (t === "watch" && b.dataset.tab === "home"))));
-      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio"; $("#vtSec").hidden = t !== "sec"; $("#vtLiveP").hidden = t !== "live";
-      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI); if (t === "sec") renderSec(); if (t === "live") { if (lvMode === "room" && !lv) lvMode = "list"; liveMode(lvMode); } updateShield();
+      $("#vtHome").hidden = t !== "home"; $("#vtWatch").hidden = t !== "watch"; $("#vtShorts").hidden = t !== "shorts"; $("#vtSubsP").hidden = t !== "subs"; $("#vtStudio").hidden = t !== "studio"; $("#vtSec").hidden = t !== "sec"; $("#vtLiveP").hidden = t !== "live"; $("#vtGameP").hidden = t !== "game";
+      if (t === "home") renderHome(); if (t === "subs") renderSubs(); if (t === "studio") renderStudio(); if (t === "shorts") openShort(shortI); if (t === "sec") renderSec(); if (t === "live") { if (lvMode === "room" && !lv) lvMode = "list"; liveMode(lvMode); if (lvMode === "room" && lv && lv.host && stream && stream.game) Game.mount($("#vtLiveRoom .vt-lplayer")); } if (t === "game") renderGame(); updateShield();
       window.scrollTo(0, 0);
     }
     function renderHome() {
@@ -1599,6 +1688,303 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $("#vtLog").addEventListener("click", (e) => { if (e.target.closest("[data-act='clearlog']")) { SEC.log = []; saveSec(); renderLog(); } });
     $("#vtSecBtn").addEventListener("click", () => setTab(tab === "sec" ? "home" : "sec"));
 
+    /* ---------- Game Port: «Тёмный хутор», an original escape-horror game you can stream ---------- */
+    const Game = (() => {
+      const MAP = [
+        "##################################",
+        "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+        "#,,,####################,,,,,,,,,E",
+        "#,,,#.*...W#.....#.....#,,,,,,,,,#",
+        "#,,,#......D..T..D..*..#,,,,,,,,,#",
+        "#,,,#..P...#.....#.....#,,,,,,,,,#",
+        "#,,,#B.....#..*..#..W..#,,,,,,,,,#",
+        "#,,,####D#####D#####D###,,,,,,,,,#",
+        "#,,,#..................#,,,,,,,,,#",
+        "#,,,#..M...........*...X,,,,,,,,,#",
+        "#,,,#..................#,,,,,,,,,#",
+        "#,,,####D#####D#####D###,,,,,,,,,#",
+        "#,,,#.....#.......#....#,,,,,,,,,#",
+        "#,,,#.W.*.#...T...#.*..#,,,,,,,,,#",
+        "#,,,#.....D..*....D.B.W#,,,,,,,,,#",
+        "#,,,#..T..#.......#....#,,,,,,,,,#",
+        "#,,,####################,,,,,,,,,#",
+        "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+        "#,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+        "##################################"
+      ];
+      const T = 32, MW = MAP[0].length, MH = MAP.length, DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      const box = $("#gpBox"), cv = $("#gpCv"), g = cv.getContext("2d"), dk = document.createElement("canvas"), dg = dk.getContext("2d");
+      const GP = Object.assign({ unlocked: 1, wins: 0, best: 0, bestTime: 0, plays: 0 }, store.get("tubeGame", {}) || {});
+      const saveGP = () => store.set("tubeGame", GP);
+      const NIGHTS = 3, listeners = [], inp = { x: 0, y: 0, run: false, k: {} };
+      let st = null, over = "start", msgT = 0, beat = 0, hudT = 0, flash = 0, night = 1;
+      const emit = (e, d) => listeners.forEach((f) => { try { f(e, d || {}); } catch (err) { /* listener errors stay local */ } });
+      const flakes = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random(), s: 0.4 + Math.random() * 0.9, z: 1 + Math.random() * 2 }));
+      function say(t, sec) { const m = $("#gpMsg"); m.textContent = t; m.style.opacity = "1"; msgT = sec || 2.6; }
+      const tileAt = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? "#" : st.tiles[y][x];
+      const isOpen = (x, y) => !!st.open[x + "," + y];
+      function blocks(x, y, who) {
+        const c = tileAt(x, y);
+        if (c === "#" || c === "W" || c === "T" || c === "B") return true;
+        if (c === "D") return who === "p" && !isOpen(x, y);
+        if (c === "X") return !isOpen(x, y);
+        return false;
+      }
+      function hits(o, r, who) {
+        const x0 = Math.floor((o.x - r) / T), x1 = Math.floor((o.x + r) / T), y0 = Math.floor((o.y - r) / T), y1 = Math.floor((o.y + r) / T);
+        for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (blocks(x, y, who)) return true;
+        return false;
+      }
+      function move(o, dx, dy, r, who) { o.x += dx; if (hits(o, r, who)) o.x -= dx; o.y += dy; if (hits(o, r, who)) o.y -= dy; }
+      function los(ax, ay, bx, by) {
+        const n = Math.ceil(Math.hypot(bx - ax, by - ay) / 8);
+        for (let i = 1; i < n; i++) {
+          const x = Math.floor((ax + (bx - ax) * i / n) / T), y = Math.floor((ay + (by - ay) * i / n) / T), c = tileAt(x, y);
+          if (c === "#" || c === "W" || ((c === "D" || c === "X") && !isOpen(x, y))) return false;
+        }
+        return true;
+      }
+      function path(fx, fy, tx, ty) {
+        const prev = new Int16Array(MW * MH).fill(-1), s = fy * MW + fx, goal = ty * MW + tx, q = [s]; prev[s] = s;
+        for (let i = 0; i < q.length && prev[goal] === -1; i++) {
+          const k = q[i], x = k % MW, y = (k / MW) | 0;
+          for (const [dx, dy] of DIRS) {
+            const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+            const nk = ny * MW + nx; if (prev[nk] !== -1) continue;
+            const c = tileAt(nx, ny); if (c === "#" || c === "W" || c === "T" || c === "B" || (c === "X" && !isOpen(nx, ny))) continue;
+            prev[nk] = k; q.push(nk);
+          }
+        }
+        if (prev[goal] === -1) return [];
+        const out = []; for (let k = goal; k !== s; k = prev[k]) out.push({ x: (k % MW + 0.5) * T, y: (((k / MW) | 0) + 0.5) * T });
+        return out.reverse();
+      }
+      const tileOf = (o) => [Math.floor(o.x / T), Math.floor(o.y / T)];
+      function pathTo(pt) { const [fx, fy] = tileOf(st.m), [tx, ty] = tileOf(pt); return path(fx, fy, tx, ty); }
+      function newGame(n) {
+        night = n; const tiles = MAP.map((r) => r.split("")), stars = []; let P = null, M = null; st = null;
+        tiles.forEach((r, y) => r.forEach((c, x) => { if (c === "P") { P = { x, y }; r[x] = "."; } if (c === "M") { M = { x, y }; r[x] = "."; } if (c === "*") { stars.push({ x, y }); r[x] = "."; } }));
+        for (let i = stars.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [stars[i], stars[j]] = [stars[j], stars[i]]; }
+        const items = stars.slice(0, 3).map((s) => ({ x: (s.x + 0.5) * T, y: (s.y + 0.5) * T, k: "key" })).concat(stars.slice(3, n === 3 ? 4 : 5).map((s) => ({ x: (s.x + 0.5) * T, y: (s.y + 0.5) * T, k: "bat" })));
+        const floor = []; tiles.forEach((r, y) => r.forEach((c, x) => { if (c === "." ) floor.push({ x, y }); }));
+        st = { tiles, items, floor, open: {}, t: 0,
+          p: { x: (P.x + 0.5) * T, y: (P.y + 0.5) * T, dir: Math.PI / 2, stam: 100, tired: false, bat: 100, light: true, keys: 0, hidden: null, noisy: false, step: 0 },
+          m: { x: (M.x + 0.5) * T, y: (M.y + 0.5) * T, dir: 0, state: "patrol", path: [], think: 2, lose: 0, last: null, searchT: 0, sp: 46 + n * 6, sc: 96 + n * 9, view: 7.5 + n * 0.5 } };
+        over = "play"; GP.plays++; saveGP(); $("#gpOver").hidden = true; inp.run = false; $("#gpRun").classList.remove("on"); $("#gpLight").classList.add("on");
+        say(`Ночь ${n}. Найди 3 ключа и выберись из дома. Сторож бродит рядом…`, 4); emit("start", { night: n });
+      }
+      function caught(found) {
+        if (over !== "play") return; over = "caught"; flash = 1;
+        note(70, 0.6, "sawtooth", 0.16); note(52, 0.9, "square", 0.12);
+        emit("caught", { night, found });
+        setTimeout(() => menu(found ? "Сторож нашёл тебя в шкафу" : "Сторож поймал тебя", `Ночь ${night}. Ключей найдено: ${st.p.keys} из 3. Попробуй ещё раз — он слышит, когда ты бежишь.`), 700);
+      }
+      function win() {
+        if (over !== "play") return; over = "win"; const time = st.t, coins = 40 * night;
+        GP.wins++; GP.best = Math.max(GP.best, night); if (!GP.bestTime || time < GP.bestTime) GP.bestTime = Math.round(time); GP.unlocked = Math.min(NIGHTS, Math.max(GP.unlocked, night + 1)); saveGP();
+        Hero.earn(coins); [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => note(f, 0.18, "triangle", 0.06), i * 120));
+        emit("win", { night, time, coins });
+        menu("Ты сбежал! 🎉", `Ночь ${night} пройдена за ${fmtT(time)}. +${coins} ◎${night < NIGHTS ? ". Следующая ночь открыта — Сторож станет быстрее." : ". Ты прошёл все ночи!"}`);
+      }
+      function menu(h, p) {
+        over = over === "play" ? "start" : over;
+        $("#gpOverH").textContent = h; $("#gpOverP").textContent = p; msgT = 0; $("#gpMsg").style.opacity = "0";
+        $("#gpNights").innerHTML = Array.from({ length: NIGHTS }, (_, i) => i + 1).map((n) => `<button type="button" data-night="${n}" aria-pressed="${n === Math.min(night + (over === "win" && night < GP.unlocked ? 1 : 0), GP.unlocked)}"${n > GP.unlocked ? " disabled" : ""}>${n > GP.unlocked ? "🔒" : "🌙"} Ночь ${n}</button>`).join("");
+        $("#gpGo").textContent = over === "caught" ? "Ещё раз" : over === "win" ? "Играть дальше" : "Начать";
+        $("#gpOver").hidden = false; hud();
+      }
+      function action() {
+        if (over !== "play") return; const p = st.p;
+        if (p.hidden) { p.hidden = null; say("Ты вышел из шкафа"); return; }
+        let best = null, bd = 50;
+        for (let y = Math.floor(p.y / T) - 2; y <= Math.floor(p.y / T) + 2; y++) for (let x = Math.floor(p.x / T) - 2; x <= Math.floor(p.x / T) + 2; x++) {
+          const c = tileAt(x, y); if (c !== "W" && c !== "D" && c !== "X") continue;
+          const d = Math.hypot((x + 0.5) * T - p.x, (y + 0.5) * T - p.y); if (d < bd) { bd = d; best = { x, y, c }; }
+        }
+        if (!best) { say("Рядом ничего нет"); return; }
+        const key = best.x + "," + best.y;
+        if (best.c === "W") {
+          p.hidden = { x: p.x, y: p.y }; note(180, 0.12, "triangle", 0.05); say("Ты спрятался в шкафу. Нажми ✋, чтобы выйти", 3); emit("hide");
+          const m = st.m; if (m.state === "chase" && Math.hypot(m.x - p.x, m.y - p.y) < 2.6 * T) setTimeout(() => { if (st && st.p.hidden) caught(true); }, 600);
+        } else if (best.c === "D") {
+          if (isOpen(best.x, best.y)) {
+            const cx = (best.x + 0.5) * T, cy = (best.y + 0.5) * T;
+            if (Math.abs(p.x - cx) < T * 0.5 + 10 && Math.abs(p.y - cy) < T * 0.5 + 10) { say("Отойди из проёма, чтобы закрыть дверь"); return; }
+            delete st.open[key]; note(140, 0.15, "square", 0.05);
+          } else { st.open[key] = true; note(220, 0.18, "sawtooth", 0.035); }
+        } else if (best.c === "X") {
+          if (isOpen(best.x, best.y)) return;
+          if (p.keys >= 3) { st.open[key] = true; note(330, 0.2, "triangle", 0.06); say("Входная дверь открыта! Беги к воротам → (справа вверху)", 4); emit("door"); }
+          else { note(110, 0.2, "square", 0.05); say(`Заперто. Нужно 3 ключа, у тебя ${p.keys}`); emit("locked"); }
+        }
+      }
+      function updPlayer(dt) {
+        const p = st.p;
+        if (p.light) { p.bat -= (night === 3 ? 1.5 : 1.1) * dt; if (p.bat <= 0) { p.bat = 0; p.light = false; $("#gpLight").classList.remove("on"); say("Батарейка села… Ищи новую 🔋"); } }
+        if (p.hidden) { p.stam = Math.min(100, p.stam + 25 * dt); p.noisy = false; return; }
+        let ix = inp.x + ((inp.k.r ? 1 : 0) - (inp.k.l ? 1 : 0)), iy = inp.y + ((inp.k.d ? 1 : 0) - (inp.k.u ? 1 : 0));
+        const len = Math.hypot(ix, iy), moving = len > 0.15; if (len > 1) { ix /= len; iy /= len; }
+        const run = (inp.run || inp.k.s) && moving && !p.tired && p.stam > 0;
+        if (run) { p.stam -= 26 * dt; if (p.stam <= 0) { p.stam = 0; p.tired = true; say("Ты выдохся…"); } }
+        else { p.stam = Math.min(100, p.stam + 15 * dt); if (p.tired && p.stam > 35) p.tired = false; }
+        p.noisy = run;
+        if (moving) { const sp = run ? 128 : 70; p.dir = Math.atan2(iy, ix); move(p, ix * sp * dt, iy * sp * dt, 10, "p"); p.step += dt * (run ? 12 : 7); }
+        for (const it of st.items) {
+          if (it.got || Math.hypot(it.x - p.x, it.y - p.y) > 20) continue; it.got = true;
+          if (it.k === "key") { p.keys++; note(988, 0.1, "triangle", 0.06); setTimeout(() => note(1318, 0.14, "triangle", 0.06), 90); say(p.keys < 3 ? `🔑 Ключ найден! ${p.keys}/3` : "🔑 Все 3 ключа! Иди к входной двери (красная, справа в коридоре)", 3.5); emit("key", { n: p.keys }); }
+          else { p.bat = Math.min(100, p.bat + 55); note(660, 0.1, "triangle", 0.05); say("🔋 Батарейка: +55%"); }
+        }
+        const [tx, ty] = tileOf(p); if (tileAt(tx, ty) === "E") win();
+      }
+      function updMonster(dt) {
+        const m = st.m, p = st.p, d = Math.hypot(p.x - m.x, p.y - m.y); m.think -= dt;
+        const range = (p.light ? m.view : 3.5) * T;
+        const sees = st.t > 5 && !p.hidden && d < range && los(m.x, m.y, p.x, p.y);
+        if (sees) { if (m.state !== "chase") { m.state = "chase"; m.think = 0; emit("chase"); note(90, 0.4, "sawtooth", 0.08); } m.last = { x: p.x, y: p.y }; m.lose = 2.2; }
+        else if (m.state === "chase") { m.lose -= dt; if (m.lose <= 0) { m.state = "search"; m.searchT = 7; m.path = pathTo(m.last); emit("lost"); } }
+        if (!sees && p.noisy && d < 7 * T && m.state !== "chase" && st.t > 5) { m.state = "search"; m.searchT = 6; m.last = { x: p.x, y: p.y }; m.path = pathTo(m.last); m.think = 0.6; }
+        if (m.state === "chase" && m.think <= 0) { m.think = 0.25; m.path = pathTo(m.last); }
+        if (m.state === "search") {
+          m.searchT -= dt;
+          if (!m.path.length && m.think <= 0) { m.think = 0.8; const [lx, ly] = tileOf(m.last); const near = st.floor.filter((f) => Math.abs(f.x - lx) + Math.abs(f.y - ly) <= 4); const f = near[Math.floor(Math.random() * near.length)]; if (f) m.path = pathTo({ x: (f.x + 0.5) * T, y: (f.y + 0.5) * T }); }
+          if (m.searchT <= 0) { m.state = "patrol"; m.path = []; }
+        }
+        if (m.state === "patrol" && !m.path.length && m.think <= 0) { m.think = 0.6 + Math.random() * 1.2; const f = st.floor[Math.floor(Math.random() * st.floor.length)]; m.path = pathTo({ x: (f.x + 0.5) * T, y: (f.y + 0.5) * T }); }
+        const sp = m.state === "chase" ? m.sc : m.state === "search" ? m.sp * 1.35 : m.sp;
+        if (m.state === "chase" && sees && d < 1.4 * T) { const s = Math.min(d, sp * dt); m.x += (p.x - m.x) / d * s; m.y += (p.y - m.y) / d * s; m.dir = Math.atan2(p.y - m.y, p.x - m.x); }
+        else if (m.path.length) {
+          const n = m.path[0], dx = n.x - m.x, dy = n.y - m.y, dl = Math.hypot(dx, dy);
+          if (dl < 3) m.path.shift(); else { const s = Math.min(dl, sp * dt); m.x += dx / dl * s; m.y += dy / dl * s; m.dir = Math.atan2(dy, dx); }
+          const [tx, ty] = tileOf(m); if (tileAt(tx, ty) === "D" && !isOpen(tx, ty)) { st.open[tx + "," + ty] = true; if (d < 9 * T) note(200, 0.25, "sawtooth", 0.04); }
+        }
+        if (!p.hidden && d < 19) caught(false);
+        if (d < 7 * T) { beat -= dt; if (beat <= 0) { beat = 0.32 + d / T * 0.12; note(58, 0.12, "sine", 0.14); setTimeout(() => note(50, 0.12, "sine", 0.1), 120); } }
+      }
+      // ---------- drawing ----------
+      function drawTile(x, y, c) {
+        const X = x * T, Y = y * T;
+        if (c === "," || c === "E") { g.fillStyle = (x * 7 + y * 13) % 5 ? "#c9d3e6" : "#bfcadf"; g.fillRect(X, Y, T, T); if (c === "E") { g.fillStyle = "#3a3a46"; for (let i = 0; i < 5; i++) g.fillRect(X + 3 + i * 6, Y, 3, T); g.fillStyle = "#ffd36b"; g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("➜", X + T / 2, Y + T / 2); } return; }
+        if (c === "#") { g.fillStyle = "#1d1822"; g.fillRect(X, Y, T, T); g.fillStyle = "#2c2533"; g.fillRect(X, Y, T, 6); return; }
+        g.fillStyle = (y % 2) ? "#4b3526" : "#463123"; g.fillRect(X, Y, T, T); g.fillStyle = "rgba(0,0,0,.18)"; g.fillRect(X, Y + T - 2, T, 2); g.fillRect(X + ((y * 11) % 3) * 10, Y, 2, T);
+        if (c === "W") { g.fillStyle = "#2a1a10"; g.fillRect(X + 2, Y + 2, T - 4, T - 4); g.fillStyle = "#5a3a22"; g.fillRect(X + 4, Y + 4, T / 2 - 5, T - 8); g.fillRect(X + T / 2 + 1, Y + 4, T / 2 - 5, T - 8); g.fillStyle = "#c8a060"; g.fillRect(X + T / 2 - 3, Y + T / 2 - 2, 2, 5); g.fillRect(X + T / 2 + 1, Y + T / 2 - 2, 2, 5); }
+        else if (c === "T") { g.fillStyle = "#6a4a2a"; g.fillRect(X + 3, Y + 6, T - 6, T - 12); g.fillStyle = "#e8e0d0"; g.beginPath(); g.arc(X + T / 2, Y + T / 2, 4, 0, Math.PI * 2); g.fill(); }
+        else if (c === "B") { g.fillStyle = "#3a2a3a"; g.fillRect(X + 2, Y + 1, T - 4, T - 2); g.fillStyle = "#8a7a9a"; g.fillRect(X + 4, Y + 3, T - 8, 8); }
+        else if (c === "D" || c === "X") {
+          const open = isOpen(x, y);
+          if (!open) { g.fillStyle = c === "X" ? "#7a2020" : "#6a4426"; g.fillRect(X + 1, Y + 1, T - 2, T - 2); g.fillStyle = "rgba(0,0,0,.3)"; g.fillRect(X + 4, Y + 4, T - 8, T - 8); g.fillStyle = "#d8b060"; g.beginPath(); g.arc(X + T - 8, Y + T / 2, 2.5, 0, Math.PI * 2); g.fill(); if (c === "X") { g.font = "14px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText("🔒", X + T / 2, Y + T / 2); } }
+          else { g.fillStyle = c === "X" ? "#7a2020" : "#6a4426"; g.fillRect(X, Y, 5, T); }
+        }
+      }
+      function drawKey(x, y, k, t) {
+        const b = Math.sin(t * 4) * 2;
+        g.save(); g.translate(x, y + b);
+        const gl = g.createRadialGradient(0, 0, 1, 0, 0, 16); gl.addColorStop(0, k === "key" ? "rgba(255,214,80,.6)" : "rgba(120,255,160,.5)"); gl.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gl; g.fillRect(-16, -16, 32, 32);
+        if (k === "key") { g.strokeStyle = "#ffd34d"; g.lineWidth = 3; g.beginPath(); g.arc(-5, 0, 4, 0, Math.PI * 2); g.moveTo(-1, 0); g.lineTo(9, 0); g.moveTo(6, 0); g.lineTo(6, 4); g.moveTo(9, 0); g.lineTo(9, 4); g.stroke(); }
+        else { g.fillStyle = "#4ad07a"; g.fillRect(-5, -8, 10, 16); g.fillStyle = "#e8fff0"; g.fillRect(-2, -10, 4, 2); g.fillStyle = "#fff"; g.fillRect(-3, -2, 6, 2); }
+        g.restore();
+      }
+      function drawMonster(m, t) {
+        g.save(); g.translate(m.x, m.y);
+        g.fillStyle = "rgba(0,0,0,.45)"; g.beginPath(); g.ellipse(0, 6, 15, 7, 0, 0, Math.PI * 2); g.fill();
+        g.rotate(m.dir + Math.PI / 2); const sw = Math.sin(t * 8) * 2;
+        g.fillStyle = "#0e0c12"; g.beginPath(); g.ellipse(0, 2, 14, 11, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#1c1820"; g.fillRect(-16, -2 + sw, 6, 10); g.fillRect(10, -2 - sw, 6, 10);
+        g.fillStyle = "#2a2430"; g.beginPath(); g.arc(0, -6, 8, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#3a3440"; g.beginPath(); g.ellipse(0, -9, 11, 4, 0, 0, Math.PI * 2); g.fill();
+        g.restore();
+      }
+      function drawPlayer(p) {
+        if (p.hidden) return;
+        g.save(); g.translate(p.x, p.y);
+        g.fillStyle = "rgba(0,0,0,.35)"; g.beginPath(); g.ellipse(0, 5, 11, 5, 0, 0, Math.PI * 2); g.fill();
+        g.rotate(p.dir + Math.PI / 2); const sw = Math.sin(p.step) * 3;
+        g.fillStyle = "#2a4a7a"; g.fillRect(-9, -2 + sw, 4, 8); g.fillRect(5, -2 - sw, 4, 8);
+        g.fillStyle = "#3a6ad8"; g.beginPath(); g.ellipse(0, 1, 10, 8, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#e2b48f"; g.beginPath(); g.arc(0, -3, 6, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#ff2d55"; g.beginPath(); g.arc(0, -4, 6, Math.PI, 0); g.fill();
+        g.fillStyle = "#ddd"; g.fillRect(6, -12, 3, 7);
+        g.restore();
+      }
+      function render(dt) {
+        const W = cv.width, H = cv.height; if (!W || !H) return;
+        g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#05060c"; g.fillRect(0, 0, W, H);
+        const p = st ? st.p : null;
+        if (!st) { renderIdle(W, H); return; }
+        const sc = Math.min(W, H) / (9.5 * T), cx = p.x, cy = p.y;
+        g.setTransform(sc, 0, 0, sc, W / 2 - cx * sc, H / 2 - cy * sc);
+        const x0 = Math.max(0, Math.floor((cx - W / 2 / sc) / T) - 1), x1 = Math.min(MW - 1, Math.ceil((cx + W / 2 / sc) / T) + 1);
+        const y0 = Math.max(0, Math.floor((cy - H / 2 / sc) / T) - 1), y1 = Math.min(MH - 1, Math.ceil((cy + H / 2 / sc) / T) + 1);
+        for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) drawTile(x, y, tileAt(x, y));
+        for (const it of st.items) if (!it.got) drawKey(it.x, it.y, it.k, st.t);
+        drawMonster(st.m, st.t); drawPlayer(p);
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        // darkness with a flashlight cone
+        if (dk.width !== W || dk.height !== H) { dk.width = W; dk.height = H; }
+        dg.globalCompositeOperation = "source-over"; dg.clearRect(0, 0, W, H); dg.fillStyle = night === 3 ? "rgba(2,3,8,.975)" : "rgba(3,4,12,.955)"; dg.fillRect(0, 0, W, H);
+        dg.globalCompositeOperation = "destination-out";
+        const px = W / 2, py = H / 2, amb = (p.hidden ? 0.9 : p.light ? 2.2 : 1.6) * T * sc;
+        let gr = dg.createRadialGradient(px, py, 0, px, py, amb); gr.addColorStop(0, "rgba(0,0,0,.75)"); gr.addColorStop(1, "rgba(0,0,0,0)"); dg.fillStyle = gr; dg.beginPath(); dg.arc(px, py, amb, 0, Math.PI * 2); dg.fill();
+        if (p.light && !p.hidden) {
+          const L = 6.8 * T * sc, a = p.dir, sp = 0.5 + Math.sin(st.t * 23) * (p.bat < 20 ? 0.04 : 0);
+          gr = dg.createRadialGradient(px, py, 4, px, py, L); gr.addColorStop(0, "rgba(0,0,0,1)"); gr.addColorStop(0.7, "rgba(0,0,0,.85)"); gr.addColorStop(1, "rgba(0,0,0,0)"); dg.fillStyle = gr;
+          dg.beginPath(); dg.moveTo(px, py); dg.arc(px, py, L, a - sp, a + sp); dg.closePath(); dg.fill();
+        }
+        dg.globalCompositeOperation = "source-over";
+        if (p.hidden) { dg.fillStyle = "rgba(0,0,0,.6)"; for (let i = 0; i < W; i += 10 * sc) dg.fillRect(i, 0, 4 * sc, H); }
+        g.drawImage(dk, 0, 0);
+        // glowing eyes when the watchman is close
+        const m = st.m, md = Math.hypot(m.x - p.x, m.y - p.y);
+        if (md < 8 * T) { const ex = W / 2 + (m.x - p.x) * sc, ey = H / 2 + (m.y - p.y) * sc - 6 * sc, al = Math.max(0, 1 - md / (8 * T)) * (m.state === "chase" ? 1 : 0.55); g.fillStyle = `rgba(255,40,40,${al})`; g.shadowColor = "#ff2020"; g.shadowBlur = 8; g.beginPath(); g.arc(ex - 3 * sc, ey, 1.8 * sc, 0, Math.PI * 2); g.arc(ex + 3 * sc, ey, 1.8 * sc, 0, Math.PI * 2); g.fill(); g.shadowBlur = 0; }
+        // blizzard
+        const wind = 0.08 + Math.sin(st.t * 0.3) * 0.05; g.fillStyle = "rgba(230,238,255,.75)";
+        for (const f of flakes) { f.x = (f.x + (wind * f.z) * dt + 1) % 1; f.y = (f.y + 0.12 * f.z * dt) % 1; g.fillRect(f.x * W, f.y * H, f.s * f.z * 1.4, f.s * f.z * 1.4); }
+        if (m.state === "chase" && over === "play") { const a = 0.18 + 0.12 * Math.sin(st.t * 10); const vg = g.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.3, W / 2, H / 2, Math.max(W, H) * 0.7); vg.addColorStop(0, "rgba(255,0,0,0)"); vg.addColorStop(1, `rgba(200,0,0,${a})`); g.fillStyle = vg; g.fillRect(0, 0, W, H); }
+        if (flash > 0) { flash = Math.max(0, flash - dt * 1.2); g.fillStyle = `rgba(180,0,0,${flash * 0.8})`; g.fillRect(0, 0, W, H); if (flash > 0.4) { g.save(); g.translate(W / 2, H / 2); g.scale(1 + (1 - flash) * 2, 1 + (1 - flash) * 2); g.fillStyle = "#000"; g.beginPath(); g.arc(0, 0, Math.min(W, H) * 0.12, 0, Math.PI * 2); g.fill(); g.fillStyle = "#ff2020"; g.beginPath(); g.arc(-Math.min(W, H) * 0.04, -6, 6, 0, Math.PI * 2); g.arc(Math.min(W, H) * 0.04, -6, 6, 0, Math.PI * 2); g.fill(); g.restore(); } }
+      }
+      function renderIdle(W, H) { SC.horror(g, W, H, performance.now() / 1000, { seed: 3, hue: 220, label: "", R: (i) => { const x = Math.sin(i * 127.1 + 9) * 43758.5453; return x - Math.floor(x); } }); }
+      function hud() {
+        if (!st) { $("#gpKeys").textContent = "🔑 0/3"; $("#gpBat").textContent = "🔦 100%"; $("#gpNight").textContent = "🌙 Ночь " + night; $("#gpStam").style.width = "100%"; return; }
+        const p = st.p; $("#gpKeys").textContent = `🔑 ${p.keys}/3`; $("#gpBat").textContent = `🔦 ${Math.ceil(p.bat)}%`; $("#gpNight").textContent = `🌙 Ночь ${night} · ${fmtT(st.t)}`;
+        const sEl = $("#gpStam"); sEl.style.width = p.stam + "%"; sEl.style.background = p.tired ? "#ff4d5e" : "#9be15d";
+      }
+      function resize() {
+        const r = box.getBoundingClientRect(), dpr = Math.min(2, window.devicePixelRatio || 1);
+        const w = Math.max(2, Math.round(r.width * dpr)), h = Math.max(2, Math.round(r.height * dpr));
+        if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+      }
+      if (window.ResizeObserver) new ResizeObserver(resize).observe(box); else window.addEventListener("resize", resize);
+      // ---------- controls ----------
+      const joy = $("#gpJoy"), knob = joy.querySelector("i"); let jid = null;
+      function joyAt(e) { const r = joy.getBoundingClientRect(), R = r.width / 2; let dx = (e.clientX - r.left - R) / R, dy = (e.clientY - r.top - R) / R; const l = Math.hypot(dx, dy); if (l > 1) { dx /= l; dy /= l; } inp.x = dx; inp.y = dy; knob.style.transform = `translate(${dx * R * 0.55}px, ${dy * R * 0.55}px)`; }
+      joy.addEventListener("pointerdown", (e) => { e.preventDefault(); jid = e.pointerId; try { joy.setPointerCapture(jid); } catch (err) { /* optional */ } joyAt(e); });
+      joy.addEventListener("pointermove", (e) => { if (e.pointerId === jid) joyAt(e); });
+      const joyEnd = (e) => { if (e.pointerId !== jid) return; jid = null; inp.x = inp.y = 0; knob.style.transform = ""; };
+      joy.addEventListener("pointerup", joyEnd); joy.addEventListener("pointercancel", joyEnd);
+      $("#gpRun").addEventListener("click", () => { inp.run = !inp.run; $("#gpRun").classList.toggle("on", inp.run); $("#gpRun").setAttribute("aria-pressed", String(inp.run)); });
+      $("#gpAct").addEventListener("click", action);
+      function toggleLight() { if (!st || over !== "play") return; const p = st.p; if (!p.light && p.bat <= 0) { say("Батарейка пустая"); return; } p.light = !p.light; $("#gpLight").classList.toggle("on", p.light); note(p.light ? 880 : 440, 0.05, "square", 0.03); }
+      $("#gpLight").addEventListener("click", toggleLight);
+      $("#gpNights").addEventListener("click", (e) => { const b = e.target.closest("[data-night]"); if (!b || b.disabled) return; $$("#gpNights button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); });
+      $("#gpGo").addEventListener("click", () => { const sel = $("#gpNights [aria-pressed='true']"); newGame(sel ? +sel.dataset.night : 1); });
+      $("#gpExit").addEventListener("click", () => emit("exit"));
+      const KEYS = { ArrowUp: "u", KeyW: "u", ArrowDown: "d", KeyS: "d", ArrowLeft: "l", KeyA: "l", ArrowRight: "r", KeyD: "r", ShiftLeft: "s", ShiftRight: "s" };
+      function key(e, down) {
+        const k = KEYS[e.code]; if (k) { inp.k[k] = down; e.preventDefault(); return true; }
+        if (down && (e.code === "KeyE" || e.code === "Space" || e.code === "Enter")) { e.preventDefault(); if (over === "play") action(); else if (!$("#gpOver").hidden) $("#gpGo").click(); return true; }
+        if (down && e.code === "KeyF") { toggleLight(); return true; }
+        return false;
+      }
+      document.addEventListener("keyup", (e) => { if (shown()) key(e, false); });
+      const shown = () => box.offsetParent !== null;
+      if (/gpdebug/.test(location.hash)) window.__gp = { get st() { return st; }, get over() { return over; }, action, newGame };
+      return {
+        mount(el) { if (box.parentElement !== el) el.appendChild(box); box.hidden = false; resize(); if (over !== "play") menu(over === "start" ? "Тёмный хутор" : $("#gpOverH").textContent, over === "start" ? "Метель отрезала хутор от мира. В доме бродит Сторож. Найди 3 ключа, открой входную дверь и беги к воротам. Свет фонарика выдаёт тебя, бег — шумит." : $("#gpOverP").textContent); hud(); },
+        tick(dt) { if (!shown()) return; if (over === "play") { st.t += dt; updPlayer(dt); if (over === "play") updMonster(dt); } render(dt); if ((hudT += dt) > 0.2) { hudT = 0; hud(); } if (msgT > 0) { msgT -= dt; if (msgT <= 0) $("#gpMsg").style.opacity = "0"; } },
+        shown, key: (e) => shown() && key(e, true), on: (f) => listeners.push(f), stats: () => GP, playing: () => over === "play",
+        stop() { if (over === "play") { over = "start"; menu("Пауза", "Игра остановлена."); } inp.x = inp.y = 0; inp.k = {}; },
+      };
+    })();
+
     /* ---------- live streams ---------- */
     // Channel streams run on a shared clock, so every visit lands in the middle of the broadcast.
     const LIVES = [
@@ -1630,7 +2016,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     lcv.width = 640; lcv.height = 360; lpv.width = 480; lpv.height = 270;
     const nowS = () => Date.now() / 1000;
     function liveViews(l) {
-      if (l.host) { const el = nowS() - stream.start, base = stream.pot * (1 - Math.exp(-el / 70)); return Math.max(0, Math.round(base * (0.92 + 0.08 * Math.sin(el / 9)) + (el > 5 ? 1 : 0))); }
+      if (l.host) { const el = nowS() - stream.start, base = stream.pot * (1 - Math.exp(-el / 70)) * (1 + (stream.boost || 0)); return Math.max(0, Math.round(base * (0.92 + 0.08 * Math.sin(el / 9)) + (el > 5 ? 1 : 0))); }
       const t = nowS(); return Math.round(l.base * (0.9 + 0.07 * Math.sin(t / 37 + hashS(l.id)) + 0.03 * Math.sin(t / 7.3)));
     }
     const liveTime = (l) => l.host ? nowS() - stream.start : (nowS() + hashS(l.id) % 10800) % 10800 + 300;
@@ -1640,7 +2026,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       lvMode = m;
       $("#vtLiveList").hidden = m !== "list"; $("#vtLiveSetup").hidden = m !== "setup"; $("#vtLiveRoom").hidden = m !== "room"; $("#vtLiveEnd").hidden = m !== "end";
       if (m === "list") renderLiveList();
-      if (m === "setup") { $("#vtLiveScenes").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-lsc="${k}" aria-pressed="${k === lvSc}">${n}</button>`).join(""); if (!$("#vtLiveTitle").value) $("#vtLiveTitle").placeholder = `Эфир: ${SCN[lvSc].slice(2).trim()}`; }
+      if (m === "setup") { $("#vtLiveScenes").innerHTML = `<button type="button" data-lsc="game" aria-pressed="${lvSc === "game"}">🎮 Игра «Тёмный хутор»</button>` + Object.entries(SCN).map(([k, n]) => `<button type="button" data-lsc="${k}" aria-pressed="${k === lvSc}">${n}</button>`).join(""); if (!$("#vtLiveTitle").value) $("#vtLiveTitle").placeholder = `Эфир: ${lvName(lvSc)}`; }
       window.scrollTo(0, 0);
     }
     function renderLiveList() {
@@ -1675,6 +2061,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       $("#vtLiveCh").textContent = ch.n; $("#vtLiveChS").textContent = `${subsTxt(subsOf(ch, lv.ch))}`;
       const sb = $("#vtLiveSub"); sb.hidden = !!lv.host; sb.classList.toggle("on", !!S.subs[lv.ch]); sb.textContent = S.subs[lv.ch] ? "✓ Вы подписаны" : "Подписаться";
       $("#vtLiveHost").hidden = !lv.host; $("#vtDonate").hidden = !!lv.host;
+      const gameRoom = !!(lv.host && stream && stream.game); lcv.hidden = gameRoom; $("#vtLiveHostSc").hidden = gameRoom;
+      if (gameRoom) Game.mount($("#vtLiveRoom .vt-lplayer")); else if ($("#gpBox").parentElement !== $("#gpMount")) { Game.stop(); $("#gpMount").appendChild($("#gpBox")); }
       if (lv.host) { $("#vtLiveHostSc").innerHTML = Object.entries(SCN).map(([k, n]) => `<button type="button" data-hsc="${k}" aria-pressed="${k === stream.sc}">${n}</button>`).join(""); (stream.log || []).forEach((m) => chatAdd(m[0], m[1])); }
       else { chatAdd("Добро пожаловать в чат! Будь вежлив — чат защищает EngineSecure 🛡", "sys"); for (let i = 0; i < 6; i++) botMsg(true); }
       $("#vtChatIn").placeholder = lv.host ? "Напиши зрителям…" : "Написать в чат…";
@@ -1694,10 +2082,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (!quiet && Math.random() < 0.35) { heart(lvPick(["❤️", "❤️", "🔥", "😂", "👏"])); if (lv.host) stream.likes++; }
     }
     function liveFrame(dt) {
-      if (lvMode === "setup") { lvPrevT += dt; SC[lvSc](lpx, lpv.width, lpv.height, lvPrevT, P({ id: "lprev" + lvSc })); return; }
+      if (lvMode === "setup") { lvPrevT += dt; SC[lvSc === "game" ? "horror" : lvSc](lpx, lpv.width, lpv.height, lvPrevT, P({ id: "lprev" + lvSc })); return; }
       if (lvMode === "list") { if ((lvUi += dt) > 5) { lvUi = 0; renderLiveList(); } return; }
       if (lvMode !== "room" || !lv) return;
-      const t = liveTime(lv); SC[lv.host ? stream.sc : lv.sc](lcx, lcv.width, lcv.height, lv.host ? t : t % 3600, P({ id: lv.id }));
+      if (stream && stream.boost) stream.boost *= Math.exp(-dt / 25);
+      const t = liveTime(lv); if (!(lv.host && stream.game)) SC[lv.host ? stream.sc : lv.sc](lcx, lcv.width, lcv.height, lv.host ? t : t % 3600, P({ id: lv.id }));
       if (!lv.host) music(lv, t % 3600);
       if ((lvUi += dt) > 0.5) {
         lvUi = 0; const v = liveViews(lv); $("#vtLiveViews").textContent = `👁 ${fmtN(v)}`; $("#vtLiveTime").textContent = fmtLong(t);
@@ -1741,7 +2130,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
     $("#vtLiveP").addEventListener("click", (e) => {
       if (e.target.closest("[data-lback]")) { liveMode("list"); return; }
       const c = e.target.closest("[data-live]"); if (c) { openLive(c.dataset.live); return; }
-      const s2 = e.target.closest("[data-lsc]"); if (s2) { lvSc = s2.dataset.lsc; lvPrevT = 0; $$("#vtLiveScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === s2))); $("#vtLiveTitle").placeholder = `Эфир: ${SCN[lvSc].slice(2).trim()}`; return; }
+      const s2 = e.target.closest("[data-lsc]"); if (s2) { lvSc = s2.dataset.lsc; lvPrevT = 0; $$("#vtLiveScenes button").forEach((x) => x.setAttribute("aria-pressed", String(x === s2))); $("#vtLiveTitle").placeholder = `Эфир: ${lvName(lvSc)}`; return; }
       const h = e.target.closest("[data-hsc]"); if (h && stream) {
         const el = nowS() - stream.start; stream.segs.push({ sc: stream.sc, d: el - stream.segAt }); stream.segAt = el; stream.sc = h.dataset.hsc; lv.sc = stream.sc;
         $$("#vtLiveHostSc button").forEach((x) => x.setAttribute("aria-pressed", String(x === h))); hostLog(`🎬 Ведущий переключил сцену: ${esc(SCN[stream.sc])}`, "sys");
@@ -1753,13 +2142,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       liveMode("setup");
     });
     $("#vtLiveStart").addEventListener("click", () => {
-      const tc = secText(($("#vtLiveTitle").value.trim() || `Эфир: ${SCN[lvSc].slice(2).trim()}`).slice(0, 70));
+      const tc = secText(($("#vtLiveTitle").value.trim() || `Эфир: ${lvName(lvSc)}`).slice(0, 70));
       if (!tc.ok) { Hero.say("v3tube", "start", `🛡 EngineSecure: в названии ${tc.why}`); return; }
-      stream = { t: tc.text, sc: lvSc, start: nowS(), segs: [], segAt: 0, peak: 0, likes: 0, don: 0, log: [], pot: Math.round(4 + Math.sqrt(mySubs() + 1) * 6 + S.mine.length * 3 + Math.random() * 20) };
-      hostLog("🔴 Эфир начался. Зрители скоро подтянутся — поздоровайся с ними в чате!", "sys");
-      slog("🔴", `Начат эфир «${stream.t}»`); $("#vtLiveTitle").value = "";
-      $$('#vtTabs [data-tab="live"]').forEach((b) => b.classList.add("onair"));
-      note(660, 0.1, "square", 0.04); setTimeout(() => note(990, 0.15, "square", 0.04), 120);
+      startStream(lvSc, tc.text); $("#vtLiveTitle").value = "";
       openLive("me");
     });
     $("#vtLiveEndBtn").addEventListener("click", () => {
@@ -1770,6 +2155,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       $("#vtSumT").textContent = stream.t;
       $("#vtSumGrid").innerHTML = `<span><b>${fmtLong(el)}</b>длительность</span><span><b>${fmtN(stream.peak)}</b>пик зрителей</span><span><b>${fmtN(stream.likes)}</b>реакций</span><span><b>${stream.don} ◎</b>донатов получено</span><span style="grid-column:1/-1"><b>+${fmtN(fans)}</b>новых подписчиков</span>`;
       $("#vtSumSave").hidden = el < 5; $("#vtSumMsg").textContent = el < 5 ? "Эфир был слишком коротким, чтобы сохранить запись." : "";
+      if (stream.game) { Game.stop(); $("#gpMount").appendChild($("#gpBox")); lcv.hidden = false; $("#vtLiveHostSc").hidden = false; }
       lv = null; liveMode("end");
     });
     $("#vtSumSave").addEventListener("click", () => {
@@ -1782,6 +2168,55 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       if (publish(m)) { $("#vtSumMsg").textContent = "💾 Запись сохранена в «Мои видео»."; $("#vtSumSave").hidden = true; }
       else $("#vtSumMsg").textContent = $("#vtStMsg").textContent;
     });
+    /* ---------- Game Port panel and game streams ---------- */
+    const gpCover = $("#gpCover"), gpcx = gpCover.getContext("2d"); gpCover.width = 300; gpCover.height = 400;
+    function renderGame() {
+      const G = Game.stats();
+      SC.horror(gpcx, 300, 400, 7.3, P({ id: "gpcover" }));
+      gpcx.fillStyle = "rgba(0,0,0,.55)"; gpcx.fillRect(0, 300, 300, 100); gpcx.fillStyle = "#fff"; gpcx.textAlign = "center"; gpcx.textBaseline = "middle"; gpcx.font = "900 34px Manrope, sans-serif"; gpcx.fillText("ТЁМНЫЙ", 150, 332); gpcx.fillText("ХУТОР", 150, 370);
+      $("#gpStats").innerHTML = `<span><b>${G.best}/3</b>ночей</span><span><b>${G.wins}</b>побегов</span><span><b>${G.bestTime ? fmtT(G.bestTime) : "—"}</b>рекорд</span>`;
+      $("#gpStream").textContent = stream ? (stream.game ? "🔴 Вернуться в эфир" : "🔴 Идёт другой эфир") : "🔴 Играть в эфире";
+      Game.mount($("#gpMount"));
+    }
+    const lvName = (k) => k === "game" ? "Тёмный хутор" : SCN[k].slice(2).trim();
+    function startStream(k, title) {
+      const game = k === "game";
+      stream = { t: title, sc: game ? "horror" : k, game, boost: 0, start: nowS(), segs: [], segAt: 0, peak: 0, likes: 0, don: 0, log: [], pot: Math.round((4 + Math.sqrt(mySubs() + 1) * 6 + S.mine.length * 3 + Math.random() * 20) * (game ? 1.4 : 1)) };
+      hostLog(game ? "🔴 Игровой эфир начался! Нажми «Начать» в игре — зрители уже подтягиваются 🎮" : "🔴 Эфир начался. Зрители скоро подтянутся — поздоровайся с ними в чате!", "sys");
+      slog("🔴", `Начат эфир «${stream.t}»`);
+      $$('#vtTabs [data-tab="live"]').forEach((b) => b.classList.add("onair"));
+      note(660, 0.1, "square", 0.04); setTimeout(() => note(990, 0.15, "square", 0.04), 120);
+    }
+    $("#gpPlay").addEventListener("click", () => { Game.mount($("#gpMount")); $("#gpMount").scrollIntoView({ behavior: "smooth", block: "center" }); });
+    $("#gpStream").addEventListener("click", async () => {
+      if (stream) { if (stream.game) { setTab("live"); openLive("me"); } else { setTab("live"); openLive("me"); Hero.say("v3tube", "start", "Сначала заверши текущий эфир, потом начни игровой"); } return; }
+      if (secLocked()) { await unlock(); if (secLocked()) return; }
+      startStream("game", "🎮 Играю в «Тёмный хутор»! Смогу сбежать?");
+      setTab("live"); openLive("me");
+    });
+    const GREACT = {
+      start: ["О, хоррор! 😱", "Я бы не смог в это играть", "Звук погромче!", "Удачи, не попадись 🙏", "Выключил свет, смотрю 😬"],
+      key: ["Ключ!! 🔑", "Красава!", "Осталось немного", "Как ты его нашёл?", "Следующий ищи в спальне"],
+      chase: ["БЕГИИИ 😱", "Он сзади!!!", "Прячься в шкаф!", "АААА", "Не оборачивайся 😭", "Выключи фонарик!"],
+      lost: ["Фух, оторвался", "Пронесло 😅", "Сердце в пятках", "Ты жив?!"],
+      hide: ["Тихо-тихо…", "Не дыши 🤫", "Он рядом…", "Только не выходи"],
+      locked: ["Нужны все ключи", "Поищи в комнатах внизу"],
+      door: ["Дверь открыта! Беги к воротам!", "Почти выбрался!", "ДАВАЙ ДАВАЙ"],
+      win: ["ТЫ СБЕЖАЛ!!! 🎉", "GG 🔥", "Легенда!", "Это было мощно", "Давай следующую ночь!"],
+      caught: ["НЕЕЕТ 😭", "Скример 😱", "Ещё раз!", "F", "Он тебя поймал…", "Я подпрыгнул 😂"],
+    };
+    Game.on((e, d) => {
+      if (e === "exit") { if (tab === "live" && stream && stream.game) $("#vtLiveEndBtn").click(); else setTab("home"); return; }
+      if (e === "win") { slog("🎮", `«Тёмный хутор»: ночь ${d.night} пройдена за ${fmtT(d.time)}`); if (tab === "game") renderGame(); }
+      if (!(stream && stream.game && lv && lv.host && lvMode === "room")) return;
+      const pool = GREACT[e]; if (!pool) return;
+      stream.boost = (stream.boost || 0) + ({ chase: 0.25, win: 0.6, caught: 0.3, key: 0.1, door: 0.2 }[e] || 0.05);
+      if (e === "start") hostLog(`🎮 Ведущий запустил «Тёмный хутор», ночь ${d.night}`, "sys");
+      const n = 2 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < n; i++) setTimeout(() => { if (!lv || !lv.host) return; hostLog(`${nameHTML(lvPick(NAMES))}${esc(lvPick(pool))}`); if (Math.random() < 0.5) { heart(lvPick(["😱", "🔥", "❤️", "😂"])); stream.likes++; } }, 250 + i * (300 + Math.random() * 500));
+      if (e === "win") setTimeout(() => { if (!stream) return; const amt = lvPick([50, 100, 150]); stream.don += amt; Hero.earn(amt); hostLog(`💰 ${nameHTML(lvPick(NAMES), "#ffb547")} задонатил ${amt} ◎: За побег! 🎉`, "don"); note(1318, 0.12, "triangle", 0.05); }, 1600);
+    });
+
     $("#vtSumDone").addEventListener("click", () => { stream = null; liveMode("list"); });
 
     async function exportGif(v) {
@@ -1904,6 +2339,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       raf = requestAnimationFrame(frame);
       const dt = lastTs ? Math.min(0.1, (ts - lastTs) / 1000) : 0; lastTs = ts;
       gifThumbTick(dt);
+      if (Game.shown()) Game.tick(dt);
       if (tab === "watch" && cur) {
         if (!real && cur.gif) {
           if (playing) {
@@ -1959,6 +2395,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
       },
       leave() { if (SEC.auto && SEC.pin && unlocked) { unlocked = false; slog("🔒", "Канал заблокирован автоматически"); } visible = false; if (raf) cancelAnimationFrame(raf); raf = 0; if (cur) { S.prog[cur.id] = curTime(); save(); } playing = false; try { vid.pause(); svid.pause(); } catch (e) { /* optional */ } ui(); $("#vtBig").hidden = !cur || tab !== "watch"; },
       key(e) {
+        if (Game.key(e)) return;
         if (tab === "watch" && (e.code === "Space" || e.key === "k")) { e.preventDefault(); toggle(); }
         else if (tab === "watch" && (e.key === "ArrowRight" || e.key === "ArrowLeft") && cur) { const d = e.key === "ArrowRight" ? 5 : -5; if (real) vid.currentTime = Math.max(0, vid.currentTime + d); else time = Math.max(0, Math.min(cur.dur - 0.01, time + d)); }
         else if (tab === "shorts" && (e.key === "ArrowDown" || e.key === "ArrowUp")) { e.preventDefault(); openShort(shortI + (e.key === "ArrowDown" ? 1 : -1)); }
