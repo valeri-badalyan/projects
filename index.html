@@ -975,6 +975,10 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .pt-ehead button { padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: var(--pt-fg); font: 800 12px var(--body); cursor: pointer; }
 .pt-ehead button.ok { background: var(--pt-acc); color: #111; border-color: transparent; }
 #ptText { flex: 1; resize: none; border: 0; outline: 0; padding: 10px 12px; background: transparent; color: var(--pt-fg); font: 13.5px/1.42 var(--mono); }
+.pt-pick { margin: 4px 0 6px; }
+.pt-pick .row { cursor: pointer; border-radius: 4px; }
+.pt-pick .row.on { background: var(--pt-acc); color: var(--pt-bg); font-weight: 700; }
+.pt-pick .row:not(.on):hover { background: rgba(255,255,255,.08); }
 .pt-media { margin: 6px 0 8px 2ch; max-width: min(100% - 2ch, 520px); border: 1px solid rgba(255,255,255,.18); border-radius: 10px; overflow: hidden; background: rgba(0,0,0,.25); white-space: normal; }
 .pt-media.game { max-width: min(100% - 2ch, 640px); }
 .pt-mhead { display: flex; align-items: center; gap: 6px; padding: 5px 8px; background: rgba(255,255,255,.08); font: 700 12px var(--mono); color: var(--pt-fg); }
@@ -17207,7 +17211,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     const COLORS = { black: "#000", darkblue: "#0037da", darkgreen: "#13a10e", darkcyan: "#3a96dd", darkred: "#c50f1f", darkmagenta: "#881798", darkyellow: "#c19c00", gray: "#cccccc", darkgray: "#767676", blue: "#3b78ff", green: "#16c60c", cyan: "#61d6d6", red: "#e74856", magenta: "#b4009e", yellow: "#f9f1a5", white: "#f2f2f2" };
     function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
     const promptText = () => "PS " + pathStr(cwd) + "> ";
-    const curPrompt = () => asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
+    const curPrompt = () => picker ? "Модель ↑ ↓, Enter — выбрать: " : asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
     function setPrompt() { $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
     function echoRaw(text) { line(text, "cmd"); }
     function ask(q) { return new Promise((res, rej) => { asking = { q, res, rej }; setPrompt(); scrollEnd(); }); }
@@ -17674,9 +17678,12 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       return [];
     }
     const VM = [
-      { id: "lai13", n: "LAI 1.3", tag: "Лёгкая", len: 60, q: 1 }, { id: "fuhi28", n: "FUHI 2.8", tag: "Быстрая", len: 120, q: 1 },
-      { id: "ards31", n: "ARDSONNET 3.1", tag: "Умная", len: 150 }, { id: "flash39", n: "FLASH 3.9", tag: "Скорость+", len: 220, q: 1 },
-      { id: "ards45", n: "ARDSONNET 4.5", tag: "Сильная", len: 300 }, { id: "ortl55", n: "V3 ORTL 5.5", tag: "Флагман", len: 400 },
+      { id: "lai13", n: "LAI 1.3", tag: "Лёгкая", len: 60, q: 1, d: "Самая простая: отвечает мгновенно и очень коротко." },
+      { id: "fuhi28", n: "FUHI 2.8", tag: "Быстрая", len: 120, q: 1, d: "Быстрая и весёлая для обычных вопросов и идей." },
+      { id: "ards31", n: "ARDSONNET 3.1", tag: "Умная", len: 150, d: "Точнее объясняет, лучше пишет код." },
+      { id: "flash39", n: "FLASH 3.9", tag: "Скорость+", len: 220, q: 1, d: "Флагман в быстром режиме: молниеносно." },
+      { id: "ards45", n: "ARDSONNET 4.5", tag: "Сильная", len: 300, d: "Развёрнутые ответы, учёба шаг за шагом, игры." },
+      { id: "ortl55", n: "V3 ORTL 5.5", tag: "Флагман", len: 400, d: "Самая мощная: сложные задачи, большой код, лучшие игры." },
     ];
     const VMODES = [
       { id: "help", ico: "✨", n: "Помощник", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы." },
@@ -17700,6 +17707,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
       said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    /help — команды · /exit — выход", "darkgray");
       said("  /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
+      said("  ↑ ↓ — выбрать модель", "darkgray");
       said("");
       app = { title: "V3AI Terminal", prompt: () => "[" + vModel().n + " · " + vMode().ico + " " + vMode().n + "] ❯ ", line: v3aiLine, stop: () => { if (aiCtl) aiCtl.abort(); } };
       Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
@@ -17872,6 +17880,39 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       return false;
     }
 
+    /* ---- model picker: in V3AI the arrows ↑ ↓ choose the model, Enter confirms, Esc cancels ---- */
+    let picker = null;
+    function drawPicker() {
+      const pk = picker; pk.el.textContent = "";
+      const head = document.createElement("div"); head.className = "pt-l dim"; head.textContent = "  Выбери модель V3AI:  ↑ ↓ — выбор · Enter — готово · Esc — отмена"; pk.el.appendChild(head);
+      VM.forEach((m, i) => {
+        const r = document.createElement("div"); r.className = "pt-l row" + (i === pk.i ? " on" : "");
+        r.textContent = (i === pk.i ? "  ❯ " : "    ") + (i + 1) + ". " + pad(m.n, 15) + pad(m.tag, 11) + m.d + (m.id === vst().model ? "  ← сейчас" : "");
+        r.addEventListener("click", () => { pk.i = i; pickDone(true); });
+        pk.el.appendChild(r);
+      });
+    }
+    function openPicker(dir) {
+      const cur = VM.findIndex((m) => m.id === vst().model);
+      const el = document.createElement("div"); el.className = "pt-pick"; log().appendChild(el);
+      picker = { el, i: Math.max(0, Math.min(VM.length - 1, cur + dir)) };
+      drawPicker(); setPrompt(); scrollEnd();
+    }
+    function pickMove(dir) { picker.i = (picker.i + dir + VM.length) % VM.length; drawPicker(); }
+    function pickDone(ok) {
+      const pk = picker; if (!pk) return; picker = null;
+      pk.el.remove();
+      if (ok) { const m = VM[pk.i], v = vst(); v.model = m.id; save(); said("  ✓ Модель: " + m.n + " (" + m.tag + ")", "green"); }
+      else said("  Модель не изменилась: " + vModel().n, "darkgray");
+      setPrompt(); scrollEnd(); inp().focus();
+    }
+    // one handler for keyboard arrows and the on-screen ↑ ↓ buttons
+    function arrow(key) {
+      if (picker) { if (key === "ArrowUp" || key === "ArrowDown") pickMove(key === "ArrowUp" ? -1 : 1); else scrollBy(key); return; }
+      if (app && !running && !asking && (key === "ArrowUp" || key === "ArrowDown")) { openPicker(key === "ArrowUp" ? -1 : 1); return; }
+      scrollBy(key);
+    }
+
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -17895,7 +17936,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         }
         if (cmd === "/help") {
           said("  ── Команды ──", "darkcyan");
-          [["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model [номер]", "выбрать модель V3AI"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
+          [["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["↑ ↓ или /model", "выбрать модель V3AI (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
         } else if (cmd === "/mode") {
           const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
           if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
@@ -17903,7 +17944,8 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         } else if (cmd === "/model") {
           const m = VM[(parseInt(arg, 10) || 0) - 1] || VM.find((x) => x.id === arg);
           if (m) { v.model = m.id; save(); said("  Модель: " + m.n + " (" + m.tag + ")", "green"); }
-          else VM.forEach((x, i) => said("   " + (i + 1) + ". " + pad(x.n, 15) + x.tag + (x.id === v.model ? "  ← сейчас" : ""), x.id === v.model ? "cyan" : ""));
+          else if (arg) said("  Нет такой модели. Номер от 1 до " + VM.length + " или выбери стрелками ↑ ↓.", "yellow");
+          else openPicker(0);
         } else if (cmd === "/new") { v.hist = []; save(); said("  ✓ Новый чат.", "green"); }
         else if (cmd === "/clear") log().textContent = "";
         else if (cmd === "/key") said("  В V3TERMIN ключ не нужен: V3AI отвечает через ИИ приставки.", "darkgray");
@@ -18024,6 +18066,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         .then(() => { running = false; asking = null; done(); });
     }
     function submit(text) {
+      if (picker) { inp().value = ""; pickDone(true); return; }
       if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + text); a.res(text); setPrompt(); scrollEnd(); return; }
       if (app) {
         if (running) return;
@@ -18039,6 +18082,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     }
     function ctrlC() {
       const el = inp();
+      if (picker) { pickDone(false); el.value = ""; return; }
       if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + el.value + "^C"); a.rej("^C"); }
       else if (running && app) { app.stop(); }
       else if (running) { running = false; line("^C", "dim"); }
@@ -18091,8 +18135,8 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         if (e.key !== "Tab" && e.key !== "Shift") comp = null;
         if (e.key === "Enter") { e.preventDefault(); const v = el.value; el.value = ""; submit(v); }
         else if (e.key === "Tab") { e.preventDefault(); complete(); }
-        else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "PageUp" || e.key === "PageDown") { e.preventDefault(); scrollBy(e.key); }
-        else if (e.key === "Escape") { e.preventDefault(); if (running && app) ctrlC(); else el.value = ""; }
+        else if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "PageUp" || e.key === "PageDown") { e.preventDefault(); arrow(e.key); }
+        else if (e.key === "Escape") { e.preventDefault(); if (picker) pickDone(false); else if (running && app) ctrlC(); else el.value = ""; }
         else if (e.ctrlKey && (e.key === "c" || e.key === "с") && el.selectionStart === el.selectionEnd) { e.preventDefault(); ctrlC(); }
         else if (e.ctrlKey && (e.key === "l" || e.key === "д")) { e.preventDefault(); log().textContent = ""; }
       });
@@ -18103,7 +18147,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("pointerdown", (e) => e.preventDefault()));
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("click", () => {
         const k = b.dataset.k;
-        if (k === "tab") complete(); else { comp = null; if (k === "up") scrollBy("ArrowUp"); else if (k === "down") scrollBy("ArrowDown"); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
+        if (k === "tab") complete(); else { comp = null; if (k === "up") arrow("ArrowUp"); else if (k === "down") arrow("ArrowDown"); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
         el.focus();
       }));
       $("#ptESave").addEventListener("click", () => closeEditor(true));
