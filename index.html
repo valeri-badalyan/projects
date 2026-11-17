@@ -17706,7 +17706,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       const GRAD = ["#5ce1e6", "#6fc3f0", "#8a9cf7", "#a37bfb", "#c86af0", "#ff4fd8"];
       said(""); LOGO.forEach((l, i) => said(l, GRAD[i]));
       said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
-      said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    /help — команды · /exit — выход", "darkgray");
+      said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    / — список команд · /exit — выход", "darkgray");
       said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
       said("  /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
@@ -17913,6 +17913,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollBy(key);
     }
 
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -17940,9 +17941,9 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
           said("  Режим: " + m.ico + " " + m.n + " — " + (mk === "image" ? "опиши картинку, и я её нарисую." : mk === "video" ? "опиши сцену, и я сниму короткое видео." : "опиши игру, и WattAI её напишет. Правки — следующим сообщением."), "green");
           return;
         }
-        if (cmd === "/help") {
+        if (cmd === "/" || cmd === "/help") {
           said("  ── Команды ──", "darkcyan");
-          [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 18) + r[1], color: COLORS.cyan }]));
+          [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/exit", "выход в V3TERMIN"], ["Ctrl+C", "во время ответа — остановить"]].forEach((r) => render([{ kind: "host", text: "   " + pad(r[0], 20) + r[1], color: COLORS.cyan }]));
         } else if (cmd === "/mode") {
           const m = VMODES.find((x) => x.id === arg || x.n.toLowerCase() === arg);
           if (m) { v.mode = m.id; save(); said("  Режим: " + m.ico + " " + m.n, "green"); }
@@ -17955,7 +17956,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         } else if (cmd === "/new") { v.hist = []; save(); said("  ✓ Новый чат.", "green"); }
         else if (cmd === "/clear") log().textContent = "";
         else if (cmd === "/key") said("  В V3TERMIN ключ не нужен: V3AI отвечает через ИИ приставки.", "darkgray");
-        else said("  Неизвестная команда. Список: /help", "yellow");
+        else said("  Неизвестная команда. Список команд: /", "yellow");
         return;
       }
       if (vMode().make) return make(vMode().make, q);
@@ -18118,6 +18119,10 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const m = v.match(/^([\s\S]*?)((?:"[^"]*)|(?:[^\s|;"]*))$/), before = m[1], word = m[2].replace(/^"/, "");
         const isCmd = !before.trim() || /[|;]\s*$/.test(before);
         let opts = [];
+        // in V3AI, Tab completes slash commands
+        if (app && !before.trim() && word.startsWith("/")) opts = V3AI_CMDS.filter((c) => c !== "/" && c.startsWith(word.toLowerCase()));
+        if (opts.length) { comp = { before, opts, i: -1, rest }; }
+        else {
         if (isCmd && !/[\\/]/.test(word)) opts = Array.from(new Set(uniq().map((c) => c.name).concat(Object.keys(C).filter((k) => !/[?%]/.test(k) && C[k].name.toLowerCase() !== k)).concat(Object.keys(APPS).filter(appReady)))).filter((n) => n.toLowerCase().startsWith(word.toLowerCase())).sort((x, y) => (y.includes("-") - x.includes("-")) || x.localeCompare(y));
         if (!opts.length || !isCmd) {
           const i = Math.max(word.lastIndexOf("\\"), word.lastIndexOf("/")), dp = i >= 0 ? word.slice(0, i + 1) : "", pre = word.slice(i + 1).toLowerCase();
@@ -18126,6 +18131,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         }
         if (!opts.length) return;
         comp = { before, opts, i: -1, rest };
+        }
       }
       comp.i = (comp.i + 1) % comp.opts.length;
       let o = comp.opts[comp.i]; if (/\s/.test(o)) o = "\"" + o + "\"";
