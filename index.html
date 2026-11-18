@@ -17215,7 +17215,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     const COLORS = { black: "#000", darkblue: "#0037da", darkgreen: "#13a10e", darkcyan: "#3a96dd", darkred: "#c50f1f", darkmagenta: "#881798", darkyellow: "#c19c00", gray: "#cccccc", darkgray: "#767676", blue: "#3b78ff", green: "#16c60c", cyan: "#61d6d6", red: "#e74856", magenta: "#b4009e", yellow: "#f9f1a5", white: "#f2f2f2" };
     function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
     const promptText = () => "PS " + pathStr(cwd) + "> ";
-    const curPrompt = () => picker ? "Модель ↑ ↓, Enter — выбрать: " : asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
+    const curPrompt = () => picker ? "↑ ↓ — выбор, Enter — готово: " : asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
     function setPrompt() { updateSug(); $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
     function echoRaw(text) { line(text, "cmd"); }
     function ask(q) { return new Promise((res, rej) => { asking = { q, res, rej }; setPrompt(); scrollEnd(); }); }
@@ -17731,7 +17731,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
       said("  /dragents — Dr. Agents (ИИ-агенты) · /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
-      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + "] ❯ "; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
+      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(), f = curFile(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + (f ? " · 📄 " + f.name : "") + "] ❯ "; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
       Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
       setPrompt(); return [];
     }
@@ -17857,7 +17857,8 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     }
     async function make(kind, q) {
       const v = vst(), K = KIND[kind];
-      const prevPath = kind === "watt" && v.lastGame && !/^(создай|сделай|придумай|напиши|хочу|давай|нов)/i.test(q) ? v.lastGame : null;
+      const chosen = curFile(), chosenGame = kind === "watt" && chosen && /\.html?$/i.test(chosen.name) ? chosen.path : null;
+      const prevPath = kind === "watt" && (chosenGame || v.lastGame) && !/^(создай|сделай|придумай|напиши|хочу|давай|нов)/i.test(q) ? (chosenGame || v.lastGame) : null;
       const prevNode = prevPath ? walk(splitPath(prevPath).parts || []) : null;
       const prev = prevNode && prevNode.node.t === "f" ? { t: v.lastGameT || "игра", html: prevNode.node.v } : null;
       const st = line("", "dim"); const lab = document.createElement("span"); lab.textContent = "  ◌ " + (prev ? "WattAI переделывает «" + prev.t + "»" : K.busy) + "…"; const bar = document.createElement("span"); bar.className = "pt-prog"; const bi = document.createElement("i"); bar.appendChild(bi); st.append(lab, bar); scrollEnd();
@@ -18288,7 +18289,45 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollBy(key);
     }
 
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/exit", "выход в V3TERMIN"]];
+    /* ---- /goutrrr: change the file V3AI works with (chosen with ↑ ↓ like /model) ---- */
+    // the current file, if it still exists: { path, name, text }
+    function curFile() {
+      const v = vst(); if (!v.file) return null;
+      const r = resolve(v.file); if (r.bad || r.missing || r.node.t !== "f") return null;
+      return { path: pathStr(r.parts), name: r.parts[r.parts.length - 1], text: r.node.v, node: r.node };
+    }
+    const fileIco = (n) => /\.html?$/i.test(n) ? "🕹" : /\.svg$/i.test(n) ? "🎨" : /\.ps1$/i.test(n) ? "⚙️" : "📄";
+    // files to choose from: what V3AI made (games, pictures, videos) and the files of the current folder
+    function fileChoices() {
+      const out = [], seen = new Set(), push = (parts) => { const p = pathStr(parts); if (seen.has(p.toLowerCase())) return; seen.add(p.toLowerCase()); out.push(p); };
+      ["games", "art", "video"].forEach((d) => { const w = walk(HOME.concat(".v3ai", d)); if (w && w.node.t === "d") Object.keys(w.node.c).filter((k) => w.node.c[k].t === "f").sort((a, b) => w.node.c[b].m - w.node.c[a].m).forEach((k) => push(w.real.concat(k))); });
+      const here = walk(cwd); if (here) Object.keys(here.node.c).filter((k) => here.node.c[k].t === "f").sort().forEach((k) => push(here.real.concat(k)));
+      return out.slice(0, 40);
+    }
+    function setFile(path) {
+      const r = mustGet(path, "f"), v = vst(), name = r.parts[r.parts.length - 1], full = pathStr(r.parts);
+      v.file = full;
+      if (/\.html?$/i.test(name)) { v.lastGame = full; v.lastGameT = name.replace(/\.html?$/i, ""); }
+      save(); setPrompt();
+      said("  ✓ Файл: " + fileIco(name) + " " + full, "green");
+      if (!openFile(r)) { const L = r.node.v.split("\n"); L.slice(0, 8).forEach((x) => said("  │ " + x, "gray")); if (L.length > 8) said("  │ … ещё строк: " + (L.length - 8), "darkgray"); }
+      said(/\.html?$/i.test(name) ? "  Правки игры: /watt и опиши, что поменять. Вопросы о файле — просто пиши." : "  Теперь спрашивай про этот файл — V3AI видит его содержимое. Убрать файл: /goutrrr off", "darkgray");
+    }
+    function goutrrr(raw) {
+      const v = vst();
+      if (/^(off|выкл|убрать|нет|none)$/i.test(raw)) { v.file = null; save(); setPrompt(); said("  ✓ Файл убран.", "green"); return; }
+      if (raw) { try { setFile(raw); } catch (e) { said("  " + (e && e.message || e), "yellow"); } return; }
+      const L = fileChoices();
+      if (!L.length) { said("  Файлов пока нет. Создай что-нибудь (/image, /video, /watt) или перейди в папку с файлами.", "darkgray"); return; }
+      const cur = curFile(), short = (p) => p.replace(pathStr(HOME) + "\\", "~\\");
+      openPicker(0, {
+        title: "  Сменить файл", items: L.map((p) => fileIco(p) + " " + short(p)), cur: cur ? L.findIndex((p) => p.toLowerCase() === cur.path.toLowerCase()) : -1,
+        onPick: (i) => setFile(L[i]),
+        onCancel: () => said(cur ? "  Файл не изменился: " + cur.name : "  Файл не выбран.", "darkgray"),
+      });
+      if (picker && picker.cur < 0) { picker.i = 0; drawPicker(); }
+    }
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -18305,7 +18344,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       scrollEnd();
     }
-    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/goutrrr", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -18328,6 +18367,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
           return;
         }
         if (cmd === "/agents" || cmd === "/agent") return agentCmd(cmd, raw);
+        if (cmd === "/goutrrr") return goutrrr(raw);
         if (cmd === "/github" || cmd === "/repo" || cmd === "/disconnect") {
           if (!inDrAgents()) { drAgentsOnly(); return; }
           const H = repoHolder();
@@ -18381,7 +18421,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         aiCtl = new AbortController();
         const hist = v.hist.slice(-12).map((x) => ({ role: x.role, content: x.content }));
         while (hist.length && hist[0].role !== "user") hist.shift();
-        const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты.";
+        const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты." + (curFile() ? "\nПользователь выбрал файл " + curFile().path + ". Его содержимое:\n```\n" + curFile().text.slice(0, 20000) + "\n```\nВопросы, скорее всего, про этот файл." : "");
         hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
         try {
           const opts = { cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
