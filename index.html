@@ -975,6 +975,30 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; justif
 .pt-ehead button { padding: 5px 10px; border-radius: 7px; border: 1px solid rgba(255,255,255,.25); background: transparent; color: var(--pt-fg); font: 800 12px var(--body); cursor: pointer; }
 .pt-ehead button.ok { background: var(--pt-acc); color: #111; border-color: transparent; }
 #ptText { flex: 1; resize: none; border: 0; outline: 0; padding: 10px 12px; background: transparent; color: var(--pt-fg); font: 13.5px/1.42 var(--mono); }
+/* V3AI Studio look (while V3AI runs) */
+.pt-lights, .pt-meta { display: none; }
+#ptWin[data-app="v3ai"] { --pt-bg: #0e1015; --pt-fg: #d7dae0; --pt-dim: #6b7280; --pt-acc: #f0a35e; --pt-err: #ff6b6b; --pt-warn: #f6c35b; border-color: #2a2e38; }
+#ptWin[data-app="v3ai"] .pt-bar { background: #16181f; border-bottom: 1px solid #23262f; }
+#ptWin[data-app="v3ai"] .pt-lights { display: flex; gap: 6px; flex: none; } .pt-lights i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; } .pt-lights i:nth-child(2) { background: #febc2e; } .pt-lights i:nth-child(3) { background: #28c840; }
+#ptWin[data-app="v3ai"] .pt-tab { background: transparent; padding: 4px 2px; } #ptWin[data-app="v3ai"] .pt-ico { display: none; } #ptWin[data-app="v3ai"] #ptTitle { color: #fff; }
+#ptWin[data-app="v3ai"] .pt-meta { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11.5px var(--mono); color: #8b93a3; }
+#ptWin[data-app="v3ai"] .pt-meta b { font-weight: 500; color: #6fd3c6; }
+#ptWin[data-app="v3ai"] .pt-sp { display: none; }
+@media (max-width: 520px) { #ptWin[data-app="v3ai"] .pt-meta span:first-child { display: none; } #ptWin[data-app="v3ai"] .pt-tab { flex: none; } }
+#ptOut .pt-ask { margin: 8px 0; padding: 7px 10px; border-radius: 6px; background: #1a1d26; border-block: 1px solid #23262f; color: #e8eaf0; }
+.pt-ans { margin: 6px 0 10px; }
+.pt-rule { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--pt-acc); }
+.pt-rule i { flex: 1; min-width: 12px; border-top: 1px solid #3a3f4b; }
+.pt-rule .tools { color: #8b93a3; overflow: hidden; text-overflow: ellipsis; max-width: 45%; } .pt-rule .tools:empty { display: none; }
+.pt-rule.end .c { color: #3a3f4b; }
+.pt-ansb { padding: 2px 0; }
+.pt-ln { display: grid; grid-template-columns: 3ch minmax(0, 1fr); column-gap: 1.5ch; min-height: 1.42em; }
+.pt-ln .g { color: var(--pt-dim); text-align: right; user-select: none; }
+.pt-ln .t { min-width: 0; }
+.pt-ln .t.h { color: #b69cff; font-weight: 700; }
+.pt-ln .t b { color: #fff; font-weight: 700; }
+.pt-ln .t code { color: #6fd3c6; font-family: inherit; }
+.pt-ln.code .t { color: #6fd3c6; }
 #ptSug { margin: 2px 0 4px; border-left: 2px solid var(--pt-acc); padding-left: 1ch; }
 #ptSug .row { cursor: pointer; border-radius: 4px; }
 #ptSug .row:hover { background: rgba(255,255,255,.08); }
@@ -3403,8 +3427,8 @@ div.sc-pl { cursor: default; }
     </div>
     <div id="ptWin" data-theme="classic">
       <div class="pt-bar">
-        <div class="pt-tab"><span class="pt-ico">&gt;_</span><b id="ptTitle">V3TERMIN</b></div>
-        <span class="pt-sp"></span>
+        <span class="pt-lights" aria-hidden="true"><i></i><i></i><i></i></span><div class="pt-tab"><span class="pt-ico">&gt;_</span><b id="ptTitle">V3TERMIN</b></div>
+        <span class="pt-meta" id="ptMeta"></span><span class="pt-sp"></span>
         <div class="pt-dots"><button type="button" id="ptClip" title="Импорт файла" aria-label="Импорт файла">📎</button><button type="button" id="ptCls" title="Очистить экран (cls)" aria-label="Очистить экран">─</button><button type="button" id="ptTheme" title="Сменить тему" aria-label="Сменить тему">◐</button><button type="button" class="x" data-go="hub" title="Закрыть" aria-label="Закрыть">✕</button></div>
       </div>
       <div id="ptOut" role="log" aria-live="polite"><div id="ptLog"></div><div class="pt-in"><span class="pt-ps" id="ptPs"></span><input id="ptIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда"></div><div id="ptSug" hidden></div></div>
@@ -17217,7 +17241,12 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     function scrollEnd() { const o = out(); o.scrollTop = o.scrollHeight; }
     const promptText = () => "PS " + pathStr(cwd) + "> ";
     const curPrompt = () => picker ? "↑ ↓ — выбор, Enter — готово: " : asking ? asking.q + ": " : app ? app.prompt() : running ? "" : promptText();
-    function setPrompt() { updateSug(); $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd); }
+    function setPrompt() {
+      updateSug(); $("#ptPs").textContent = curPrompt(); $("#ptTitle").textContent = app ? app.title : "V3TERMIN — " + pathStr(cwd);
+      const w = $("#ptWin"), meta = $("#ptMeta"); if (!w) return;
+      w.dataset.app = app && app.meta ? "v3ai" : "";
+      if (meta) { meta.textContent = ""; if (app && app.meta) app.meta().forEach(([txt, b]) => { const e = document.createElement(b ? "b" : "span"); e.textContent = txt; meta.appendChild(e); }); }
+    }
     function echoRaw(text) { line(text, "cmd"); }
     function ask(q) { return new Promise((res, rej) => { asking = { q, res, rej }; setPrompt(); scrollEnd(); }); }
     const said = (t, c) => render([{ kind: "host", text: t, color: c ? (COLORS[c] || c) : "" }]);
@@ -17576,7 +17605,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         } catch (e) { said("  📎 Не удалось прочитать «" + file.name + "».", "yellow"); }
       }
       // in V3AI the imported file becomes the current file
-      if (last && app && app.title === "V3AI Terminal") { try { const v = vst(); v.file = last; save(); said("  Теперь V3AI работает с этим файлом (как после /goutrrr). Спрашивай!", "darkgray"); } catch (e) { /* optional */ } }
+      if (last && app && app.band) { try { const v = vst(); v.file = last; save(); said("  Теперь V3AI работает с этим файлом (как после /goutrrr). Спрашивай!", "darkgray"); } catch (e) { /* optional */ } }
       else if (last && !app) said("  Посмотреть: ls · прочитать: cat «имя» · картинку открыть: start «имя»", "darkgray");
       setPrompt(); scrollEnd(); inp().focus();
     }
@@ -17769,7 +17798,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /design — Design · /watt — Watt AI (игры)", "darkgray");
       said("  /dragents — Dr. Agents (ИИ-агенты) · /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
-      app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(), f = curFile(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + (f ? " · 📄 " + f.name : "") + "] ❯ "; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
+      app = { title: "◆ V3AI Studio", prompt: () => "❯ ", band: true, meta: () => { const A = curAgent(), f = curFile(); return [["v1.2 · V3TERMIN  ", ""], ["v3ai/", ""], [A ? "agent:" + A.name : vMode().id, "b"], ["  " + pathStr(cwd) + (f ? "  · 📄 " + f.name : ""), ""]]; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
       Hero.say("v3termin", "start", "V3AI на связи — спроси что угодно!");
       setPrompt(); return [];
     }
@@ -18186,13 +18215,13 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     }
     function agentTools(A) {
       const T = [], obj = (props, req) => ({ type: "object", properties: props, required: req || [] }), str = { type: "string" }, int = { type: "integer" };
-      const add = (name, description, inputSchema) => T.push({ name, description, inputSchema, execute: (x) => { said("    🧰 " + name, "darkgray"); return agentTool(A, name, x); } });
+      const add = (name, description, inputSchema) => T.push({ name, description, inputSchema, execute: (x) => { if (curBlock) curBlock.tool(name); else said("    🧰 " + name, "darkgray"); return agentTool(A, name, x); } });
       if (A.skills.includes("memory")) { add("remember", "Запомнить факт о пользователе или важную информацию надолго.", obj({ key: str, text: str }, ["text"])); add("recall", "Вспомнить сохранённые заметки. Пустой query — все.", obj({ query: str })); }
       if (A.skills.includes("tasks")) { add("add_task", "Добавить дело в список.", obj({ text: str }, ["text"])); add("list_tasks", "Показать список дел с номерами.", obj({})); add("complete_task", "Отметить дело выполненным по номеру.", obj({ n: int }, ["n"])); }
       if (A.skills.includes("calc")) add("calculate", "Точно вычислить выражение: + - * / % и скобки.", obj({ expression: str }, ["expression"]));
       if (A.skills.includes("time")) add("get_time", "Текущие дата, время и день недели.", obj({}));
       if (A.skills.includes("dice")) add("random", "Случайные целые числа от min до max (count штук).", obj({ min: int, max: int, count: int }));
-      if (A.repo) repoTools(A, (name, description, inputSchema, fn) => T.push({ name, description, inputSchema, execute: (x) => { said("    🐙 " + name + (x && x.path ? " " + x.path : ""), "darkgray"); return fn(x || {}); } }));
+      if (A.repo) repoTools(A, (name, description, inputSchema, fn) => T.push({ name, description, inputSchema, execute: (x) => { if (curBlock) curBlock.tool(name); else said("    🐙 " + name + (x && x.path ? " " + x.path : ""), "darkgray"); return fn(x || {}); } }));
       return T;
     }
     // offline: the skills still work from simple phrases
@@ -18209,7 +18238,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     }
     async function agentChat(A, q) {
       A.hist.push({ role: "user", content: q });
-      const M = vModel(), el = line("  ◌ " + A.name + " думает…", "dim"); scrollEnd();
+      const M = vModel(), blk = answerBlock(A.emoji + " " + A.name + " · " + M.n); curBlock = blk;
       let reply = "", stopped = false;
       const sample = await getSample();
       if (sample) {
@@ -18224,18 +18253,18 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
           "Сегодня " + new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + "."].join("\n");
         hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
         try {
-          const opts = { signal: aiCtl.signal, tools: agentTools(A), onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
+          const opts = { signal: aiCtl.signal, tools: agentTools(A), onText: ({ text: tx }) => { if (tx) blk.set(tx); } };
           if (M.q) opts.modelTier = "quick";
           const r = await sample(hist, opts); reply = (r && r.text || "").trim();
         } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
         aiCtl = null;
       }
-      el.remove();
-      if (stopped) { said("  ⏹ Ответ остановлен.", "darkgray"); A.hist.pop(); saveAgents(); return; }
+      curBlock = null;
+      if (stopped) { blk.stop(); A.hist.pop(); saveAgents(); return; }
       if (!reply && A.repo) reply = (await repoOffline(A, q)) || "";
       if (!reply) { await new Promise((r) => setTimeout(r, 250)); reply = agentOffline(A, q); }
       A.hist.push({ role: "assistant", content: reply }); if (A.hist.length > 30) A.hist.splice(0, A.hist.length - 30); saveAgents();
-      printReply(reply); said("  — " + A.emoji + " " + A.name + " · " + M.n, "darkgray");
+      blk.done(reply, A.emoji + " " + A.name + " · " + M.n);
     }
     /* ---- GitHub repository: can be connected only in Dr. Agents (the mode or a chat with an agent) ---- */
     const GH_RE = /https?:\/\/(?:www\.)?github\.com\/([A-Za-z0-9-]+)\/([A-Za-z0-9._-]+?)(?:\.git)?(?:\/tree\/([^\s?#]+))?\/?(?=[\s?#]|$)/i;
@@ -18436,6 +18465,51 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       scrollEnd();
     }
     const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/design", "/watt", "/goutrrr", "/import", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    /* ---- V3AI Studio answer block: "── ответ · model ── ◆ tools", numbered lines, "└── ◆ готово · model" ---- */
+    let curBlock = null;
+    function mdInline(el, str) {
+      String(str).split(/(\*\*[^*]+\*\*|`[^`]+`)/).forEach((x) => {
+        if (/^\*\*[^*]+\*\*$/.test(x)) { const b = document.createElement("b"); b.textContent = x.slice(2, -2); el.appendChild(b); }
+        else if (/^`[^`]+`$/.test(x)) { const k = document.createElement("code"); k.textContent = x.slice(1, -1); el.appendChild(k); }
+        else if (x) el.appendChild(document.createTextNode(x));
+      });
+    }
+    function renderMd(body, text) {
+      body.textContent = ""; let code = false, n = 0;
+      String(text || "").replace(/\r/g, "").replace(/\n+$/, "").split("\n").forEach((raw) => {
+        if (/^\s*```/.test(raw)) { code = !code; return; }
+        const row = document.createElement("div"); row.className = "pt-ln" + (code ? " code" : "");
+        const g = document.createElement("span"); g.className = "g"; g.textContent = ++n;
+        const c = document.createElement("span"); c.className = "t";
+        let m;
+        if (code) c.textContent = raw;
+        else if ((m = raw.match(/^\s*#{1,6}\s+(.*)$/))) { c.classList.add("h"); c.textContent = m[1].replace(/\*\*/g, ""); }
+        else if ((m = raw.match(/^(\s*)[-*•]\s+(.*)$/))) mdInline(c, m[1] + "• " + m[2]);
+        else mdInline(c, raw);
+        row.append(g, c); body.appendChild(row);
+      });
+    }
+    function answerBlock(label) {
+      const box = document.createElement("div"); box.className = "pt-ans";
+      const top = document.createElement("div"); top.className = "pt-rule";
+      const lab = document.createElement("span"); lab.textContent = "ответ · " + label;
+      const tl = document.createElement("span"); tl.className = "tools";
+      top.append(document.createElement("i"), lab, document.createElement("i"), tl);
+      const body = document.createElement("div"); body.className = "pt-ansb";
+      const bot = document.createElement("div"); bot.className = "pt-rule end";
+      const c = document.createElement("span"); c.className = "c"; c.textContent = "└";
+      const fl = document.createElement("span"); fl.textContent = "◌ думает…";
+      bot.append(c, document.createElement("i"), fl);
+      box.append(top, body, bot); log().appendChild(box); scrollEnd();
+      const tools = [];
+      return {
+        set(text) { renderMd(body, text); fl.textContent = "◌ пишет…"; scrollEnd(); },
+        tool(name) { if (!tools.includes(name)) { tools.push(name); tl.textContent = tools.map((x) => "◆ " + x).join(" "); } fl.textContent = "◌ " + name + "…"; },
+        done(text, foot) { renderMd(body, text); fl.textContent = "◆ готово · " + foot; scrollEnd(); },
+        stop() { fl.textContent = "⏹ остановлено"; if (!body.childNodes.length) body.remove(); },
+      };
+    }
+
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -18507,7 +18581,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       if (vMode().make) return make(vMode().make, q);
       v.hist.push({ role: "user", content: q });
       const M = vModel(), Mo = vMode();
-      const el = line("  ◌ думает…", "dim"); scrollEnd();
+      const blk = answerBlock(M.n);
       let reply = "", stopped = false;
       const sample = await getSample();
       if (sample) {
@@ -18517,18 +18591,17 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты." + (curFile() ? "\nПользователь выбрал файл " + curFile().path + (/^data:/.test(curFile().text) ? " — это картинка (её содержимое ты не видишь; спроси, что на ней, если нужно)." : ". Его содержимое:\n```\n" + curFile().text.slice(0, 20000) + "\n```") + "\nВопросы, скорее всего, про этот файл." : "");
         hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
         try {
-          const opts = { cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
+          const opts = { cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) blk.set(tx); } };
           if (M.q) opts.modelTier = "quick";
           const r = await sample(hist, opts);
           reply = (r && r.text || "").trim();
         } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; }
         aiCtl = null;
       }
-      el.remove();
-      if (stopped) { said("  ⏹ Ответ остановлен.", "darkgray"); v.hist.pop(); save(); return; }
+      if (stopped) { blk.stop(); v.hist.pop(); save(); return; }
       if (!reply) { await new Promise((r) => setTimeout(r, 300)); reply = v3aiOffline(q); }
       v.hist.push({ role: "assistant", content: reply }); if (v.hist.length > 30) v.hist.splice(0, v.hist.length - 30); save();
-      printReply(reply); said("  — " + M.n, "darkgray");
+      blk.done(reply, M.n);
     }
 
     /* ---------- running ---------- */
@@ -18623,7 +18696,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       if (asking) { const a = asking; asking = null; echoRaw(a.q + ": " + text); a.res(text); setPrompt(); scrollEnd(); return; }
       if (app) {
         if (running) return;
-        echoRaw(app.prompt() + text); remember(text.trim());
+        line(app.prompt() + text, "cmd" + (app.band ? " pt-ask" : "")); remember(text.trim());
         let r; try { r = app.line(text); } catch (e) { printErr(e, "v3ai"); }
         track(r, "v3ai"); return;
       }
