@@ -3405,16 +3405,17 @@ div.sc-pl { cursor: default; }
       <div class="pt-bar">
         <div class="pt-tab"><span class="pt-ico">&gt;_</span><b id="ptTitle">V3TERMIN</b></div>
         <span class="pt-sp"></span>
-        <div class="pt-dots"><button type="button" id="ptCls" title="Очистить экран (cls)" aria-label="Очистить экран">─</button><button type="button" id="ptTheme" title="Сменить тему" aria-label="Сменить тему">◐</button><button type="button" class="x" data-go="hub" title="Закрыть" aria-label="Закрыть">✕</button></div>
+        <div class="pt-dots"><button type="button" id="ptClip" title="Импорт файла" aria-label="Импорт файла">📎</button><button type="button" id="ptCls" title="Очистить экран (cls)" aria-label="Очистить экран">─</button><button type="button" id="ptTheme" title="Сменить тему" aria-label="Сменить тему">◐</button><button type="button" class="x" data-go="hub" title="Закрыть" aria-label="Закрыть">✕</button></div>
       </div>
       <div id="ptOut" role="log" aria-live="polite"><div id="ptLog"></div><div class="pt-in"><span class="pt-ps" id="ptPs"></span><input id="ptIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Команда"></div><div id="ptSug" hidden></div></div>
+      <input type="file" id="ptFile" multiple hidden aria-hidden="true" tabindex="-1">
       <div id="ptEdit" hidden>
         <div class="pt-ehead"><span id="ptEName">Блокнот</span><button type="button" id="ptECancel">Отмена</button><button type="button" class="ok" id="ptESave">Сохранить</button></div>
         <textarea id="ptText" spellcheck="false" aria-label="Текст файла"></textarea>
       </div>
     </div>
     <div class="pt-keys" aria-label="Клавиши терминала">
-      <button type="button" data-k="tab">Tab</button><button type="button" data-k="up">↑</button><button type="button" data-k="down">↓</button><button type="button" data-k="ctrlc">Ctrl+C</button><button type="button" data-k="help">help</button><button type="button" data-k="ls">ls</button><button type="button" data-k="cls">cls</button>
+      <button type="button" data-k="tab">Tab</button><button type="button" data-k="up">↑</button><button type="button" data-k="down">↓</button><button type="button" data-k="ctrlc">Ctrl+C</button><button type="button" data-k="help">help</button><button type="button" data-k="ls">ls</button><button type="button" data-k="cls">cls</button><button type="button" data-k="clip" aria-label="Импорт файла">📎</button>
     </div>
     <p class="hint">⌨️ Как в PowerShell: <b>Get-ChildItem</b> (ls, dir), <b>cd</b>, <b>Get-Content</b> (cat), <b>New-Item</b>, <b>notepad файл.txt</b>, конвейер <b>ls | Sort-Object -Descending</b>, переменные <b>$x = 2 + 2</b>, перенаправление <b>&gt; файл.txt</b>. <b>Tab</b> дополняет команды и пути, <b>↑ ↓</b> прокручивают экран, прошлые команды — <b>Get-History</b>. <b>Start-Process snake</b> запускает игру. Всё, что ты создашь на диске V3:\, сохраняется.</p>
   </section>
@@ -17517,7 +17518,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     });
     def("Start-Process", ["start", "saps"], "Start-Process [-FilePath] <игра | файл.svg | файл.html>", "Запускает игру приставки (start snake) или открывает картинку/видео/игру с диска V3:\\ (start ~\\.v3ai\\games\\игра.html).", (a) => {
       const q = need(a.get(["filepath", "name"], 0), "FilePath");
-      if (/\.(svg|html?)$/i.test(q)) { const r = mustGet(q, "f"); if (openFile(r)) return []; }
+      if (/\.(svg|html?|png|jpe?g|gif|webp|bmp)$/i.test(q)) { const r = mustGet(q, "f"); if (openFile(r)) return []; }
       const g = findGame(q);
       if (!g) throw err("Не удается выполнить эту команду из-за ошибки: системе не удается найти указанный файл \"" + q + "\". Список: Get-Process.", "InvalidOperationException");
       if (g.id === "v3termin") return ["V3TERMIN уже запущен — ты в нём :)"];
@@ -17544,6 +17545,42 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       if (!all.includes(n)) return ["Темы: " + all.join(", ") + ". Сейчас: " + S.theme];
       S.theme = n; save(); $("#ptWin").dataset.theme = n; return [];
     });
+    /* ---------- 📎 import a file from the phone or computer into the current folder ---------- */
+    const TEXT_EXT = /\.(txt|md|markdown|csv|tsv|json|xml|html?|css|js|mjs|ts|py|ps1|bat|cmd|sh|ini|cfg|conf|yaml|yml|log|svg|java|c|cpp|h|cs|go|rs|php|rb|lua|sql|toml)$/i;
+    let importWait = null;
+    function importFile() {
+      const f = $("#ptFile"); if (!f) return [];
+      f.value = "";
+      try { f.click(); } catch (e) { /* the button works anyway */ }
+      said("  📎 Выбери файл на телефоне или компьютере…", "darkgray"); scrollEnd();
+      return [];
+    }
+    function readAs(file, how) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r[how](file); }); }
+    async function importFiles(list) {
+      let last = null;
+      for (const file of Array.from(list || [])) {
+        const isText = /^text\//.test(file.type) || /json|xml|javascript|svg/.test(file.type) || TEXT_EXT.test(file.name);
+        const isImg = !isText && /^image\//.test(file.type);
+        if (!isText && !isImg) { said("  📎 «" + file.name + "» не импортирован: подходят только текстовые файлы и картинки.", "yellow"); continue; }
+        const max = isImg ? 1.5 * 1048576 : 1048576;
+        if (file.size > max) { said("  📎 «" + file.name + "» слишком большой (" + fmtSize(file.size) + "). Можно до " + fmtSize(max) + ".", "yellow"); continue; }
+        try {
+          const data = await readAs(file, isImg ? "readAsDataURL" : "readAsText");
+          const dir = walk(cwd).node; let name = String(file.name).replace(/[<>:"|?*\\/]/g, "_") || "файл.txt", n = 2;
+          const dot = name.lastIndexOf("."), base = dot > 0 ? name.slice(0, dot) : name, ext = dot > 0 ? name.slice(dot) : "";
+          while (findKey(dir, name)) name = base + " (" + n++ + ")" + ext;
+          writeFile(pathStr(cwd.concat(name)), data, false);
+          last = pathStr(cwd.concat(name));
+          said("  📎 Импортирован: " + last + " (" + fmtSize(file.size) + ")", "green");
+          if (isImg) showMedia("image", name, data);
+        } catch (e) { said("  📎 Не удалось прочитать «" + file.name + "».", "yellow"); }
+      }
+      // in V3AI the imported file becomes the current file
+      if (last && app && app.title === "V3AI Terminal") { try { const v = vst(); v.file = last; save(); said("  Теперь V3AI работает с этим файлом (как после /goutrrr). Спрашивай!", "darkgray"); } catch (e) { /* optional */ } }
+      else if (last && !app) said("  Посмотреть: ls · прочитать: cat «имя» · картинку открыть: start «имя»", "darkgray");
+      setPrompt(); scrollEnd(); inp().focus();
+    }
+    def("Import-File", ["import"], "Import-File", "📎 Импорт файла с телефона или компьютера в текущую папку (текст и картинки).", () => importFile());
     def("notepad", ["edit", "nano"], "notepad <файл>", "Открывает файл в блокноте (если файла нет — создаёт).", (a) => { openEditor(need(a.get("path", 0), "Path")); return []; });
     def("Invoke-Expression", ["iex"], "Invoke-Expression <команда>  |  irm <ссылка> | iex", "Выполняет строку как команду — или скачанный скрипт (например, установщик программы).", (a, input) => {
       const text = input && input.length ? flat(input.map((x) => x && x.content != null ? x.content : x)).map(keyOf).join("\n") : a.pos.map(keyOf).join(" ");
@@ -17786,7 +17823,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         btn("✕", kind === "design" ? "Закрыть дизайн" : "Закрыть игру", () => { box.replaceWith(Object.assign(document.createElement("div"), { className: "pt-l dim", textContent: "  " + KIND[kind].ico + " «" + title + "» закрыт" + (kind === "design" ? "." : "а.") })); });
         box.appendChild(fr); setTimeout(() => { try { fr.focus(); } catch (e) { /* optional */ } }, 120);
       } else {
-        const im = new Image(); im.alt = title; im.src = svgUrl(body); box.appendChild(im);
+        const im = new Image(); im.alt = title; im.src = /^data:image\//.test(body) ? body : svgUrl(body); box.appendChild(im);
         btn("✕", "Скрыть", () => box.remove());
       }
       log().appendChild(box); scrollEnd();
@@ -18293,6 +18330,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     // opens a file made by V3AI (or any .svg/.html on the V3:\ drive) right in the terminal
     function openFile(r) {
       const name = r.parts[r.parts.length - 1], v = r.node.v;
+      if (/^data:image\//.test(v)) { showMedia("image", name, v); return true; }
       if (/\.svg$/i.test(name)) { showMedia(/<animate|@keyframes/i.test(v) ? "video" : "image", name, cleanSvg(v)); return true; }
       if (/\.html?$/i.test(name)) { showMedia(r.parts.some((x) => x.toLowerCase() === "design") ? "design" : "watt", name, v); return true; }
       return false;
@@ -18372,7 +18410,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       if (picker && picker.cur < 0) { picker.i = 0; drawPicker(); }
     }
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/design [описание]", "режим Design: сайт, экран приложения, постер, открытка (правки — следующим сообщением)"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/design [описание]", "режим Design: сайт, экран приложения, постер, открытка (правки — следующим сообщением)"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/import", "📎 импорт файла с телефона или компьютера"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -18389,7 +18427,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       scrollEnd();
     }
-    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/design", "/watt", "/goutrrr", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/design", "/watt", "/goutrrr", "/import", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -18413,6 +18451,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         }
         if (cmd === "/agents" || cmd === "/agent") return agentCmd(cmd, raw);
         if (cmd === "/goutrrr") return goutrrr(raw);
+        if (cmd === "/import") { importFile(); return; }
         if (cmd === "/github" || cmd === "/repo" || cmd === "/disconnect") {
           if (!inDrAgents()) { drAgentsOnly(); return; }
           const H = repoHolder();
@@ -18466,7 +18505,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         aiCtl = new AbortController();
         const hist = v.hist.slice(-12).map((x) => ({ role: x.role, content: x.content }));
         while (hist.length && hist[0].role !== "user") hist.shift();
-        const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты." + (curFile() ? "\nПользователь выбрал файл " + curFile().path + ". Его содержимое:\n```\n" + curFile().text.slice(0, 20000) + "\n```\nВопросы, скорее всего, про этот файл." : "");
+        const rules = "Тебя зовут V3AI — дружелюбный ИИ-ассистент от команды V3, версия для терминала V3TERMIN (ответы показываются в консоли, без таблиц и HTML). Сейчас ты работаешь на модели " + M.n + " (линейка V3AI: LAI 1.3, FUHI 2.8, ARDSONNET 3.1, FLASH 3.9, ARDSONNET 4.5, V3 ORTL 5.5). " + Mo.p + " Отвечай на языке пользователя (по умолчанию по-русски), до " + M.len + " слов, если не попросили подробнее. Приложение могут открывать дети: никаких взрослых, опасных или грубых тем — мягко откажи. Не выдумывай факты." + (curFile() ? "\nПользователь выбрал файл " + curFile().path + (/^data:/.test(curFile().text) ? " — это картинка (её содержимое ты не видишь; спроси, что на ней, если нужно)." : ". Его содержимое:\n```\n" + curFile().text.slice(0, 20000) + "\n```") + "\nВопросы, скорее всего, про этот файл." : "");
         hist[0] = { role: "user", content: rules + "\n\n---\n" + hist[0].content };
         try {
           const opts = { cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { el.className = "pt-l"; el.textContent = tx.replace(/\*\*/g, "").replace(/^/gm, "  "); scrollEnd(); } } };
@@ -18654,10 +18693,13 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       el.addEventListener("input", () => { comp = null; updateSug(); });
       out().addEventListener("click", () => { if (!window.getSelection || !String(window.getSelection())) el.focus(); });
       $("#ptCls").addEventListener("click", () => { log().textContent = ""; el.focus(); });
+      $("#ptClip").addEventListener("click", () => importFile());
+      $("#ptFile").addEventListener("change", (e) => { const fl = e.target.files; if (fl && fl.length) importFiles(fl); });
       $("#ptTheme").addEventListener("click", () => { const all = ["classic", "dark", "matrix", "v3", "light"]; S.theme = all[(all.indexOf(S.theme) + 1) % all.length]; $("#ptWin").dataset.theme = S.theme; save(); line("Тема: " + S.theme, "dim"); scrollEnd(); });
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("pointerdown", (e) => e.preventDefault()));
       $$(".pt-keys [data-k]").forEach((b) => b.addEventListener("click", () => {
         const k = b.dataset.k;
+        if (k === "clip") { importFile(); return; }
         if (k === "tab") complete(); else { comp = null; if (k === "up") arrow("ArrowUp"); else if (k === "down") arrow("ArrowDown"); else if (k === "ctrlc") ctrlC(); else { el.value = ""; submit(app ? (k === "help" ? "/help" : k === "cls" ? "/clear" : k) : k === "help" ? "Get-Help" : k); } }
         el.focus();
       }));
