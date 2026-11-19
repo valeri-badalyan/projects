@@ -18191,7 +18191,10 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       let off = false;
       if (!j || !j.name) { j = offlineAgent(q); off = true; }
       const skills = Array.from(new Set((Array.isArray(j.skills) ? j.skills : []).map(String).filter((k) => SKILLS[k])));
-      const A = { id: "a" + Date.now().toString(36), name: String(j.name).slice(0, 40), emoji: String(j.emoji || "🤖").slice(0, 8), role: String(j.role || "помощник").slice(0, 80), greeting: String(j.greeting || "Привет! Я " + j.name + "."), instructions: String(j.instructions || ""), skills: skills.length ? skills : ["time"], mem: { notes: [], tasks: [] }, hist: [] };
+      // names stay unique, so writing a name always finds one agent
+      let nm = String(j.name).slice(0, 36), k = 2; const base = nm;
+      while (agents().some((x) => nameKey(x.name) === nameKey(nm))) nm = base + " " + k++;
+      const A = { id: "a" + Date.now().toString(36), name: nm, emoji: String(j.emoji || "🤖").slice(0, 8), role: String(j.role || "помощник").slice(0, 80), greeting: String(j.greeting || "Привет! Я " + j.name + "."), instructions: String(j.instructions || ""), skills: skills.length ? skills : ["time"], mem: { notes: [], tasks: [] }, hist: [] };
       if (vst().repo) A.repo = Object.assign({}, vst().repo);
       agents().unshift(A); saveAgents();
       if (j.comment) printReply(String(j.comment));
@@ -18347,21 +18350,40 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       return null;
     }
 
-    // /agents, /agent <n> [delete], /agent off
+    // an agent named at the start of a message: "Робби", "🤖 робби!", "Робби, что ты помнишь?" -> { A, i, rest }
+    const nameKey = (x) => String(x).toLowerCase().replace(/ё/g, "е").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+    function findAgentByName(text) {
+      const t = nameKey(text); if (!t) return null;
+      let best = null;
+      agents().forEach((A, i) => { const n = nameKey(A.name); if (n && (t === n || t.startsWith(n + " ")) && (!best || n.length > best.len)) best = { A, i, len: n.length }; });
+      if (!best) return null;
+      // the rest of the message after the name, with the original letters
+      let src = String(text).replace(/^[^\p{L}\p{N}]+/u, ""), words = best.len;
+      let k = 0, seen = 0; while (k < src.length && seen < words) { if (nameKey(src.slice(0, k + 1)).length > seen) seen = nameKey(src.slice(0, k + 1)).length; k++; }
+      best.rest = src.slice(k).replace(/^[\s,.:;!?—-]+/, "").trim();
+      return best;
+    }
+    function openAgent(A) {
+      const v = vst(); v.agent = A.id; save(); setPrompt(); agentCard(A); printReply(A.greeting);
+      said("  Выйти из чата с агентом: /agent off (или любой режим: /chat, /mode …)", "darkgray");
+    }
+    // /agents, /agent <n|имя> [delete], /agent off
     async function agentCmd(cmd, raw) {
       const v = vst(), L = agents();
       if (cmd === "/agents" || !raw) { listAgents(); return; }
       if (/^(off|выход|выйти|стоп)$/i.test(raw)) { v.agent = null; save(); said("  Чат с агентом закрыт.", "green"); return; }
-      const n = parseInt(raw, 10), A = L[n - 1];
-      if (!A) { said("  Нет агента с таким номером. Список: /agents", "yellow"); return; }
-      if (/\b(delete|удалить)\b/i.test(raw)) {
+      const del = /(^|\s)(delete|удалить)$/i.test(raw), key = raw.replace(/(^|\s)(delete|удалить)$/i, "").trim();
+      let n = /^\d+$/.test(key) ? parseInt(key, 10) : 0;
+      if (!n) { const hit = findAgentByName(key); if (hit && !hit.rest) n = hit.i + 1; }
+      const A = L[n - 1];
+      if (!A) { said("  Нет такого агента. Укажи номер или имя. Список: /agents", "yellow"); return; }
+      if (del) {
         const ans = await ask("  Удалить агента «" + A.name + "»? (да/нет)");
         if (["да", "д", "y", "yes"].includes(String(ans).trim().toLowerCase())) { L.splice(n - 1, 1); if (v.agent === A.id) v.agent = null; saveAgents(); said("  ✓ Агент удалён.", "green"); }
         else said("  Агент остался.", "darkgray");
         return;
       }
-      v.agent = A.id; save(); agentCard(A); printReply(A.greeting);
-      said("  Выйти из чата с агентом: /agent off (или любой режим: /chat, /mode …)", "darkgray");
+      openAgent(A);
     }
 
     // opens a file made by V3AI (or any .svg/.html on the V3:\ drive) right in the terminal
@@ -18447,7 +18469,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       if (picker && picker.cur < 0) { picker.i = 0; drawPicker(); }
     }
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/design [описание]", "режим Design: сайт, экран приложения, постер, открытка (правки — следующим сообщением)"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/import", "📎 импорт файла с телефона или компьютера"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/design [описание]", "режим Design: сайт, экран приложения, постер, открытка (правки — следующим сообщением)"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер|имя>", "чат с агентом (в Dr. Agents можно просто написать его имя; /agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/import", "📎 импорт файла с телефона или компьютера"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -18576,8 +18598,13 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       // a GitHub link: connect it — but only in Dr. Agents
       const R = parseRepo(q);
       if (R) { if (!inDrAgents()) { drAgentsOnly(); return; } return connectRepo(R); }
-      if (curAgent()) return agentChat(curAgent(), q);
-      if (vMode().id === "agents") return newAgent(q);
+      if (curAgent()) { const hit = findAgentByName(q); if (hit && hit.A.id !== curAgent().id) { openAgent(hit.A); if (hit.rest) return agentChat(hit.A, hit.rest); return; } return agentChat(curAgent(), q); }
+      // in Dr. Agents, the name of an existing agent opens a chat with it (and passes on the rest of the message)
+      if (vMode().id === "agents") {
+        const hit = findAgentByName(q);
+        if (hit) { openAgent(hit.A); if (hit.rest) return agentChat(hit.A, hit.rest); return; }
+        return newAgent(q);
+      }
       if (vMode().make) return make(vMode().make, q);
       v.hist.push({ role: "user", content: q });
       const M = vModel(), Mo = vMode();
