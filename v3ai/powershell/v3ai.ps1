@@ -48,6 +48,7 @@ $script:Paths = @{
   Export = Join-Path $script:Root 'export'
   Video  = Join-Path $script:Root 'video'
   Gif    = Join-Path $script:Root 'gif'
+  Design = Join-Path $script:Root 'design'
 }
 $script:VT = (-not $NoColor) -and ($Host.UI.SupportsVirtualTerminal -eq $true)
 $script:ESC = [char]27
@@ -226,6 +227,7 @@ $script:Modes = @(
   @{ id = 'art';    ico = '🎨'; n = 'Художник';   p = '' },
   @{ id = 'game';   ico = '🕹'; n = 'WattAI';     p = '' },
   @{ id = 'video';  ico = '🎬'; n = 'Видео';      p = '' },
+  @{ id = 'design'; ico = '✒'; n = 'Design';     p = '' },
   @{ id = 'agents'; ico = '🩺'; n = 'Dr. Agents'; p = '' }
 )
 
@@ -1627,6 +1629,110 @@ function Invoke-V3Gif($Chat, [string]$Q) {
   $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(Сделал GIF-анимацию по запросу «$Q».) $cap" })
 }
 
+# ── V3AI Design: три варианта логотипа → страница-доска (PNG с прозрачным фоном и SVG) ────────
+function Invoke-V3Logo($Chat, [string]$Q) {
+  $prev = Get-V3Prop $Chat 'lastLogos' $null
+  $prompt = @(
+    'Ты — V3AI Design, дизайнер логотипов. Сделай по запросу пользователя 3 РАЗНЫХ варианта логотипа (разные идеи знака, формы и палитры).',
+    'Каждый вариант — ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"> в своём блоке ```svg, до ~3500 символов. Перед каждым блоком строка «Вариант N: короткое название идеи».',
+    'Правила хорошего логотипа: простой запоминающийся знак (символ, монограмма или эмблема) и название, если оно есть в запросе; 2–4 цвета; плоский векторный стиль, чёткие формы, без мелких деталей — логотип должен читаться и в маленьком размере. Прозрачный фон: НЕ заливай весь холст, знак по центру с полями.',
+    'Текст — только системными шрифтами: font-family="Arial, sans-serif", "Arial Black, Arial, sans-serif" или "Georgia, serif"; крупный и читаемый; название пиши точно как в запросе.',
+    'Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, анимация, обработчики событий.',
+    'Юмор приветствуется, в том числе мультяшный туалетный: какашка-смайлик 💩, пуки, лужи — смешно и без натурализма. Нельзя: кровь, жестокость, взрослые темы и насмешки или унижение конкретных людей по имени (это может обидеть настоящего человека). Если в просьбе есть такое — сделай смешную безопасную версию (например, вместо человека забавный персонаж) и ОБЯЗАТЕЛЬНО коротко и честно скажи в ответной фразе, что изменил и почему. Никогда не меняй просьбу молча.',
+    $(if ($prev) { "Прошлые логотипы в этом чате: $prev. Если новый запрос — доработка (например «доработай вариант 2: сделай синим»), сделай 3 версии доработанного варианта." } else { '' }),
+    'В самом конце — одна короткая фраза по-русски о вариантах. Если что-то в просьбе пришлось изменить — прямо скажи об этом в этой фразе.',
+    "Запрос: $Q"
+  ) -join "`n"
+  $msgs = New-V3List; $msgs.Add([ordered]@{ role = 'user'; content = $prompt })
+  $r = Invoke-V3Turn -Messages $msgs -System 'Ты — V3AI Design, дизайнер логотипов.' -Quiet -Waiting '✒ рисую логотипы…'
+  $names = @([regex]::Matches($r.Text, 'Вариант\s*\d+\s*[:.—-]\s*([^\r\n`]+)') | ForEach-Object { $_.Groups[1].Value.Trim(' *«»') })
+  $logos = New-V3List; $k = 0
+  foreach ($m in [regex]::Matches($r.Text, '```svg\s*([\s\S]*?)```', 'IgnoreCase')) {
+    $svg = Clear-V3Svg $m.Groups[1].Value
+    if ($svg) { $logos.Add([ordered]@{ name = $(if ($k -lt $names.Count) { $names[$k] } else { '' }); svg = $svg }) }
+    $k++
+  }
+  if (-not $logos.Count) { Write-V3Note 'Логотипы не получились — попробуй ещё раз или модель посильнее (/model).' Yellow; return }
+  $cap = ([regex]::Replace(([regex]::Replace($r.Text, '```[\s\S]*?(```|$)', '')), 'Вариант\s*\d+\s*[:.—-][^\r\n]*', '')).Trim()
+  $title = $(if ($Q.Length -gt 40) { $Q.Substring(0, 40) } else { $Q })
+  $board = [ordered]@{ title = $title; note = $cap; logos = $logos }
+  $html = $script:LogoTemplate.Replace('/*V3AI_LOGOS*/null', (ConvertTo-V3Json $board).Replace('</', '<\/'))
+  $path = Save-V3File $script:Paths.Design ((Get-V3SafeName $title) + '.html') $html
+  $lines = @()
+  if ($cap) { $lines += $cap }
+  for ($i = 0; $i -lt $logos.Count; $i++) { $lines += "$($i + 1). $(if ($logos[$i].name) { $logos[$i].name } else { 'Вариант' })" }
+  $lines += $(if ($path) { "Файл: $path" } else { 'Файл не сохранён (EngineSecure).' })
+  $lines += 'На странице: фон (светлый, тёмный, шахматка), 💾 PNG с прозрачным фоном и SVG. Доработка: «доработай вариант 2: …»'
+  Write-V3Box "✒ $title" $lines Magenta
+  if ($path) { Open-V3File $path }
+  $Chat['lastLogos'] = (@(for ($i = 0; $i -lt $logos.Count; $i++) { "$($i + 1) — $($logos[$i].name)" }) -join ', ') + " (запрос «$Q»)"
+  $Chat.messages.Add([ordered]@{ role = 'user'; content = $Q })
+  $Chat.messages.Add([ordered]@{ role = 'assistant'; content = "(V3AI Design нарисовал логотипы по запросу «$Q».) $cap" })
+}
+
+# Доска с вариантами логотипа.
+$script:LogoTemplate = @'
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V3AI Design</title>
+<style>
+:root { --bg: #0b1020; --panel: #121a30; --line: #263049; --fg: #eef2ff; --muted: #9aa6c4; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; display: flex; flex-direction: column; gap: 16px; }
+header { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.logo { font: 900 22px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 1px; background: linear-gradient(90deg, #00b4ff, #7dffcf); -webkit-background-clip: text; background-clip: text; color: transparent; }
+h1 { margin: 0; font-size: 18px; }
+p { margin: 0; color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.tile { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--panel); }
+.pic { aspect-ratio: 1; border-radius: 12px; display: grid; place-items: center; overflow: hidden; background: #fff; }
+.pic img { width: 92%; height: 92%; object-fit: contain; }
+.pic.dark { background: #0d1117; } .pic.check { background: repeating-conic-gradient(#d9dee8 0 25%, #ffffff 0 50%) 0 0 / 20px 20px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+button { flex: 1 1 auto; min-height: 44px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: #1a2440; color: var(--fg); font: inherit; font-weight: 700; cursor: pointer; }
+button:focus-visible { outline: 3px solid #7dffcf; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <header><span class="logo">V3AI</span><h1 id="title">Design</h1></header>
+  <p id="note"></p>
+  <div class="grid" id="grid"></div>
+</main>
+<script>
+const BOARD = /*V3AI_LOGOS*/null;
+(() => {
+  "use strict";
+  const data = BOARD || { title: "Логотипы", logos: [] };
+  const url = (svg) => "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  const file = (i, ext) => "V3AI-logo-" + String(data.title).replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 30) + "-" + (i + 1) + ext;
+  const save = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+  document.title = "V3AI Design · " + data.title; document.getElementById("title").textContent = data.title;
+  document.getElementById("note").textContent = data.note || "Три варианта логотипа. PNG — 1024×1024 с прозрачным фоном.";
+  const BG = ["", "dark", "check"];
+  (data.logos || []).forEach((L, i) => {
+    const tile = document.createElement("div"); tile.className = "tile";
+    const pic = document.createElement("div"); pic.className = "pic";
+    const im = document.createElement("img"); im.src = url(L.svg); im.alt = "Логотип, вариант " + (i + 1); pic.appendChild(im);
+    const name = document.createElement("b"); name.textContent = (i + 1) + ". " + (L.name || "Вариант");
+    const row = document.createElement("div"); row.className = "row";
+    const btn = (t, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.addEventListener("click", fn); row.appendChild(b); };
+    let bg = 0;
+    btn("🌓 Фон", () => { bg = (bg + 1) % BG.length; pic.className = "pic " + BG[bg]; });
+    btn("💾 PNG", () => { const c = document.createElement("canvas"); c.width = c.height = 1024; const g = new Image(); g.onload = () => { c.getContext("2d").drawImage(g, 0, 0, 1024, 1024); c.toBlob((b) => save(b, file(i, ".png")), "image/png"); }; g.src = url(L.svg); });
+    btn("SVG", () => save(new Blob([L.svg], { type: "image/svg+xml" }), file(i, ".svg")));
+    tile.append(pic, name, row); document.getElementById("grid").appendChild(tile);
+  });
+})();
+</script>
+</body>
+</html>
+'@
+
 # ── Фото, голос, буфер обмена ──────────────────────────────────────────────────────────────────
 function Get-V3Photo([string[]]$Words) {
   for ($k = $Words.Count; $k -ge 1; $k--) {
@@ -1840,11 +1946,12 @@ function Show-V3Help {
     @('/video <сюжет>', 'снять 3D-видео; /video 2d <сюжет> — рисованное 2D'),
     @('/watt <описание>', 'WattAI: сделать игру (без описания — режим WattAI)'),
     @('/gif <описание>', 'анимированный GIF'),
+    @('/design <описание>', 'V3AI Design: 3 варианта логотипа (то же: /logo)'),
     @('/photo <файл> [вопрос]', 'спросить ИИ о фото'),
     @('/again', 'ещё вариант последнего запроса'),
     @('/say', 'озвучить последний ответ (/say stop — замолчать)   /copy — скопировать его'),
     @('/files [папка]', 'файлы подключённого репозитория   /cat <файл> — показать файл'),
-    @('/mode [имя]', 'режим: help, school, write, lang, code, fun, art, game, video, agents'),
+    @('/mode [имя]', 'режим: help, school, write, lang, code, fun, art, design, game, video, agents'),
     @('/model [номер]', 'выбрать модель V3AI'),
     @('/new', 'новый чат        /chats — история        /open <номер> — открыть'),
     @('/export', 'сохранить чат в файл .md'),
@@ -1978,6 +2085,8 @@ while ($true) {
       }
       'export' { Export-V3Chat $chat }
       'image' { if ($rest.Count) { $forced = 'art'; $line = $rest -join ' ' } else { Switch-V3Mode 'art' } }
+      'design' { if ($rest.Count) { $forced = 'design'; $line = $rest -join ' ' } else { Switch-V3Mode 'design' } }
+      'logo' { if ($rest.Count) { $forced = 'design'; $line = $rest -join ' ' } else { Switch-V3Mode 'design' } }
       'gif' { if ($rest.Count) { $forced = 'gif'; $line = $rest -join ' ' } else { Write-V3Note 'Пример: /gif кот машет лапой' } }
       'photo' {
         try { $ph = Get-V3Photo $rest; if ($ph) { $forced = 'photo'; $script:PhotoBlock = $ph.Block; $line = $ph.Question } }
@@ -2047,18 +2156,19 @@ while ($true) {
   if ($cm -eq 'video' -and $line -match '^(2d|2д)\s+(.+)$') { $cm = 'video2d'; $line = $Matches[2] }
   if (-not $script:ApiKey) {
     Write-Host ''
-    if ($cm -in @('art', 'game', 'game-new', 'gif', 'photo', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
+    if ($cm -in @('art', 'design', 'game', 'game-new', 'gif', 'photo', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
     Write-Host ''
     continue
   }
   Write-Host ''
   try {
-    $kind = $(if ($cm -eq 'photo') { 'photo' } elseif (($chat.agent -and -not $forced) -or $cm -notin @('art', 'game', 'game-new', 'gif', 'video', 'video2d', 'agents')) { 'chat' } else { $cm })
+    $kind = $(if ($cm -eq 'photo') { 'photo' } elseif (($chat.agent -and -not $forced) -or $cm -notin @('art', 'design', 'game', 'game-new', 'gif', 'video', 'video2d', 'agents')) { 'chat' } else { $cm })
     switch ($kind) {
       'photo'    { Invoke-V3Chat $chat $line $script:PhotoBlock }
       'chat'     { Invoke-V3Chat $chat $line }
       'art'      { Invoke-V3Art $chat $line }
       'gif'      { Invoke-V3Gif $chat $line }
+      'design'   { Invoke-V3Logo $chat $line }
       'game'     { Invoke-V3Game $chat $line }
       'game-new' { Invoke-V3Game $chat $line -Fresh }
       'video'    { Invoke-V3Video $chat $line $true }

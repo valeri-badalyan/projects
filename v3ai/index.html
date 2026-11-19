@@ -143,6 +143,14 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-files button:first-child { border-top: 0; } .vi-files button small { margin-left: auto; color: var(--muted); font-size: 11px; } .vi-files .crumb { background: rgba(0,0,0,.25); font-weight: 800; }
 .vi-readme { max-height: 220px; overflow: auto; padding: 8px 10px; border-radius: 10px; background: rgba(0,0,0,.22); font-size: 13px; }
 .vi-commits { margin: 0; padding-left: 18px; font-size: 12.5px; } .vi-commits a { color: var(--fg); } .vi-commits small { color: var(--muted); }
+.vi-logos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 6px; }
+.vi-logo { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel-2); }
+.vi-logo .pic { aspect-ratio: 1; border-radius: 10px; display: grid; place-items: center; overflow: hidden; }
+.vi-logo .pic img { width: 92%; height: 92%; object-fit: contain; }
+.vi-logo .pic.light { background: #ffffff; } .vi-logo .pic.dark { background: #0d1117; }
+.vi-logo .pic.check { background: repeating-conic-gradient(#d9dee8 0 25%, #ffffff 0 50%) 0 0 / 20px 20px; }
+.vi-logo b { font-size: 12.5px; } .vi-logo .row { display: flex; flex-wrap: wrap; gap: 4px; }
+.vi-logo .row button { flex: 1 1 auto; padding: 6px 6px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255,255,255,.06); color: var(--fg); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
@@ -200,6 +208,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       { id: "help", ico: "✨", n: "Помощник", hi: "Спрашивай что угодно — объясню, посоветую, придумаю.", p: "Режим «Помощник»: отвечай понятно и по делу, давай практичные советы.", s: ["Чем заняться вечером?", "Почему небо голубое?", "Составь мне план на день"] },
       { id: "art", ico: "🎨", n: "Художник", hi: "Опиши картинку — и я её нарисую! Можно скачать картинкой.", p: "Режим «Художник»: рисуешь картинки по описанию.", s: ["Кот-космонавт на Луне", "Закат над морем и парусник", "Милый дракон охраняет замок"] },
       { id: "gif", ico: "🎞", n: "GIF", hi: "Опиши сцену — и я сделаю анимированный GIF! Его можно скачать и отправить друзьям.", p: "Режим «GIF»: делаешь анимированные GIF по описанию.", s: ["Кот машет лапой", "Ракета летит к звёздам", "Рыбка плавает в аквариуме"] },
+      { id: "design", ico: "✒️", n: "Design", hi: "Я V3AI Design — рисую логотипы! Опиши компанию, игру, канал или команду — и получишь 3 варианта. Скачивай в PNG (прозрачный фон) и SVG.", p: "Режим «Design»: делаешь логотипы.", s: ["Логотип для кофейни «Луна»", "Лого игрового канала V3 Plays", "Эмблема футбольной команды «Молния»"] },
       { id: "agents", ico: "🩺", n: "Dr. Agents", hi: "Я Dr. Agents — создаю ИИ-агентов! Опиши, какой помощник тебе нужен, и я соберу агента с именем, характером и навыками: память, список дел, калькулятор, время, случайности.", p: "Режим «Dr. Agents»: создаёшь ИИ-агентов.", s: ["Агент-репетитор английского, который проверяет слова", "Агент-повар: подбирает рецепты из того, что есть дома", "Агент-планировщик: ведёт мой список дел и напоминает"] },
       { id: "game", ico: "🕹", n: "WattAI", hi: "Я WattAI — создатель игр! Опиши игру, и я её сделаю: играй прямо здесь, на весь экран, проси доработки и скачивай.", p: "Режим «WattAI»: создаёшь браузерные игры по описанию.", s: ["Космический шутер с метеоритами", "Раннер: кот прыгает через кактусы", "Игра «Лови фрукты» с бонусами"] },
       { id: "video3d", ico: "🧊", n: "3D-видео", hi: "Опиши сюжет — и я сниму 3D-мультфильм: объёмные герои, свет и тени, полёт камеры, субтитры и музыка. Его можно скачать.", p: "Режим «3D-видео»: снимаешь 3D-мультфильмы по описанию.", s: ["Робот танцует на Луне", "Кот плывёт на лодке к острову", "Динозавр собирает подарки под ёлкой"] },
@@ -334,7 +343,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       chats = chats.slice(0, 30);
       chats.forEach((c) => { c.msgs = c.msgs.slice(-40); });
       let pics = 0, games = 0; // keep only the 15 newest drawings and the 8 newest games in storage
-      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if ((m.svg || m.scenes) && ++pics > 15) { delete m.svg; delete m.anim; delete m.scenes; m.gone = 1; } if (m.game && ++games > 8) { delete m.game; m.gameGone = 1; } } });
+      chats.forEach((c) => { for (let i = c.msgs.length - 1; i >= 0; i--) { const m = c.msgs[i]; if ((m.svg || m.scenes || m.logos) && ++pics > 15) { delete m.svg; delete m.anim; delete m.scenes; if (m.logos) { delete m.logos; m.logosGone = 1; } else m.gone = 1; } if (m.game && ++games > 8) { delete m.game; m.gameGone = 1; } } });
       store.set("v3aiChats", chats); store.set("v3aiCur", cur); store.set("v3aiMode", mode); store.set("v3aiAsked", asked);
     }
 
@@ -385,6 +394,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.img) { const im = document.createElement("img"); im.src = m.img; im.alt = "Фото"; el.appendChild(im); }
         el.appendChild(document.createTextNode(m.t));
       } else {
+        if (m.logos || m.logosGone) { logoCard(el, m); log.appendChild(el); return el; }
         if (m.repoCard) { repoCard(el, m); log.appendChild(el); return el; }
         if (m.agentCard) { agentCard(el, m); log.appendChild(el); return el; }
         if (m.game || m.gameGone) { gameCard(el, m); log.appendChild(el); return el; }
@@ -514,6 +524,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (!repoQ && !img && (forceArt === "video" || (!forceArt && M.id === "video"))) { await film(c, q, false); return; }
       if (!repoQ && !img && !forceArt && wantsVideo(q, M)) { await film(c, q, !/2d|2д|рисованн|мульт/i.test(q)); return; }
       if (!repoQ && !img && (forceArt === "gif" || (!forceArt && wantsGif(q, M)))) { await draw(c, q, true); return; }
+      if (!repoQ && !img && (forceArt === "design" || (!forceArt && wantsDesign(q, M)))) { await makeLogo(c, q); return; }
       if (!repoQ && !img && (forceArt || wantsArt(q, M))) { await draw(c, q); return; }
       setStatus("думает…", true);
       const el = bubble({ r: "a", t: "" });
@@ -527,7 +538,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       const sample = aiOff ? null : await samplePromise;
       if (sample) {
         ctl = new AbortController();
-        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.repoCard ? `(Подключён GitHub-репозиторий ${m.repoCard.owner}/${m.repoCard.repo}.) ` : "") + (m.game || m.gameGone ? `(WattAI сделал игру по запросу «${m.q}».) ` : "") + (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
+        const hist = c.msgs.slice(-16).map((m) => ({ role: m.r === "u" ? "user" : "assistant", content: (m.logos || m.logosGone ? `(V3AI Design нарисовал логотипы по запросу «${m.q}».) ` : "") + (m.repoCard ? `(Подключён GitHub-репозиторий ${m.repoCard.owner}/${m.repoCard.repo}.) ` : "") + (m.game || m.gameGone ? `(WattAI сделал игру по запросу «${m.q}».) ` : "") + (m.svg || m.gone || m.scenes ? `(${m.scenes ? (m.scenes[0] && m.scenes[0].three ? "Снял 3D-видео" : "Снял видео") : m.gif ? "Сделал GIF-анимацию" : "Нарисовал картинку"} по запросу «${m.q}».) ` : "") + (m.t || "…") }));
         while (hist.length && hist[0].role !== "user") hist.shift();
         hist[0] = { role: "user", content: rules(M) + (c.repo ? repoRules(c) : "") + "\n\n---\n" + hist[0].content };
         if (img) hist[hist.length - 1].content += "\n(Пользователь прикрепил фото — оно передано вместе с этим сообщением.)";
@@ -575,6 +586,11 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (M.id === "game") return true;
       const t = q.toLowerCase().replace(/ё/g, "е");
       return /wattai|ватт ?аи/.test(t) || /(сделай|создай|напиши|придумай|разработай|собери|запрограммируй)\s+(мне\s+)?(\S+\s+){0,2}(игру|игрушку|мини-игру|game)/.test(t);
+    }
+    function wantsDesign(q, M) {
+      if (M.id === "design") return true;
+      const t = q.toLowerCase().replace(/ё/g, "е");
+      return /логотип|(^|\s)лого(\s|$)|logo|эмблем/.test(t);
     }
     function wantsVideo(q, M) {
       if (M.id === "video" || M.id === "video3d") return true;
@@ -1877,6 +1893,111 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
         { name: "list_pull_requests", description: "Pull requests. state: open, closed или all.", inputSchema: { type: "object", properties: { state: { type: "string", enum: ["open", "closed", "all"] } } },
           execute: async ({ state }) => { note("🔀 смотрю pull requests"); const res = await call("list_pull_requests", { ...base, perPage: 20, state: state || "open", fields: ["number", "title", "state", "merged", "created_at"] }); return { pulls: ghList(res).map((x) => ({ number: x.number, title: x.title, state: x.state, merged: x.merged })) }; } },
       ];
+    }
+
+    /* ---- V3AI Design: three logo variants as clean SVG; PNG with a transparent background and SVG to download ---- */
+    const LOGO_BG = ["light", "dark", "check"];
+    function logoPng(svg) {
+      return new Promise((res, rej) => {
+        const im = new Image();
+        im.onload = () => { const cv = document.createElement("canvas"); cv.width = cv.height = 1024; cv.getContext("2d").drawImage(im, 0, 0, 1024, 1024); cv.toBlob((b) => (b ? res(b) : rej()), "image/png"); };
+        im.onerror = rej; im.src = svgUrl(svg);
+      });
+    }
+    async function saveBlob(blob, name, btn) {
+      if (!(await Secure.ask("download"))) { btn.textContent = "🛡 Отменено"; return; }
+      try {
+        if (!dlAsked) { dlAsked = true; try { dl = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads") : null; } catch (e) { dl = null; } }
+        if (dl) { await dl.save({ filename: name, data: blob }); btn.textContent = "✓ Сохранено"; return; }
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); btn.textContent = "✓ Скачивается";
+      } catch (e) { btn.textContent = e && e.code === "declined" ? "Отменено" : "Не вышло"; }
+    }
+    function logoCard(el, m) {
+      el.classList.add("wide");
+      if (m.t) { const b = document.createElement("div"); b.className = "vi-body"; b.innerHTML = md(m.t); el.appendChild(b); }
+      if (!m.logos) { const b = document.createElement("div"); b.className = "vi-body"; b.textContent = "✒️ Старые логотипы не хранятся — нажми «Ещё варианты»."; el.appendChild(b); }
+      else {
+        const grid = document.createElement("div"); grid.className = "vi-logos";
+        const base = "V3AI-logo-" + (m.q || "logo").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 30);
+        m.logos.forEach((L, i) => {
+          const tile = document.createElement("div"); tile.className = "vi-logo";
+          let bg = 0;
+          tile.innerHTML = '<div class="pic light"><img alt=""></div><b></b><div class="row"><button type="button" data-a="bg">🌓 Фон</button><button type="button" data-a="png">💾 PNG</button><button type="button" data-a="svg">SVG</button><button type="button" data-a="edit">✏️ Доработать</button></div>';
+          const pic = tile.querySelector(".pic"), im = tile.querySelector("img");
+          im.src = svgUrl(L.svg); im.alt = "Логотип, вариант " + (i + 1);
+          tile.querySelector("b").textContent = (i + 1) + ". " + (L.name || "Вариант");
+          tile.querySelector('[data-a="bg"]').addEventListener("click", () => { bg = (bg + 1) % LOGO_BG.length; pic.className = "pic " + LOGO_BG[bg]; });
+          tile.querySelector('[data-a="png"]').addEventListener("click", async (e) => { const b = e.currentTarget; try { await saveBlob(await logoPng(L.svg), base + "-" + (i + 1) + ".png", b); } catch (err) { b.textContent = "Не вышло"; } });
+          tile.querySelector('[data-a="svg"]').addEventListener("click", (e) => saveBlob(new Blob([L.svg], { type: "image/svg+xml" }), base + "-" + (i + 1) + ".svg", e.currentTarget));
+          tile.querySelector('[data-a="edit"]').addEventListener("click", () => { input.value = `Доработай вариант ${i + 1} («${L.name || "логотип"}»): `; fitInput(); input.focus(); });
+          im.addEventListener("click", () => zoom(im.src));
+          grid.appendChild(tile);
+        });
+        el.appendChild(grid);
+      }
+      const bar = document.createElement("div"); bar.className = "vi-tools";
+      if (m.by) { const by = document.createElement("span"); by.className = "vi-by"; by.textContent = m.by; bar.appendChild(by); }
+      const again = document.createElement("button"); again.type = "button"; again.textContent = "🔁 Ещё варианты"; again.addEventListener("click", () => send(m.q, "design")); bar.appendChild(again);
+      el.appendChild(bar);
+    }
+    // Without the AI: three simple marks from the initials of the name.
+    function offlineLogos(q) {
+      const name = ((q.match(/[«"„“]([^»"“”]+)[»"”]/) || [])[1] || q.replace(/^(сделай|создай|нарисуй|придумай)?\s*(мне\s+)?(логотип|лого|эмблему|значок)\s*(для\s+)?/i, "")).trim().slice(0, 24) || "V3AI";
+      const ini = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "V";
+      const e = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+      const P = [["#0a84ff", "#00c2a8", "#0b1324"], ["#ff5d8f", "#ffc93d", "#2a1033"], ["#2fc97a", "#0d4a5a", "#0e2a1c"]];
+      const marks = [
+        (c) => `<circle cx="256" cy="200" r="120" fill="${c[0]}"/><circle cx="256" cy="200" r="120" fill="none" stroke="${c[1]}" stroke-width="14"/><text x="256" y="236" font-family="Arial Black, Arial, sans-serif" font-size="104" font-weight="900" fill="#fff" text-anchor="middle">${e(ini)}</text>`,
+        (c) => `<rect x="146" y="80" width="220" height="220" rx="56" fill="${c[0]}" transform="rotate(8 256 190)"/><rect x="166" y="100" width="180" height="180" rx="44" fill="${c[1]}"/><text x="256" y="226" font-family="Georgia, serif" font-size="100" font-weight="700" fill="${c[2]}" text-anchor="middle">${e(ini)}</text>`,
+        (c) => `<path d="M256 70 L380 140 L380 270 L256 340 L132 270 L132 140 Z" fill="${c[0]}"/><path d="M256 110 L346 160 L346 250 L256 300 L166 250 L166 160 Z" fill="none" stroke="#fff" stroke-width="10"/><text x="256" y="238" font-family="Arial, sans-serif" font-size="88" font-weight="800" fill="#fff" text-anchor="middle">${e(ini)}</text>`,
+      ];
+      return marks.map((mk, i) => ({ name: ["Круглый знак", "Мягкий квадрат", "Шестигранник"][i],
+        svg: cleanSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">${mk(P[i])}<text x="256" y="430" font-family="Arial, sans-serif" font-size="46" font-weight="800" fill="${P[i][0]}" text-anchor="middle">${e(name)}</text></svg>`) })).filter((L) => L.svg);
+    }
+    async function makeLogo(c, q) {
+      setStatus("рисует логотипы…", true);
+      const el = document.createElement("div"); el.className = "vi-m a"; el.innerHTML = '<div class="vi-body"><span class="vi-dots"></span> ✒️ V3AI Design рисует логотипы…</div>';
+      log.appendChild(el); log.scrollTop = log.scrollHeight;
+      const prev = c.msgs.slice(0, -1).reverse().find((m) => m.logos);
+      const sample = aiOff ? null : await samplePromise;
+      let logos = [], cap = "", errCode = "", stopped = false;
+      if (sample) {
+        ctl = new AbortController();
+        const prompt = [
+          "Ты — V3AI Design, дизайнер логотипов. Сделай по запросу пользователя 3 РАЗНЫХ варианта логотипа (разные идеи знака, формы и палитры).",
+          'Каждый вариант — ОДНО SVG <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"> в своём блоке ```svg, до ~3500 символов. Перед каждым блоком строка «Вариант N: короткое название идеи».',
+          "Правила хорошего логотипа: простой запоминающийся знак (символ, монограмма или эмблема) и название, если оно есть в запросе; 2–4 цвета; плоский векторный стиль, чёткие формы, без мелких деталей — логотип должен читаться и в маленьком размере. Прозрачный фон: НЕ заливай весь холст, знак по центру с полями.",
+          "Текст — только системными шрифтами: font-family=\"Arial, sans-serif\", \"Arial Black, Arial, sans-serif\" или \"Georgia, serif\"; крупный и читаемый; название пиши точно как в запросе.",
+          "Запрещено в SVG: script, foreignObject, image, ссылки, внешние шрифты, анимация, обработчики событий.",
+          "Юмор приветствуется, в том числе мультяшный туалетный: какашка-смайлик 💩, пуки, лужи — смешно и без натурализма. Нельзя: кровь, жестокость, взрослые темы и насмешки или унижение конкретных людей по имени (это может обидеть настоящего человека). Если в просьбе есть такое — сделай смешную безопасную версию (например, вместо человека забавный персонаж) и ОБЯЗАТЕЛЬНО коротко и честно скажи в ответной фразе, что изменил и почему. Никогда не меняй просьбу молча.",
+          prev ? `Прошлые логотипы в этом чате были по запросу «${prev.q}»: ${prev.logos.map((L, i) => (i + 1) + " — " + (L.name || "вариант")).join(", ")}. Если новый запрос — доработка (например «доработай вариант 2: сделай синим»), сделай 3 версии доработанного варианта.` : "",
+          "В самом конце — одна короткая фраза по-русски о вариантах. Если что-то в просьбе пришлось изменить — прямо скажи об этом в этой фразе.",
+          "Запрос: " + q,
+        ].filter(Boolean).join("\n");
+        try {
+          const res = await sample(prompt, {
+            modelTier: artTier(), cache: false, signal: ctl.signal,
+            onText: ({ text: t }) => { if (t) { const n = (t.match(/<\/svg>/g) || []).length; el.querySelector(".vi-body").textContent = `✒️ V3AI Design рисует логотипы… готово ${n} из 3`; } },
+          });
+          const text = res.text || "";
+          const names = Array.from(text.matchAll(/Вариант\s*\d+\s*[:.—-]\s*([^\n`]+)/g)).map((x) => x[1].replace(/[*«»]/g, "").trim().slice(0, 40));
+          let k = 0;
+          text.replace(/```svg\s*([\s\S]*?)```/gi, (_, b) => { const svg = cleanSvg(b); if (svg) logos.push({ svg, name: names[k] || "" }); k++; return ""; });
+          if (!logos.length) (text.match(/<svg[\s\S]*?<\/svg>/gi) || []).forEach((b, i) => { const svg = cleanSvg(b); if (svg) logos.push({ svg, name: names[i] || "" }); });
+          logos = logos.slice(0, 4);
+          cap = text.replace(/```[\s\S]*?(```|$)/g, "").replace(/Вариант\s*\d+\s*[:.—-][^\n]*\n?/g, "").replace(/<svg[\s\S]*<\/svg>/gi, "").trim().slice(0, 300);
+          if (!logos.length) errCode = res.truncated ? "truncated" : "no_logo";
+        } catch (e) { const code = (e && e.code) || "error"; if (OFF.includes(code)) aiOff = true; if (code === "cancelled") stopped = true; errCode = code; if (e && e.text) (e.text.match(/<svg[\s\S]*?<\/svg>/gi) || []).forEach((b) => { const svg = cleanSvg(b); if (svg) logos.push({ svg, name: "" }); }); }
+        ctl = null;
+      }
+      let off = false;
+      if (!logos.length && !stopped) { logos = offlineLogos(q); off = true; cap = "📴 Простые логотипы без ИИ. " + whyOff(errCode, sample); }
+      el.remove();
+      const am = logos.length ? { r: "a", t: cap || "Готово! Вот 3 варианта логотипа ✒️", q, logos } : { r: "a", t: "Рисование логотипов остановлено." };
+      if (logos.length && !off) am.by = "V3AI Design · " + mdl().n;
+      if (off) am.off = 1;
+      bubble(am); c.msgs.push(am); save();
+      done(sample);
     }
 
     // Why the AI could not help, in words a viewer understands.
