@@ -36,7 +36,7 @@ if ($script:IsWinPS) {
   Remove-TypeData -TypeName System.Array -ErrorAction SilentlyContinue
 }
 
-$script:Version = '1.0'
+$script:Version = '1.1'
 $script:Root = Join-Path $HOME '.v3ai'
 $script:Paths = @{
   Config = Join-Path $script:Root 'config.json'
@@ -102,14 +102,25 @@ function Get-V3Prop($Object, [string]$Name, $Default = $null) {
   return $Default
 }
 
+# ── Внешний вид: темы «Sunset» (по умолчанию) и «Neon» ──
+$script:Themes = @{
+  sunset = @{ g1 = @(255, 79, 216); g2 = @(255, 181, 71); frame = 'DarkMagenta'; head = 'Magenta'; acc = 'Magenta'; acc2 = 'Yellow'; code = 'DarkYellow'; bullet = '›'; gutter = '  ▏ '; box = 'heavy'; prompt = 'double'
+              map = @{ Cyan = 'Magenta'; Green = 'Yellow'; Magenta = 'DarkYellow' } }
+  neon   = @{ g1 = @(0, 180, 255); g2 = @(125, 255, 207); frame = 'DarkCyan'; head = 'Cyan'; acc = 'Cyan'; acc2 = 'Green'; code = 'DarkYellow'; bullet = '•'; gutter = '  '; box = 'round'; prompt = 'single'
+              map = @{} }
+}
+$script:T = $script:Themes.sunset
+function Get-V3Tone([string]$Color) { $m = $script:T.map; if ($m.ContainsKey($Color)) { return $m[$Color] } else { return $Color } }
+
 # ── Внешний вид: «V3AI Terminal» ──────────────────────────────────────────────────────────────
 function Get-V3Rgb([int]$r, [int]$g, [int]$b, [string]$text) {
   if ($script:VT) { return "$($script:ESC)[38;2;$r;$g;${b}m$text$($script:ESC)[0m" }
   return $text
 }
 
-function Write-V3Gradient([string]$Text, [int[]]$From = @(0, 180, 255), [int[]]$To = @(125, 255, 207)) {
-  if (-not $script:VT) { Write-Host $Text -ForegroundColor Cyan; return }
+function Write-V3Gradient([string]$Text, [int[]]$From = $null, [int[]]$To = $null) {
+  if (-not $From) { $From = $script:T.g1 }; if (-not $To) { $To = $script:T.g2 }
+  if (-not $script:VT) { Write-Host $Text -ForegroundColor $script:T.acc; return }
   $sb = [Text.StringBuilder]::new()
   $n = [Math]::Max(1, $Text.Length - 1)
   for ($i = 0; $i -lt $Text.Length; $i++) {
@@ -122,32 +133,53 @@ function Write-V3Gradient([string]$Text, [int[]]$From = @(0, 180, 255), [int[]]$
 }
 
 function Write-V3Banner {
-  $logo = @(
-    '  ██╗   ██╗██████╗  █████╗ ██╗',
-    '  ██║   ██║╚════██╗██╔══██╗██║',
-    '  ██║   ██║ █████╔╝███████║██║',
-    '  ╚██╗ ██╔╝ ╚═══██╗██╔══██║██║',
-    '   ╚████╔╝ ██████╔╝██║  ██║██║',
-    '    ╚═══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝'
-  )
   Write-Host ''
-  foreach ($line in $logo) { Write-V3Gradient $line }
-  Write-Host ('  ' + (Get-V3Rgb 125 255 207 'Terminal') + "  v$($script:Version) · ИИ-помощник от команды V3 · PowerShell $($PSVersionTable.PSVersion)") -ForegroundColor DarkGray
+  if ($script:T.box -eq 'round') {
+    $logo = @(
+      '  ██╗   ██╗██████╗  █████╗ ██╗',
+      '  ██║   ██║╚════██╗██╔══██╗██║',
+      '  ██║   ██║ █████╔╝███████║██║',
+      '  ╚██╗ ██╔╝ ╚═══██╗██╔══██║██║',
+      '   ╚████╔╝ ██████╔╝██║  ██║██║',
+      '    ╚═══╝  ╚═════╝ ╚═╝  ╚═╝╚═╝'
+    )
+    foreach ($line in $logo) { Write-V3Gradient $line }
+    Write-Host ('  ' + (Get-V3Rgb 125 255 207 'Terminal') + "  v$($script:Version) · ИИ-помощник от команды V3 · PowerShell $($PSVersionTable.PSVersion)") -ForegroundColor DarkGray
+  } else {
+    $logo = @(
+      '   █   █  ▀▀▀█   ▄▀▄   █',
+      '    █ █    ▀▀█  █▄▄▄█  █',
+      '     █    ▄▄▄█  █   █  █'
+    )
+    foreach ($line in $logo) { Write-V3Gradient $line }
+    Write-V3Gradient '  ━━━━━━━━━━━━━━━━━━━━━━━━━━'
+    Write-V3Gradient '     ━━━━━━━━━━━━━━━━━━━━'
+    Write-V3Gradient '        ━━━━━━━━━━━━━━'
+    Write-Host ('  ' + (Get-V3Rgb 255 181 71 'SUNSET') + "  V3AI Terminal v$($script:Version) · PowerShell $($PSVersionTable.PSVersion) · /theme — сменить тему") -ForegroundColor DarkGray
+  }
   Write-Host ''
 }
 
 function Write-V3Rule([string]$Title = '') {
   $w = 60; try { $w = [Math]::Min(78, [Console]::WindowWidth - 2) } catch { }
+  $ch = $(if ($script:T.box -eq 'heavy') { '━' } else { '─' })
   if ($Title) {
     $rest = [Math]::Max(3, $w - $Title.Length - 4)
-    Write-V3Gradient ("──╴$Title╶" + ('─' * $rest))
-  } else { Write-V3Gradient ('─' * $w) }
+    if ($script:T.box -eq 'heavy') { Write-V3Gradient ("$ch$ch $Title " + ($ch * $rest)) } else { Write-V3Gradient ("──╴$Title╶" + ('─' * $rest)) }
+  } else { Write-V3Gradient ($ch * $w) }
 }
 
 function Write-V3Box([string]$Title, [string[]]$Lines, [ConsoleColor]$Color = 'Cyan') {
-  Write-Host "  ╭─ $Title" -ForegroundColor $Color
-  foreach ($l in $Lines) { Write-Host "  │ " -ForegroundColor $Color -NoNewline; Write-Host $l }
-  Write-Host '  ╰─' -ForegroundColor $Color
+  $c = Get-V3Tone ([string]$Color)
+  if ($script:T.box -eq 'heavy') {
+    Write-Host "  ┏━ " -NoNewline -ForegroundColor $c; Write-Host $Title -ForegroundColor $c
+    foreach ($l in $Lines) { Write-Host "  ┃ " -ForegroundColor $c -NoNewline; Write-Host $l }
+    Write-Host ('  ┗' + ('━' * 28)) -ForegroundColor $c
+  } else {
+    Write-Host "  ╭─ $Title" -ForegroundColor $c
+    foreach ($l in $Lines) { Write-Host "  │ " -ForegroundColor $c -NoNewline; Write-Host $l }
+    Write-Host '  ╰─' -ForegroundColor $c
+  }
 }
 
 function Write-V3Note([string]$Text, [ConsoleColor]$Color = 'DarkGray') { Write-Host "  $Text" -ForegroundColor $Color }
@@ -157,7 +189,7 @@ $script:R = @{ Buf = ''; InCode = $false; Started = $false; Spinner = $false }
 
 function Start-V3Render([string]$Waiting = 'думает…') {
   $script:R = @{ Buf = ''; InCode = $false; Started = $false; Spinner = $true }
-  Write-Host "  ◌ $Waiting" -NoNewline -ForegroundColor DarkGray
+  Write-Host ($script:T.gutter + "◌ $Waiting") -NoNewline -ForegroundColor DarkGray
 }
 
 function Clear-V3Spinner {
@@ -192,18 +224,25 @@ function Write-V3Inline([string]$Line, [ConsoleColor]$Base = 'Gray') {
 }
 
 function Write-V3Line([string]$Line) {
+  $T = $script:T; $g = $T.gutter
   $t = $Line.Trim()
   if ($t.StartsWith('```')) {
     $script:R.InCode = -not $script:R.InCode
-    $lang = $t.Substring(3).Trim()
-    if ($script:R.InCode) { Write-Host ('  ┌─ ' + ($(if ($lang) { $lang } else { 'код' }))) -ForegroundColor DarkYellow } else { Write-Host '  └─' -ForegroundColor DarkYellow }
+    $lang = $t.Substring(3).Trim(); if (-not $lang) { $lang = 'код' }
+    if ($T.box -eq 'heavy') {
+      Write-Host $g -NoNewline -ForegroundColor DarkGray
+      if ($script:R.InCode) { Write-Host ("▌ $lang " + ('─' * 20)) -ForegroundColor $T.code } else { Write-Host '▌' -ForegroundColor $T.code }
+    } elseif ($script:R.InCode) { Write-Host ('  ┌─ ' + $lang) -ForegroundColor $T.code } else { Write-Host '  └─' -ForegroundColor $T.code }
     return
   }
-  if ($script:R.InCode) { Write-Host '  │ ' -NoNewline -ForegroundColor DarkYellow; Write-Host $Line -ForegroundColor Yellow; return }
-  if ($t -match '^#{1,4}\s+(.*)$') { Write-Host ('  ' + $Matches[1]) -ForegroundColor Cyan; return }
-  if ($t -match '^[-*•]\s+(.*)$') { Write-Host '   • ' -NoNewline -ForegroundColor Green; Write-V3Inline $Matches[1]; return }
-  if ($t -match '^(\d+)[.)]\s+(.*)$') { Write-Host ('   ' + $Matches[1] + '. ') -NoNewline -ForegroundColor Green; Write-V3Inline $Matches[2]; return }
-  Write-Host '  ' -NoNewline
+  if ($script:R.InCode) {
+    if ($T.box -eq 'heavy') { Write-Host $g -NoNewline -ForegroundColor DarkGray; Write-Host '▌ ' -NoNewline -ForegroundColor $T.code } else { Write-Host '  │ ' -NoNewline -ForegroundColor $T.code }
+    Write-Host $Line -ForegroundColor Yellow; return
+  }
+  Write-Host $g -NoNewline -ForegroundColor DarkGray
+  if ($t -match '^#{1,4}\s+(.*)$') { Write-Host $Matches[1] -ForegroundColor $T.head; return }
+  if ($t -match '^[-*•]\s+(.*)$') { Write-Host " $($T.bullet) " -NoNewline -ForegroundColor $T.acc2; Write-V3Inline $Matches[1]; return }
+  if ($t -match '^(\d+)[.)]\s+(.*)$') { Write-Host (' ' + $Matches[1] + '. ') -NoNewline -ForegroundColor $T.acc2; Write-V3Inline $Matches[2]; return }
   Write-V3Inline $Line
 }
 
@@ -236,11 +275,12 @@ function Get-V3Mode([string]$Id) { foreach ($m in $script:Modes) { if ($m.id -eq
 
 $script:Cfg = Read-V3Json $script:Paths.Config
 if (-not $script:Cfg) { $script:Cfg = [ordered]@{} }
-foreach ($kv in @(@('model', 'ortl55'), @('mode', 'help'), @('secureOn', $true), @('asked', 0))) { if (-not $script:Cfg.Contains($kv[0])) { $script:Cfg[$kv[0]] = $kv[1] } }
+foreach ($kv in @(@('model', 'ortl55'), @('mode', 'help'), @('secureOn', $true), @('asked', 0), @('theme', 'sunset'))) { if (-not $script:Cfg.Contains($kv[0])) { $script:Cfg[$kv[0]] = $kv[1] } }
 if (-not $script:Cfg.Contains('secure') -or -not ($script:Cfg['secure'] -is [System.Collections.IDictionary])) { $script:Cfg['secure'] = [ordered]@{} }
 if ($Model) { $script:Cfg.model = (Get-V3Model $Model).id }
 if ($Mode) { $script:Cfg.mode = (Get-V3Mode $Mode).id }
 function Save-V3Config { Save-V3Json $script:Paths.Config $script:Cfg }
+if ($script:Themes.ContainsKey([string]$script:Cfg.theme)) { $script:T = $script:Themes[[string]$script:Cfg.theme] }
 
 # ── EngineSecure ──────────────────────────────────────────────────────────────────────────────
 $script:SecureActs = [ordered]@{
@@ -1931,11 +1971,12 @@ function Invoke-V3Chat($Chat, [string]$Q, $Image = $null) {
       throw "Неизвестный инструмент $name"
     }
   }
+  if ($script:T.box -eq 'heavy') { Write-Host ('  ◆ ' + $(if ($A) { "$($A.emoji) $($A.name)" } else { 'V3AI' })) -ForegroundColor $script:T.acc }
   $r = Invoke-V3Turn -Messages $Chat.messages -System $system -Tools $tools -Handler $handler -Waiting $(if ($A) { "$($A.name) думает…" } else { 'думает…' })
   $M = Get-V3Model $script:Cfg.model
   $tag = $(if ($A) { "$($A.name) · $($M.n)" } else { $M.n })
   if ($r.Used.Count) { $tag += ' · 🧰 ' + ($r.Used -join ', ') }
-  Write-Host "  — $tag" -ForegroundColor DarkGray
+  Write-Host $(if ($script:T.box -eq 'heavy') { "  ╰ $tag" } else { "  — $tag" }) -ForegroundColor DarkGray
 }
 
 # ── Команды ───────────────────────────────────────────────────────────────────────────────────
@@ -1962,11 +2003,12 @@ function Show-V3Help {
     @('/agent <n> memory', 'память агента;  forget — очистить;  edit <что изменить> — изменить'),
     @('/secure', 'EngineSecure: разрешения'),
     @('/key', 'ввести ключ Claude API'),
+    @('/theme [sunset|neon]', 'тема оформления'),
     @('/clear', 'очистить экран      /exit — выход'),
     @('Esc / Ctrl+C', 'во время ответа — остановить'),
     @('строка с \ в конце', 'продолжить ввод на следующей строке')
   )
-  foreach ($r in $rows) { Write-Host ('   ' + $r[0].PadRight(22)) -NoNewline -ForegroundColor Cyan; Write-Host $r[1] -ForegroundColor Gray }
+  foreach ($r in $rows) { Write-Host ('   ' + $r[0].PadRight(22)) -NoNewline -ForegroundColor $script:T.acc; Write-Host $r[1] -ForegroundColor Gray }
   Write-V3Note 'Голосовой ввод (микрофон) есть только в веб-версии V3AI.'
 }
 
@@ -1974,9 +2016,9 @@ function Show-V3Models {
   Write-V3Rule '🧠 Модели V3AI'
   for ($i = 0; $i -lt $script:Models.Count; $i++) {
     $m = $script:Models[$i]; $on = $m.id -eq $script:Cfg.model
-    Write-Host ($(if ($on) { ' ▶ ' } else { '   ' }) + ($i + 1) + '. ') -NoNewline -ForegroundColor $(if ($on) { 'Green' } else { 'DarkGray' })
+    Write-Host ($(if ($on) { ' ▶ ' } else { '   ' }) + ($i + 1) + '. ') -NoNewline -ForegroundColor $(if ($on) { $script:T.acc2 } else { 'DarkGray' })
     Write-Host $m.n.PadRight(15) -NoNewline -ForegroundColor White
-    Write-Host $m.tag.PadRight(11) -NoNewline -ForegroundColor Cyan
+    Write-Host $m.tag.PadRight(11) -NoNewline -ForegroundColor $script:T.acc
     Write-Host $m.d -ForegroundColor Gray
   }
   Write-V3Note 'Выбрать: /model <номер>'
@@ -1986,7 +2028,7 @@ function Show-V3Modes {
   Write-V3Rule '🎛 Режимы'
   foreach ($m in $script:Modes) {
     $on = $m.id -eq $script:Cfg.mode
-    Write-Host ($(if ($on) { ' ▶ ' } else { '   ' }) + "$($m.ico) ") -NoNewline -ForegroundColor $(if ($on) { 'Green' } else { 'DarkGray' })
+    Write-Host ($(if ($on) { ' ▶ ' } else { '   ' }) + "$($m.ico) ") -NoNewline -ForegroundColor $(if ($on) { $script:T.acc2 } else { 'DarkGray' })
     Write-Host $m.n.PadRight(12) -NoNewline -ForegroundColor White
     Write-Host "/mode $($m.id)" -ForegroundColor DarkGray
   }
@@ -2044,8 +2086,17 @@ Write-V3Note 'Пиши вопрос и жми Enter. /help — команды, /
 Write-Host ''
 
 while ($true) {
-  Write-Host ('[' + (Get-V3PromptText $chat) + ']') -NoNewline -ForegroundColor DarkCyan
-  Write-Host ' ❯ ' -NoNewline -ForegroundColor Green
+  if ($script:T.prompt -eq 'double') {
+    $M0 = Get-V3Model $script:Cfg.model; $pt = Get-V3PromptText $chat
+    Write-Host '╭─● ' -NoNewline -ForegroundColor $script:T.frame
+    Write-Host $M0.n -NoNewline -ForegroundColor $script:T.acc
+    Write-Host $pt.Substring($M0.n.Length) -NoNewline -ForegroundColor $script:T.acc2
+    Write-Host ('  ' + (Get-Date -Format 'HH:mm')) -ForegroundColor DarkGray
+    Write-Host '╰─❯ ' -NoNewline -ForegroundColor $script:T.frame
+  } else {
+    Write-Host ('[' + (Get-V3PromptText $chat) + ']') -NoNewline -ForegroundColor DarkCyan
+    Write-Host ' ❯ ' -NoNewline -ForegroundColor Green
+  }
   $line = Read-Host
   if ($null -eq $line) { break }
   while ($line.EndsWith('\')) { $line = $line.Substring(0, $line.Length - 1) + "`n" + (Read-Host '  …') }
@@ -2062,6 +2113,12 @@ while ($true) {
       'exit' { Save-V3Chat $chat; Write-V3Note 'До встречи! 👋'; return }
       'quit' { Save-V3Chat $chat; Write-V3Note 'До встречи! 👋'; return }
       'clear' { Clear-Host; Write-V3Banner }
+      'theme' {
+        if ($rest.Count -and $script:Themes.ContainsKey($rest[0].ToLower())) {
+          $script:Cfg.theme = $rest[0].ToLower(); Save-V3Config; $script:T = $script:Themes[$script:Cfg.theme]
+          Clear-Host; Write-V3Banner; Write-V3Note "🎨 Тема: $($script:Cfg.theme)"
+        } else { Write-V3Note ('Темы: sunset (закат, по умолчанию) и neon (бирюзовый неон). Сейчас: ' + $script:Cfg.theme + '. Сменить: /theme neon') }
+      }
       'key' { Request-V3ApiKey }
       'model' {
         $n = 0
