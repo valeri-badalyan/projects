@@ -18038,10 +18038,18 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       return T;
     }
+    // install / download lines pasted inside V3AI or Claude Code are terminal commands, not chat messages
+    const TERM_LINE = /^(irm|iwr|iex|invoke-restmethod|invoke-webrequest|invoke-expression|curl|wget)\b|^\s*&\s*\(\s*\[scriptblock\]/i;
+    function runOutside(q, who) {
+      said("  ↪ Это команда терминала — выхожу из " + who + " и выполняю её.", "darkgray");
+      app = null; setPrompt(); echoCmd(q);
+      return execLine(q, false, 0);
+    }
     async function claudeLine(text) {
       const q = text.trim(), c = ccs();
       if (!q) return;
       if (/^(\/exit|\/quit|exit|quit)$/i.test(q)) { said("  До встречи! ✻", "#d97757"); app = null; return; }
+      if (TERM_LINE.test(q)) return runOutside(q, "Claude Code");
       if (q.startsWith("!")) { const cmd = q.slice(1).trim(); if (!cmd) return; try { const r = await execLine(cmd, true, 0); render(r || []); } catch (e) { printErr(e, cmd.split(/\s/)[0]); } return; }
       if (q.startsWith("/")) {
         const cmd = q.split(/\s+/)[0].toLowerCase(), raw = q.split(/\s+/).slice(1).join(" ").trim();
@@ -18439,6 +18447,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       const q = text.trim(), v = vst();
       if (!q) return;
       if (/^(\/exit|\/quit|exit|quit)$/i.test(q)) { said("  До встречи! 👋", "cyan"); app = null; return; }
+      if (TERM_LINE.test(q)) return runOutside(q, "V3AI");
       if (q.startsWith("/")) {
         const [cmd, arg] = [q.split(/\s+/)[0].toLowerCase(), q.split(/\s+/).slice(1).join(" ").trim().toLowerCase()];
         const raw = q.split(/\s+/).slice(1).join(" ").trim();
