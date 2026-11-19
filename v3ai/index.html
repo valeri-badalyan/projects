@@ -151,23 +151,85 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
 .vi-logo .pic.check { background: repeating-conic-gradient(#d9dee8 0 25%, #ffffff 0 50%) 0 0 / 20px 20px; }
 .vi-logo b { font-size: 12.5px; } .vi-logo .row { display: flex; flex-wrap: wrap; gap: 4px; }
 .vi-logo .row button { flex: 1 1 auto; padding: 6px 6px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255,255,255,.06); color: var(--fg); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.vi-path, .vi-hints, .vi-ahead { display: none; }
+/* ===== Studio: the same look as V3AI Terminal ===== */
+body.studio { --bg: #0f1115; --panel: #16191e; --panel-2: #16191e; --line: #262b33; --fg: #c9ced6; --muted: #8a92a0; --st-or: #e8a15b; --st-teal: #4fd1c5; --st-blue: #7aa2f7; --st-purple: #bb9af7; --st-white: #f2f4f8; --st-band: #252a33; background: var(--bg); color: var(--fg); font-family: var(--mono); font-size: 14px; }
+body.studio button, body.studio textarea, body.studio input { font-family: var(--mono); }
+body.studio .top h1 { font-family: var(--mono); font-size: 16px; letter-spacing: 0; background: none; -webkit-background-clip: border-box; background-clip: border-box; color: var(--st-white); }
+body.studio .top h1::before { content: "◆ "; color: var(--st-or); }
+body.studio .top h1::after { content: " Studio"; }
+body.studio .vi-mdl { border-color: var(--line); background: transparent; color: var(--st-or); border-radius: 6px; }
+body.studio .chip { background: transparent; border: 1px solid var(--line); border-radius: 6px; } body.studio .chip b { color: var(--st-or); }
+body.studio .vi-path { display: block; margin: -4px 0 10px; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.studio .vi-head { background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; padding: 6px 2px 10px; }
+body.studio .vi-orb { display: none; }
+body.studio .vi-head b { font-size: 14px; color: var(--st-white); } body.studio .vi-head b::before { content: "◆ "; color: var(--st-or); }
+body.studio .vi-head button { border-radius: 6px; border-color: var(--line); background: transparent; }
+body.studio .vi-modes button { border-radius: 6px; border: 1px solid transparent; background: transparent; color: var(--muted); }
+body.studio .vi-modes button[aria-pressed="true"] { color: var(--st-white); border-color: var(--line); background: var(--panel); box-shadow: inset 0 -2px 0 var(--st-or); }
+body.studio .vi-log { gap: 14px; }
+body.studio .vi-m { font-size: 14px; line-height: 1.55; }
+body.studio .vi-m.u { align-self: stretch; max-width: none; background: var(--st-band); color: var(--st-white); border-radius: 0; padding: 14px 16px; margin: 0 -2px; }
+body.studio .vi-m.u::before { content: "❯ "; color: var(--muted); }
+body.studio .vi-m.a { align-self: stretch; max-width: none; background: transparent; border: 0; border-radius: 0; padding: 0; }
+body.studio .vi-m.a.wide { max-width: none; }
+body.studio .vi-ahead { display: flex; align-items: center; gap: 10px; color: var(--st-or); font-size: 13px; margin-bottom: 6px; }
+body.studio .vi-ahead::before, body.studio .vi-ahead::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+body.studio .vi-m.a .vi-body { counter-reset: ln; border-left: 0; }
+body.studio .vi-m.a .vi-body > p, body.studio .vi-m.a .vi-body > h4, body.studio .vi-m.a .vi-body > pre, body.studio .vi-m.a .vi-body > ul > li, body.studio .vi-m.a .vi-body > ol > li { counter-increment: ln; position: relative; padding-left: 4ch; }
+body.studio .vi-m.a .vi-body > p::before, body.studio .vi-m.a .vi-body > h4::before, body.studio .vi-m.a .vi-body > pre::before { content: counter(ln, decimal-leading-zero); position: absolute; left: 0; top: 0; color: var(--muted); font-weight: 400; }
+body.studio .vi-m.a .vi-body > pre::before { top: 10px; }
+body.studio .vi-m.a .vi-body > ul, body.studio .vi-m.a .vi-body > ol { list-style: none; padding-left: 0; margin: 2px 0 6px; }
+body.studio .vi-m.a .vi-body > ol { counter-reset: oln; }
+body.studio .vi-m.a .vi-body > ul > li { padding-left: 7ch; }
+body.studio .vi-m.a .vi-body > ol > li { counter-increment: ln oln; padding-left: 8ch; font-weight: 700; color: var(--st-white); }
+body.studio .vi-m.a .vi-body > ul > li::before { content: counter(ln, decimal-leading-zero) "   •"; white-space: pre; position: absolute; left: 0; color: var(--muted); }
+body.studio .vi-m.a .vi-body > ol > li::before { content: counter(ln, decimal-leading-zero) "  " counter(oln) "."; white-space: pre; position: absolute; left: 0; color: var(--muted); font-weight: 400; }
+body.studio .vi-m.a .vi-body > ol > li::before { color: var(--muted); }
+body.studio .vi-m.a h4 { color: var(--st-teal); font-size: 14px; }
+body.studio .vi-m.a b { color: var(--st-white); }
+body.studio .vi-m.a code { background: transparent; color: var(--st-teal); padding: 0; }
+body.studio .vi-m.a pre { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding-left: calc(4ch + 10px); }
+body.studio .vi-m.a pre code { color: #e5c07b; }
+body.studio .vi-tools { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--line); gap: 6px; }
+body.studio .vi-tools button { background: transparent; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); }
+body.studio .vi-by { color: var(--muted); } body.studio .vi-by::before { content: "◆ готово · "; color: var(--st-or); }
+body.studio .vi-used { color: var(--muted); } body.studio .vi-used::before { content: "◆ "; color: var(--st-or); }
+body.studio .vi-dots::after { content: "◆ думает…"; letter-spacing: 0; color: var(--st-or); }
+body.studio .vi-sugg button { border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--fg); }
+body.studio .vi-sugg button::before { content: "❯ "; color: var(--st-or); }
+body.studio .vi-bar { border-radius: 6px; background: var(--panel); border-color: var(--line); align-items: center; }
+body.studio .vi-bar::before { content: "❯"; color: var(--st-or); padding-left: 8px; font-weight: 700; }
+body.studio .vi-bar button { border-radius: 6px; background: transparent; }
+body.studio .vi-bar #viSend { background: var(--st-or); color: #0f1115; }
+body.studio .vi-hints { display: flex; gap: 12px; justify-content: space-between; flex-wrap: wrap; color: var(--muted); font-size: 12px; padding: 2px 4px; }
+body.studio .vi-hints b { color: var(--fg); font-weight: 400; }
+body.studio .vi-art, body.studio .vi-game, body.studio .vi-acard, body.studio .vi-repo, body.studio .vi-logo, body.studio .vi-models, body.studio .vi-secp, body.studio .vi-drawer { border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+body.studio .vi-acard, body.studio .vi-repo { background: var(--panel); }
+body.studio .vi-repobar, body.studio .vi-agents button { border-radius: 6px; }
+body.studio .vi-sec > div { border-radius: 10px; background: var(--panel); border-color: var(--line); }
+body.studio .vi-sec h3 { color: var(--st-or); }
+body.studio .vi-sec .yes { background: var(--st-or); color: #0f1115; }
+body.studio .vi-note { color: var(--muted); }
 #viWrap { min-height: calc(100dvh - 90px); }
 .vi-log { max-height: calc(100dvh - 300px); }
 </style>
 </head>
-<body>
+<body class="studio">
 <main class="app">
   <header class="top">
     <h1>V3AI</h1>
     <button type="button" class="vi-mdl" id="viModel" aria-haspopup="true" aria-expanded="false"></button>
     <div class="chip"><span>Вопросов</span><b id="viCount">0</b></div>
   </header>
+  <div class="vi-path" id="viPath" aria-hidden="true"></div>
   <div class="vi-models" id="viModels" hidden></div>
   <div class="vi-secp" id="viSecPanel" hidden></div>
   <div id="viWrap">
       <div class="vi-head">
         <div class="vi-orb" id="viOrb" aria-hidden="true">V3</div>
         <div class="vi-who"><b id="viWhoName">V3AI</b><small id="viStatus">готов помочь</small></div>
+        <button type="button" id="viTheme" aria-label="Сменить оформление">🎨</button>
         <button type="button" id="viSecBtn" aria-label="EngineSecure: защита" aria-expanded="false">🛡</button>
         <button type="button" id="viHist" aria-label="Мои чаты">🗂</button>
         <button type="button" id="viNew">＋ Новый</button>
@@ -186,6 +248,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         <textarea id="viInput" rows="1" maxlength="4000" placeholder="Спроси V3AI о чём угодно…" aria-label="Сообщение для V3AI"></textarea>
         <button type="submit" id="viSend" aria-label="Отправить">➤</button>
       </form>
+      <div class="vi-hints" id="viHints" aria-hidden="true"></div>
       <p class="vi-note">V3AI — ИИ и может ошибаться. Важное проверяй.</p>
     </div>
 </main>
@@ -399,6 +462,7 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
         if (m.agentCard) { agentCard(el, m); log.appendChild(el); return el; }
         if (m.game || m.gameGone) { gameCard(el, m); log.appendChild(el); return el; }
         if (m.svg || m.gone || m.scenes) { art(el, m); log.appendChild(el); return el; }
+        const head = document.createElement("div"); head.className = "vi-ahead"; head.textContent = "ответ · " + (m.by || mdl().n); el.appendChild(head);
         const body = document.createElement("div"); body.className = "vi-body"; body.innerHTML = md(m.t); el.appendChild(body);
         tools(el, m);
       }
@@ -430,6 +494,9 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 2px; }
       if (A && c.msgs.length <= 1) (A.starters || []).forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
       else if (!c || !c.msgs.length) M.s.forEach((s) => { const b = document.createElement("button"); b.type = "button"; b.textContent = s; b.addEventListener("click", () => send(s)); sg.appendChild(b); });
       $("#viCount").textContent = asked;
+      $("#viPath").textContent = "v3ai/" + (A ? "agent/" + A.name : M.id) + (c && c.title ? "  ·  " + c.title : "");
+      $("#viHints").innerHTML = "<span><b>Enter</b> отправить │ <b>Shift+Enter</b> перенос │ <b>🧠</b> модель │ <b>🛡</b> защита</span><span></span>";
+      $("#viHints").lastChild.textContent = mdl().n;
       log.scrollTop = log.scrollHeight;
       if (!drawer.hidden) renderDrawer();
     }
@@ -2230,6 +2297,10 @@ requestAnimationFrame(loop)}requestAnimationFrame(loop);
     input.addEventListener("input", fitInput);
     input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!busy) send(); } });
     $("#viNew").addEventListener("click", newChat);
+    // Оформление: Studio (как терминальная версия) или Classic.
+    const applyTheme = (t) => { document.body.classList.toggle("studio", t !== "classic"); $("#viTheme").setAttribute("aria-label", t === "classic" ? "Включить оформление Studio" : "Включить оформление Classic"); };
+    applyTheme(store.get("theme", "studio"));
+    $("#viTheme").addEventListener("click", () => { const t = document.body.classList.contains("studio") ? "classic" : "studio"; store.set("theme", t); applyTheme(t); setStatus(t === "studio" ? "оформление Studio" : "оформление Classic", false); });
     $("#viHist").addEventListener("click", () => { drawer.hidden = !drawer.hidden; if (!drawer.hidden) renderDrawer(); });
     samplePromise.then(async (s) => {
       if (!s) { setStatus("офлайн-режим", false); return; }
