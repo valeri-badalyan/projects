@@ -17716,6 +17716,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       { id: "art", ico: "🎨", n: "Художник", make: "image" },
       { id: "video", ico: "🎬", n: "Видео", make: "video" },
       { id: "game", ico: "🕹", n: "WattAI", make: "watt" },
+      { id: "design", ico: "🖌", n: "Design", make: "design" },
       { id: "agents", ico: "🩺", n: "Dr. Agents" },
     ];
     let samplePromise = null, aiCtl = null;
@@ -17728,7 +17729,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       said(""); LOGO.forEach((l, i) => said(l, GRAD[i]));
       said("  Terminal  v1.0 · ИИ-помощник от команды V3", "gray");
       said("  Модель: " + vModel().n + " · режим: " + vMode().ico + " " + vMode().n + "    / — список команд · /exit — выход", "darkgray");
-      said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /watt — Watt AI (игры)", "darkgray");
+      said("  /chat — обычный чат · /image — создать изображение · /video — создать видео · /design — Design · /watt — Watt AI (игры)", "darkgray");
       said("  /dragents — Dr. Agents (ИИ-агенты) · /model — выбрать модель стрелками ↑ ↓", "darkgray");
       said("");
       app = { title: "V3AI Terminal", prompt: () => { const A = curAgent(), f = curFile(); return "[" + (A ? A.emoji + " " + A.name + " · " + vModel().n : vModel().n + " · " + vMode().ico + " " + vMode().n) + (f ? " · 📄 " + f.name : "") + "] ❯ "; }, line: v3aiLine, cmds: () => V3AI_HELP(), stop: () => { if (aiCtl) aiCtl.abort(); } };
@@ -17753,6 +17754,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       image: { ico: "🎨", n: "картинка", busy: "рисую", dir: "art", ext: ".svg", coins: 1 },
       video: { ico: "🎬", n: "видео", busy: "снимаю видео", dir: "video", ext: ".svg", coins: 2 },
       watt: { ico: "🕹", n: "игра", busy: "WattAI пишет игру", dir: "games", ext: ".html", coins: 5 },
+      design: { ico: "🖌", n: "дизайн", busy: "Design рисует макет", dir: "design", ext: ".html", coins: 3 },
     };
     const SAFE = "Только добрые сюжеты, подходящие детям. На неподходящую просьбу сделай что-то милое на похожую безопасную тему.";
     function cleanSvg(t) {
@@ -17771,16 +17773,17 @@ requestAnimationFrame(loop);<\/script></body></html>`;
       return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (h) => h + head) : "<!doctype html><html><head>" + head + "</head><body>" + html + "</body></html>";
     }
     function showMedia(kind, title, body) {
-      const box = document.createElement("div"); box.className = "pt-media" + (kind === "watt" ? " game" : "");
+      const page = kind === "watt" || kind === "design";
+      const box = document.createElement("div"); box.className = "pt-media" + (page ? " game" : "");
       const head = document.createElement("div"); head.className = "pt-mhead";
       const t = document.createElement("span"); t.textContent = KIND[kind].ico + " " + title; head.appendChild(t);
       const btn = (label, tip, fn) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.title = tip; b.setAttribute("aria-label", tip); b.addEventListener("click", fn); head.appendChild(b); return b; };
       box.appendChild(head);
-      if (kind === "watt") {
+      if (page) {
         const fr = document.createElement("iframe"); fr.setAttribute("sandbox", "allow-scripts"); fr.title = title; fr.srcdoc = wrapGame(body);
         btn("↻", "Перезапустить", () => { fr.srcdoc = wrapGame(body); });
         btn("⛶", "На весь экран", () => { try { const r = fr.requestFullscreen && fr.requestFullscreen(); if (r && r.catch) r.catch(() => {}); } catch (e) { /* optional */ } });
-        btn("✕", "Закрыть игру", () => { box.replaceWith(Object.assign(document.createElement("div"), { className: "pt-l dim", textContent: "  🕹 «" + title + "» закрыта." })); });
+        btn("✕", kind === "design" ? "Закрыть дизайн" : "Закрыть игру", () => { box.replaceWith(Object.assign(document.createElement("div"), { className: "pt-l dim", textContent: "  " + KIND[kind].ico + " «" + title + "» закрыт" + (kind === "design" ? "." : "а.") })); });
         box.appendChild(fr); setTimeout(() => { try { fr.focus(); } catch (e) { /* optional */ } }, 120);
       } else {
         const im = new Image(); im.alt = title; im.src = svgUrl(body); box.appendChild(im);
@@ -17809,6 +17812,43 @@ requestAnimationFrame(loop);<\/script></body></html>`;
         "Ответ: сначала SVG в блоке ```svg, затем одна короткая весёлая фраза по-русски о том, что получилось.",
         "Описание: " + q,
       ].join("\n");
+    }
+    function designPrompt(q, prev) {
+      return [
+        "Ты — V3AI Design, дизайнер от команды V3. Сделай визуальный дизайн по описанию пользователя: сайт или лендинг, экран приложения, постер, открытку, визитку, меню, логотип с фирменным стилем — что попросят.",
+        "- Один самодостаточный HTML-файл: <!doctype html> и <style> внутри. Главное — HTML и CSS; скрипт только если нужен маленький интерактив. Никаких внешних ссылок, CDN, шрифтов и картинок: графика — встроенный SVG, CSS-градиенты, фигуры и emoji.",
+        "- Продуманный дизайн: своя палитра из 4–6 цветов, крупная и аккуратная типографика (системные шрифты), сетка, отступы, иерархия, реальные тексты на языке пользователя (не lorem ipsum).",
+        "- Адаптивно: хорошо смотрится и в окне 640×480, и на телефоне; без горизонтальной прокрутки.",
+        "- Без alert/prompt/confirm. " + SAFE,
+        prev ? "Это ПРАВКА дизайна «" + prev.t + "». Вот его код — внеси изменения из запроса, сохранив остальное, и верни ПОЛНЫЙ новый файл:\n```html\n" + prev.html.slice(0, 40000) + "\n```" : "",
+        "Формат ответа строго такой:", "НАЗВАНИЕ: <короткое название дизайна>", "```html", "<весь код>", "```", "ОПИСАНИЕ: <одна-две фразы о стиле и идее>",
+        "", "Запрос пользователя: " + q,
+      ].filter(Boolean).join("\n");
+    }
+    function parseDesign(text) {
+      let html = "";
+      const m = text.match(/```html\s*\n([\s\S]*?)```/i) || text.match(/```\s*\n(<!doctype[\s\S]*?)```/i);
+      if (m) html = m[1].trim(); else { const d = text.match(/<!doctype html[\s\S]*<\/html>/i); if (d) html = d[0]; }
+      if (!html || !/<(body|div|main|section|header|svg)[\s>]/i.test(html)) return null;
+      const name = (text.match(/НАЗВАНИЕ:\s*(.+)/) || [])[1], how = (text.match(/ОПИСАНИЕ:\s*([\s\S]+)$/) || [])[1];
+      return { html, t: (name || "Мой дизайн").replace(/[*`#]/g, "").trim().slice(0, 40), how: how ? how.replace(/```[\s\S]*/g, "").trim().slice(0, 300) : "" };
+    }
+    function offlineDesign(q) {
+      const e = emoOf(q) === "✨" ? "🖌" : emoOf(q), h = Array.from(String(q)).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 360;
+      const esc = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      const t = esc(q.charAt(0).toUpperCase() + q.slice(1));
+      return { t: q.slice(0, 40), how: "Лендинг: крупный заголовок, три карточки и кнопка. Цвета подобраны по теме запроса.", html: `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+:root{--a:hsl(${h},70%,55%);--b:hsl(${(h + 40) % 360},75%,60%);--ink:hsl(${h},35%,12%);--paper:hsl(${h},40%,97%);--mute:hsl(${h},15%,40%)}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--paper);color:var(--ink)}
+header{padding:48px 24px 40px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;text-align:center}
+.e{font-size:64px;line-height:1}h1{margin:12px 0 8px;font-size:clamp(28px,6vw,44px);letter-spacing:-.5px;text-wrap:balance}
+header p{margin:0 auto;max-width:34ch;opacity:.9}.btn{display:inline-block;margin-top:20px;padding:12px 26px;border-radius:999px;background:#fff;color:var(--ink);font-weight:800;text-decoration:none}
+main{max-width:860px;margin:0 auto;padding:28px 20px 40px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.c{background:#fff;border-radius:16px;padding:18px;box-shadow:0 6px 20px hsla(${h},40%,30%,.12)}.c b{display:block;font-size:18px;margin:6px 0 4px}.c span{font-size:28px}.c p{margin:0;color:var(--mute);font-size:14px}
+footer{text-align:center;padding:0 20px 28px;color:var(--mute);font-size:13px}</style></head><body>
+<header><div class="e">${e}</div><h1>${t}</h1><p>Сделано в V3AI Design — опиши правки следующим сообщением, и макет обновится.</p><a class="btn" href="#">Начать</a></header>
+<main><div class="c"><span>⚡</span><b>Быстро</b><p>Всё самое важное — на первом экране.</p></div><div class="c"><span>🎯</span><b>Понятно</b><p>Простые слова и крупные кнопки.</p></div><div class="c"><span>💜</span><b>Красиво</b><p>Палитра и шрифты в одном стиле.</p></div></main>
+<footer>© V3 · ${t}</footer></body></html>` };
     }
     function wattPrompt(q, prev) {
       return [
@@ -17857,28 +17897,32 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     }
     async function make(kind, q) {
       const v = vst(), K = KIND[kind];
-      const chosen = curFile(), chosenGame = kind === "watt" && chosen && /\.html?$/i.test(chosen.name) ? chosen.path : null;
-      const prevPath = kind === "watt" && (chosenGame || v.lastGame) && !/^(создай|сделай|придумай|напиши|хочу|давай|нов)/i.test(q) ? (chosenGame || v.lastGame) : null;
+      const page = kind === "watt" || kind === "design", isDesignPath = (x) => /\\design\\/i.test(x);
+      const chosen = curFile(), chosenPage = page && chosen && /\.html?$/i.test(chosen.name) && (kind === "design") === isDesignPath(chosen.path) ? chosen.path : null;
+      const last = kind === "design" ? v.lastDesign : v.lastGame, lastT = kind === "design" ? v.lastDesignT : v.lastGameT;
+      // a new order names the thing ("сделай сайт…", "создай игру…", "новая…"); anything else edits the last one ("сделай синим")
+      const isNew = /^нов/i.test(q) || new RegExp("^(создай|сделай|придумай|напиши|хочу|давай|нарисуй)[^.]*(" + (kind === "design" ? "сайт|лендинг|дизайн|постер|открытк|экран|визитк|логотип|страниц|меню|баннер|приложени|макет" : "игр") + ")", "i").test(q);
+      const prevPath = page && (chosenPage || last) && !isNew ? (chosenPage || last) : null;
       const prevNode = prevPath ? walk(splitPath(prevPath).parts || []) : null;
-      const prev = prevNode && prevNode.node.t === "f" ? { t: v.lastGameT || "игра", html: prevNode.node.v } : null;
-      const st = line("", "dim"); const lab = document.createElement("span"); lab.textContent = "  ◌ " + (prev ? "WattAI переделывает «" + prev.t + "»" : K.busy) + "…"; const bar = document.createElement("span"); bar.className = "pt-prog"; const bi = document.createElement("i"); bar.appendChild(bi); st.append(lab, bar); scrollEnd();
+      const prev = prevNode && prevNode.node.t === "f" ? { t: (chosenPage ? chosen.name.replace(/\.html?$/i, "") : lastT) || K.n, html: prevNode.node.v } : null;
+      const st = line("", "dim"); const lab = document.createElement("span"); lab.textContent = "  ◌ " + (prev ? (kind === "design" ? "Design переделывает «" : "WattAI переделывает «") + prev.t + "»" : K.busy) + "…"; const bar = document.createElement("span"); bar.className = "pt-prog"; const bi = document.createElement("i"); bar.appendChild(bi); st.append(lab, bar); scrollEnd();
       let text = "", note = "", stopped = false;
       const sample = await getSample();
       if (sample) {
         aiCtl = new AbortController();
         try {
-          const r = await sample(kind === "watt" ? wattPrompt(q, prev) : imagePrompt(q, kind === "video"), { modelTier: "default", cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { bi.style.width = Math.min(96, 3 + tx.length / (kind === "watt" ? 110 : 80)) + "%"; } } });
-          text = r && r.text || ""; if (r && r.truncated && kind === "watt") note = "Игра получилась слишком большой 😅 Опиши попроще.";
+          const r = await sample(kind === "watt" ? wattPrompt(q, prev) : kind === "design" ? designPrompt(q, prev) : imagePrompt(q, kind === "video"), { modelTier: "default", cache: false, signal: aiCtl.signal, onText: ({ text: tx }) => { if (tx) { bi.style.width = Math.min(96, 3 + tx.length / (page ? 110 : 80)) + "%"; } } });
+          text = r && r.text || ""; if (r && r.truncated && page) note = (kind === "design" ? "Дизайн получился" : "Игра получилась") + " слишком большой 😅 Опиши попроще.";
         } catch (e) { if (aiCtl && aiCtl.signal.aborted) stopped = true; else { text = e && e.text || ""; if (e && e.code === "rate_limited") note = "Слишком много запросов подряд 😅 Подожди немного."; } }
         aiCtl = null;
       }
       st.remove();
       if (stopped) { said("  ⏹ Остановлено.", "darkgray"); return; }
       let off = false, title, body, cap;
-      if (kind === "watt") {
-        let g = text ? parseGame(text) : null;
-        if (!g && prev) { said("  " + (note || "Не получилось переделать игру. Попробуй ещё раз или опиши иначе."), "yellow"); return; }
-        if (!g) { g = offlineGame(q); off = true; }
+      if (page) {
+        let g = text ? (kind === "design" ? parseDesign(text) : parseGame(text)) : null;
+        if (!g && prev) { said("  " + (note || "Не получилось переделать " + (kind === "design" ? "дизайн" : "игру") + ". Попробуй ещё раз или опиши иначе."), "yellow"); return; }
+        if (!g) { g = kind === "design" ? offlineDesign(q) : offlineGame(q); off = true; }
         title = g.t; body = g.html.slice(0, 150000); cap = g.how;
       } else {
         body = cleanSvg(text);
@@ -17886,14 +17930,15 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         if (!body) { body = offlineSvg(q, kind === "video"); off = true; cap = ""; }
         title = q.slice(0, 48);
       }
-      const path = prev ? (writeFile(prevPath, body, false), prevPath) : saveMade(kind, kind === "watt" ? title : q, body);
+      const path = prev ? (writeFile(prevPath, body, false), prevPath) : saveMade(kind, page ? title : q, body);
       if (kind === "watt") { v.lastGame = path; v.lastGameT = title; v.mode = "game"; save(); }
+      if (kind === "design") { v.lastDesign = path; v.lastDesignT = title; v.mode = "design"; save(); }
       showMedia(kind, title, body);
       if (cap) printReply(cap);
       if (off) said("  " + (note || (sample ? "Не получилось сделать подробно — вот быстрый вариант. Попробуй ещё раз!" : "Это быстрый офлайн-вариант 📴. В просмотрщике Claude V3AI делает всё с нуля!")), "darkgray");
       else Hero.earn(K.coins);
-      said("  ✓ Сохранено: " + path + (kind === "watt" ? "   · правки — просто напиши следующим сообщением" : ""), "green");
-      said("  — " + (kind === "watt" ? "WattAI" : vModel().n), "darkgray");
+      said("  ✓ Сохранено: " + path + (page ? "   · правки — просто напиши следующим сообщением" : ""), "green");
+      said("  — " + (kind === "watt" ? "WattAI" : kind === "design" ? "V3AI Design · " + vModel().n : vModel().n), "darkgray");
     }
     /* ---- Claude Code for V3TERMIN: an AI helper that works with the V3:\ drive (asks before every change) ---- */
     const CCM = [{ id: "opus", n: "Opus", d: "самая умная: сложные задачи и большой код", tier: "complex" }, { id: "sonnet", n: "Sonnet", d: "умная и быстрая, для большинства задач", tier: "default" }, { id: "haiku", n: "Haiku", d: "самая быстрая, для простых дел", tier: "quick" }];
@@ -18249,7 +18294,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
     function openFile(r) {
       const name = r.parts[r.parts.length - 1], v = r.node.v;
       if (/\.svg$/i.test(name)) { showMedia(/<animate|@keyframes/i.test(v) ? "video" : "image", name, cleanSvg(v)); return true; }
-      if (/\.html?$/i.test(name)) { showMedia("watt", name, v); return true; }
+      if (/\.html?$/i.test(name)) { showMedia(r.parts.some((x) => x.toLowerCase() === "design") ? "design" : "watt", name, v); return true; }
       return false;
     }
 
@@ -18296,18 +18341,18 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       const r = resolve(v.file); if (r.bad || r.missing || r.node.t !== "f") return null;
       return { path: pathStr(r.parts), name: r.parts[r.parts.length - 1], text: r.node.v, node: r.node };
     }
-    const fileIco = (n) => /\.html?$/i.test(n) ? "🕹" : /\.svg$/i.test(n) ? "🎨" : /\.ps1$/i.test(n) ? "⚙️" : "📄";
+    const fileIco = (n) => /\\design\\/i.test(n) ? "🖌" : /\.html?$/i.test(n) ? "🕹" : /\.svg$/i.test(n) ? "🎨" : /\.ps1$/i.test(n) ? "⚙️" : "📄";
     // files to choose from: what V3AI made (games, pictures, videos) and the files of the current folder
     function fileChoices() {
       const out = [], seen = new Set(), push = (parts) => { const p = pathStr(parts); if (seen.has(p.toLowerCase())) return; seen.add(p.toLowerCase()); out.push(p); };
-      ["games", "art", "video"].forEach((d) => { const w = walk(HOME.concat(".v3ai", d)); if (w && w.node.t === "d") Object.keys(w.node.c).filter((k) => w.node.c[k].t === "f").sort((a, b) => w.node.c[b].m - w.node.c[a].m).forEach((k) => push(w.real.concat(k))); });
+      ["games", "design", "art", "video"].forEach((d) => { const w = walk(HOME.concat(".v3ai", d)); if (w && w.node.t === "d") Object.keys(w.node.c).filter((k) => w.node.c[k].t === "f").sort((a, b) => w.node.c[b].m - w.node.c[a].m).forEach((k) => push(w.real.concat(k))); });
       const here = walk(cwd); if (here) Object.keys(here.node.c).filter((k) => here.node.c[k].t === "f").sort().forEach((k) => push(here.real.concat(k)));
       return out.slice(0, 40);
     }
     function setFile(path) {
       const r = mustGet(path, "f"), v = vst(), name = r.parts[r.parts.length - 1], full = pathStr(r.parts);
       v.file = full;
-      if (/\.html?$/i.test(name)) { v.lastGame = full; v.lastGameT = name.replace(/\.html?$/i, ""); }
+      if (/\.html?$/i.test(name)) { if (r.parts.some((x) => x.toLowerCase() === "design")) { v.lastDesign = full; v.lastDesignT = name.replace(/\.html?$/i, ""); } else { v.lastGame = full; v.lastGameT = name.replace(/\.html?$/i, ""); } }
       save(); setPrompt();
       said("  ✓ Файл: " + fileIco(name) + " " + full, "green");
       if (!openFile(r)) { const L = r.node.v.split("\n"); L.slice(0, 8).forEach((x) => said("  │ " + x, "gray")); if (L.length > 8) said("  │ … ещё строк: " + (L.length - 8), "darkgray"); }
@@ -18327,7 +18372,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       if (picker && picker.cur < 0) { picker.i = 0; drawPicker(); }
     }
-    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
+    const V3AI_HELP = () => [["/chat [текст]", "обычный чат"], ["/image <описание>", "создать изображение"], ["/video <описание>", "создать видео"], ["/design [описание]", "режим Design: сайт, экран приложения, постер, открытка (правки — следующим сообщением)"], ["/watt <описание>", "Watt AI: создать игру (без описания — режим WattAI)"], ["/mode [имя]", "режим: " + VMODES.map((m) => m.id).join(", ")], ["/model", "выбрать модель стрелками ↑ ↓ (Enter — готово, Esc — отмена)"], ["/model <номер>", "сразу выбрать модель по номеру"], ["/new", "новый чат"], ["/clear", "очистить экран"], ["/dragents [описание]", "режим Dr. Agents: создать ИИ-агента"], ["/agents", "мои агенты"], ["/agent <номер>", "чат с агентом (/agent <номер> delete — удалить, /agent off — выйти)"], ["/github <ссылка>", "подключить GitHub-репозиторий — только в Dr. Agents (можно просто вставить ссылку)"], ["/repo", "карточка репозитория · /disconnect — отключить"], ["/goutrrr", "сменить файл: выбрать стрелками ↑ ↓ (/goutrrr <путь> — сразу, /goutrrr off — убрать)"], ["/exit", "выход в V3TERMIN"]];
     // live hint: while the V3AI input holds "/" plus a few letters (not sent yet), the matching commands show under it
     function updateSug() {
       const box = $("#ptSug"); if (!box) return;
@@ -18344,7 +18389,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       });
       scrollEnd();
     }
-    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/watt", "/goutrrr", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
+    const V3AI_CMDS = ["/", "/chat", "/image", "/video", "/design", "/watt", "/goutrrr", "/dragents", "/agents", "/agent", "/github", "/repo", "/disconnect", "/mode", "/model", "/new", "/clear", "/help", "/exit"];
     function printReply(text) {
       let code = false;
       String(text).replace(/\*\*([^*]+)\*\*/g, "$1").split("\n").forEach((l) => {
@@ -18359,7 +18404,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
       if (q.startsWith("/")) {
         const [cmd, arg] = [q.split(/\s+/)[0].toLowerCase(), q.split(/\s+/).slice(1).join(" ").trim().toLowerCase()];
         const raw = q.split(/\s+/).slice(1).join(" ").trim();
-        const mk = { "/image": "image", "/img": "image", "/video": "video", "/watt": "watt", "/game": "watt" }[cmd];
+        const mk = { "/image": "image", "/img": "image", "/video": "video", "/watt": "watt", "/game": "watt", "/design": "design" }[cmd];
         if (cmd === "/dragents") {
           v.mode = "agents"; v.agent = null; save(); setPrompt();
           if (raw) return parseRepo(raw) ? connectRepo(parseRepo(raw)) : newAgent(raw);
@@ -18385,7 +18430,7 @@ if(lives<=0){run=false;m.style.display="flex";m.querySelector("h2").textContent=
         if (mk) {
           if (raw) return make(mk, raw);
           const m = VMODES.find((x) => x.make === mk); v.mode = m.id; v.agent = null; save();
-          said("  Режим: " + m.ico + " " + m.n + " — " + (mk === "image" ? "опиши картинку, и я её нарисую." : mk === "video" ? "опиши сцену, и я сниму короткое видео." : "опиши игру, и WattAI её напишет. Правки — следующим сообщением."), "green");
+          said("  Режим: " + m.ico + " " + m.n + " — " + (mk === "design" ? "опиши сайт, экран приложения, постер или открытку — и я сделаю дизайн. Правки — следующим сообщением." : mk === "image" ? "опиши картинку, и я её нарисую." : mk === "video" ? "опиши сцену, и я сниму короткое видео." : "опиши игру, и WattAI её напишет. Правки — следующим сообщением."), "green");
           return;
         }
         if (cmd === "/" || cmd === "/help") {
