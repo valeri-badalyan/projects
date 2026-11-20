@@ -1,0 +1,634 @@
+<title>V3 COMPLECT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="V3 COMPLECT — магазин подписок экосистемы V3: тарифы V3AI, V3 Games Pass, V3 Snap Pro и выгодные комплекты.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Manrope:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sticky bar → split hero with a fanned "kit" of product cards → tabbed pricing → kit builder (asymmetric split) → compare table → FAQ */
+:root {
+  --bg: #0c0a12; --surface: #16131f; --surface-2: #1e1a2b; --line: #2d2840;
+  --fg: #f2eefb; --muted: #9e96b6; --violet: #9b6bff; --violet-deep: #5b2fd6;
+  --on-violet: #ffffff; --ok: #4fd18b; --kit-ink: #0c0a12;
+  --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --bg: #f5f3fa; --surface: #ffffff; --surface-2: #efeaf9; --line: #ddd6ec;
+  --fg: #17121f; --muted: #605878; --violet: #6b3cf0; --violet-deep: #4a1fc4;
+  --on-violet: #ffffff; --ok: #138a4f; --kit-ink: #17121f; color-scheme: light; } }
+:root[data-theme="light"] {
+  --bg: #f5f3fa; --surface: #ffffff; --surface-2: #efeaf9; --line: #ddd6ec;
+  --fg: #17121f; --muted: #605878; --violet: #6b3cf0; --violet-deep: #4a1fc4;
+  --on-violet: #ffffff; --ok: #138a4f; --kit-ink: #17121f; color-scheme: light; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1180px; margin-inline: auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h2 { font-size: clamp(1.6rem, 4vw, 2.5rem); font-weight: 700; }
+p { margin: 0; }
+a { color: inherit; }
+.eyebrow { font: 500 .75rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--violet); }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; border-radius: 6px; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; font: 700 .95rem/1 var(--body); padding: .9rem 1.3rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; text-decoration: none; transition: transform .15s, background .15s, border-color .15s; }
+.btn:hover { border-color: var(--violet); }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--violet); border-color: var(--violet); color: var(--on-violet); }
+.btn-primary:hover { background: var(--violet-deep); border-color: var(--violet-deep); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+
+/* header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 1.5rem; padding-block: .8rem; }
+.logo { font: 900 1.05rem/1 var(--display); text-decoration: none; letter-spacing: -.01em; }
+.logo span { color: var(--violet); }
+.nav { display: flex; gap: 1.25rem; margin-right: auto; }
+.nav a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: .95rem; }
+.nav a:hover { color: var(--fg); }
+.cart-btn { padding: .65rem 1rem; }
+.badge { min-width: 1.4rem; height: 1.4rem; border-radius: 999px; background: var(--violet); color: var(--on-violet); font: 500 .75rem/1.4rem var(--mono); text-align: center; padding-inline: .35rem; }
+@media (max-width: 720px) { .nav { display: none; } .top .wrap { justify-content: space-between; } }
+
+/* hero */
+.hero .wrap { display: grid; grid-template-columns: 1.1fr .9fr; gap: 3rem; align-items: center; padding-block: 4.5rem 3.5rem; }
+.hero h1 { font-weight: 900; font-size: clamp(2.6rem, 8vw, 5.6rem); letter-spacing: -.035em; line-height: .95; }
+.hero h1 .outline { color: transparent; -webkit-text-stroke: 2px var(--violet); display: block; }
+.hero-text { display: grid; gap: 1.4rem; min-width: 0; }
+.hero-lead { font-size: 1.15rem; max-width: 34ch; color: var(--muted); }
+.hero-cta { display: flex; flex-wrap: wrap; gap: .75rem; }
+.hero-facts { display: flex; flex-wrap: wrap; gap: 1.75rem; padding-top: .5rem; }
+.hero-facts b { display: block; font: 700 1.4rem/1.1 var(--display); }
+.hero-facts small { color: var(--muted); font-size: .85rem; }
+
+.kit { position: relative; height: 380px; max-width: 100%; }
+.kit-card { position: absolute; left: 50%; top: 50%; width: min(250px, 70vw); aspect-ratio: 5 / 6.4; max-width: 100%; border-radius: 22px; padding: 1.3rem; display: flex; flex-direction: column; justify-content: space-between; color: #fff; box-shadow: 0 25px 50px -20px rgba(0,0,0,.55); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.kit-card .k-name { font: 900 1.4rem/1.05 var(--display); }
+.kit-card .k-tag { font: 500 .7rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.kit-card .k-price { font: 700 1rem/1 var(--mono); }
+.kit-card.c1 { background: linear-gradient(150deg, #2a1a52, #120d22); border: 1px solid #3c2d66; transform: translate(-95%, -48%) rotate(-12deg); }
+.kit-card.c2 { background: linear-gradient(150deg, #1d1d24, #050507); border: 1px solid #34323f; transform: translate(-5%, -52%) rotate(10deg); }
+.kit-card.c3 { background: linear-gradient(150deg, #8b5cff, #4b1fc9); transform: translate(-50%, -50%) rotate(-1deg); z-index: 2; }
+.kit-card .glyph { font: 900 4.5rem/1 var(--display); letter-spacing: -.05em; opacity: .9; }
+.kit:hover .c1 { transform: translate(-110%, -46%) rotate(-17deg); }
+.kit:hover .c2 { transform: translate(10%, -54%) rotate(15deg); }
+.kit:hover .c3 { transform: translate(-50%, -54%) rotate(0deg) scale(1.03); }
+@media (prefers-reduced-motion: no-preference) {
+  .kit-card { animation: deal .9s cubic-bezier(.2,.8,.2,1) both; }
+  .kit-card.c2 { animation-delay: .08s; } .kit-card.c3 { animation-delay: .16s; }
+  @keyframes deal { from { opacity: .3; translate: 0 30px; } to { opacity: 1; translate: 0 0; } }
+}
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-block: 2.5rem; }
+  .kit { height: 320px; overflow: hidden; }
+  .kit-card { width: min(200px, 52vw); }
+  .kit-card.c1 { transform: translate(-82%, -48%) rotate(-10deg); }
+  .kit-card.c2 { transform: translate(-18%, -52%) rotate(9deg); }
+}
+
+/* sections */
+section { scroll-margin-top: 80px; }
+.sec { padding-block: 4rem; }
+.sec-head { display: grid; gap: .75rem; margin-bottom: 2rem; max-width: 60ch; }
+
+/* product tabs + period */
+.controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.75rem; }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 2px; }
+.seg button { font: 700 .9rem/1 var(--body); border: 0; background: transparent; color: var(--muted); padding: .7rem 1.1rem; border-radius: 999px; cursor: pointer; }
+.seg button[aria-selected="true"], .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.save { font: 500 .7rem/1 var(--mono); color: var(--ok); margin-left: .35rem; }
+.no-js-note { display: none; }
+
+.panel { display: grid; gap: 1.25rem; }
+.panel + .panel { margin-top: 3rem; }
+.js .panel + .panel { margin-top: 0; }
+.panel-title { font: 700 1.1rem/1 var(--display); }
+.js .panel-title { display: none; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.plan { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 1.5rem; display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
+.plan.hot { border-color: var(--violet); background: linear-gradient(180deg, color-mix(in srgb, var(--violet) 14%, var(--surface)), var(--surface) 55%); }
+.plan .ribbon { position: absolute; top: -11px; left: 1.5rem; background: var(--violet); color: var(--on-violet); font: 500 .68rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; padding: .4rem .6rem; border-radius: 6px; }
+.plan h3 { font-size: 1.25rem; font-weight: 700; }
+.plan .for { color: var(--muted); font-size: .92rem; min-height: 2.9em; }
+.price { display: flex; align-items: baseline; gap: .35rem; flex-wrap: wrap; }
+.price .amount { font: 700 2.2rem/1 var(--display); letter-spacing: -.02em; }
+.price .per { color: var(--muted); font-size: .9rem; }
+.price .old { font: 500 .85rem/1 var(--mono); color: var(--muted); text-decoration: line-through; }
+.feat { list-style: none; padding: 0; margin: 0; display: grid; gap: .55rem; font-size: .93rem; flex: 1; }
+.feat li { display: grid; grid-template-columns: 1.1rem 1fr; gap: .5rem; }
+.feat li::before { content: "✓"; color: var(--violet); font-weight: 700; }
+.feat li.off { color: var(--muted); }
+.feat li.off::before { content: "–"; color: var(--muted); }
+.plan .btn { width: 100%; }
+.plan .btn.added { background: var(--surface-2); border-color: var(--ok); color: var(--ok); }
+
+/* builder */
+.builder { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.5rem; align-items: start; }
+.picks { display: grid; gap: .75rem; }
+.pick { display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 1rem 1.2rem; cursor: pointer; transition: border-color .15s, background .15s; }
+.pick:has(input:checked) { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 9%, var(--surface)); }
+.pick input { width: 1.2rem; height: 1.2rem; accent-color: var(--violet); }
+.pick b { display: block; font-weight: 700; }
+.pick small { color: var(--muted); }
+.pick .p { font: 500 .95rem/1 var(--mono); white-space: nowrap; }
+.summary { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 84px); background: var(--kit-ink); color: #f2eefb; border-radius: 20px; padding: 1.75rem; display: grid; gap: 1.1rem; border: 1px solid #2d2840; }
+.summary h3 { font-size: 1.3rem; }
+.summary .row { display: flex; justify-content: space-between; gap: 1rem; font-size: .95rem; color: #b9b2cf; }
+.summary .row.total { color: #fff; font-weight: 700; font-size: 1.05rem; border-top: 1px dashed #3a3452; padding-top: 1rem; }
+.summary .big { font: 900 2.6rem/1 var(--display); letter-spacing: -.03em; }
+.summary .disc { color: #6fe3a3; font-family: var(--mono); font-size: .85rem; }
+.tiers { display: flex; gap: .4rem; }
+.tiers span { flex: 1; height: 6px; border-radius: 3px; background: #2d2840; }
+.tiers span.on { background: #9b6bff; }
+@media (max-width: 860px) { .builder { grid-template-columns: 1fr; } .summary { position: static; } }
+
+/* compare */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .93rem; }
+th, td { padding: .85rem 1rem; text-align: left; border-bottom: 1px solid var(--line); }
+thead th { font: 700 .85rem/1.2 var(--display); }
+thead th.hl { color: var(--violet); }
+tbody th { font-weight: 500; color: var(--muted); }
+td { font-variant-numeric: tabular-nums; }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+
+/* faq */
+.faq { display: grid; gap: .6rem; max-width: 820px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 1rem 1.25rem; }
+summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 1rem; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--violet); font: 700 1.2rem/1 var(--mono); }
+details[open] summary::after { content: "−"; }
+details p { margin-top: .75rem; color: var(--muted); max-width: 65ch; }
+
+footer { border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding-block: 2rem; color: var(--muted); font-size: .9rem; }
+
+/* drawer & modal */
+.scrim { position: fixed; inset: 0; background: rgba(5,4,10,.6); z-index: 40; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); background: var(--surface); border-left: 1px solid var(--line); z-index: 50; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top, 0px) + 1.25rem) max(1.25rem, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 1.25rem) 1.25rem; gap: 1rem; }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; }
+.x { background: transparent; border: 1px solid var(--line); color: var(--fg); width: 2.4rem; height: 2.4rem; border-radius: 50%; cursor: pointer; font-size: 1.1rem; }
+.items { list-style: none; padding: 0; margin: 0; display: grid; gap: .6rem; overflow-y: auto; flex: 1; align-content: start; }
+.item { display: grid; grid-template-columns: 1fr auto auto; gap: .75rem; align-items: center; padding: .85rem 1rem; background: var(--surface-2); border-radius: 12px; }
+.item b { display: block; font-size: .95rem; }
+.item small { color: var(--muted); }
+.item .rm { background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1.1rem; }
+.item .rm:hover { color: var(--fg); }
+.empty { color: var(--muted); padding: 2rem 0; text-align: center; }
+.drawer-foot { display: grid; gap: .75rem; border-top: 1px solid var(--line); padding-top: 1rem; }
+.line { display: flex; justify-content: space-between; gap: 1rem; }
+.line.sum { font-weight: 700; font-size: 1.15rem; }
+
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.dialog { width: min(520px, 100%); max-height: 100%; overflow-y: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 1.75rem; display: grid; gap: 1.1rem; position: relative; z-index: 41; }
+.field { display: grid; gap: .4rem; }
+.field label, .field legend { font-weight: 700; font-size: .9rem; }
+.field input[type="email"], .field input[type="text"] { font: inherit; padding: .8rem 1rem; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); width: 100%; }
+.field input:focus { outline: 2px solid var(--violet); outline-offset: 0; }
+fieldset { border: 0; padding: 0; margin: 0; }
+.methods { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; margin-top: .4rem; }
+.methods label { border: 1px solid var(--line); border-radius: 10px; padding: .75rem .5rem; text-align: center; cursor: pointer; font-weight: 500; font-size: .9rem; }
+.methods input { position: absolute; opacity: 0; pointer-events: none; }
+.methods label:has(input:checked) { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 12%, var(--surface)); }
+.methods label:has(input:focus-visible) { outline: 2px solid var(--violet); }
+.promo { display: grid; grid-template-columns: 1fr auto; gap: .5rem; }
+.hint { font-size: .85rem; color: var(--muted); }
+.hint.ok { color: var(--ok); }
+.hint.err { color: #ff7a8a; }
+.co { display: grid; gap: 1.1rem; }
+.demo { font-size: .82rem; color: var(--muted); background: var(--surface-2); border-radius: 10px; padding: .75rem 1rem; }
+.done { text-align: center; display: grid; gap: 1rem; justify-items: center; }
+.done .check { width: 64px; height: 64px; border-radius: 50%; background: var(--violet); color: var(--on-violet); display: grid; place-items: center; font-size: 2rem; }
+.order-id { font: 500 1rem/1 var(--mono); background: var(--surface-2); padding: .6rem .9rem; border-radius: 8px; }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); translate: -50% 0; background: var(--fg); color: var(--bg); padding: .75rem 1.1rem; border-radius: 999px; font-weight: 700; font-size: .9rem; z-index: 70; }
+@media (max-width: 480px) { .methods { grid-template-columns: 1fr; } .dialog { padding: 1.25rem; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top">V3 <span>COMPLECT</span></a>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#plans">Тарифы</a>
+      <a href="#builder">Собрать комплект</a>
+      <a href="#compare">Сравнение</a>
+      <a href="#faq">Вопросы</a>
+    </nav>
+    <button class="btn cart-btn" id="openCart" type="button" aria-label="Открыть корзину">Корзина <span class="badge num" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div class="hero-text">
+        <p class="eyebrow">Официальный магазин подписок V3</p>
+        <h1 id="hero-title">V3<span class="outline">COMPLECT</span></h1>
+        <p class="hero-lead">Тарифы V3AI, V3 Games Pass и V3 Snap Pro в одном месте. Возьми один продукт или собери комплект со скидкой до 30%.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#plans">Выбрать тариф V3AI</a>
+          <a class="btn" href="#builder">Собрать комплект</a>
+        </div>
+        <div class="hero-facts">
+          <div><b class="num">0 ₽</b><small>старт V3AI</small></div>
+          <div><b class="num">−20%</b><small>при оплате за год</small></div>
+          <div><b class="num">−30%</b><small>за полный комплект</small></div>
+        </div>
+      </div>
+      <div class="kit" aria-hidden="true">
+        <div class="kit-card c1"><span class="k-tag">Игры</span><span class="glyph">G</span><div><div class="k-name">Games Pass</div><div class="k-price">от 199 ₽</div></div></div>
+        <div class="kit-card c2"><span class="k-tag">Фото</span><span class="glyph">S</span><div><div class="k-name">Snap Pro</div><div class="k-price">от 149 ₽</div></div></div>
+        <div class="kit-card c3"><span class="k-tag">Нейросеть</span><span class="glyph">AI</span><div><div class="k-name">V3AI Про</div><div class="k-price">от 799 ₽</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="plans" aria-labelledby="plans-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Тарифы</p>
+        <h2 id="plans-title">Выбери подписку</h2>
+        <p class="muted">Подписка продлевается автоматически, отменить её можно в любой момент в профиле V3.</p>
+      </div>
+      <div class="controls">
+        <div class="seg" role="tablist" aria-label="Продукт">
+          <button type="button" role="tab" aria-selected="true" data-tab="ai">V3AI</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="games">Games Pass</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="snap">Snap Pro</button>
+        </div>
+        <div class="seg" aria-label="Период оплаты">
+          <button type="button" aria-pressed="true" data-period="month">Месяц</button>
+          <button type="button" aria-pressed="false" data-period="year">Год <span class="save">−20%</span></button>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="ai" role="tabpanel">
+        <h3 class="panel-title">V3AI</h3>
+        <div class="plans">
+          <article class="plan" data-id="ai-free" data-name="V3AI Старт" data-month="0">
+            <h3>Старт</h3>
+            <p class="for">Попробовать V3AI и задавать простые вопросы.</p>
+            <div class="price"><span class="amount num">0 ₽</span><span class="per">навсегда</span></div>
+            <ul class="feat">
+              <li>30 сообщений в день</li>
+              <li>Базовая модель V3AI Lite</li>
+              <li>История на 7 дней</li>
+              <li class="off">Генерация картинок</li>
+              <li class="off">Доступ к API</li>
+            </ul>
+            <button class="btn" type="button" data-add>Подключить</button>
+          </article>
+          <article class="plan" data-id="ai-plus" data-name="V3AI Плюс" data-month="299">
+            <h3>Плюс</h3>
+            <p class="for">Для учёбы, текстов и повседневных задач.</p>
+            <div class="price"><span class="amount num">299 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>500 сообщений в день</li>
+              <li>Модель V3AI Standard</li>
+              <li>50 картинок в месяц</li>
+              <li>Загрузка файлов до 20 МБ</li>
+              <li class="off">Доступ к API</li>
+            </ul>
+            <button class="btn" type="button" data-add>В корзину</button>
+          </article>
+          <article class="plan hot" data-id="ai-pro" data-name="V3AI Про" data-month="799">
+            <span class="ribbon">Хит</span>
+            <h3>Про</h3>
+            <p class="for">Безлимит, картинки, видео и приоритет в очереди.</p>
+            <div class="price"><span class="amount num">799 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>Безлимит сообщений</li>
+              <li>Модель V3AI Max</li>
+              <li>300 картинок и 20 видео в месяц</li>
+              <li>Приоритетная скорость ответов</li>
+              <li>API: 100 000 токенов в месяц</li>
+            </ul>
+            <button class="btn btn-primary" type="button" data-add>В корзину</button>
+          </article>
+          <article class="plan" data-id="ai-team" data-name="V3AI Команда" data-month="1990">
+            <h3>Команда</h3>
+            <p class="for">Для студий и команд до 5 человек.</p>
+            <div class="price"><span class="amount num">1 990 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>Всё из «Про» на 5 мест</li>
+              <li>Общие проекты и чаты</li>
+              <li>API: 1 000 000 токенов в месяц</li>
+              <li>Панель администратора</li>
+              <li>Поддержка 24/7</li>
+            </ul>
+            <button class="btn" type="button" data-add>В корзину</button>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="games" role="tabpanel">
+        <h3 class="panel-title">V3 Games Pass</h3>
+        <div class="plans">
+          <article class="plan" data-id="games-basic" data-name="Games Pass" data-month="199">
+            <h3>Games Pass</h3>
+            <p class="for">Все игры V3 без рекламы.</p>
+            <div class="price"><span class="amount num">199 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>Без рекламы во всех играх</li>
+              <li>Облачные сохранения V3 Craft</li>
+              <li>Ежемесячный набор монет</li>
+              <li class="off">Эксклюзивные скины</li>
+            </ul>
+            <button class="btn" type="button" data-add>В корзину</button>
+          </article>
+          <article class="plan hot" data-id="games-ultimate" data-name="Games Pass Ultimate" data-month="349">
+            <span class="ribbon">Для игроков</span>
+            <h3>Ultimate</h3>
+            <p class="for">Всё платное в играх V3 сразу.</p>
+            <div class="price"><span class="amount num">349 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>Всё из Games Pass</li>
+              <li>Все платные скины и формы V3 FC</li>
+              <li>Ранний доступ к новым играм</li>
+              <li>Фиолетовый ник в V3 Craft</li>
+            </ul>
+            <button class="btn btn-primary" type="button" data-add>В корзину</button>
+          </article>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="snap" role="tabpanel">
+        <h3 class="panel-title">V3 Snap Pro</h3>
+        <div class="plans">
+          <article class="plan hot" data-id="snap-pro" data-name="V3 Snap Pro" data-month="149">
+            <span class="ribbon">Новое</span>
+            <h3>Snap Pro</h3>
+            <p class="for">Фильтры, маски и облачная галерея.</p>
+            <div class="price"><span class="amount num">149 ₽</span><span class="per">/ мес</span></div>
+            <ul class="feat">
+              <li>Все маски и фильтры</li>
+              <li>Облачная галерея на 50 ГБ</li>
+              <li>Фото без водяного знака</li>
+              <li>ИИ-ретушь от V3AI</li>
+            </ul>
+            <button class="btn btn-primary" type="button" data-add>В корзину</button>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="builder" aria-labelledby="builder-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Комплект</p>
+        <h2 id="builder-title">Собери свой комплект</h2>
+        <p class="muted">Два продукта дают скидку 15%, три продукта дают 30%. Цены за месяц.</p>
+      </div>
+      <div class="builder">
+        <div class="picks" id="picks">
+          <label class="pick"><input type="checkbox" id="b-ai" value="ai-pro" checked><span><b>V3AI Про</b><small>Безлимит, картинки, видео, API</small></span><span class="p num">799 ₽</span></label>
+          <label class="pick"><input type="checkbox" id="b-games" value="games-ultimate" checked><span><b>Games Pass Ultimate</b><small>Все игры и скины без рекламы</small></span><span class="p num">349 ₽</span></label>
+          <label class="pick"><input type="checkbox" id="b-snap" value="snap-pro"><span><b>V3 Snap Pro</b><small>Маски, фильтры, облачная галерея</small></span><span class="p num">149 ₽</span></label>
+        </div>
+        <aside class="summary" aria-live="polite">
+          <h3>Твой комплект</h3>
+          <div class="tiers" aria-hidden="true"><span id="t1"></span><span id="t2"></span><span id="t3"></span></div>
+          <div class="row"><span>Без скидки</span><span class="num" id="bFull">1 148 ₽</span></div>
+          <div class="row"><span>Скидка комплекта</span><span class="num disc" id="bDisc">−15% · −172 ₽</span></div>
+          <div class="row total"><span>Итого в месяц</span></div>
+          <div class="big num" id="bTotal">976 ₽</div>
+          <button class="btn btn-primary" type="button" id="addBundle">Добавить комплект в корзину</button>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="compare" aria-labelledby="compare-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Сравнение</p>
+        <h2 id="compare-title">Тарифы V3AI подробно</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Возможность</th><th scope="col">Старт</th><th scope="col">Плюс</th><th scope="col" class="hl">Про</th><th scope="col">Команда</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Сообщений в день</th><td>30</td><td>500</td><td>Безлимит</td><td>Безлимит</td></tr>
+            <tr><th scope="row">Модель</th><td>Lite</td><td>Standard</td><td>Max</td><td>Max</td></tr>
+            <tr><th scope="row">Картинок в месяц</th><td>—</td><td>50</td><td>300</td><td>300 × 5</td></tr>
+            <tr><th scope="row">Видео в месяц</th><td>—</td><td>—</td><td>20</td><td>20 × 5</td></tr>
+            <tr><th scope="row">Файлы</th><td>—</td><td>до 20 МБ</td><td>до 100 МБ</td><td>до 500 МБ</td></tr>
+            <tr><th scope="row">API, токенов в месяц</th><td>—</td><td>—</td><td>100 000</td><td>1 000 000</td></tr>
+            <tr><th scope="row">Мест</th><td>1</td><td>1</td><td>1</td><td>5</td></tr>
+            <tr><th scope="row">Цена в месяц</th><td>0 ₽</td><td>299 ₽</td><td>799 ₽</td><td>1 990 ₽</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Вопросы</p>
+        <h2 id="faq-title">Частые вопросы</h2>
+      </div>
+      <div class="faq">
+        <details open><summary>Как быстро включится подписка?</summary><p>Сразу после оплаты. Доступ привязывается к аккаунту V3 по email, который ты укажешь при оформлении.</p></details>
+        <details><summary>Можно ли отменить подписку?</summary><p>Да, в любой момент в профиле V3. Подписка работает до конца оплаченного периода и больше не продлевается.</p></details>
+        <details><summary>Чем годовая оплата лучше?</summary><p>За год платишь как за 9,6 месяца, это скидка 20%. Скидка комплекта при этом тоже действует.</p></details>
+        <details><summary>Можно поменять тариф V3AI?</summary><p>Да. При переходе на тариф выше неиспользованные дни текущего тарифа засчитываются в оплату.</p></details>
+        <details><summary>Какие способы оплаты есть?</summary><p>Банковская карта, СБП и криптовалюта. Чек приходит на email.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 V3 COMPLECT · экосистема V3</span>
+    <span>Промокод на первый заказ: <b>V3START</b></span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Корзина" hidden>
+  <div class="drawer-head"><h3>Корзина</h3><button class="x" type="button" data-close aria-label="Закрыть">✕</button></div>
+  <ul class="items" id="items"></ul>
+  <div class="drawer-foot">
+    <div class="line"><span class="muted">Период</span><span id="periodLabel">Месяц</span></div>
+    <div class="line sum"><span>Итого</span><span class="num" id="cartTotal">0 ₽</span></div>
+    <button class="btn btn-primary" type="button" id="checkout">Оформить заказ</button>
+  </div>
+</aside>
+
+<div class="modal" id="modal" hidden>
+  <div class="scrim" data-close></div>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="co-title">
+    <form id="coForm" novalidate></form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+document.documentElement.classList.add('js');
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const rub = n => n.toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₽';
+  const YEAR_FACTOR = 12 * 0.8;
+  const BUNDLE = { 2: 0.15, 3: 0.30 };
+  let period = 'month';
+  let cart = [];
+  let promo = 0;
+
+  const catalog = {};
+  $$('.plan').forEach(p => catalog[p.dataset.id] = { name: p.dataset.name, month: +p.dataset.month });
+
+  const priceOf = month => period === 'year' ? Math.round(month * YEAR_FACTOR) : month;
+
+  // tabs
+  const tabs = $$('[data-tab]');
+  const showTab = id => {
+    tabs.forEach(t => t.setAttribute('aria-selected', t.dataset.tab === id));
+    $$('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== id);
+  };
+  tabs.forEach(t => t.addEventListener('click', () => showTab(t.dataset.tab)));
+  showTab('ai');
+
+  // period
+  const renderPrices = () => {
+    $$('.plan').forEach(p => {
+      const m = +p.dataset.month, price = $('.price', p);
+      if (!m) return;
+      price.innerHTML = period === 'year'
+        ? `<span class="amount num">${rub(priceOf(m))}</span><span class="per">/ год</span><span class="old">${rub(m * 12)}</span>`
+        : `<span class="amount num">${rub(m)}</span><span class="per">/ мес</span>`;
+    });
+    $('#periodLabel').textContent = period === 'year' ? 'Год (−20%)' : 'Месяц';
+    renderCart();
+  };
+  $$('[data-period]').forEach(b => b.addEventListener('click', () => {
+    period = b.dataset.period;
+    $$('[data-period]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    renderPrices();
+  }));
+
+  // toast
+  let tt;
+  const toast = msg => { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); };
+
+  // cart
+  const cartTotal = () => cart.reduce((s, i) => s + priceOf(i.month), 0);
+  const renderCart = () => {
+    $('#cartCount').textContent = cart.length;
+    const ul = $('#items');
+    ul.innerHTML = cart.length ? '' : '<li class="empty">Корзина пуста. Выбери тариф выше.</li>';
+    cart.forEach((i, idx) => {
+      const li = document.createElement('li');
+      li.className = 'item';
+      li.innerHTML = `<span><b></b><small>${i.note || (period === 'year' ? 'на 12 месяцев' : 'на 1 месяц')}</small></span><span class="num">${rub(priceOf(i.month))}</span><button class="rm" type="button" aria-label="Удалить">✕</button>`;
+      $('b', li).textContent = i.name;
+      $('.rm', li).addEventListener('click', () => { cart.splice(idx, 1); syncButtons(); renderCart(); });
+      ul.appendChild(li);
+    });
+    $('#cartTotal').textContent = rub(cartTotal());
+    $('#checkout').disabled = !cart.length;
+  };
+  const syncButtons = () => $$('.plan').forEach(p => {
+    const b = $('[data-add]', p), inCart = cart.some(i => i.id === p.dataset.id);
+    b.classList.toggle('added', inCart);
+    b.textContent = inCart ? 'В корзине ✓' : (p.dataset.month === '0' ? 'Подключить' : 'В корзину');
+  });
+  const add = item => {
+    if (cart.some(i => i.id === item.id)) { toast('Уже в корзине'); return; }
+    // one V3AI plan at a time
+    if (item.id.startsWith('ai-')) cart = cart.filter(i => !i.id.startsWith('ai-'));
+    if (item.id.startsWith('games-')) cart = cart.filter(i => !i.id.startsWith('games-'));
+    cart.push(item); syncButtons(); renderCart(); toast(`${item.name} добавлен в корзину`);
+  };
+  $$('.plan').forEach(p => $('[data-add]', p).addEventListener('click', () => add({ id: p.dataset.id, ...catalog[p.dataset.id] })));
+
+  // builder
+  const bundleCalc = () => {
+    const ids = $$('#picks input:checked').map(i => i.value);
+    const full = ids.reduce((s, id) => s + catalog[id].month, 0);
+    const rate = BUNDLE[ids.length] || 0;
+    return { ids, full, rate, total: Math.round(full * (1 - rate)) };
+  };
+  const renderBundle = () => {
+    const b = bundleCalc();
+    $('#bFull').textContent = rub(b.full);
+    $('#bDisc').textContent = b.rate ? `−${b.rate * 100}% · −${rub(b.full - b.total)}` : 'нужно от 2 продуктов';
+    $('#bTotal').textContent = rub(b.total);
+    ['t1', 't2', 't3'].forEach((t, i) => $('#' + t).classList.toggle('on', i < b.ids.length));
+    $('#addBundle').disabled = b.ids.length < 2;
+  };
+  $$('#picks input').forEach(i => i.addEventListener('change', renderBundle));
+  $('#addBundle').addEventListener('click', () => {
+    const b = bundleCalc();
+    cart = cart.filter(i => !i.id.startsWith('bundle'));
+    add({ id: 'bundle-' + b.ids.join('+'), name: 'Комплект: ' + b.ids.map(id => catalog[id].name).join(' + '), month: b.total, note: `скидка ${b.rate * 100}%` });
+    openCart();
+  });
+
+  // drawer
+  const drawer = $('#drawer'), scrim = $('#scrim'), modal = $('#modal');
+  const openCart = () => { drawer.hidden = false; scrim.hidden = false; $('[data-close]', drawer).focus(); };
+  const closeAll = () => { drawer.hidden = true; scrim.hidden = true; modal.hidden = true; };
+  $('#openCart').addEventListener('click', openCart);
+  scrim.addEventListener('click', closeAll);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+  document.addEventListener('click', e => { if (e.target.closest('[data-close]')) closeAll(); });
+
+  // checkout
+  const form = $('#coForm');
+  const renderForm = () => {
+    const sub = cartTotal(), disc = Math.round(sub * promo), total = sub - disc;
+    form.innerHTML = `
+      <div class="co">
+        <div class="drawer-head"><h3 id="co-title">Оформление заказа</h3><button class="x" type="button" data-close aria-label="Закрыть">✕</button></div>
+        <div class="field"><label for="coEmail">Email аккаунта V3</label><input type="email" id="coEmail" placeholder="you@example.com" autocomplete="email" required><span class="hint" id="emailHint">Сюда придут чек и доступ.</span></div>
+        <fieldset class="field"><legend>Способ оплаты</legend>
+          <div class="methods">
+            <label><input type="radio" name="pay" id="payCard" value="Карта" checked>Карта</label>
+            <label><input type="radio" name="pay" id="paySbp" value="СБП">СБП</label>
+            <label><input type="radio" name="pay" id="payCrypto" value="Крипта">Крипта</label>
+          </div>
+        </fieldset>
+        <div class="field"><label for="coPromo">Промокод</label><div class="promo"><input type="text" id="coPromo" placeholder="V3START"><button class="btn" type="button" id="applyPromo">Применить</button></div><span class="hint ${promo ? 'ok' : ''}" id="promoHint">${promo ? 'Промокод применён: −10%' : ''}</span></div>
+        <div class="line"><span class="muted">Сумма</span><span class="num">${rub(sub)}</span></div>
+        ${disc ? `<div class="line"><span class="muted">Промокод</span><span class="num">−${rub(disc)}</span></div>` : ''}
+        <div class="line sum"><span>К оплате</span><span class="num">${rub(total)}</span></div>
+        <button class="btn btn-primary" type="submit">Оплатить ${rub(total)}</button>
+        <p class="demo">Демо-версия магазина: платёжная система ещё не подключена, деньги не списываются.</p>
+      </div>`;
+    $('#applyPromo').addEventListener('click', () => {
+      const code = $('#coPromo').value.trim().toUpperCase();
+      if (code === 'V3START') { promo = 0.1; const em = $('#coEmail').value; renderForm(); $('#coEmail').value = em; }
+      else { const h = $('#promoHint'); h.className = 'hint err'; h.textContent = 'Такого промокода нет. Проверь написание.'; }
+    });
+  };
+  $('#checkout').addEventListener('click', () => { drawer.hidden = true; renderForm(); modal.hidden = false; $('#coEmail').focus(); });
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const email = $('#coEmail'), hint = $('#emailHint');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) { hint.className = 'hint err'; hint.textContent = 'Введи email в формате name@mail.ru'; email.focus(); return; }
+    const id = 'V3-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    const pay = $('input[name="pay"]:checked').value;
+    form.innerHTML = `<div class="done"><div class="check">✓</div><h3 id="co-title">Заказ оформлен</h3><span class="order-id">${id}</span><p class="muted"></p><p class="demo">Это демо: оплата не проводилась.</p><button class="btn btn-primary" type="button" data-close>Готово</button></div>`;
+    $('.done p.muted', form).textContent = `Способ оплаты: ${pay}. Доступ будет привязан к ${email.value.trim()}.`;
+    cart = []; promo = 0; syncButtons(); renderCart();
+  });
+
+  renderPrices(); renderBundle(); syncButtons();
+})();
+</script>
