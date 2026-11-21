@@ -96,6 +96,25 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
 .stats div { border: 1px solid var(--line); border-radius: 4px; padding: 10px 4px; }
 .stats b { display: block; font-family: var(--display); font-size: 28px; font-variant-numeric: tabular-nums; }
 .stats span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--dust); }
+.chat {
+  position: fixed; z-index: 3; pointer-events: auto;
+  left: max(16px, env(safe-area-inset-left, 0px)); right: calc(var(--mm, 200px) + max(16px, env(safe-area-inset-right, 0px)));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  max-width: 520px; display: flex; flex-direction: column; gap: 6px;
+}
+.chat-log { display: flex; flex-direction: column; gap: 3px; font-size: 13px; line-height: 1.35; pointer-events: none; }
+.chat-log div { background: rgba(16, 13, 20, .72); border-radius: 5px; padding: 3px 8px; align-self: flex-start; max-width: 100%; overflow-wrap: anywhere; }
+.chat-log b { font-weight: 700; }
+.chat-log div.old { opacity: .55; }
+.chat-row { display: flex; gap: 6px; }
+.chat-row input {
+  flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--stone); background: rgba(16, 13, 20, .88);
+  border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; outline: none;
+}
+.chat-row input:focus { border-color: var(--gold); }
+.chat-row input::placeholder { color: var(--dust); }
+.chat-row button { background: #2a1016; border: 1px solid #5a2028; border-radius: 6px; padding: 0 14px; font-size: 14px; }
+.chat-row button:disabled { opacity: .5; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
 
@@ -108,6 +127,13 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   </div>
   <div class="hgroup" id="bats"></div>
   <div class="hgroup"><button class="hbtn" id="pauseBtn" type="button">Пауза</button></div>
+  <form class="chat" id="chat" autocomplete="off">
+    <div class="chat-log" id="chatLog" aria-live="polite"></div>
+    <div class="chat-row">
+      <input id="chatInput" type="text" maxlength="160" placeholder="Скажи что-нибудь друзьям… (T)" aria-label="Твоя реплика">
+      <button type="submit" id="chatSend">Сказать</button>
+    </div>
+  </form>
 </div>
 <div id="toast"></div>
 
@@ -129,6 +155,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     </div>
     <div class="keys">
       <b>Один игрок:</b> <kbd>WASD</kbd> или стрелки — идти, мышь — целиться, зажать <kbd>ЛКМ</kbd> или <kbd>Пробел</kbd> — фонарик. На телефоне: левая половина экрана — джойстик, зажми правую — светить туда.<br>
+      <b>Разговор:</b> нажми <kbd>T</kbd> или на строку внизу, напиши реплику и нажми <kbd>Enter</kbd>, друзья ответят.<br>
       <b>Двое:</b> <span style="color:var(--p1)">Игрок 1</span> — <kbd>WASD</kbd> + <kbd>Пробел</kbd>, <span style="color:var(--p2)">Игрок 2</span> — стрелки + <kbd>Enter</kbd>. Фонарик светит туда, куда идёшь. <kbd>Esc</kbd> — пауза.
       <div id="bestLine" style="margin-top:6px"></div>
     </div>
@@ -221,6 +248,9 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [22, 14] },
   ];
   const cx = (t) => (t + 0.5) * T;
+  const mmWidth = () => MW * Math.max(2, Math.min(4, Math.floor(cw / 160)));
+  const setMm = () => document.documentElement.style.setProperty("--mm", (mmWidth() + 24) + "px");
+  addEventListener("resize", setMm); setMm();
 
   const navBlocked = new Uint8Array(MW * MH);
   for (let i = 0; i < grid.length; i++) navBlocked[i] = grid[i] !== 0 ? 1 : 0;
@@ -344,12 +374,16 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   /* ---------- input ---------- */
   const keys = {};
   addEventListener("keydown", (e) => {
+    if (document.activeElement === chatInput) { if (e.code === "Escape") chatInput.blur(); return; }
+    if (state === "play" && (e.code === "KeyT" || (mode === 1 && e.code === "Enter"))) { e.preventDefault(); chatInput.focus(); return; }
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"].includes(e.code) && state === "play") e.preventDefault();
     keys[e.code] = true;
     if ((e.code === "Escape" || e.code === "KeyP") && (state === "play" || state === "pause")) togglePause();
     audio();
   });
   addEventListener("keyup", (e) => { keys[e.code] = false; });
+  const chatInput = $("#chatInput");
+  chatInput.addEventListener("focus", () => { for (const k in keys) keys[k] = false; mouse.down = false; });
   addEventListener("blur", () => { for (const k in keys) keys[k] = false; mouse.down = false; });
   const mouse = { x: 0, y: 0, down: false, active: false };
   const touch = { joy: null, aim: null };
@@ -404,6 +438,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     show(null); $("#hud").hidden = false; state = "play";
     toast("День 1", "Статуи пока неподвижны. Ищите медальоны.");
     talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2;
+    chatLog.length = 0; $("#chatLog").innerHTML = ""; chatInput.value = ""; chatBusy = false; $("#chatSend").disabled = false;
   }
 
   /* ---------- helpers ---------- */
@@ -579,9 +614,22 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const talk = { queue: [], t: 0, cool: 10, usedDay: [], usedNight: [], waitT: 0 };
   function talkReset() { talk.queue = []; talk.t = 0; talk.cool = 12; talk.usedDay = []; talk.usedNight = []; talk.waitT = 6; }
   const pick = (a) => a[Math.random() * a.length | 0];
+  const chatLog = [];
+  function logLine(p, text) {
+    chatLog.push({ who: p.name, color: p.color, text });
+    if (chatLog.length > 30) chatLog.shift();
+    const el = $("#chatLog"); el.innerHTML = "";
+    chatLog.slice(-4).forEach((l, i, a) => {
+      const d = document.createElement("div"); if (i < a.length - 2) d.className = "old";
+      const b = document.createElement("b"); b.style.color = l.color; b.textContent = l.who + ": ";
+      d.append(b, l.text); el.append(d);
+    });
+  }
   function say(p, text) {
     if (!p || state !== "play") return;
-    p.bubble = { text, t: Math.min(5.5, 1.6 + text.length * .06) };
+    p.typing = false;
+    p.bubble = { text, t: Math.min(7, 1.8 + text.length * .065) };
+    logLine(p, text);
     talk.t = Math.max(talk.t, p.bubble.t + .4); // a running conversation waits for event lines
   }
   const byName = (n) => n === "me" ? players[0] : players.find((q) => q.name === n);
@@ -614,6 +662,105 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     let i; do { i = Math.random() * pool.length | 0; } while (used.includes(i));
     used.push(i); talk.queue = pool[i].slice();
   }
+
+  /* ---------- the player talks, the bots answer ---------- */
+  let sampleFn = null, sampleOff = false, chatBusy = false;
+  (async () => { try { sampleFn = await window.claude?.use?.("sample"); } catch (e) { sampleFn = null; } })();
+  const PERSONAS = `- Тимур: смелый, неформальный лидер, подбадривает всех, любит пошутить про шаурму.
+- Луиза: умная и внимательная, всё замечает, немного трусиха; о себе говорит в женском роде.
+- Левон: ироничный, с мрачным юмором, ворчит, но надёжный друг.`;
+  function gameState() {
+    const me = players[0];
+    const rest = items.filter((it) => !it.got).map((it) => roomAt(it.x, it.y)).filter(Boolean);
+    const live = statues.filter((q) => q.stone !== Infinity).length;
+    const caught = players.filter((q) => q.caught).map((q) => q.name === "Ты" ? "игрок" : q.name);
+    return [
+      phase === "night" ? `Ночь ${night}, до рассвета ${Math.ceil(phaseT)} сек. Темно.` : `День ${night + 1}, до заката ${Math.ceil(phaseT)} сек. Статуи неподвижны.`,
+      `Игрок сейчас в зале: ${roomAt(me.x, me.y) || "проход между залами"}.`,
+      `Медальонов собрано ${medals} из 6.` + (rest.length ? ` Оставшиеся лежат в залах: ${[...new Set(rest)].join(", ")}.` : ""),
+      gateOpen ? "Ворота открыты, надо бежать в конец Северной галереи на восток." : "Ворота закрыты.",
+      live === 0 ? "Обе живые статуи уже окаменели навсегда, музей больше не опасен." : `Живых статуй осталось: ${live} из 2.`,
+      caught.length ? `Сейчас окаменели (не могут говорить): ${caught.join(", ")}.` : "Все в порядке, никто не окаменел.",
+    ].join("\n");
+  }
+  function addressed(msg) { const m = msg.toLowerCase(); return players.find((q) => q.bot && m.includes(q.name.toLowerCase().slice(0, 4))); }
+  async function sendChat(msg) {
+    const me = players[0];
+    if (!msg || chatBusy) return;
+    players.forEach((q) => { if (q !== me) q.bubble = null; });
+    say(me, msg);
+    talk.queue = []; talk.cool = 25;
+    const free = players.filter((q) => q.bot && !q.caught);
+    if (!free.length) return;
+    const first = addressed(msg) && !addressed(msg).caught ? addressed(msg) : free[Math.random() * free.length | 0];
+    first.typing = true; chatBusy = true; $("#chatSend").disabled = true;
+    let lines = null;
+    if (sampleFn && !sampleOff) {
+      const log = chatLog.slice(-12, -1).map((l) => `${l.who === "Ты" ? "Игрок" : l.who}: ${l.text}`).join("\n");
+      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей.
+
+Друзья:
+${PERSONAS}
+Игрок — их друг. Пол игрока неизвестен: обращайтесь к нему на «ты» и без родовых окончаний (не «ты нашёл/нашла», а «у тебя получилось»).
+
+Что происходит сейчас:
+${gameState()}
+
+Недавний разговор:
+${log || "(пока тихо)"}
+
+Игрок только что сказал: «${msg}»
+
+Ответь за друзей: 1–3 короткие реплики (до 110 символов каждая). Говорить могут только: ${free.map((q) => q.name).join(", ")}. Если игрок обратился к кому-то по имени, первым отвечает этот друг. Отвечайте по смыслу сказанного и по ситуации в игре, живо, в своём характере, по-русски, без описаний действий и без звёздочек. Друзья могут отвечать и друг другу. Если игрок спрашивает про игру (где медальоны, что делать, как спастись), дайте полезный совет на основе того, что происходит сейчас. Не выдумывайте того, чего нет в игре.
+
+Ответ — только JSON-массив, например: [{"who":"Тимур","text":"..."},{"who":"Луиза","text":"..."}]`;
+      try {
+        const res = await sampleFn.json(prompt, { modelTier: "quick", cache: false });
+        if (Array.isArray(res)) lines = res.filter((l) => l && typeof l.text === "string" && free.some((q) => q.name === l.who)).slice(0, 3)
+          .map((l) => [l.who, l.text.trim().slice(0, 160)]).filter((l) => l[1]);
+      } catch (e) {
+        if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e && e.code)) sampleOff = true;
+      }
+    }
+    if (!lines || !lines.length) lines = localReply(msg, free, first);
+    players.forEach((q) => q.typing = false);
+    chatBusy = false; $("#chatSend").disabled = false;
+    if (state !== "play") return;
+    talk.t = Math.min(talk.t, .3); talk.queue = lines;
+  }
+  // simple answers when Claude is not available on this page
+  function localReply(msg, free, first) {
+    const m = msg.toLowerCase(), F = (q) => q.f;
+    const other = free.find((q) => q !== first);
+    const rest = items.filter((it) => !it.got);
+    const me = players[0];
+    let near = null, nd = Infinity; rest.forEach((it) => { const d = Math.hypot(it.x - me.x, it.y - me.y); if (d < nd) { nd = d; near = it; } });
+    const live = statues.filter((q) => q.stone !== Infinity).length;
+    const out = [];
+    const L = (q, t) => out.push([q.name, t]);
+    if (/привет|здравств|хай|салам/.test(m)) { L(first, pick(["Привет! Мы же всё время рядом, ты чего?", "Ну привет. Не время для любезностей, но приятно."])); }
+    else if (/медал|где|куда|ищ/.test(m)) {
+      if (gateOpen) L(first, "Медальоны собраны! Бежим к воротам в конце Северной галереи.");
+      else if (near) L(first, `Ближайший медальон, кажется, в зале «${roomAt(near.x, near.y)}». Пошли вместе.`);
+    }
+    else if (/стату|страш|боюсь|жутк|ночь/.test(m)) {
+      L(first, live ? `Живых статуй ещё ${live}. Свети прямо на неё, и она окаменеет навсегда.` : "Обе статуи уже каменные. Можно выдохнуть.");
+      if (other) L(other, F(other) ? "Я тоже боюсь. Давайте держаться ближе." : "Главное, не разбегаемся.");
+    }
+    else if (/помог|спас|help/.test(m)) { L(first, "Держись, мы рядом!"); }
+    else if (/шаурм|есть|голод/.test(m)) { const t = free.find((q) => q.name === "Тимур") || first; L(t, "Выберемся, и шаурма с меня. Обещаю."); }
+    else if (/спасиб/.test(m)) { L(first, "Да не за что. Мы же команда."); }
+    else if (/\?/.test(m)) { L(first, pick(["Хороший вопрос. Давай сначала выберемся, потом обсудим.", "Не знаю. Но мне это не нравится.", F(first) ? "Сама думаю о том же." : "Сам думаю о том же."])); }
+    else { L(first, pick(["Согласен.", "Понял тебя.", "Ага. Пошли дальше.", "Хорошо, держимся вместе."]).replace("Согласен", F(first) ? "Согласна" : "Согласен").replace("Понял", F(first) ? "Поняла" : "Понял")); }
+    return out;
+  }
+  $("#chat").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const msg = chatInput.value.trim();
+    if (!msg || chatBusy || state !== "play") return;
+    chatInput.value = ""; chatInput.blur(); audio();
+    sendChat(msg);
+  });
 
   // next tile on the shortest path from (sx,sy) to (gx,gy), or null if there is none
   const botQ = new Int32Array(MW * MH), botD = new Int16Array(MW * MH);
@@ -1035,19 +1182,33 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       const tw = .5 + .5 * Math.sin(tt * 4 + it.y);
       ctx.fillStyle = `rgba(255,220,140,${.25 + .35 * tw})`; ctx.beginPath(); ctx.arc(it.x + 4, it.y - 8, 1.6 + tw, 0, 7); ctx.fill();
     }
-    // speech bubbles
-    players.forEach((p) => {
+    // speech bubbles (stacked upward so they never cover each other)
+    const placed = [];
+    players.slice().sort((a, b) => a.y - b.y).forEach((p) => {
+      if (p.typing && !p.bubble) {
+        const n = 1 + Math.floor(now / 350) % 3, w = 34, h = 20, bx = p.x - w / 2, by = p.y - 48 - h;
+        ctx.fillStyle = "rgba(236,230,218,.96)"; ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, w, h, 7) : ctx.rect(bx, by, w, h); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#1c1820"; for (let i = 0; i < n; i++) { ctx.beginPath(); ctx.arc(bx + 9 + i * 8, by + 10, 2.2, 0, 7); ctx.fill(); }
+      }
       if (!p.bubble) return;
       ctx.font = "600 12px 'PT Sans', sans-serif";
       const words = p.bubble.text.split(" "), rows = []; let row = "";
       for (const w of words) { const t = row ? row + " " + w : w; if (ctx.measureText(t).width > 150 && row) { rows.push(row); row = w; } else row = t; }
       rows.push(row);
       const w = Math.max(...rows.map((r) => ctx.measureText(r).width)) + 16, h = rows.length * 15 + 10;
-      const bx = p.x - w / 2, by = p.y - 48 - h, a = Math.min(1, p.bubble.t * 3);
+      const bx = p.x - w / 2, a = Math.min(1, p.bubble.t * 3);
+      let by = p.y - 48 - h;
+      for (let guard = 0; guard < 8; guard++) {
+        const hit = placed.find((r) => bx < r.x + r.w + 4 && bx + w + 4 > r.x && by < r.y + r.h + 4 && by + h + 4 > r.y);
+        if (!hit) break; by = hit.y - h - 6;
+      }
+      placed.push({ x: bx, y: by, w, h });
       ctx.globalAlpha = a;
       ctx.fillStyle = "rgba(236,230,218,.96)"; ctx.strokeStyle = p.color; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, w, h, 7) : ctx.rect(bx, by, w, h); ctx.fill(); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(p.x - 6, by + h - 1); ctx.lineTo(p.x, by + h + 8); ctx.lineTo(p.x + 6, by + h - 1); ctx.closePath(); ctx.fill();
+      if (by + h + 8 < p.y - 44) { ctx.strokeStyle = p.color; ctx.lineWidth = 1.5; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(p.x, by + h + 8); ctx.lineTo(p.x, p.y - 40); ctx.stroke(); ctx.setLineDash([]); }
       ctx.fillStyle = "#1c1820"; ctx.textAlign = "left"; ctx.textBaseline = "top";
       rows.forEach((r, i) => ctx.fillText(r, bx + 8, by + 6 + i * 15));
       ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
