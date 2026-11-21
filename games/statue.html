@@ -147,6 +147,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
       <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет навсегда. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
+      <li><span>♜</span><span>Статуя Алекса Казаряна защищает людей и ботов: в золотой круг вокруг неё ожившие статуи войти не могут, а если пытаются, Казарян отбрасывает их назад.</span></li>
       <li><span>♟</span><span>С вами идут <b style="color:#9be15d">Тимур</b>, <b style="color:#ff7fc0">Луиза</b> и <b style="color:#b48cff">Левон</b>. Днём они ищут медальоны, ночью держатся рядом и светят на статуи, а пойманных бегут расколдовывать. По дороге вы разговариваете.</span></li>
     </ul>
     <div class="btns">
@@ -244,6 +245,8 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const START = [[22, 17], [23, 17]];
   // the founder, Алекс Казарян, turned to stone in the middle of the Great Hall (covers tiles 22-23 x 14-15)
   const FOUNDER = { x: 23 * T, y: 15 * T + 6, r: 30 };
+  const AURA = 210; // inside this golden circle the living statues are powerless
+  const inAura = (e) => Math.hypot(e.x - FOUNDER.x, e.y - FOUNDER.y) < AURA;
   const BOTS = [
     { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 17] },
     { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 17] },
@@ -258,6 +261,14 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   for (let i = 0; i < grid.length; i++) navBlocked[i] = grid[i] !== 0 ? 1 : 0;
   DECOR.forEach(([x, y]) => navBlocked[y * MW + x] = 1);
   for (const [x, y] of [[22, 14], [23, 14], [22, 15], [23, 15]]) navBlocked[y * MW + x] = 1;
+  // living statues also route around Казарян's golden circle
+  const statueNav = navBlocked.slice();
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (Math.hypot(cx(x) - FOUNDER.x, cx(y) - FOUNDER.y) < AURA + 22) statueNav[y * MW + x] = 1;
+  function segHitsAura(x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1, L = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((FOUNDER.x - x1) * dx + (FOUNDER.y - y1) * dy) / L));
+    return Math.hypot(x1 + dx * t - FOUNDER.x, y1 + dy * t - FOUNDER.y) < AURA + 14;
+  }
 
   /* ---------- pre-rendered floor and walls ---------- */
   const mapC = document.createElement("canvas"); mapC.width = MW * T; mapC.height = MH * T;
@@ -460,7 +471,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     buildBats();
     show(null); $("#hud").hidden = false; state = "play";
     toast("День 1", "Статуи пока неподвижны. Ищите медальоны.");
-    talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2; founder.t = 32; founder.bubble = null;
+    talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2; founder.t = 32; founder.bubble = null; founder.ring = 0; shoveSeen = false;
     chatLog.length = 0; $("#chatLog").innerHTML = ""; chatInput.value = ""; chatBusy = false; $("#chatSend").disabled = false;
   }
 
@@ -502,12 +513,13 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   function computeFlow() {
     flow.fill(-1);
     const q = new Int32Array(MW * MH); let h = 0, t = 0;
-    for (const p of alive()) { const i = Math.floor(p.y / T) * MW + Math.floor(p.x / T); if (flow[i] < 0) { flow[i] = 0; q[t++] = i; } }
+    const out = alive().filter((p) => !inAura(p));
+    for (const p of (out.length ? out : alive())) { const i = Math.floor(p.y / T) * MW + Math.floor(p.x / T); if (flow[i] < 0) { flow[i] = 0; q[t++] = i; } }
     while (h < t) {
       const i = q[h++], x = i % MW, y = (i / MW) | 0;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
-        const ni = ny * MW + nx; if (navBlocked[ni] || flow[ni] >= 0) continue;
+        const ni = ny * MW + nx; if (statueNav[ni] || flow[ni] >= 0) continue;
         flow[ni] = flow[i] + 1; q[t++] = ni;
       }
     }
@@ -727,7 +739,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     let lines = null;
     if (sampleFn && !sampleOff) {
       const log = chatLog.slice(-12, -1).map((l) => `${l.who === "Ты" ? "Игрок" : l.who}: ${l.text}`).join("\n");
-      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза, а время от времени она гулко издаёт звуки «Э», «А» и «О»; что они значат, никто не знает. Почему он окаменел, никто точно не знает.
+      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза, а время от времени она гулко издаёт звуки «Э», «А» и «О»; что они значат, никто не знает. Казарян защищает игрока и друзей: в золотой круг вокруг его статуи ожившие статуи войти не могут, а если пытаются, он с гулким «О!» отбрасывает их назад. Возле Казаряна безопасно. Почему он окаменел, никто точно не знает.
 
 Друзья:
 ${PERSONAS}
@@ -793,13 +805,25 @@ ${log || "(пока тихо)"}
   });
 
   /* ---------- the founder's voice: Э, А, О ---------- */
-  const founder = { t: 9, bubble: null, vowel: null };
+  const founder = { t: 9, bubble: null, vowel: null, ring: 0 };
   const VOWEL_TEXT = { "Э": "Э-э-э…", "А": "А-а-а…", "О": "О-о-о…" };
   const FOUNDER_REACT = [
     "Вы слышали? Казарян опять звучит.", "Это он пытается что-то сказать?", "Мне не нравится, когда он так делает.",
     "Э, А, О… Может, это какое-то слово?", "Бронза так не гудит. Это он.", "Тише… Он снова.",
   ];
+  const PROTECT = ["Казарян нас защищает!", "Видели? Он её отбросил!", "Держимся возле Казаряна!", "Спасибо, Алекс!", "Он на нашей стороне!"];
+  let shoveSeen = false;
+  function founderShove() {
+    founder.vowel = "О"; founder.bubble = { text: "О!", t: 1.9 }; founder.ring = 1; founder.t = Math.max(founder.t, 4);
+    let nd = Infinity; players.forEach((p) => { if (!p.bot) nd = Math.min(nd, Math.hypot(p.x - FOUNDER.x, p.y - FOUNDER.y)); });
+    sfx.vowel("О", Math.max(.35, 1 - nd / 900)); noise(.6, .5, 260); shake = Math.max(shake, .3);
+    logLine({ name: "Алекс Казарян", color: "#e0b45a" }, "О!");
+    if (!shoveSeen) { shoveSeen = true; toast("Казарян защищает вас", "Внутри золотого круга ожившие статуи бессильны"); }
+    const l = players.filter((q) => !q.caught && !q.bubble);
+    if (l.length) setTimeout(() => say(pick(l), pick(PROTECT)), 900);
+  }
   function updateFounder(dt) {
+    if (founder.ring > 0) founder.ring = Math.max(0, founder.ring - dt * 1.4);
     if (founder.bubble && (founder.bubble.t -= dt) <= 0) founder.bubble = null;
     founder.t -= dt;
     if (founder.t > 0) return;
@@ -946,7 +970,7 @@ ${log || "(пока тихо)"}
     if (phase !== "night") return;
     flowT -= dt; if (flowT <= 0) { computeFlow(); flowT = .25; }
     const spd = Math.min(150, 98 + 13 * (night - 1));
-    const targets = alive();
+    const everyone = alive(), targets = everyone.filter((p) => !inAura(p));
     for (const s of statues) {
       // red light turns the statue to stone
       let lit = false, litBy = null;
@@ -968,11 +992,16 @@ ${log || "(пока тихо)"}
       }
       s.hit = Math.max(0, s.hit - dt * .5);
       if (s.wake > 0) { s.wake -= dt; continue; } // statues need a moment to step off the pedestal
-      if (!targets.length) continue;
-      let tp = targets[0], td = Infinity;
-      for (const p of targets) { const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < td) { td = d; tp = p; } }
+      s.shoveCd = Math.max(0, (s.shoveCd || 0) - dt);
+      if (s.stun > 0) { s.stun -= dt; continue; } // knocked back by Казарян
+      const pool = targets.length ? targets : everyone;
+      if (!pool.length) continue;
+      let tp = pool[0], td = Infinity;
+      for (const p of pool) { const d = Math.hypot(p.x - s.x, p.y - s.y); if (d < td) { td = d; tp = p; } }
+      // everyone hides by Казарян: lurk at the edge of the golden circle
+      if (!targets.length && Math.hypot(s.x - FOUNDER.x, s.y - FOUNDER.y) < AURA + 60) { s.face = Math.atan2(tp.y - s.y, tp.x - s.x); continue; }
       let gx, gy;
-      if (td < 5 * T && los(s.x, s.y, tp.x, tp.y)) { gx = tp.x; gy = tp.y; }
+      if (td < 5 * T && los(s.x, s.y, tp.x, tp.y) && !segHitsAura(s.x, s.y, tp.x, tp.y)) { gx = tp.x; gy = tp.y; }
       else {
         const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T);
         let bestV = flow[ty * MW + tx], bx = -1, by = -1;
@@ -980,7 +1009,7 @@ ${log || "(пока тихо)"}
         for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
           if (!dx && !dy) continue;
           const nx = tx + dx, ny = ty + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
-          if (dx && dy && (navBlocked[ty * MW + nx] || navBlocked[ny * MW + tx])) continue;
+          if (dx && dy && (statueNav[ty * MW + nx] || statueNav[ny * MW + tx])) continue;
           const v = flow[ny * MW + nx];
           if (v >= 0 && v < bestV) { bestV = v; bx = nx; by = ny; }
         }
@@ -989,12 +1018,18 @@ ${log || "(пока тихо)"}
       const dx = gx - s.x, dy = gy - s.y, d = Math.hypot(dx, dy) || 1;
       moveEntity(s, dx / d * spd * dt, dy / d * spd * dt, SR);
       s.face = Math.atan2(dy, dx); s.walk += dt * 7; s.moved = true;
+      // the golden circle: the statue can't get in, and Казарян throws it back
+      { const fx = s.x - FOUNDER.x, fy = s.y - FOUNDER.y, fd = Math.hypot(fx, fy) || 1;
+        if (fd < AURA + SR) {
+          s.x = FOUNDER.x + fx / fd * (AURA + SR); s.y = FOUNDER.y + fy / fd * (AURA + SR); collideCircle(s, SR);
+          if (s.shoveCd <= 0) { s.shoveCd = 3; s.stun = 2.2; moveEntity(s, fx / fd * 80, fy / fd * 80, SR); founderShove(); }
+        } }
       // footsteps of stone, louder when close
       s.stepT -= dt;
       if (s.stepT <= 0) { s.stepT = .42; const v = Math.max(0, 1 - td / 520); if (v > .02) sfx.step(v); }
       // caught?
       for (const p of targets) {
-        if (!p.caught && Math.hypot(p.x - s.x, p.y - s.y) < PR + SR + 3) {
+        if (!p.caught && !inAura(p) && Math.hypot(p.x - s.x, p.y - s.y) < PR + SR + 3) {
           p.caught = true; p.light = false; p.rescue = 0; sfx.caught(); redFlash = 1; shake = .6;
           talk.queue = []; say(p, pick(LINES.caughtMe));
           { const o = speakers(p); if (o.length) setTimeout(() => say(pick(o), p.name === "Ты" ? "Нет! Держись, мы тебя вытащим!" : `${p.name}! Нет!`), 1400); }
@@ -1162,6 +1197,11 @@ ${log || "(пока тихо)"}
     if (state === "menu") { drawMenuBackdrop(now); return; }
     ctx.setTransform(z, 0, 0, z, ox, oy);
     ctx.drawImage(mapC, 0, 0);
+    { const g = ctx.createRadialGradient(FOUNDER.x, FOUNDER.y, AURA * .6, FOUNDER.x, FOUNDER.y, AURA);
+      g.addColorStop(0, "rgba(224,180,90,0)"); g.addColorStop(1, "rgba(224,180,90,.10)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(FOUNDER.x, FOUNDER.y, AURA, 0, 7); ctx.fill();
+      ctx.strokeStyle = "rgba(224,180,90,.28)"; ctx.lineWidth = 2; ctx.setLineDash([10, 8]);
+      ctx.beginPath(); ctx.arc(FOUNDER.x, FOUNDER.y, AURA, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
     // gate
     GATE.forEach(([gx, gy]) => {
       const X = gx * T, Y = gy * T;
@@ -1236,6 +1276,20 @@ ${log || "(пока тихо)"}
       ctx.fillStyle = g; ctx.fill();
     }
     ctx.globalCompositeOperation = "source-over";
+    // the golden circle shows through the dark at night, and a wave when Казарян strikes
+    if (nightK > .3) {
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(224,180,90,${.18 + .08 * Math.sin(tt * 2)})`; ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -tt * 12;
+      ctx.beginPath(); ctx.arc(FOUNDER.x, FOUNDER.y, AURA, 0, 7); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+      ctx.globalCompositeOperation = "source-over";
+    }
+    if (founder.ring > 0) {
+      const rr = AURA * (1.15 - founder.ring * .5);
+      ctx.globalCompositeOperation = "lighter";
+      ctx.strokeStyle = `rgba(255,214,120,${founder.ring * .8})`; ctx.lineWidth = 6 * founder.ring + 1;
+      ctx.beginPath(); ctx.arc(FOUNDER.x, FOUNDER.y, rr, 0, 7); ctx.stroke();
+      ctx.globalCompositeOperation = "source-over";
+    }
     // glowing eyes and medal glints show through the dark
     if (nightK > .3 && players.some((p) => Math.hypot(p.x - FOUNDER.x, p.y - FOUNDER.y) < 420)) {
       ctx.shadowColor = "#ffcf6a"; ctx.shadowBlur = 12; ctx.fillStyle = `rgba(255,214,120,${.55 + .35 * Math.sin(tt * 1.3)})`;
