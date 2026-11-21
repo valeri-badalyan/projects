@@ -36,7 +36,7 @@ if ($script:IsWinPS) {
   Remove-TypeData -TypeName System.Array -ErrorAction SilentlyContinue
 }
 
-$script:Version = '1.2'
+$script:Version = '1.3'
 $script:Root = Join-Path $HOME '.v3ai'
 $script:Paths = @{
   Config = Join-Path $script:Root 'config.json'
@@ -55,6 +55,11 @@ $script:ESC = [char]27
 $script:Http = [System.Net.Http.HttpClient]::new()
 $script:Http.Timeout = [TimeSpan]::FromMinutes(20)
 $script:ApiKey = $env:ANTHROPIC_API_KEY
+# Откуда берётся ИИ: ключ API (если задан) → Claude Code (вход через аккаунт Claude, без ключа) → офлайн.
+$script:CcCmd = Get-Command claude -ErrorAction SilentlyContinue | Select-Object -First 1
+$script:CcPartial = $true
+function Get-V3Backend { if ($script:ApiKey) { return 'api' } elseif ($script:CcCmd) { return 'claude-code' } else { return 'offline' } }
+$script:Backend = Get-V3Backend
 $script:GhToken = $env:GITHUB_TOKEN
 
 # ── JSON и файлы ───────────────────────────────────────────────────────────────────────────────
@@ -433,7 +438,7 @@ function Request-V3ApiKey {
   $s = Read-Host '  Ключ' -AsSecureString
   $k = (ConvertFrom-V3Secure $s).Trim()
   if (-not $k) { Write-V3Note '📴 Офлайн-режим. Ключ можно добавить позже: /key'; return }
-  $script:ApiKey = $k
+  $script:ApiKey = $k; $script:Backend = Get-V3Backend
   Write-V3Note '✓ Ключ принят на эту сессию.' Green
   if ((Read-Host '  Сохранить ключ, чтобы не вводить каждый раз? (да/нет)').Trim().ToLower() -in @('да', 'д', 'y', 'yes')) {
     if (Request-V3Permission 'key' 'Переменная: ANTHROPIC_API_KEY (уровень пользователя).') {
@@ -572,10 +577,68 @@ function Get-V3RequestParts($M) {
   return @{ Extra = $extra; Beta = $beta }
 }
 
+# ── Claude Code: тот же ИИ через программу Claude для терминала — без ключа API ────────────────
+# История разговора одним текстом (у Claude Code каждый вызов отдельный).
+function ConvertTo-V3Transcript($Messages) {
+  $flat = @()
+  foreach ($m in $Messages) {
+    $c = $m.content; $t = ''
+    if ($c -is [string]) { $t = $c }
+    else { $t = (@($c) | ForEach-Object { if ($_.type -eq 'text') { $_.text } elseif ($_.type -eq 'image') { '[фото]' } }) -join "`n" }
+    if ($t.Trim()) { $flat += @{ role = [string]$m.role; text = $t } }
+  }
+  if (-not $flat.Count) { return '' }
+  if ($flat.Count -eq 1) { return $flat[0].text }
+  $hist = ($flat[0..($flat.Count - 2)] | Select-Object -Last 16 | ForEach-Object { $(if ($_.role -eq 'user') { 'Пользователь: ' } else { 'V3AI: ' }) + $_.text }) -join "`n`n"
+  return "История разговора (для контекста):`n$hist`n`n---`nНовое сообщение пользователя:`n" + $flat[$flat.Count - 1].text
+}
+
+function Invoke-V3ClaudeCode([string]$System, [string]$Prompt, [scriptblock]$OnText) {
+  $ErrorActionPreference = 'Continue'   # Claude Code пишет служебное в stderr — это не ошибка
+  $M = Get-V3Model $script:Cfg.model
+  $alias = $(if ($M.api -like '*haiku*') { 'haiku' } elseif ($M.api -like '*sonnet*') { 'sonnet' } else { 'opus' })
+  $input2 = "<instructions>`n$System`n</instructions>`n`n$Prompt"
+  for ($try = 1; $try -le 2; $try++) {
+    $ccArgs = @('-p', '--output-format', 'stream-json', '--verbose', '--model', $alias,
+      '--system-prompt', 'Ты V3AI, дружелюбный ИИ-помощник. Следуй инструкциям в сообщении пользователя и отвечай только текстом.',
+      '--disallowedTools', 'Bash,Edit,Write,MultiEdit,NotebookEdit,Read,Glob,Grep,LS,WebFetch,WebSearch,Task,TodoWrite')
+    if ($script:CcPartial) { $ccArgs += '--include-partial-messages' }
+    $sb = [Text.StringBuilder]::new(); $final = ''; $errText = [Text.StringBuilder]::new(); $isErr = $false
+    $input2 | & $script:CcCmd @ccArgs 2>&1 | ForEach-Object {
+      $l = [string]$_
+      if (-not $l.StartsWith('{')) { [void]$errText.AppendLine($l); return }
+      $j = $null; try { $j = $l | ConvertFrom-Json } catch { return }
+      switch ([string]$j.type) {
+        'stream_event' { $e = $j.event; if ($e.type -eq 'content_block_delta' -and $e.delta.type -eq 'text_delta') { [void]$sb.Append([string]$e.delta.text); if ($OnText) { & $OnText ([string]$e.delta.text) } } }
+        'assistant' { if (-not $script:CcPartial) { foreach ($b in @($j.message.content)) { if ($b.type -eq 'text') { [void]$sb.Append([string]$b.text); if ($OnText) { & $OnText ([string]$b.text) } } } } }
+        'result' { $final = [string]$j.result; if ($j.is_error) { $isErr = $true } }
+      }
+    }
+    $err = $errText.ToString()
+    if ($script:CcPartial -and $err -match 'unknown option' -and $sb.Length -eq 0) { $script:CcPartial = $false; continue }   # старая версия Claude Code
+    if ($isErr -or ($sb.Length -eq 0 -and -not $final)) {
+      $msg = $(if ($final) { $final } elseif ($err.Trim()) { $err.Trim() } else { 'нет ответа' })
+      if ($msg -match 'login|log in|auth|API key|credential') { $msg = 'Claude Code не вошёл в аккаунт. Запусти в терминале команду claude и войди, потом попробуй снова.' }
+      throw (New-V3ApiError 0 'claude-code' $msg)
+    }
+    if ($sb.Length -eq 0 -and $final) { if ($OnText) { & $OnText $final }; return $final }
+    return $sb.ToString()
+  }
+}
+
 # Разговор с инструментами: стримит текст, сам выполняет вызовы инструментов, повторяет до конца.
 # $Messages — List, в него дописываются ответы (только добавление, без правок прошлого).
 function Invoke-V3Turn {
   param($Messages, [string]$System, $Tools, [scriptblock]$Handler, [switch]$Quiet, [int]$MaxTokens = 64000, [string]$Waiting = 'думает…')
+  if ($script:Backend -eq 'claude-code') {
+    $script:QuietCount = 0
+    if ($Quiet) { Write-Host "  ◌ $Waiting" -NoNewline -ForegroundColor DarkGray } else { Start-V3Render $Waiting }
+    $cb = if ($Quiet) { { param($t) $script:QuietCount += $t.Length; Write-Host ("`r  ◌ $Waiting " + [Math]::Round($script:QuietCount / 1000, 1) + ' тыс. символов   ') -NoNewline -ForegroundColor DarkGray } } else { { param($t) Add-V3Render $t } }
+    try { $text = Invoke-V3ClaudeCode $System (ConvertTo-V3Transcript $Messages) $cb }
+    finally { if ($Quiet) { Write-Host '' } else { Stop-V3Render } }
+    if ($text) { $Messages.Add([ordered]@{ role = 'assistant'; content = $text }) }
+    return @{ Text = [string]$text; Used = [System.Collections.Generic.List[string]]::new() }
+  }
   $M = Get-V3Model $script:Cfg.model
   $parts = Get-V3RequestParts $M
   $final = [Text.StringBuilder]::new(); $used = [System.Collections.Generic.List[string]]::new()
@@ -630,7 +693,7 @@ function Invoke-V3Turn {
 function Get-V3ErrorText($Ex) {
   if (-not $Ex.Data['v3']) { return "Что-то пошло не так: $($Ex.Message)" }
   switch ([int]$Ex.Data['status']) {
-    0   { if ($Ex.Data['type'] -eq 'network') { return 'Нет связи с Claude. Проверь интернет.' } else { return "Сервер прервал ответ ($($Ex.Data['type'])). Попробуй ещё раз." } }
+    0   { if ($Ex.Data['type'] -eq 'claude-code') { return "Claude Code: $($Ex.Message)" }; if ($Ex.Data['type'] -eq 'network') { return 'Нет связи с Claude. Проверь интернет.' } else { return "Сервер прервал ответ ($($Ex.Data['type'])). Попробуй ещё раз." } }
     401 { return 'Ключ API не подходит. Введи новый: /key' }
     403 { return 'У ключа нет доступа к этой модели. Выбери другую: /model' }
     429 { return 'Слишком много запросов подряд — подожди немного.' }
@@ -655,7 +718,7 @@ function Get-V3Offline([string]$Text) {
   if ($q -match 'шутк|анекдот|смешн') { return (& $pick @('Почему программисты путают Хэллоуин и Рождество? Потому что 31 OCT = 25 DEC 🎃🎄', 'Учитель: «Почему опоздал?» Ученик: «Знак „Школа, сбавь скорость“ увидел!» 🚸', 'PowerShell зашёл в бар и сказал: Get-Drink | Where-Object { $_.Cold } 🍹')) }
   if ($q -match 'загадк') { return (& $pick @('Зимой и летом одним цветом. Что это? (Ответ: ёлка 🎄)', 'Не лает, не кусает, а в дом не пускает. (Ответ: замок 🔒)')) }
   if ($q -match 'спасиб') { return 'Всегда пожалуйста! 💙' }
-  return 'Сейчас я в офлайн-режиме 📴: умею считать примеры («12*7+3»), подсказать время и дату, пошутить и загадать загадку. Добавь ключ Claude API командой **/key** — и я отвечу на что угодно.'
+  return 'Сейчас я в офлайн-режиме 📴: умею считать примеры («12*7+3»), подсказать время и дату, пошутить и загадать загадку. Установи **Claude Code** (claude.ai/code) и войди в аккаунт — и я отвечу на что угодно, без ключа.'
 }
 
 function Invoke-V3Calc([string]$Expr) {
@@ -984,6 +1047,15 @@ function Invoke-V3Game($Chat, [string]$Q, [switch]$Fresh) {
 # ── Видео: сценарий → все сцены сразу → HTML-плеер на движке веб-версии V3AI ─────────────────
 # Несколько независимых запросов одновременно. Возвращает текст каждого ответа ($null — не вышло).
 function Invoke-V3Many([string[]]$Prompts, [string]$System, [string]$Label) {
+  if ($script:Backend -eq 'claude-code') {   # через Claude Code — по очереди
+    $out = New-Object 'object[]' $Prompts.Count
+    for ($i = 0; $i -lt $Prompts.Count; $i++) {
+      Write-Host ("`r  ◌ $Label готово $i из $($Prompts.Count)   ") -NoNewline -ForegroundColor DarkGray
+      try { $out[$i] = Invoke-V3ClaudeCode $System $Prompts[$i] $null } catch { $out[$i] = $null }
+    }
+    Write-Host ("`r  ◌ $Label готово $($Prompts.Count) из $($Prompts.Count)   ") -ForegroundColor DarkGray
+    return , $out
+  }
   $M = Get-V3Model $script:Cfg.model; $parts = Get-V3RequestParts $M
   $n = $Prompts.Count; $texts = New-Object 'object[]' $n
   if ($n -lt 1) { return , $texts }
@@ -2158,14 +2230,18 @@ function Get-V3PromptText($Chat) {
   if (-not $label) { $mo = Get-V3Mode $Chat.mode; $label = "$($mo.ico) $($mo.n)" }
   $s = "$($M.n) · $label"
   if ($Chat.repo) { $s += " · 🐙 $($Chat.repo.repo)" }
-  if (-not $script:ApiKey) { $s += ' · 📴' }
+  if ($script:Backend -eq 'offline') { $s += ' · 📴' }
   return $s
 }
 
 # ── Главный цикл ──────────────────────────────────────────────────────────────────────────────
 Clear-Host
 Write-V3Banner
-if (-not $script:ApiKey) { Request-V3ApiKey }
+switch ($script:Backend) {
+  'api'         { Write-V3Note '🔑 ИИ: Claude API (ключ из ANTHROPIC_API_KEY)' }
+  'claude-code' { Write-V3Note '✨ ИИ: Claude Code — через твой аккаунт Claude, ключ не нужен' }
+  default       { Write-V3Note '📴 Офлайн-режим. Для ИИ установи Claude Code (claude.ai/code) и войди — ключ не нужен. Или /key.' Yellow }
+}
 $chat = New-V3Chat $script:Cfg.mode
 if ($script:T.box -ne 'panel') { Write-V3Note 'Пиши вопрос и жми Enter. /help — команды, /model — модели, /mode — режимы.'; Write-Host '' }
 
@@ -2272,7 +2348,7 @@ while ($true) {
           } elseif ($rest.Count -ge 2 -and $rest[1] -eq 'forget') {
             if ((Read-Host "  Очистить память агента «$($A.name)»? (да/нет)").Trim().ToLower() -in @('да', 'д', 'y', 'yes')) { Save-V3Mem $A ([ordered]@{ notes = (New-V3List); tasks = (New-V3List) }); Write-V3Note '🧠 Память очищена.' }
           } elseif ($rest.Count -ge 3 -and $rest[1] -eq 'edit') {
-            if (-not $script:ApiKey) { Write-V3Note 'Для этого нужен ключ Claude API — /key.' Yellow }
+            if ($script:Backend -eq 'offline') { Write-V3Note 'Для этого нужен ИИ: установи Claude Code и войди, или /key.' Yellow }
             else { try { New-V3Agent $chat (($rest | Select-Object -Skip 2) -join ' ') $A } catch { Stop-V3Render; Write-V3Note ('⚠ ' + (Get-V3ErrorText $_.Exception)) Yellow } }
           } elseif ($rest.Count -ge 2 -and $rest[1] -eq 'delete') {
             if ((Read-Host "  Удалить агента «$($A.name)»? (да/нет)").Trim().ToLower() -in @('да', 'д', 'y', 'yes')) { $list.RemoveAt($n - 1); Save-V3Agents $list; Remove-Item -LiteralPath (Join-Path $script:Paths.Memory ($A.id + '.json')) -ErrorAction SilentlyContinue; Write-V3Note '🗑 Удалён.' }
@@ -2302,9 +2378,10 @@ while ($true) {
 
   $cm = $(if ($forced) { $forced } else { $chat.mode })
   if ($cm -eq 'video' -and $line -match '^(2d|2д)\s+(.+)$') { $cm = 'video2d'; $line = $Matches[2] }
-  if (-not $script:ApiKey) {
+  if ($cm -eq 'photo' -and $script:Backend -eq 'claude-code') { Write-V3Note '📷 Фото пока работает только с ключом API (/key).' Yellow; Write-Host ''; continue }
+  if ($script:Backend -eq 'offline') {
     Write-Host ''
-    if ($cm -in @('art', 'design', 'game', 'game-new', 'gif', 'photo', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ключ Claude API — введи его командой /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
+    if ($cm -in @('art', 'design', 'game', 'game-new', 'gif', 'photo', 'video', 'video2d', 'agents')) { Write-V3Note 'Для этого нужен ИИ: установи Claude Code (claude.ai/code) и войди — ключ не нужен. Или /key.' Yellow } else { Write-V3Line (Get-V3Offline $line) }
     Write-Host ''
     continue
   }
