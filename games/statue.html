@@ -365,6 +365,21 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     day() { [523, 659, 784].forEach((f, i) => tone(f, .8, "sine", .07, null, i * .12)); },
     gate() { noise(1.5, .4, 300); tone(80, 1.5, "square", .06, 50); },
     free() { tone(392, .2, "triangle", .12); tone(587, .35, "triangle", .12, null, .12); },
+    // a hollow, low vowel from the bronze founder: a buzz shaped by two formant filters plus a stone echo
+    vowel(v, vol) {
+      if (!AC || vol < .02) return;
+      const F = { "Э": [550, 1750], "А": [780, 1200], "О": [480, 860] }[v], t = AC.currentTime, dur = 1.6;
+      const o = AC.createOscillator(), lfo = AC.createOscillator(), lg = AC.createGain(), env = AC.createGain(), out = AC.createGain();
+      o.type = "sawtooth"; o.frequency.setValueAtTime(78, t); o.frequency.linearRampToValueAtTime(70, t + dur);
+      lfo.frequency.value = 5; lg.gain.value = 1.8; lfo.connect(lg); lg.connect(o.frequency);
+      env.gain.setValueAtTime(.0001, t); env.gain.exponentialRampToValueAtTime(1, t + .25); env.gain.setValueAtTime(1, t + dur - .5); env.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(env);
+      F.forEach((f, i) => { const bp = AC.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = 9; const g = AC.createGain(); g.gain.value = i ? .9 : 1.6; env.connect(bp); bp.connect(g); g.connect(out); });
+      const dl = AC.createDelay(), fb = AC.createGain(); dl.delayTime.value = .23; fb.gain.value = .38;
+      out.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(master);
+      out.gain.value = .55 * vol; out.connect(master);
+      o.start(t); lfo.start(t); o.stop(t + dur + .1); lfo.stop(t + dur + .1);
+    },
   };
   function setDrone(on) {
     if (!AC) return;
@@ -445,7 +460,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     buildBats();
     show(null); $("#hud").hidden = false; state = "play";
     toast("День 1", "Статуи пока неподвижны. Ищите медальоны.");
-    talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2;
+    talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2; founder.t = 32; founder.bubble = null;
     chatLog.length = 0; $("#chatLog").innerHTML = ""; chatInput.value = ""; chatBusy = false; $("#chatSend").disabled = false;
   }
 
@@ -712,7 +727,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     let lines = null;
     if (sampleFn && !sampleOff) {
       const log = chatLog.slice(-12, -1).map((l) => `${l.who === "Ты" ? "Игрок" : l.who}: ${l.text}`).join("\n");
-      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза. Почему он окаменел, никто точно не знает.
+      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза, а время от времени она гулко издаёт звуки «Э», «А» и «О»; что они значат, никто не знает. Почему он окаменел, никто точно не знает.
 
 Друзья:
 ${PERSONAS}
@@ -776,6 +791,29 @@ ${log || "(пока тихо)"}
     chatInput.value = ""; chatInput.blur(); audio();
     sendChat(msg);
   });
+
+  /* ---------- the founder's voice: Э, А, О ---------- */
+  const founder = { t: 9, bubble: null, vowel: null };
+  const VOWEL_TEXT = { "Э": "Э-э-э…", "А": "А-а-а…", "О": "О-о-о…" };
+  const FOUNDER_REACT = [
+    "Вы слышали? Казарян опять звучит.", "Это он пытается что-то сказать?", "Мне не нравится, когда он так делает.",
+    "Э, А, О… Может, это какое-то слово?", "Бронза так не гудит. Это он.", "Тише… Он снова.",
+  ];
+  function updateFounder(dt) {
+    if (founder.bubble && (founder.bubble.t -= dt) <= 0) founder.bubble = null;
+    founder.t -= dt;
+    if (founder.t > 0) return;
+    founder.t = phase === "night" ? 5 + Math.random() * 6 : 9 + Math.random() * 9;
+    const v = pick(["Э", "А", "О"]);
+    let nd = Infinity; players.forEach((p) => { if (!p.bot) nd = Math.min(nd, Math.hypot(p.x - FOUNDER.x, p.y - FOUNDER.y)); });
+    sfx.vowel(v, Math.max(0, 1 - nd / 900));
+    founder.vowel = v; founder.bubble = { text: VOWEL_TEXT[v], t: 1.9 };
+    if (nd < 900) logLine({ name: "Алекс Казарян", color: "#e0b45a" }, VOWEL_TEXT[v]);
+    if (Math.random() < .35 && !talk.queue.length && talk.t <= 0) {
+      const l = players.filter((q) => q.bot && !q.caught && !q.bubble && Math.hypot(q.x - FOUNDER.x, q.y - FOUNDER.y) < 700);
+      if (l.length) setTimeout(() => say(pick(l), pick(FOUNDER_REACT)), 1800);
+    }
+  }
 
   // next tile on the shortest path from (sx,sy) to (gx,gy), or null if there is none
   const botQ = new Int32Array(MW * MH), botD = new Int16Array(MW * MH);
@@ -986,6 +1024,7 @@ ${log || "(пока тихо)"}
     if (state !== "play") return;
     updateStatues(dt);
     updateTalk(dt);
+    updateFounder(dt);
     // rescue a frozen partner
     for (const p of players) {
       if (!p.caught) continue;
@@ -1070,6 +1109,11 @@ ${log || "(пока тихо)"}
     ctx.fillStyle = "#2e2a25"; ctx.fillRect(x - 34, y + 4, 68, 2);
     ctx.save(); ctx.translate(x, y - 20); ctx.scale(2, 2);
     drawFigure(0, 0, { pose: 3, bronze: true, laurel: true });
+    if (founder.bubble) {
+      const k = Math.min(1, founder.bubble.t * 2, (1.9 - founder.bubble.t) * 4);
+      const [rx, ry] = { "Э": [2.6, 1.3], "А": [2.4, 2.4], "О": [1.7, 2.3] }[founder.vowel];
+      ctx.fillStyle = "#1a1208"; ctx.beginPath(); ctx.ellipse(0, -21, rx * k + .2, ry * k + .2, 0, 0, 7); ctx.fill();
+    }
     ctx.restore();
   }
   function drawPlayer(p) {
@@ -1216,6 +1260,18 @@ ${log || "(пока тихо)"}
     }
     // speech bubbles (stacked upward so they never cover each other)
     const placed = [];
+    if (founder.bubble) {
+      const a = Math.min(1, founder.bubble.t * 3);
+      ctx.font = "700 20px 'Cormorant SC', Georgia, serif";
+      const w = ctx.measureText(founder.bubble.text).width + 22, h = 30, bx = FOUNDER.x - w / 2, by = FOUNDER.y - 118;
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "rgba(40,30,16,.92)"; ctx.strokeStyle = "#e0b45a"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, w, h, 8) : ctx.rect(bx, by, w, h); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(FOUNDER.x - 7, by + h - 1); ctx.lineTo(FOUNDER.x, by + h + 9); ctx.lineTo(FOUNDER.x + 7, by + h - 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#ffd98a"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(founder.bubble.text, FOUNDER.x, by + h / 2 + 1);
+      ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
+      placed.push({ x: bx, y: by, w, h });
+    }
     players.slice().sort((a, b) => a.y - b.y).forEach((p) => {
       if (p.typing && !p.bubble) {
         const n = 1 + Math.floor(now / 350) % 3, w = 34, h = 20, bx = p.x - w / 2, by = p.y - 48 - h;
