@@ -119,7 +119,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     <ul class="rules">
       <li><span>☀</span><span>Днём статуи неподвижны. Исследуйте залы и запоминайте, какие стоят не на своих местах.</span></li>
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
-      <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет на 14 секунд. Заряд тратится быстро, днём он понемногу восстанавливается.</span></li>
+      <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет на 14 секунд. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
     </ul>
     <div class="btns">
@@ -384,8 +384,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     });
     statues = LIVING_SPAWN.map(([x, y], i) => ({ x: cx(x), y: cx(y), hx: cx(x), hy: cx(y), stone: 0, hit: 0, wake: 0, stepT: 0, walk: 0, pose: i ? 2 : 1, moved: false, face: Math.PI / 2 }));
     decor = DECOR.map(([x, y]) => ({ x: cx(x), y: cx(y), pose: r() * 4 | 0 }));
-    items = MEDALS.map(([x, y]) => ({ kind: "medal", x: cx(x), y: cx(y), got: false }))
-      .concat(BATTERIES.map(([x, y]) => ({ kind: "bat", x: cx(x), y: cx(y), got: false })));
+    items = MEDALS.map(([x, y]) => ({ kind: "medal", x: cx(x), y: cx(y), got: false }));
     gateOpen = false; GATE.forEach(([x, y]) => grid[y * MW + x] = 2);
     phase = "day"; phaseT = DAY; night = 0; nightK = 0; elapsed = 0; medals = 0; warned = false; shake = 0; redFlash = 0;
     cam.x = players[0].x; cam.y = players[0].y; cam.z = baseZoom(); lastRoom = null;
@@ -456,7 +455,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     const b = $("#bats"); b.innerHTML = "";
     players.forEach((p) => {
       const t = document.createElement("div"); t.className = "tag";
-      t.innerHTML = `<span class="dot" style="background:${p.color}"></span><span>${mode > 1 ? "Игрок " + (p.id + 1) : "Фонарик"}</span><span class="bat">${"<s></s>".repeat(10)}</span>`;
+      t.innerHTML = `<span class="dot" style="background:${p.color}"></span><span>${mode > 1 ? "Игрок " + (p.id + 1) : "Фонарик"}</span><b style="color:var(--red)">∞</b>`;
       b.append(t); p.batEl = t.querySelectorAll(".bat s"); p.tagEl = t;
     });
   }
@@ -468,8 +467,6 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     $("#phaseTime").textContent = fmt(Math.max(0, phaseT));
     $("#meds").textContent = `${medals}/6`;
     players.forEach((p) => {
-      const n = Math.ceil(p.battery / 10);
-      p.batEl.forEach((s, i) => s.classList.toggle("on", i < n));
       p.tagEl.style.opacity = p.caught ? .45 : 1;
     });
   }
@@ -550,8 +547,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       else if (mouse.active) { const s = screenOf(p.x, p.y); aim = Math.atan2(mouse.y - s.y, mouse.x - s.x); }
     }
     p.aim = aim;
-    if (want && p.battery > 0) { p.light = true; p.battery = Math.max(0, p.battery - 17 * dt); }
-    else { p.light = false; if (phase === "day") p.battery = Math.min(100, p.battery + 1.6 * dt); }
+    p.light = want; p.battery = 100; // infinite battery
     // pickups
     for (const it of items) {
       if (it.got || Math.hypot(it.x - p.x, it.y - p.y) > 26) continue;
