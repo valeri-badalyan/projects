@@ -2140,6 +2140,7 @@ function Invoke-V3Chat($Chat, [string]$Q, $Image = $null) {
 function Show-V3Help {
   Write-V3Rule 'Команды'
   $rows = @(
+    @('/chat [вопрос]', 'обычный чат (без вопроса — переключиться в него)'),
     @('/image <описание>', 'нарисовать картинку (без описания — режим «Художник»)'),
     @('/video <сюжет>', 'снять 3D-видео; /video 2d <сюжет> — рисованное 2D'),
     @('/watt <описание>', 'WattAI: сделать игру (без описания — режим WattAI)'),
@@ -2308,6 +2309,10 @@ while ($true) {
         } else { Show-V3Chats }
       }
       'export' { Export-V3Chat $chat }
+      'chat' {
+        if ($chat.agent -or $chat.mode -ne 'help') { Switch-V3Mode 'help' }
+        if ($rest.Count) { $forced = 'chat'; $line = $rest -join ' ' } else { Write-V3Note 'Обычный чат: просто пиши вопрос.' }
+      }
       'image' { if ($rest.Count) { $forced = 'art'; $line = $rest -join ' ' } else { Switch-V3Mode 'art' } }
       'design' { if ($rest.Count) { $forced = 'design'; $line = $rest -join ' ' } else { Switch-V3Mode 'design' } }
       'logo' { if ($rest.Count) { $forced = 'design'; $line = $rest -join ' ' } else { Switch-V3Mode 'design' } }
