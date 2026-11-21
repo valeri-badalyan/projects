@@ -1905,6 +1905,16 @@ div.sc-pl { cursor: default; }
         </span>
         <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubGhost">0</span></span>
       </button>
+      <button class="cart" data-go="pewpet" type="button">
+        <span class="cart-art" aria-hidden="true">
+          <svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#2a1d52"/><g fill="#fff" opacity=".6"><circle cx="8" cy="10" r="1"/><circle cx="54" cy="8" r="1.2"/><circle cx="46" cy="52" r="1"/></g><path d="M14 22 L18 12 L23 20Z M31 20 L36 12 L40 22Z" fill="#ffb35c"/><circle cx="27" cy="30" r="13" fill="#ffb35c"/><ellipse cx="27" cy="35" rx="8" ry="6" fill="#ffe1b8"/><circle cx="23" cy="27" r="2" fill="#231a3a"/><circle cx="32" cy="27" r="2" fill="#231a3a"/><circle cx="28" cy="31" r="1.3" fill="#ff6f91"/><rect x="37" y="31" width="7" height="3" fill="#5ff0c2"/><g fill="#e9fff8"><circle cx="48" cy="32" r="2"/><circle cx="54" cy="32" r="1.6"/></g><path d="M44 48 Q44 40 51 40 Q58 40 58 48Z" fill="#7be36a"/><circle cx="49" cy="44" r="1.3" fill="#231a3a"/><circle cx="54" cy="44" r="1.3" fill="#231a3a"/><path d="M8 56 l3 -4 l3 4 l-3 4Z" fill="#5ff0c2"/></svg>
+        </span>
+        <span class="cart-body">
+          <span class="cart-name">Pew Pet</span>
+          <span class="cart-desc">Питомец сам стреляет «пью-пью»: волны монстров, кристаллы, улучшения и боссы.</span>
+        </span>
+        <span class="cart-stat"><span class="stat-label">Рекорд</span><span class="stat-val" id="hubPewpet">0</span></span>
+      </button>
       <button class="cart" data-go="geo" type="button">
         <span class="cart-art" aria-hidden="true">
           <svg viewBox="0 0 64 64"><defs><linearGradient id="geobg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a1c9e"/><stop offset="1" stop-color="#0f6fb8"/></linearGradient></defs><rect width="64" height="64" fill="url(#geobg)"/><rect x="0" y="46" width="64" height="18" fill="#0c0a24"/><path d="M0 46 H64" stroke="#5ce1e6" stroke-width="2"/><g transform="rotate(-20 20 34)"><rect x="12" y="26" width="16" height="16" rx="2" fill="#ffd84d" stroke="#fff" stroke-width="2"/><rect x="16" y="31" width="3" height="3" fill="#12132a"/><rect x="22" y="31" width="3" height="3" fill="#12132a"/></g><path d="M36 46 L42 34 L48 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><path d="M48 46 L54 34 L60 46Z" fill="#0c0a24" stroke="#ff5ad1" stroke-width="2"/><g fill="#ffd84d" opacity=".7"><rect x="4" y="38" width="3" height="3"/><rect x="0" y="34" width="2" height="2"/></g></svg>
@@ -2456,6 +2466,31 @@ div.sc-pl { cursor: default; }
       <a class="btn ghost" id="ghostOpen" href="games/ghost-of-leyendas.html" target="_blank" rel="noopener">Открыть отдельно</a>
     </div>
     <p class="hint ghost-hide-when-full">Нажми на игру, чтобы управлять с клавиатуры. На телефоне кнопки управления — под полем игры. Каждые 1000 очков нового рекорда — +10 монет.</p>
+  </section>
+
+  <!-- ===== Pew Pet (separate page in a frame) ===== -->
+  <section id="pewpet" class="screen" hidden>
+    <div class="topbar">
+      <button class="back" type="button" data-go="hub">← Меню</button>
+      <div class="gtitle">Pew Pet</div>
+      <div class="chips">
+        <div class="chip hi"><span>Рекорд</span><b id="pewpetBest">0</b></div>
+      </div>
+    </div>
+    <div class="buddy">
+      <div class="buddy-pics"><div class="av buddy-av" data-hero-av></div><div class="av buddy-mate" data-mate-av hidden></div></div>
+      <div class="bubble"><b data-hero-name></b><span class="buddy-say">Погнали!</span></div>
+      <div class="coins" title="Монеты"><span class="coin">◎</span><b data-coins>0</b></div>
+    </div>
+    <div class="ghost-wrap" id="pewpetWrap">
+      <button class="ghost-close" type="button" id="pewpetClose">✕ Свернуть</button>
+      <iframe id="pewpetFrame" title="Pew Pet"></iframe>
+    </div>
+    <div class="row-actions ghost-hide-when-full">
+      <button class="btn" type="button" id="pewpetFull">На весь экран</button>
+      <a class="btn ghost" href="games/pew-pet.html" target="_blank" rel="noopener">Открыть отдельно</a>
+    </div>
+    <p class="hint ghost-hide-when-full">Компьютер: WASD или стрелки, пауза — P. Телефон: веди пальцем по полю игры. Каждые 1000 очков нового рекорда — +10 монет.</p>
   </section>
 
   <!-- ===== Events ===== -->
@@ -6733,6 +6768,43 @@ div.sc-pl { cursor: default; }
     return {
       enter() {
         if (!loaded) { frame.src = SRC; loaded = true; Hero.say("ghost", "start", "Ночь Мёртвых началась. Жди знака «!» и бей!"); }
+        sync();
+      },
+      leave() { setFull(false); sync(); },
+      key(e) { if (e.key === "Escape" && wrap.classList.contains("full")) setFull(false); },
+      best: () => best(),
+    };
+  })();
+
+  /* ================= Pew Pet ================= */
+  // Like Ghost of Leyendas: its own page (games/pew-pet.html) in a frame; the record lives in storage under "pewpet-best".
+  const PewPet = (() => {
+    const SRC = "games/pew-pet.html";
+    const frame = $("#pewpetFrame"), wrap = $("#pewpetWrap");
+    let loaded = false, seenBest = null;
+    const best = () => { try { return +localStorage.getItem("pewpet-best") || 0; } catch (e) { return 0; } };
+    function sync() {
+      const b = best();
+      $("#pewpetBest").textContent = b.toLocaleString("ru-RU"); evReport("pewpet", b);
+      if (seenBest === null) seenBest = store.get("pewpetPaid", 0);
+      const paid = Math.floor(seenBest / 1000), now = Math.floor(b / 1000);
+      if (now > paid) {
+        Hero.earn((now - paid) * 10);
+        Hero.say("pewpet", "win", `Новый рекорд в Pew Pet! +${(now - paid) * 10} монет`);
+        seenBest = b; store.set("pewpetPaid", b); updateHub();
+      }
+    }
+    function setFull(on) {
+      wrap.classList.toggle("full", on);
+      $("#cop").hidden = on;
+      if (on) { try { frame.focus(); } catch (e) {} }
+    }
+    $("#pewpetFull").addEventListener("click", () => setFull(true));
+    $("#pewpetClose").addEventListener("click", () => setFull(false));
+    setInterval(() => { if (!$("#pewpet").hidden) sync(); }, 2000);
+    return {
+      enter() {
+        if (!loaded) { frame.src = SRC; loaded = true; Hero.say("pewpet", "start", "Выбирай питомца — и пью-пью!"); }
         sync();
       },
       leave() { setFull(false); sync(); },
@@ -20799,8 +20871,8 @@ requestAnimationFrame(loop);<\/script></body></html>`;
   })();
 
   /* ================= Navigation ================= */
-  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, v3a: V3A, assa: Assa, v3ai: V3AI, v3tube: V3Tube };
-  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
+  const GAMES = { snake: Snake, g2048: G, ttt: T, blast: Blast, zombie: Zombie, vr: VR, sonic: Sonic, ghost: Ghost, pewpet: PewPet, geo: Geo, links: Links, fix: Fix, soda: Soda, dress: Dress, cook: Cook, mine: Mine, craft: Craft, mk: MK, dubai: Dubai, yerevan: Yerevan, moscow: Moscow, biz: Biz, comp: Comp, cash: Cash, menu: MenuGame, ussr: Ussr, enth: Enth, tc: Mall, cod: Cod, doccer: Doccer, morger: Morger, voicerec: VoiceRec, soccerstar: SoccerStar, microscop: Microscop, v3a: V3A, assa: Assa, v3ai: V3AI, v3tube: V3Tube };
+  const SCREENS = ["hub", "snake", "g2048", "ttt", "blast", "zombie", "vr", "sonic", "ghost", "pewpet", "geo", "links", "fix", "soda", "dress", "cook", "mine", "craft", "mk", "dubai", "yerevan", "moscow", "biz", "comp", "cash", "menu", "ussr", "enth", "tc", "cod", "doccer", "morger", "voicerec", "soccerstar", "microscop", "v3a", "assa", "v3ai", "v3tube", "ideas", "events", "chars", "gear", "chats", "talk", "manage", "soccer"];
   let current = "hub";
 
   function updateHub() {
@@ -20812,6 +20884,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     $("#hubVr").textContent = VR.best();
     $("#hubSonic").textContent = Sonic.best();
     $("#hubGhost").textContent = Ghost.best();
+    $("#hubPewpet").textContent = PewPet.best();
     $("#hubGeo").textContent = Geo.best();
     $("#hubLinks").textContent = Links.best();
     $("#hubFix").textContent = Fix.best();
@@ -22026,6 +22099,7 @@ requestAnimationFrame(loop);<\/script></body></html>`;
     if (!shop.hidden) { if (e.key === "Escape") closeShop(); return; }
     if (e.target && e.target.closest && e.target.closest("input, textarea")) return;
     if (e.key === "Escape" && current === "ghost" && $("#ghostWrap").classList.contains("full")) { GAMES.ghost.key(e); return; }
+    if (e.key === "Escape" && current === "pewpet" && $("#pewpetWrap").classList.contains("full")) { GAMES.pewpet.key(e); return; }
     if (e.key === "Escape" && current !== "hub") { show("hub"); return; }
     if (GAMES[current]) GAMES[current].key(e);
   });
