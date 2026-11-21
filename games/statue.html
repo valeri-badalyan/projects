@@ -119,7 +119,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     <ul class="rules">
       <li><span>☀</span><span>Днём статуи неподвижны. Исследуйте залы и запоминайте, какие стоят не на своих местах.</span></li>
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
-      <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет на 14 секунд. Батарея у фонарика бесконечная.</span></li>
+      <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет навсегда. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
     </ul>
     <div class="btns">
@@ -512,11 +512,11 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     phase = p;
     if (p === "night") {
       night++; phaseT = NIGHT;
-      statues.forEach((s) => { s.stone = 0; s.hit = 0; s.wake = 3; });
+      statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; s.wake = 3; });
       toast(`Ночь ${night}`, "Статуи сошли с постаментов"); sfx.night(); setDrone(true); shake = .5;
     } else {
       phaseT = DAY; warned = false;
-      statues.forEach((s) => { s.stone = 0; s.hit = 0; });
+      statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; });
       toast("Рассвет", "Статуи замерли там, где их застало утро"); sfx.day(); setDrone(false);
     }
   }
@@ -575,7 +575,11 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       if (s.stone > 0) { s.stone -= dt; if (lit) s.stone = Math.max(s.stone, 3); continue; }
       if (lit) {
         s.hit += dt;
-        if (s.hit > .5) { s.stone = STONE; s.hit = 0; sfx.crack(); shake = .25; toast("Окаменела!", `Статуя замерла на ${STONE} секунд`); }
+        if (s.hit > .5) {
+          s.stone = Infinity; s.hit = 0; sfx.crack(); shake = .25;
+          const left = statues.filter((q) => q.stone !== Infinity).length;
+          toast("Окаменела навсегда!", left ? "Осталась ещё одна живая статуя" : "Обе статуи окаменели. Музей больше не опасен");
+        }
         continue; // a statue in the beam can't move
       }
       s.hit = Math.max(0, s.hit - dt * .5);
