@@ -141,7 +141,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   <div class="plaque">
     <div class="eyebrow">Городской музей скульптуры · закрыт с 1994 года</div>
     <h1>Ста<em>т</em>уя</h1>
-    <p class="lead">Музей стоит заброшенным тридцать лет. Сторожа говорили, что две статуи по ночам сходят с постаментов. Соберите шесть бронзовых медальонов, чтобы открыть восточные ворота, и выберитесь живыми.</p>
+    <p class="lead">Музей основал Алекс Казарян. Однажды он сам превратился в скульптуру, и его огромная статуя до сих пор стоит в центре Большого зала скульптур. Музей стоит заброшенным тридцать лет. Сторожа говорили, что две статуи по ночам сходят с постаментов. Соберите шесть бронзовых медальонов, чтобы открыть восточные ворота, и выберитесь живыми.</p>
     <ul class="rules">
       <li><span>☀</span><span>Днём статуи неподвижны. Исследуйте залы и запоминайте, какие стоят не на своих местах.</span></li>
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
@@ -241,11 +241,13 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const LIVING_SPAWN = [[31, 6], [8, 28]];
   const MEDALS = [[5, 4], [40, 4], [5, 15], [40, 15], [17, 26], [29, 26]];
   const BATTERIES = [[17, 4], [29, 4], [5, 26], [40, 26], [22, 9], [10, 20]];
-  const START = [[22, 15], [23, 15]];
+  const START = [[22, 17], [23, 17]];
+  // the founder, Алекс Казарян, turned to stone in the middle of the Great Hall (covers tiles 22-23 x 14-15)
+  const FOUNDER = { x: 23 * T, y: 15 * T + 6, r: 30 };
   const BOTS = [
-    { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 16] },
-    { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 16] },
-    { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [22, 14] },
+    { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 17] },
+    { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 17] },
+    { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [25, 15] },
   ];
   const cx = (t) => (t + 0.5) * T;
   const mmWidth = () => MW * Math.max(2, Math.min(4, Math.floor(cw / 160)));
@@ -255,6 +257,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const navBlocked = new Uint8Array(MW * MH);
   for (let i = 0; i < grid.length; i++) navBlocked[i] = grid[i] !== 0 ? 1 : 0;
   DECOR.forEach(([x, y]) => navBlocked[y * MW + x] = 1);
+  for (const [x, y] of [[22, 14], [23, 14], [22, 15], [23, 15]]) navBlocked[y * MW + x] = 1;
 
   /* ---------- pre-rendered floor and walls ---------- */
   const mapC = document.createElement("canvas"); mapC.width = MW * T; mapC.height = MH * T;
@@ -313,6 +316,11 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       if (at(x - 1, y) === 0) g.fillRect(X, Y, 2, T);
       if (at(x + 1, y) === 0) g.fillRect(X + T - 2, Y, 2, T);
     }
+    // the founder's plaque
+    g.fillStyle = "#5e4622"; g.fillRect(FOUNDER.x - 30, FOUNDER.y + 30, 60, 12);
+    g.fillStyle = "#b08a45"; g.fillRect(FOUNDER.x - 28, FOUNDER.y + 31, 56, 10);
+    g.fillStyle = "#3a2a12"; g.font = "700 7px 'PT Sans', sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText("АЛЕКС КАЗАРЯН", FOUNDER.x, FOUNDER.y + 36.5);
     // brass plaques in front of every pedestal
     [...DECOR, ...LIVING_SPAWN].forEach(([x, y]) => {
       g.fillStyle = "#7a5f2e"; g.fillRect(cx(x) - 7, cx(y) + 18, 14, 5);
@@ -454,6 +462,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       }
     }
     for (const d of decor) pushOut(e, d.x, d.y, r + 15);
+    pushOut(e, FOUNDER.x, FOUNDER.y, r + FOUNDER.r);
   }
   function pushOut(e, x, y, rr) {
     const dx = e.x - x, dy = e.y - y, d = Math.hypot(dx, dy);
@@ -575,11 +584,16 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   // "me" is the human player (Игрок 1 in two-player mode); lines for "me" are written without gendered verbs
   const INTRO = [
     ["Левон", "Ну и пылища… Тридцать лет сюда никто не заходил."],
-    ["Луиза", "Говорят, две статуи тут по ночам ходят. Я в это не верю. Почти."],
+    ["Луиза", "Смотрите, табличка: «Алекс Казарян». Это же основатель музея!"],
+    ["Тимур", "Тот самый? Говорят, он сам превратился в скульптуру."],
+    ["Левон", "И вот он стоит. Прямо в центре своего музея."],
+    ["Луиза", "А ещё говорят, две статуи тут по ночам ходят. Я в это не верю. Почти."],
     ["me", "Нам нужны шесть медальонов, чтобы открыть ворота."],
     ["Тимур", "Тогда не теряем время. Держимся вместе!"],
   ];
   const DAY_CHATS = [
+    [["me", "Как думаете, почему Казарян стал статуей?"], ["Луиза", "Говорят, он слишком долго смотрел на свои экспонаты."], ["Левон", "Или они слишком долго смотрели на него."]],
+    [["Тимур", "Казарян в центре зала огромный. Выше всех остальных."], ["Левон", "Основателю положено. Даже если он теперь бронзовый."], ["Луиза", "Он построил музей, а музей забрал его себе."]],
     [["Тимур", "Смотрите, у этой статуи рука поднята. Она всегда так стояла?"], ["Луиза", "Тимур, мы тут первый день."], ["Левон", "Тем более жутко."]],
     [["Луиза", "Как думаете, кто их сделал?"], ["Левон", "Табличка стёрта. Видно только год: тысяча восемьсот девяносто четвёртый."], ["me", "Не нравится мне этот год."]],
     [["Левон", "А почему фонарики красные, а не обычные?"], ["Тимур", "Сторож говорил: от красного света они каменеют."], ["Луиза", "А если сторож сам теперь статуя?"], ["Левон", "Луиза, ну зачем…"]],
@@ -591,6 +605,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     [["Тимур", "Луиза, ты чего так близко идёшь?"], ["Луиза", "Мне так спокойнее. Не отходи от меня."], ["Тимур", "Да я и не собирался."]],
   ];
   const NIGHT_CHATS = [
+    [["Луиза", "У Казаряна глаза светятся. Вы видите?"], ["Тимур", "Он не двигается. Он просто… смотрит."], ["Левон", "Охраняет свой музей. От нас или для нас?"]],
     [["Луиза", "Тихо… Слышите шаги?"], ["Тимур", "Камень по камню. Это они."], ["me", "Фонарики наготове."]],
     [["Левон", "У меня руки трясутся."], ["Тимур", "У всех трясутся. Главное, свети прямо на них."]],
     [["me", "Не разбегаемся. Спина к спине!"], ["Луиза", "Я смотрю назад!"], ["Левон", "А я по сторонам."]],
@@ -697,7 +712,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     let lines = null;
     if (sampleFn && !sampleOff) {
       const log = chatLog.slice(-12, -1).map((l) => `${l.who === "Ты" ? "Игрок" : l.who}: ${l.text}`).join("\n");
-      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей.
+      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза. Почему он окаменел, никто точно не знает.
 
 Друзья:
 ${PERSONAS}
@@ -1012,7 +1027,7 @@ ${log || "(пока тихо)"}
     // o: {pose, stone(0..1 crack look), awake, walk, tint, shakeAmt}
     const sh = o.shakeAmt ? (Math.random() - .5) * o.shakeAmt : 0;
     x += sh;
-    const base = o.tint || (o.stoneLook ? "#8d877c" : "#bdb6a8"), hi = o.stoneLook ? "#a39d90" : "#ddd6c8", lo = o.stoneLook ? "#5f5a51" : "#8a8376";
+    const base = o.tint || (o.stoneLook ? "#8d877c" : "#bdb6a8"), hi = o.bronze ? "#b9925a" : o.stoneLook ? "#a39d90" : "#ddd6c8", lo = o.bronze ? "#4f3a1e" : o.stoneLook ? "#5f5a51" : "#8a8376";
     const bob = o.awake ? Math.sin(o.walk) * 2 : 0;
     const top = y - 30 + (o.onPed ? -10 : 0);
     ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(x, y + 2 + (o.onPed ? -10 : 0), 13, 5, 0, 0, 7); ctx.fill();
@@ -1045,6 +1060,17 @@ ${log || "(пока тихо)"}
       ctx.moveTo(x + 3, gy); ctx.lineTo(x + 1, gy + 5); ctx.stroke();
     }
     return gy + 4;
+  }
+  function drawFounder() {
+    const { x, y } = FOUNDER;
+    ctx.fillStyle = "rgba(0,0,0,.4)"; ctx.fillRect(x - 36, y - 18, 74, 50);
+    ctx.fillStyle = "#3f3a33"; ctx.fillRect(x - 34, y - 4, 68, 30);
+    ctx.fillStyle = "#5e574c"; ctx.fillRect(x - 34, y - 24, 68, 20);
+    ctx.fillStyle = "#7d7568"; ctx.fillRect(x - 34, y - 24, 68, 3);
+    ctx.fillStyle = "#2e2a25"; ctx.fillRect(x - 34, y + 4, 68, 2);
+    ctx.save(); ctx.translate(x, y - 20); ctx.scale(2, 2);
+    drawFigure(0, 0, { pose: 3, bronze: true, laurel: true });
+    ctx.restore();
   }
   function drawPlayer(p) {
     const x = p.x, y = p.y;
@@ -1125,6 +1151,7 @@ ${log || "(пока тихо)"}
     const ents = [];
     decor.forEach((d) => ents.push({ y: d.y, f: () => { drawPedestal(d.x, d.y); drawFigure(d.x, d.y, { pose: d.pose, onPed: true, laurel: d.pose === 1 }); } }));
     LIVING_SPAWN.forEach(([x, y]) => ents.push({ y: cx(y) - 1, f: () => drawPedestal(cx(x), cx(y)) }));
+    ents.push({ y: FOUNDER.y + 20, f: drawFounder });
     statues.forEach((s) => ents.push({ y: s.y, f: () => {
       const onPed = Math.hypot(s.x - s.hx, s.y - s.hy) < 4;
       const awake = phase === "night" && s.stone <= 0;
@@ -1166,6 +1193,11 @@ ${log || "(пока тихо)"}
     }
     ctx.globalCompositeOperation = "source-over";
     // glowing eyes and medal glints show through the dark
+    if (nightK > .3 && players.some((p) => Math.hypot(p.x - FOUNDER.x, p.y - FOUNDER.y) < 420)) {
+      ctx.shadowColor = "#ffcf6a"; ctx.shadowBlur = 12; ctx.fillStyle = `rgba(255,214,120,${.55 + .35 * Math.sin(tt * 1.3)})`;
+      ctx.fillRect(FOUNDER.x - 7, FOUNDER.y - 72, 4, 3); ctx.fillRect(FOUNDER.x + 3, FOUNDER.y - 72, 4, 3);
+      ctx.shadowBlur = 0;
+    }
     if (nightK > .3) {
       for (const s of statues) {
         if (s.stone > 0 || phase !== "night" || s.eyeY === undefined) continue;
