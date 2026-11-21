@@ -107,7 +107,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     <div class="tag"><span style="color:var(--gold)">◈</span><b id="meds">0/6</b><span>медальонов</span></div>
   </div>
   <div class="hgroup" id="bats"></div>
-  <div class="hgroup"><button class="hbtn" id="pauseBtn" type="button">Пауза</button></div>
+  <div class="hgroup"><button class="hbtn" id="voiceBtn" type="button" aria-pressed="true">Голоса: вкл</button><button class="hbtn" id="pauseBtn" type="button">Пауза</button></div>
 </div>
 <div id="toast"></div>
 
@@ -121,7 +121,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
       <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет навсегда. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
-      <li><span>♟</span><span>С вами идут <b style="color:#9be15d">Тимур</b>, <b style="color:#ff7fc0">Луиза</b> и <b style="color:#b48cff">Левон</b>. Днём они ищут медальоны, ночью держатся рядом и светят на статуи, а пойманных бегут расколдовывать.</span></li>
+      <li><span>♟</span><span>С вами идут <b style="color:#9be15d">Тимур</b>, <b style="color:#ff7fc0">Луиза</b> и <b style="color:#b48cff">Левон</b>. Днём они ищут медальоны, ночью держатся рядом и светят на статуи, а пойманных бегут расколдовывать. По дороге вы разговариваете, и у каждого свой голос.</span></li>
     </ul>
     <div class="btns">
       <button class="btn primary" id="play1" type="button">1 игрок<small>WASD + мышь</small></button>
@@ -216,9 +216,9 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const BATTERIES = [[17, 4], [29, 4], [5, 26], [40, 26], [22, 9], [10, 20]];
   const START = [[22, 15], [23, 15]];
   const BOTS = [
-    { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 16] },
-    { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 16] },
-    { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [22, 14] },
+    { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 16], pitch: .85, rate: 1.08 },
+    { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 16], pitch: 1.6, rate: 1.1 },
+    { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [22, 14], pitch: .55, rate: .95 },
   ];
   const cx = (t) => (t + 0.5) * T;
 
@@ -387,10 +387,10 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     for (let i = 0; i < m; i++) players.push({
       id: i, x: cx(START[i][0]), y: cx(START[i][1]), face: -Math.PI / 2, aim: -Math.PI / 2, light: false,
       battery: 100, caught: false, rescue: 0, color: i ? "#4fd1e8" : "#ff9a3c", walk: 0,
-      name: m > 1 ? `Игрок ${i + 1}` : "Ты", tag: `И${i + 1}`,
+      name: m > 1 ? `Игрок ${i + 1}` : "Ты", tag: `И${i + 1}`, pitch: i ? 1.3 : 1.05, rate: 1, bubble: null,
     });
     BOTS.forEach((b, k) => players.push({
-      id: m + k, bot: true, name: b.name, tag: b.name, color: b.color, hair: b.hair, long: b.long, f: b.f,
+      id: m + k, bot: true, name: b.name, tag: b.name, color: b.color, hair: b.hair, long: b.long, f: b.f, pitch: b.pitch, rate: b.rate, bubble: null, spokeSpot: 0, rescuing: null,
       x: cx(b.tile[0]), y: cx(b.tile[1]), face: -Math.PI / 2, aim: -Math.PI / 2, light: false,
       battery: 100, caught: false, rescue: 0, walk: k * 2, think: 0, next: null, goal: null, seeT: 0, medal: null,
     }));
@@ -403,6 +403,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     buildBats();
     show(null); $("#hud").hidden = false; state = "play";
     toast("День 1", "Статуи пока неподвижны. Ищите медальоны.");
+    talkReset(); talk.queue = INTRO.slice(); talk.t = 1.2;
   }
 
   /* ---------- helpers ---------- */
@@ -483,7 +484,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     });
   }
   function togglePause() {
-    if (state === "play") { state = "pause"; show("#pause"); setDrone(false); }
+    if (state === "play") { state = "pause"; show("#pause"); setDrone(false); try { speechSynthesis.cancel(); } catch (e) {} }
     else if (state === "pause") { state = "play"; show(null); if (phase === "night") setDrone(true); last = performance.now(); }
   }
   function best() { try { return JSON.parse(localStorage.getItem("statue-best") || "null"); } catch (e) { return null; } }
@@ -492,6 +493,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     $("#bestLine").textContent = b ? `Лучший побег: ${fmt(b.time)}, ночей пережито: ${b.nights}` : "";
   }
   function endGame(win) {
+    try { speechSynthesis.cancel(); } catch (e) {}
     state = "end"; setDrone(false); $("#hud").hidden = true;
     $("#stNights").textContent = phase === "night" && !win ? night - 1 : night;
     $("#stMeds").textContent = `${medals}/6`;
@@ -515,7 +517,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   $("#again").onclick = () => newGame(mode);
   $("#resume").onclick = togglePause;
   $("#pauseBtn").onclick = togglePause;
-  $("#toMenu").onclick = $("#endMenu").onclick = () => { state = "menu"; setDrone(false); $("#hud").hidden = true; show("#menu"); showBest(); };
+  $("#toMenu").onclick = $("#endMenu").onclick = () => { state = "menu"; setDrone(false); try { speechSynthesis.cancel(); } catch (e) {} $("#hud").hidden = true; show("#menu"); showBest(); };
   document.addEventListener("visibilitychange", () => { if (document.hidden && state === "play") togglePause(); });
   showBest();
 
@@ -526,12 +528,110 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       night++; phaseT = NIGHT;
       statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; s.wake = 3; });
       toast(`Ночь ${night}`, "Статуи сошли с постаментов"); sfx.night(); setDrone(true); shake = .5;
+      talk.queue = []; setTimeout(() => sayAny("night"), 900);
     } else {
       phaseT = DAY; warned = false;
       statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; });
       toast("Рассвет", "Статуи замерли там, где их застало утро"); sfx.day(); setDrone(false);
+      talk.queue = []; setTimeout(() => sayAny("dawn"), 1200);
     }
   }
+  /* ---------- talking ---------- */
+  // "me" is the human player (Игрок 1 in two-player mode); lines for "me" are written without gendered verbs
+  const INTRO = [
+    ["Левон", "Ну и пылища… Тридцать лет сюда никто не заходил."],
+    ["Луиза", "Говорят, две статуи тут по ночам ходят. Я в это не верю. Почти."],
+    ["me", "Нам нужны шесть медальонов, чтобы открыть ворота."],
+    ["Тимур", "Тогда не теряем время. Держимся вместе!"],
+  ];
+  const DAY_CHATS = [
+    [["Тимур", "Смотрите, у этой статуи рука поднята. Она всегда так стояла?"], ["Луиза", "Тимур, мы тут первый день."], ["Левон", "Тем более жутко."]],
+    [["Луиза", "Как думаете, кто их сделал?"], ["Левон", "Табличка стёрта. Видно только год: тысяча восемьсот девяносто четвёртый."], ["me", "Не нравится мне этот год."]],
+    [["Левон", "А почему фонарики красные, а не обычные?"], ["Тимур", "Сторож говорил: от красного света они каменеют."], ["Луиза", "А если сторож сам теперь статуя?"], ["Левон", "Луиза, ну зачем…"]],
+    [["me", "Кто-нибудь слышал шорох?"], ["Тимур", "Это крыса. Наверное."], ["Луиза", "Очень надеюсь, что крыса."]],
+    [["Тимур", "Если выберемся, с меня всем шаурма."], ["Левон", "Ловлю на слове."], ["Луиза", "Сначала медальоны, потом шаурма."]],
+    [["Луиза", "Запоминайте, где какие статуи стоят."], ["me", "Зачем?"], ["Луиза", "Утром сразу увидим, какие из них ночью ходили."]],
+    [["Левон", "Я в детстве был тут на экскурсии."], ["Тимур", "И как?"], ["Левон", "Экскурсовода так и не нашли."], ["Луиза", "Левон!"], ["Левон", "Шучу. Наверное."]],
+    [["me", "Тут картины висят. Кажется, глаза на них следят за нами."], ["Тимур", "Не смотри на них, и они не будут смотреть на тебя."], ["Левон", "Отличный совет, Тимур. Очень успокаивает."]],
+    [["Тимур", "Луиза, ты чего так близко идёшь?"], ["Луиза", "Мне так спокойнее. Не отходи от меня."], ["Тимур", "Да я и не собирался."]],
+  ];
+  const NIGHT_CHATS = [
+    [["Луиза", "Тихо… Слышите шаги?"], ["Тимур", "Камень по камню. Это они."], ["me", "Фонарики наготове."]],
+    [["Левон", "У меня руки трясутся."], ["Тимур", "У всех трясутся. Главное, свети прямо на них."]],
+    [["me", "Не разбегаемся. Спина к спине!"], ["Луиза", "Я смотрю назад!"], ["Левон", "А я по сторонам."]],
+    [["Тимур", "Кажется, она где-то рядом."], ["Луиза", "Не говори так, пожалуйста."]],
+  ];
+  const LINES = {
+    night: ["Начинается…", "Они проснулись. Слышите?", "Фонари наготове!", "Мамочки…"],
+    dawn: ["Пережили ночь!", "Солнце! Они снова замерли.", "Смотрите, вон та статуя стоит не там, где раньше.", "Фух. Можно выдохнуть."],
+    dusk: ["Темнеет. Скоро начнётся.", "Ребята, солнце садится!", "Собираемся вместе, скоро ночь."],
+    spot: ["Вон она!", "Статуя! Свечу!", "Стой, где стоишь!", "Вижу её!"],
+    stone: ["Готово, окаменела!", "Есть! Больше не двинется.", "Стой так вечно!", "Получила, каменная!"],
+    medal: ["Есть медальон!", "Ещё один медальон!", "Медальон у нас!", "Смотрите, что тут лежит!"],
+    caughtMe: ["Нет… Я каменею…", "Помогите! Не могу двигаться…"],
+    rescue: ["Держись, сейчас расколдую!", "Иду к тебе!", "Не бойся, мы рядом!"],
+    gate: ["Ворота открылись! Бежим!", "На восток, в Северную галерею!"],
+    wait: ["Мы у ворот! Давай сюда!", "Быстрее, ворота открыты!"],
+    thanksM: ["Спасибо! Думал, мне конец.", "Фух, спасибо, друзья!"],
+    thanksF: ["Спасибо! Думала, мне конец.", "Ой, спасибо вам!"],
+    thanksMe: ["Спасибо, друзья!", "Вы меня спасли!"],
+  };
+  const talk = { queue: [], t: 0, cool: 10, usedDay: [], usedNight: [], waitT: 0 };
+  function talkReset() { talk.queue = []; talk.t = 0; talk.cool = 12; talk.usedDay = []; talk.usedNight = []; talk.waitT = 6; try { speechSynthesis.cancel(); } catch (e) {} }
+  const pick = (a) => a[Math.random() * a.length | 0];
+  let voiceOn = true, ruVoice = null;
+  function findVoice() { try { const v = speechSynthesis.getVoices(); ruVoice = v.find((x) => /^ru/i.test(x.lang)) || null; } catch (e) {} }
+  try { findVoice(); speechSynthesis.onvoiceschanged = findVoice; } catch (e) {}
+  function speak(p, text) {
+    if (!voiceOn || !("speechSynthesis" in window)) return;
+    try {
+      if (speechSynthesis.pending) speechSynthesis.cancel(); // never fall behind the bubbles
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "ru-RU"; if (ruVoice) u.voice = ruVoice; u.pitch = p.pitch || 1; u.rate = p.rate || 1; u.volume = .9;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function say(p, text) {
+    if (!p || state !== "play") return;
+    p.bubble = { text, t: Math.min(5.5, 1.6 + text.length * .06) };
+    speak(p, text);
+    talk.t = Math.max(talk.t, p.bubble.t + .4); // a running conversation waits for event lines
+  }
+  const byName = (n) => n === "me" ? players[0] : players.find((q) => q.name === n);
+  const speakers = (exclude) => players.filter((q) => !q.caught && q !== exclude);
+  function sayAny(key, exclude) { const l = speakers(exclude); if (l.length) say(pick(l), pick(LINES[key])); }
+  function updateTalk(dt) {
+    players.forEach((p) => { if (p.bubble && (p.bubble.t -= dt) <= 0) p.bubble = null; });
+    talk.t -= dt;
+    if (talk.queue.length) {
+      if (talk.t > 0) return;
+      const [who, text] = talk.queue.shift(), p = byName(who);
+      if (p && !p.caught) say(p, text);
+      else talk.t = .2;
+      return;
+    }
+    // bots at the open gate call for you
+    if (gateOpen) {
+      talk.waitT -= dt;
+      const hum = players.find((q) => !q.bot);
+      const atGate = players.filter((q) => q.bot && !q.caught && q.x > 42 * T);
+      if (talk.waitT <= 0 && atGate.length && hum && hum.x < 38 * T) { talk.waitT = 9; say(pick(atGate), pick(LINES.wait)); }
+      return;
+    }
+    talk.cool -= dt;
+    if (talk.cool > 0 || talk.t > 0) return;
+    talk.cool = 16 + Math.random() * 12;
+    const night = phase === "night", pool = night ? NIGHT_CHATS : DAY_CHATS, used = night ? talk.usedNight : talk.usedDay;
+    if (night && statues.every((q) => q.stone === Infinity)) return;
+    if (used.length >= pool.length) used.length = 0;
+    let i; do { i = Math.random() * pool.length | 0; } while (used.includes(i));
+    used.push(i); talk.queue = pool[i].slice();
+  }
+  $("#voiceBtn").onclick = () => {
+    voiceOn = !voiceOn; $("#voiceBtn").textContent = voiceOn ? "Голоса: вкл" : "Голоса: выкл"; $("#voiceBtn").setAttribute("aria-pressed", voiceOn);
+    if (!voiceOn) try { speechSynthesis.cancel(); } catch (e) {}
+  };
+
   // next tile on the shortest path from (sx,sy) to (gx,gy), or null if there is none
   const botQ = new Int32Array(MW * MH), botD = new Int16Array(MW * MH);
   function nextTile(sx, sy, gx, gy) {
@@ -566,15 +666,19 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
         if (d < td && los(p.x, p.y, s.x, s.y)) { td = d; tgt = s; }
       }
       p.seeT = tgt ? p.seeT + dt : Math.max(0, p.seeT - dt);
+      p.spokeSpot -= dt;
+      if (tgt && p.seeT > .45 && p.spokeSpot <= 0) { p.spokeSpot = 7; say(p, pick(LINES.spot)); }
       if (tgt && p.seeT > .45) { out.aim = Math.atan2(tgt.y - p.y, tgt.x - p.x); out.want = true; p.face = out.aim; return out; }
     }
     // 2. choose where to go
     const humans = players.filter((q) => !q.bot && !q.caught);
     let gx = null, gy = null, stopAt = 18;
     const frozen = players.filter((q) => q.caught && q !== p);
+    if (!frozen.length) p.rescuing = null;
     if (frozen.length) {
       let f = frozen[0], fd = Infinity; frozen.forEach((q) => { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < fd) { fd = d; f = q; } });
       gx = f.x; gy = f.y; stopAt = 30;
+      if (p.rescuing !== f) { p.rescuing = f; if (Math.random() < .6) say(p, pick(LINES.rescue)); }
     } else if (gateOpen) {
       gx = 44.3 * T; gy = (9.5 + (p.id % 2)) * T;
     } else if (phase === "day" && medals < 6) {
@@ -647,7 +751,8 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       if (it.got || Math.hypot(it.x - p.x, it.y - p.y) > 26) continue;
       if (it.kind === "medal") {
         it.got = true; medals++; sfx.pick();
-        if (medals === 6) { gateOpen = true; GATE.forEach(([x, y]) => { grid[y * MW + x] = 0; navBlocked[y * MW + x] = 0; }); sfx.gate(); toast("Ворота открыты!", "Бегите в конец Северной галереи, на восток"); }
+        if (medals < 6) say(p, pick(LINES.medal));
+        if (medals === 6) { gateOpen = true; GATE.forEach(([x, y]) => { grid[y * MW + x] = 0; navBlocked[y * MW + x] = 0; }); sfx.gate(); toast("Ворота открыты!", "Бегите в конец Северной галереи, на восток"); talk.queue = []; say(p, pick(LINES.gate)); }
         else toast(`Медальон ${medals} из 6`, p.bot ? `${p.name} ${p.f ? "нашла" : "нашёл"} медальон` : undefined);
       } else if (p.battery < 100) { it.got = true; p.battery = Math.min(100, p.battery + 50); sfx.bat(); toast("Батарейка", "+50% заряда фонарика"); }
     }
@@ -661,17 +766,18 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     const targets = alive();
     for (const s of statues) {
       // red light turns the statue to stone
-      let lit = false;
+      let lit = false, litBy = null;
       for (const p of players) {
         if (!p.light) continue;
         const d = Math.hypot(s.x - p.x, s.y - p.y);
-        if (d < BEAM && angDiff(Math.atan2(s.y - p.y, s.x - p.x), p.aim) < HALF + Math.atan2(SR, d) && los(p.x, p.y, s.x, s.y)) lit = true;
+        if (d < BEAM && angDiff(Math.atan2(s.y - p.y, s.x - p.x), p.aim) < HALF + Math.atan2(SR, d) && los(p.x, p.y, s.x, s.y)) { lit = true; litBy = p; }
       }
       if (s.stone > 0) { s.stone -= dt; if (lit) s.stone = Math.max(s.stone, 3); continue; }
       if (lit) {
         s.hit += dt;
         if (s.hit > .5) {
           s.stone = Infinity; s.hit = 0; sfx.crack(); shake = .25;
+          setTimeout(() => say(litBy, pick(LINES.stone)), 300);
           const left = statues.filter((q) => q.stone !== Infinity).length;
           toast("Окаменела навсегда!", left ? "Осталась ещё одна живая статуя" : "Обе статуи окаменели. Музей больше не опасен");
         }
@@ -707,6 +813,8 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       for (const p of targets) {
         if (!p.caught && Math.hypot(p.x - s.x, p.y - s.y) < PR + SR + 3) {
           p.caught = true; p.light = false; p.rescue = 0; sfx.caught(); redFlash = 1; shake = .6;
+          talk.queue = []; say(p, pick(LINES.caughtMe));
+          { const o = speakers(p); if (o.length) setTimeout(() => say(pick(o), p.name === "Ты" ? "Нет! Держись, мы тебя вытащим!" : `${p.name}! Нет!`), 1400); }
           if (alive().length === 0) { setTimeout(() => state === "play" && endGame(false), 900); }
           else toast(`${p.name} ${p.f ? "окаменела" : "окаменел"}!`, p.name === "Ты" ? "Друзья попробуют тебя расколдовать" : "Постой рядом 2 секунды, чтобы расколдовать");
         }
@@ -720,7 +828,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   function update(dt) {
     elapsed += dt;
     phaseT -= dt;
-    if (phase === "day" && phaseT < 6 && !warned) { warned = true; toast("Солнце садится…", "Скоро статуи проснутся"); }
+    if (phase === "day" && phaseT < 6 && !warned) { warned = true; toast("Солнце садится…", "Скоро статуи проснутся"); sayAny("dusk"); }
     if (phaseT <= 0) setPhase(phase === "day" ? "night" : "day");
     nightK += ((phase === "night" ? 1 : 0) - nightK) * Math.min(1, dt * 1.2);
     players.forEach((p) => updatePlayer(p, dt));
@@ -732,12 +840,13 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     }
     if (state !== "play") return;
     updateStatues(dt);
+    updateTalk(dt);
     // rescue a frozen partner
     for (const p of players) {
       if (!p.caught) continue;
       const near = alive().some((q) => Math.hypot(q.x - p.x, q.y - p.y) < 52);
       p.rescue = near ? p.rescue + dt : Math.max(0, p.rescue - dt);
-      if (p.rescue >= 2) { p.caught = false; p.rescue = 0; sfx.free(); toast(p.name === "Ты" ? "Тебя расколдовали!" : `${p.name} снова ${p.f ? "живая" : "живой"}`); }
+      if (p.rescue >= 2) { p.caught = false; p.rescue = 0; sfx.free(); say(p, pick(p.bot ? (p.f ? LINES.thanksF : LINES.thanksM) : LINES.thanksMe)); toast(p.name === "Ты" ? "Тебя расколдовали!" : `${p.name} снова ${p.f ? "живая" : "живой"}`); }
     }
     // heartbeat when an awake statue is near
     if (phase === "night") {
@@ -943,7 +1052,24 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       const tw = .5 + .5 * Math.sin(tt * 4 + it.y);
       ctx.fillStyle = `rgba(255,220,140,${.25 + .35 * tw})`; ctx.beginPath(); ctx.arc(it.x + 4, it.y - 8, 1.6 + tw, 0, 7); ctx.fill();
     }
-    // name tags in 2P mode
+    // speech bubbles
+    players.forEach((p) => {
+      if (!p.bubble) return;
+      ctx.font = "600 12px 'PT Sans', sans-serif";
+      const words = p.bubble.text.split(" "), rows = []; let row = "";
+      for (const w of words) { const t = row ? row + " " + w : w; if (ctx.measureText(t).width > 150 && row) { rows.push(row); row = w; } else row = t; }
+      rows.push(row);
+      const w = Math.max(...rows.map((r) => ctx.measureText(r).width)) + 16, h = rows.length * 15 + 10;
+      const bx = p.x - w / 2, by = p.y - 48 - h, a = Math.min(1, p.bubble.t * 3);
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "rgba(236,230,218,.96)"; ctx.strokeStyle = p.color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, w, h, 7) : ctx.rect(bx, by, w, h); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(p.x - 6, by + h - 1); ctx.lineTo(p.x, by + h + 8); ctx.lineTo(p.x + 6, by + h - 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#1c1820"; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      rows.forEach((r, i) => ctx.fillText(r, bx + 8, by + 6 + i * 15));
+      ctx.textBaseline = "alphabetic"; ctx.globalAlpha = 1;
+    });
+    // name tags
     players.forEach((p) => {
       if (!p.bot && mode === 1) return;
       ctx.font = "700 11px 'PT Sans', sans-serif"; ctx.textAlign = "center";
