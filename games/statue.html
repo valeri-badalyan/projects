@@ -174,7 +174,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
       <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет навсегда. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
-      <li><span>⚒</span><span>В Мастерской реставратора стоит верстак. Собирайте по залам камень, бронзу, дерево, ткань и линзы и делайте щит, меч, улучшенный фонарик, кеды-скороходы и компас.</span></li>
+      <li><span>⚒</span><span>В Мастерской реставратора стоит верстак. Собирайте по залам камень, бронзу, дерево, ткань и линзы и делайте щит, меч, улучшенный фонарик, кеды-скороходы и компас. За ночь в случайных местах музея появляются новые материалы.</span></li>
       <li><span>♜</span><span>Статуя Алекса Казаряна защищает людей и ботов: в золотой круг вокруг неё ожившие статуи войти не могут, а если пытаются, Казарян отбрасывает их назад.</span></li>
       <li><span>♟</span><span>С вами идут <b style="color:#9be15d">Тимур</b>, <b style="color:#ff7fc0">Луиза</b> и <b style="color:#b48cff">Левон</b>. Днём они ищут медальоны, ночью держатся рядом и светят на статуи, а пойманных бегут расколдовывать. По дороге вы разговариваете.</span></li>
     </ul>
@@ -527,6 +527,21 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   let phase = "day", phaseT = 0, night = 0, nightK = 0, elapsed = 0, medals = 0, flowT = 0, shake = 0, redFlash = 0;
   let cam = { x: 0, y: 0, z: 1 }, lastRoom = null, heartT = 0, warned = false;
   let inv = { stone: 0, bronze: 0, wood: 0, cloth: 0, lens: 0 }, floaters = [], resHint = false, crafter = null;
+  let resSpawnT = 4, nightSpawned = 0;
+  const RES_PER_NIGHT = 8, RES_WEIGHTS = ["bronze", "bronze", "bronze", "stone", "stone", "wood", "wood", "cloth", "cloth", "lens", "lens"];
+  function spawnRes() {
+    const free = items.filter((it) => !it.got && it.kind === "res").length;
+    if (free >= 40) return;
+    for (let tries = 0; tries < 60; tries++) {
+      const tx = 1 + (Math.random() * (MW - 2) | 0), ty = 1 + (Math.random() * (MH - 2) | 0), i = ty * MW + tx;
+      if (grid[i] !== 0 || navBlocked[i]) continue;
+      const x = cx(tx) + (Math.random() - .5) * 14, y = cx(ty) + (Math.random() - .5) * 14;
+      if (items.some((it) => !it.got && Math.hypot(it.x - x, it.y - y) < 50)) continue;
+      if (players.some((p) => Math.hypot(p.x - x, p.y - y) < 60)) continue;
+      items.push({ kind: "res", type: pick(RES_WEIGHTS), x, y, got: false });
+      nightSpawned++; return;
+    }
+  }
   const beamOf = (p) => p.gear && p.gear.lamp ? 480 : BEAM, halfOf = (p) => p.gear && p.gear.lamp ? .5 : HALF;
   const flow = new Int16Array(MW * MH);
 
@@ -548,7 +563,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     decor = DECOR.map(([x, y]) => ({ x: cx(x), y: cx(y), pose: r() * 4 | 0 }));
     items = MEDALS.map(([x, y]) => ({ kind: "medal", x: cx(x), y: cx(y), got: false }))
       .concat(RES_SPOTS.map(([x, y, type]) => ({ kind: "res", type, x: cx(x), y: cx(y), got: false })));
-    inv = { stone: 0, bronze: 0, wood: 0, cloth: 0, lens: 0 }; floaters = []; resHint = false;
+    inv = { stone: 0, bronze: 0, wood: 0, cloth: 0, lens: 0 }; floaters = []; resHint = false; resSpawnT = 4; nightSpawned = 0;
     players.forEach((p) => { if (!p.bot) p.gear = { shield: 0, sword: false, lamp: false, boots: false, compass: false }; });
     gateOpen = false; GATE.forEach(([x, y]) => { grid[y * MW + x] = 2; navBlocked[y * MW + x] = 1; });
     phase = "day"; phaseT = DAY; night = 0; nightK = 0; elapsed = 0; medals = 0; warned = false; shake = 0; redFlash = 0;
@@ -701,11 +716,13 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; s.wake = 3; });
       toast(`Ночь ${night}`, "Статуи сошли с постаментов"); sfx.night(); setDrone(true); shake = .5;
       talk.queue = []; setTimeout(() => sayAny("night"), 900);
+      nightSpawned = 0; resSpawnT = 3 + Math.random() * 2;
     } else {
       phaseT = DAY; warned = false;
       statues.forEach((s) => { if (s.stone !== Infinity) s.stone = 0; s.hit = 0; });
       toast("Рассвет", "Статуи замерли там, где их застало утро"); sfx.day(); setDrone(false);
       talk.queue = []; setTimeout(() => sayAny("dawn"), 1200);
+      if (nightSpawned) { const n = nightSpawned; setTimeout(() => { if (state === "play") toast("Новые материалы", `За ночь в музее появилось: ${n}. Ищите по залам`); }, 3000); }
     }
   }
   /* ---------- talking ---------- */
@@ -844,7 +861,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     let lines = null;
     if (sampleFn && !sampleOff) {
       const log = chatLog.slice(-12, -1).map((l) => `${l.who === "Ты" ? "Игрок" : l.who}: ${l.text}`).join("\n");
-      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза, а время от времени она гулко издаёт звуки «Э», «А» и «О»; что они значат, никто не знает. Казарян защищает игрока и друзей: в золотой круг вокруг его статуи ожившие статуи войти не могут, а если пытаются, он с гулким «О!» отбрасывает их назад. Возле Казаряна безопасно. В Мастерской реставратора стоит верстак: из материалов, которые валяются по залам (камень, бронза, дерево, ткань, линзы), там можно сделать щит (2 бронзы + 1 дерево; выдерживает одно нападение статуи), меч (2 камня + 1 бронза + 1 ткань; отбрасывает и оглушает статую, но не каменит), улучшенный фонарик (2 линзы + 1 бронза; длинный широкий луч, каменит почти мгновенно), кеды-скороходы (2 ткани + 1 дерево; на 20% быстрее) и компас (1 бронза + 1 линза; показывает на ближайший медальон). Почему он окаменел, никто точно не знает.
+      const prompt = `Ты пишешь реплики трёх друзей-подростков в хоррор-игре «Статуя». Вместе с игроком они исследуют заброшенный городской музей скульптуры, закрытый с 1994 года. Две статуи по ночам оживают и охотятся на людей. Если посветить на статую красным фонариком, она каменеет навсегда. Чтобы выбраться, нужно собрать 6 бронзовых медальонов и выйти через восточные ворота в конце Северной галереи. Кого поймала статуя, тот сам каменеет; его можно расколдовать, постояв рядом 2 секунды. У каждого есть красный фонарик с бесконечной батареей. Музей основал Алекс Казарян; однажды он сам превратился в скульптуру. Его огромная бронзовая статуя стоит в центре Большого зала скульптур. Она не ходит, но ночью у неё светятся глаза, а время от времени она гулко издаёт звуки «Э», «А» и «О»; что они значат, никто не знает. Казарян защищает игрока и друзей: в золотой круг вокруг его статуи ожившие статуи войти не могут, а если пытаются, он с гулким «О!» отбрасывает их назад. Возле Казаряна безопасно. В Мастерской реставратора стоит верстак: из материалов, которые валяются по залам (камень, бронза, дерево, ткань, линзы), там можно сделать щит (2 бронзы + 1 дерево; выдерживает одно нападение статуи), меч (2 камня + 1 бронза + 1 ткань; отбрасывает и оглушает статую, но не каменит), улучшенный фонарик (2 линзы + 1 бронза; длинный широкий луч, каменит почти мгновенно), кеды-скороходы (2 ткани + 1 дерево; на 20% быстрее) и компас (1 бронза + 1 линза; показывает на ближайший медальон). Каждую ночь в случайных местах музея появляются новые материалы, утром их можно собрать. Почему он окаменел, никто точно не знает.
 
 Друзья:
 ${PERSONAS}
@@ -1232,6 +1249,8 @@ ${log || "(пока тихо)"}
     if (phaseT <= 0) setPhase(phase === "day" ? "night" : "day");
     nightK += ((phase === "night" ? 1 : 0) - nightK) * Math.min(1, dt * 1.2);
     players.forEach((p) => { p.swingCd = Math.max(0, (p.swingCd || 0) - dt); p.swingT = Math.max(0, (p.swingT || 0) - dt); p.safeT = Math.max(0, (p.safeT || 0) - dt); updatePlayer(p, dt); });
+    // during the night new materials appear at random spots
+    if (phase === "night" && nightSpawned < RES_PER_NIGHT) { resSpawnT -= dt; if (resSpawnT <= 0) { resSpawnT = NIGHT / RES_PER_NIGHT * (.6 + Math.random() * .8); spawnRes(); } }
     floaters.forEach((f) => { f.t -= dt; f.y -= dt * 22; }); floaters = floaters.filter((f) => f.t > 0);
     // keep friends from standing inside each other
     for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) {
