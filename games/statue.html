@@ -121,6 +121,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       <li><span>☾</span><span>Ночью две статуи оживают и идут к вам. Глаза светятся в темноте, по шагам слышно, откуда они идут.</span></li>
       <li><span>●</span><span>Посветите на статую красным фонариком, и она окаменеет навсегда. Батарея у фонарика бесконечная.</span></li>
       <li><span>✦</span><span>Пойманный игрок сам становится статуей. Напарник может расколдовать его: постоять рядом 2 секунды.</span></li>
+      <li><span>♟</span><span>С вами идут <b style="color:#9be15d">Тимур</b>, <b style="color:#ff7fc0">Луиза</b> и <b style="color:#b48cff">Левон</b>. Днём они ищут медальоны, ночью держатся рядом и светят на статуи, а пойманных бегут расколдовывать.</span></li>
     </ul>
     <div class="btns">
       <button class="btn primary" id="play1" type="button">1 игрок<small>WASD + мышь</small></button>
@@ -214,6 +215,11 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
   const MEDALS = [[5, 4], [40, 4], [5, 15], [40, 15], [17, 26], [29, 26]];
   const BATTERIES = [[17, 4], [29, 4], [5, 26], [40, 26], [22, 9], [10, 20]];
   const START = [[22, 15], [23, 15]];
+  const BOTS = [
+    { name: "Тимур", color: "#9be15d", hair: "#1e1712", tile: [21, 16] },
+    { name: "Луиза", color: "#ff7fc0", hair: "#7a3b1c", long: true, f: true, tile: [24, 16] },
+    { name: "Левон", color: "#b48cff", hair: "#0f0f12", tile: [22, 14] },
+  ];
   const cx = (t) => (t + 0.5) * T;
 
   const navBlocked = new Uint8Array(MW * MH);
@@ -381,11 +387,17 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     for (let i = 0; i < m; i++) players.push({
       id: i, x: cx(START[i][0]), y: cx(START[i][1]), face: -Math.PI / 2, aim: -Math.PI / 2, light: false,
       battery: 100, caught: false, rescue: 0, color: i ? "#4fd1e8" : "#ff9a3c", walk: 0,
+      name: m > 1 ? `Игрок ${i + 1}` : "Ты", tag: `И${i + 1}`,
     });
+    BOTS.forEach((b, k) => players.push({
+      id: m + k, bot: true, name: b.name, tag: b.name, color: b.color, hair: b.hair, long: b.long, f: b.f,
+      x: cx(b.tile[0]), y: cx(b.tile[1]), face: -Math.PI / 2, aim: -Math.PI / 2, light: false,
+      battery: 100, caught: false, rescue: 0, walk: k * 2, think: 0, next: null, goal: null, seeT: 0, medal: null,
+    }));
     statues = LIVING_SPAWN.map(([x, y], i) => ({ x: cx(x), y: cx(y), hx: cx(x), hy: cx(y), stone: 0, hit: 0, wake: 0, stepT: 0, walk: 0, pose: i ? 2 : 1, moved: false, face: Math.PI / 2 }));
     decor = DECOR.map(([x, y]) => ({ x: cx(x), y: cx(y), pose: r() * 4 | 0 }));
     items = MEDALS.map(([x, y]) => ({ kind: "medal", x: cx(x), y: cx(y), got: false }));
-    gateOpen = false; GATE.forEach(([x, y]) => grid[y * MW + x] = 2);
+    gateOpen = false; GATE.forEach(([x, y]) => { grid[y * MW + x] = 2; navBlocked[y * MW + x] = 1; });
     phase = "day"; phaseT = DAY; night = 0; nightK = 0; elapsed = 0; medals = 0; warned = false; shake = 0; redFlash = 0;
     cam.x = players[0].x; cam.y = players[0].y; cam.z = baseZoom(); lastRoom = null;
     buildBats();
@@ -455,7 +467,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     const b = $("#bats"); b.innerHTML = "";
     players.forEach((p) => {
       const t = document.createElement("div"); t.className = "tag";
-      t.innerHTML = `<span class="dot" style="background:${p.color}"></span><span>${mode > 1 ? "Игрок " + (p.id + 1) : "Фонарик"}</span><b style="color:var(--red)">∞</b>`;
+      t.innerHTML = `<span class="dot" style="background:${p.color}"></span><span>${p.bot ? p.name : mode > 1 ? "Игрок " + (p.id + 1) : "Фонарик"}</span>${p.bot ? "" : '<b style="color:var(--red)">∞</b>'}`;
       b.append(t); p.batEl = t.querySelectorAll(".bat s"); p.tagEl = t;
     });
   }
@@ -520,9 +532,90 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       toast("Рассвет", "Статуи замерли там, где их застало утро"); sfx.day(); setDrone(false);
     }
   }
+  // next tile on the shortest path from (sx,sy) to (gx,gy), or null if there is none
+  const botQ = new Int32Array(MW * MH), botD = new Int16Array(MW * MH);
+  function nextTile(sx, sy, gx, gy) {
+    botD.fill(-1); let h = 0, t = 0; const g = gy * MW + gx, st = sy * MW + sx;
+    if (g === st) return [gx, gy];
+    botD[g] = 0; botQ[t++] = g;
+    while (h < t) {
+      const i = botQ[h++], x = i % MW, y = (i / MW) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+        const ni = ny * MW + nx; if (botD[ni] >= 0) continue;
+        if (navBlocked[ni] && ni !== st) continue;
+        botD[ni] = botD[i] + 1; if (ni === st) { h = t; break; } botQ[t++] = ni;
+      }
+    }
+    if (botD[st] < 0) return null;
+    let best = null, bv = 1e9;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = sx + dx, ny = sy + dy; if (nx < 0 || ny < 0 || nx >= MW || ny >= MH) continue;
+      const v = botD[ny * MW + nx]; if (v >= 0 && v < bv) { bv = v; best = [nx, ny]; }
+    }
+    return best;
+  }
+  function botThink(p, dt) {
+    const out = { mx: 0, my: 0, want: false, aim: p.face };
+    // 1. at night: spot an awake statue, react, and shine on it
+    if (phase === "night") {
+      let tgt = null, td = 250;
+      for (const s of statues) {
+        if (s.stone === Infinity) continue;
+        const d = Math.hypot(s.x - p.x, s.y - p.y);
+        if (d < td && los(p.x, p.y, s.x, s.y)) { td = d; tgt = s; }
+      }
+      p.seeT = tgt ? p.seeT + dt : Math.max(0, p.seeT - dt);
+      if (tgt && p.seeT > .45) { out.aim = Math.atan2(tgt.y - p.y, tgt.x - p.x); out.want = true; p.face = out.aim; return out; }
+    }
+    // 2. choose where to go
+    const humans = players.filter((q) => !q.bot && !q.caught);
+    let gx = null, gy = null, stopAt = 18;
+    const frozen = players.filter((q) => q.caught && q !== p);
+    if (frozen.length) {
+      let f = frozen[0], fd = Infinity; frozen.forEach((q) => { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < fd) { fd = d; f = q; } });
+      gx = f.x; gy = f.y; stopAt = 30;
+    } else if (gateOpen) {
+      gx = 44.3 * T; gy = (9.5 + (p.id % 2)) * T;
+    } else if (phase === "day" && medals < 6) {
+      if (!p.medal || p.medal.got) {
+        const taken = players.filter((q) => q.bot && q !== p && q.medal && !q.medal.got).map((q) => q.medal);
+        let best = null, bd = Infinity;
+        // bots explore with you: they only go for medals that are close to a living human player
+        const near = (it) => humans.some((h) => Math.hypot(h.x - it.x, h.y - it.y) < 6 * T);
+        for (const it of items) if (!it.got && !taken.includes(it) && near(it)) { const d = Math.hypot(it.x - p.x, it.y - p.y); if (d < bd) { bd = d; best = it; } }
+        p.medal = best;
+      }
+      if (p.medal && !humans.some((h) => Math.hypot(h.x - p.medal.x, h.y - p.medal.y) < 8 * T)) p.medal = null;
+      if (p.medal) { gx = p.medal.x; gy = p.medal.y; stopAt = 4; }
+    }
+    if (gx === null) {
+      const list = humans.length ? humans : players.filter((q) => !q.caught && q !== p);
+      if (!list.length) return out;
+      let h = list[0], hd = Infinity; list.forEach((q) => { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < hd) { hd = d; h = q; } });
+      gx = h.x; gy = h.y; stopAt = 60 + (p.id % 3) * 14;
+    }
+    const dist = Math.hypot(gx - p.x, gy - p.y);
+    if (dist < stopAt) return out;
+    // 3. walk along the shortest path
+    p.think -= dt;
+    if (p.think <= 0 || !p.next) {
+      p.think = .3;
+      p.next = nextTile(Math.floor(p.x / T), Math.floor(p.y / T), Math.min(MW - 1, Math.floor(gx / T)), Math.floor(gy / T));
+    }
+    let tx = gx, ty = gy;
+    if (p.next && !(p.next[0] === Math.floor(gx / T) && p.next[1] === Math.floor(gy / T))) { tx = cx(p.next[0]); ty = cx(p.next[1]); }
+    if (Math.hypot(tx - p.x, ty - p.y) < 6) p.think = 0;
+    const d = Math.hypot(tx - p.x, ty - p.y) || 1;
+    out.mx = (tx - p.x) / d * .88; out.my = (ty - p.y) / d * .88;
+    out.aim = Math.atan2(out.my, out.mx);
+    return out;
+  }
   function updatePlayer(p, dt) {
-    let mx = 0, my = 0, want = false;
-    if (mode === 1) {
+    let mx = 0, my = 0, want = false, botAim = null;
+    if (p.bot) {
+      if (!p.caught) { const o = botThink(p, dt); mx = o.mx; my = o.my; want = o.want; botAim = o.aim; }
+    } else if (mode === 1) {
       if (keys.KeyW || keys.ArrowUp) my--; if (keys.KeyS || keys.ArrowDown) my++;
       if (keys.KeyA || keys.ArrowLeft) mx--; if (keys.KeyD || keys.ArrowRight) mx++;
       if (touch.joy) { const dx = touch.joy.x - touch.joy.ox, dy = touch.joy.y - touch.joy.oy, d = Math.hypot(dx, dy); if (d > 8) { mx = dx / Math.max(d, 50); my = dy / Math.max(d, 50); } }
@@ -539,10 +632,11 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     if (m > 0) {
       const k = Math.min(1, m) / m; mx *= k; my *= k;
       moveEntity(p, mx * SPEED * dt, my * SPEED * dt, PR);
-      p.face = Math.atan2(my, mx); p.walk += dt * 10;
+      if (botAim === null || !want) p.face = Math.atan2(my, mx);
+      p.walk += dt * 10;
     }
-    let aim = p.face;
-    if (mode === 1) {
+    let aim = botAim !== null ? botAim : p.face;
+    if (mode === 1 && !p.bot) {
       if (touch.aim) { const s = screenOf(p.x, p.y); aim = Math.atan2(touch.aim.y - s.y, touch.aim.x - s.x); }
       else if (mouse.active) { const s = screenOf(p.x, p.y); aim = Math.atan2(mouse.y - s.y, mouse.x - s.x); }
     }
@@ -553,11 +647,12 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       if (it.got || Math.hypot(it.x - p.x, it.y - p.y) > 26) continue;
       if (it.kind === "medal") {
         it.got = true; medals++; sfx.pick();
-        if (medals === 6) { gateOpen = true; GATE.forEach(([x, y]) => grid[y * MW + x] = 0); sfx.gate(); toast("Ворота открыты!", "Бегите в конец Северной галереи, на восток"); }
-        else toast(`Медальон ${medals} из 6`);
+        if (medals === 6) { gateOpen = true; GATE.forEach(([x, y]) => { grid[y * MW + x] = 0; navBlocked[y * MW + x] = 0; }); sfx.gate(); toast("Ворота открыты!", "Бегите в конец Северной галереи, на восток"); }
+        else toast(`Медальон ${medals} из 6`, p.bot ? `${p.name} ${p.f ? "нашла" : "нашёл"} медальон` : undefined);
       } else if (p.battery < 100) { it.got = true; p.battery = Math.min(100, p.battery + 50); sfx.bat(); toast("Батарейка", "+50% заряда фонарика"); }
     }
-    if (gateOpen && p.x > 45 * T + 6) endGame(true);
+    if (p.bot) p.x = Math.min(p.x, 45 * T - PR);
+    else if (gateOpen && p.x > 45 * T + 6) endGame(true);
   }
   function updateStatues(dt) {
     if (phase !== "night") return;
@@ -613,7 +708,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
         if (!p.caught && Math.hypot(p.x - s.x, p.y - s.y) < PR + SR + 3) {
           p.caught = true; p.light = false; p.rescue = 0; sfx.caught(); redFlash = 1; shake = .6;
           if (alive().length === 0) { setTimeout(() => state === "play" && endGame(false), 900); }
-          else toast(`Игрок ${p.id + 1} окаменел!`, "Встань рядом с ним на 2 секунды, чтобы расколдовать");
+          else toast(`${p.name} ${p.f ? "окаменела" : "окаменел"}!`, p.name === "Ты" ? "Друзья попробуют тебя расколдовать" : "Постой рядом 2 секунды, чтобы расколдовать");
         }
       }
     }
@@ -629,6 +724,12 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     if (phaseT <= 0) setPhase(phase === "day" ? "night" : "day");
     nightK += ((phase === "night" ? 1 : 0) - nightK) * Math.min(1, dt * 1.2);
     players.forEach((p) => updatePlayer(p, dt));
+    // keep friends from standing inside each other
+    for (let i = 0; i < players.length; i++) for (let j = i + 1; j < players.length; j++) {
+      const a = players[i], c = players[j]; if (a.caught || c.caught || (!a.bot && !c.bot)) continue;
+      const dx = c.x - a.x, dy = c.y - a.y, d = Math.hypot(dx, dy);
+      if (d < 22 && d > .01) { const k = (22 - d) / 2 / d; if (a.bot) { a.x -= dx * k; a.y -= dy * k; collideCircle(a, PR); } if (c.bot) { c.x += dx * k; c.y += dy * k; collideCircle(c, PR); } }
+    }
     if (state !== "play") return;
     updateStatues(dt);
     // rescue a frozen partner
@@ -636,7 +737,7 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       if (!p.caught) continue;
       const near = alive().some((q) => Math.hypot(q.x - p.x, q.y - p.y) < 52);
       p.rescue = near ? p.rescue + dt : Math.max(0, p.rescue - dt);
-      if (p.rescue >= 2) { p.caught = false; p.rescue = 0; sfx.free(); toast(`Игрок ${p.id + 1} снова живой`); }
+      if (p.rescue >= 2) { p.caught = false; p.rescue = 0; sfx.free(); toast(p.name === "Ты" ? "Тебя расколдовали!" : `${p.name} снова ${p.f ? "живая" : "живой"}`); }
     }
     // heartbeat when an awake statue is near
     if (phase === "night") {
@@ -650,7 +751,8 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     if (r && r !== lastRoom) { if (lastRoom !== null && !$("#toast").classList.contains("show")) toast(r); lastRoom = r; }
     shake = Math.max(0, shake - dt); redFlash = Math.max(0, redFlash - dt * .8);
     // camera
-    const live = alive().length ? alive() : players;
+    const hum = players.filter((q) => !q.bot), humAlive = hum.filter((q) => !q.caught);
+    const live = humAlive.length ? humAlive : hum;
     let mnx = Infinity, mxx = -Infinity, mny = Infinity, mxy = -Infinity;
     live.forEach((p) => { mnx = Math.min(mnx, p.x); mxx = Math.max(mxx, p.x); mny = Math.min(mny, p.y); mxy = Math.max(mxy, p.y); });
     const tx = (mnx + mxx) / 2, ty = (mny + mxy) / 2, bz = baseZoom();
@@ -726,7 +828,8 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
     ctx.fillStyle = "rgba(0,0,0,.2)"; ctx.fillRect(x - 8, y - 2 + bob, 16, 3);
     // head
     ctx.fillStyle = "#e9c6a2"; ctx.beginPath(); ctx.arc(x, y - 20 + bob, 6.5, 0, 7); ctx.fill();
-    ctx.fillStyle = "#3a2a22"; ctx.beginPath(); ctx.arc(x, y - 22 + bob, 6.8, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = p.hair || "#3a2a22"; ctx.beginPath(); ctx.arc(x, y - 22 + bob, 6.8, Math.PI, 0); ctx.fill();
+    if (p.long) { ctx.fillRect(x - 7.5, y - 22 + bob, 3.5, 11); ctx.fillRect(x + 4, y - 22 + bob, 3.5, 11); }
     // flashlight in hand
     const hx = x + Math.cos(p.aim) * 11, hy = y - 7 + bob + Math.sin(p.aim) * 8;
     ctx.save(); ctx.translate(hx, hy); ctx.rotate(p.aim);
@@ -841,7 +944,12 @@ kbd { font-family: var(--body); font-size: 12px; background: #2a2530; border: 1p
       ctx.fillStyle = `rgba(255,220,140,${.25 + .35 * tw})`; ctx.beginPath(); ctx.arc(it.x + 4, it.y - 8, 1.6 + tw, 0, 7); ctx.fill();
     }
     // name tags in 2P mode
-    if (mode > 1) players.forEach((p) => { ctx.fillStyle = p.color; ctx.font = "700 11px 'PT Sans', sans-serif"; ctx.textAlign = "center"; ctx.fillText(`И${p.id + 1}`, p.x, p.y - 34); });
+    players.forEach((p) => {
+      if (!p.bot && mode === 1) return;
+      ctx.font = "700 11px 'PT Sans', sans-serif"; ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(0,0,0,.6)"; ctx.fillText(p.tag, p.x + 1, p.y - 33);
+      ctx.fillStyle = p.caught ? "#8a8478" : p.color; ctx.fillText(p.tag, p.x, p.y - 34);
+    });
 
     // screen effects
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
